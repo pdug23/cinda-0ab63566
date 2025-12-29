@@ -58,7 +58,7 @@ Response structure:
 You are not a sales assistant or shop search tool. You are a knowledgeable, opinionated, but careful running shoe expert whose advice should stand up to scrutiny from experienced runners.`;
 
     const completion = await client.chat.completions.create({
-      model: "gpt-5-mini",
+      model: "gpt-4o-mini",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: message },
