@@ -37,76 +37,53 @@ const Chat = () => {
     setInput(prompt);
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!input.trim()) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
 
-  const userText = input.trim();
-
-  const userMessage: Message = {
-    id: Date.now().toString(),
-    role: "user",
-    content: userText,
-  };
-
-  setMessages((prev) => [...prev, userMessage]);
-  setInput("");
-  setIsTyping(true);
-
-  try {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: userText }),
-    });
-
-    if (!res.ok) {
-      throw new Error(`Request failed with status ${res.status}`);
-    }
-
-    const data = await res.json();
-
-    const assistantMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      role: "assistant",
-      content: data.reply ?? "Sorry, I could not generate a response.",
-    };
-
-    setMessages((prev) => [...prev, assistantMessage]);
-  } catch (err) {
-    const assistantMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      role: "assistant",
-      content:
-        "Sorry - something went wrong while generating a response. Please try again.",
-    };
-    setMessages((prev) => [...prev, assistantMessage]);
-  } finally {
-    setIsTyping(false);
-  }
-};
-
+    const userText = input.trim();
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
-      content: input.trim(),
+      content: userText,
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsTyping(true);
 
-    // Mock response after delay
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userText }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Request failed with status ${res.status}`);
+      }
+
+      const data = await res.json();
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: mockResponse,
+        content: data.reply ?? "Sorry, I could not generate a response.",
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch (err) {
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content:
+          "Sorry - something went wrong while generating a response. Please try again.",
       };
       setMessages((prev) => [...prev, assistantMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -115,7 +92,9 @@ const handleSubmit = async (e: React.FormEvent) => {
       <header className="w-full px-6 py-3 flex items-center justify-between relative z-10">
         <div className="flex flex-col">
           <span className="text-2xl font-semibold text-card-foreground">Cinda</span>
-          <span className="text-xs text-card-foreground/60 font-light tracking-wide">Find your perfect fit.</span>
+          <span className="text-xs text-card-foreground/60 font-light tracking-wide">
+            Find your perfect fit.
+          </span>
         </div>
         <span className="px-3 py-1 text-[10px] font-medium tracking-wider uppercase text-card-foreground/70 border border-card-foreground/30 rounded-full">
           Alpha
@@ -133,11 +112,12 @@ const handleSubmit = async (e: React.FormEvent) => {
                   Tell me about your running and what you're looking for.
                 </p>
                 <p className="text-muted-foreground max-w-md text-sm">
-                  I'll help you find the right shoe for how you train, race, and feel on your runs.
+                  I'll help you find the right shoe for how you train, race, and feel on your
+                  runs.
                 </p>
               </div>
             )}
-            
+
             {messages.map((message) => (
               <ChatMessage key={message.id} message={message} />
             ))}
@@ -170,7 +150,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 ))}
               </div>
             )}
-            
+
             <form onSubmit={handleSubmit}>
               <div className="flex items-center gap-3 bg-input/50 rounded-xl px-4 py-3 border border-border/30 focus-within:border-accent/50 transition-colors">
                 <input
@@ -180,12 +160,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                   placeholder="Tell me about your running…"
                   className="flex-1 bg-transparent text-card-foreground placeholder:text-muted-foreground focus:outline-none text-sm md:text-base"
                 />
-                <Button 
-                  type="submit" 
-                  variant="send" 
-                  size="icon"
-                  disabled={!input.trim()}
-                >
+                <Button type="submit" variant="send" size="icon" disabled={!input.trim()}>
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
