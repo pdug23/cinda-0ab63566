@@ -64,14 +64,14 @@ const Chat = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(135deg, hsl(20 100% 50%) 0%, hsl(24 100% 65%) 40%, hsl(35 100% 90%) 100%)' }}>
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="w-full px-6 py-3 flex items-center justify-between">
+      <header className="w-full px-6 py-3 flex items-center justify-between relative z-10">
         <div className="flex flex-col">
-          <span className="text-2xl font-semibold text-card">Cinda</span>
-          <span className="text-xs text-card/60 font-light tracking-wide">Find your perfect fit.</span>
+          <span className="text-2xl font-semibold text-card-foreground">Cinda</span>
+          <span className="text-xs text-card-foreground/60 font-light tracking-wide">Find your perfect fit.</span>
         </div>
-        <span className="px-3 py-1 text-[10px] font-medium tracking-wider uppercase text-card/70 border border-card/30 rounded-full">
+        <span className="px-3 py-1 text-[10px] font-medium tracking-wider uppercase text-card-foreground/70 border border-card-foreground/30 rounded-full">
           Alpha
         </span>
       </header>

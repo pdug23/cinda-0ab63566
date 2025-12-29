@@ -81,10 +81,13 @@ All colors MUST be HSL.
     --tracking-normal: 0em;
     --spacing: 0.25rem;
 
-    /* Atmospheric nebula gradient - deep charcoal with orange glow */
-    --gradient-warm: radial-gradient(ellipse 80% 60% at 50% 40%, hsl(20 100% 45% / 0.6) 0%, hsl(20 90% 35% / 0.3) 30%, hsl(0 0% 8% / 0.8) 60%, hsl(0 0% 5%) 100%);
-    --gradient-nebula-overlay: radial-gradient(ellipse 100% 80% at 30% 20%, hsl(24 95% 50% / 0.25) 0%, transparent 50%),
-                               radial-gradient(ellipse 60% 50% at 70% 60%, hsl(18 100% 40% / 0.15) 0%, transparent 40%);
+    /* Atmospheric nebula gradient - deep charcoal with orange and pastel blue glow */
+    --gradient-warm: linear-gradient(135deg, hsl(0 0% 6%) 0%, hsl(0 0% 4%) 100%);
+    --gradient-nebula-overlay: radial-gradient(ellipse 70% 50% at 20% 30%, hsl(20 100% 50% / 0.45) 0%, transparent 50%),
+                               radial-gradient(ellipse 50% 40% at 35% 50%, hsl(30 95% 55% / 0.3) 0%, transparent 45%),
+                               radial-gradient(ellipse 60% 50% at 80% 65%, hsl(210 70% 75% / 0.35) 0%, transparent 50%),
+                               radial-gradient(ellipse 45% 35% at 90% 25%, hsl(200 60% 80% / 0.25) 0%, transparent 40%),
+                               radial-gradient(ellipse 40% 30% at 10% 85%, hsl(220 65% 70% / 0.2) 0%, transparent 45%);
   }
 
   .dark {
@@ -150,15 +153,16 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
     background: 
       var(--gradient-nebula-overlay),
       var(--gradient-warm);
+    background-color: hsl(0 0% 5%);
     background-attachment: fixed;
     min-height: 100vh;
+    color: hsl(var(--foreground));
   }
 
-  /* Subtle grain texture overlay */
+  /* Grain texture overlay for nebula depth */
   body::before {
     content: '';
     position: fixed;
@@ -167,7 +171,7 @@ All colors MUST be HSL.
     width: 100%;
     height: 100%;
     pointer-events: none;
-    opacity: 0.03;
+    opacity: 0.06;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
     z-index: 0;
   }
