@@ -131,7 +131,7 @@ const Chat = () => {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Describe what you're looking for..."
+                  placeholder="Tell me about your running…"
                   className="flex-1 bg-transparent text-card-foreground placeholder:text-muted-foreground focus:outline-none text-sm md:text-base"
                 />
                 <Button 
