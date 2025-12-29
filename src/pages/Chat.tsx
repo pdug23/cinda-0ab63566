@@ -21,10 +21,21 @@ It's a versatile trainer rather than a specialist—not as bouncy as a super-sho
 **One Follow-up Question**
 How do you feel about heel-toe drop—do you prefer something more traditional or are you open to lower-drop shoes?`;
 
+const starterPrompts = [
+  "I'm new to running and don't know where to start.",
+  "I'm training for a race and need the right shoes.",
+  "I'm bored of my current shoes and want something different.",
+  "I want a shoe for my everyday runs.",
+];
+
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+
+  const handleStarterClick = (prompt: string) => {
+    setInput(prompt);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,25 +109,42 @@ const Chat = () => {
           </div>
 
           {/* Input area */}
-          <form onSubmit={handleSubmit} className="p-4 border-t border-border/20">
-            <div className="flex items-center gap-3 bg-input/50 rounded-xl px-4 py-3 border border-border/30 focus-within:border-accent/50 transition-colors">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Describe what you're looking for..."
-                className="flex-1 bg-transparent text-card-foreground placeholder:text-muted-foreground focus:outline-none text-sm md:text-base"
-              />
-              <Button 
-                type="submit" 
-                variant="send" 
-                size="icon"
-                disabled={!input.trim()}
-              >
-                <Send className="w-4 h-4" />
-              </Button>
-            </div>
-          </form>
+          <div className="p-4 border-t border-border/20 space-y-3">
+            {/* Starter prompts - only show when no messages */}
+            {messages.length === 0 && (
+              <div className="flex flex-wrap gap-2 justify-center">
+                {starterPrompts.map((prompt, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleStarterClick(prompt)}
+                    className="text-xs text-muted-foreground hover:text-card-foreground border border-border/30 hover:border-border/50 rounded-full px-3 py-1.5 transition-colors"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            <form onSubmit={handleSubmit}>
+              <div className="flex items-center gap-3 bg-input/50 rounded-xl px-4 py-3 border border-border/30 focus-within:border-accent/50 transition-colors">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Describe what you're looking for..."
+                  className="flex-1 bg-transparent text-card-foreground placeholder:text-muted-foreground focus:outline-none text-sm md:text-base"
+                />
+                <Button 
+                  type="submit" 
+                  variant="send" 
+                  size="icon"
+                  disabled={!input.trim()}
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+            </form>
+          </div>
         </div>
       </main>
     </div>
