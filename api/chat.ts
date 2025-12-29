@@ -6,8 +6,14 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const message = String(req.body?.message ?? "").trim();
-    if (!message) return res.status(400).json({ reply: "Tell me a bit about your running first." });
+    const messages = Array.isArray(req.body?.messages)
+  ? req.body.messages
+  : [];
+
+if (messages.length === 0) {
+  return res.status(400).json({ reply: "Tell me a bit about your running first." });
+};
+    };
 
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -65,8 +71,13 @@ You are not a sales assistant or shop search tool. You are a knowledgeable, opin
       model: "gpt-4o-mini",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: message },
-      ],
+        ...messages.map((m: any) => ({
+          role: m.role === "assistant" ? "assistant" : "user",
+          content: String(m.content ?? ""),
+})),
+
+],
+
       temperature: 0.6,
     });
 
