@@ -37,9 +37,55 @@ const Chat = () => {
     setInput(prompt);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!input.trim()) return;
+
+  const userText = input.trim();
+
+  const userMessage: Message = {
+    id: Date.now().toString(),
+    role: "user",
+    content: userText,
+  };
+
+  setMessages((prev) => [...prev, userMessage]);
+  setInput("");
+  setIsTyping(true);
+
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: userText }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Request failed with status ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    const assistantMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      role: "assistant",
+      content: data.reply ?? "Sorry, I could not generate a response.",
+    };
+
+    setMessages((prev) => [...prev, assistantMessage]);
+  } catch (err) {
+    const assistantMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      role: "assistant",
+      content:
+        "Sorry - something went wrong while generating a response. Please try again.",
+    };
+    setMessages((prev) => [...prev, assistantMessage]);
+  } finally {
+    setIsTyping(false);
+  }
+};
+
 
     const userMessage: Message = {
       id: Date.now().toString(),
