@@ -1,5 +1,19 @@
 import OpenAI from "openai";
 
+const CURATED_SHOES = {
+  daily_trainer_modern_bouncy: [
+    "Adidas Evo SL",
+    "Nike Pegasus Premium",
+    "Hoka Bondi 9",
+    "Mizuno Neo Zen",
+    "Salomon Aero Glide 2",
+    "Skechers Aero Burst",
+    "Nike Vomero Plus",
+    "New Balance FuelCell Rebel v5",
+    "Puma MagMax Nitro",
+  ],
+};
+
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
     return res.status(405).json({ reply: "Method not allowed" });
@@ -46,6 +60,12 @@ Recommendations:
 When suggesting shoes, prefer modern, enthusiast-relevant models and recent versions where appropriate. Avoid defaulting to older or legacy daily trainers unless there is a clear reason tied to the user’s preferences.
 
 If two shoes are similar, favour the one with a more stable platform, controlled midsole feel, or updated geometry when the user has expressed concerns about bounce or instability.
+
+Curated shoe context (use as your default shortlist of modern, enthusiast-relevant options, unless the user's constraints rule them out):
+- Modern, exciting daily trainers with bounce (not carbon): Adidas Evo SL; Nike Pegasus Premium; Hoka Bondi 9; Mizuno Neo Zen; Salomon Aero Glide 2; Skechers Aero Burst; Nike Vomero Plus; New Balance FuelCell Rebel v5; Puma MagMax Nitro.
+
+Prefer these over older retail-default picks when the user asks for a daily trainer, unless you have a clear reason tied to the user’s preferences to recommend something else. You may recommend shoes outside this shortlist if you explicitly justify why.
+
 
 User constraints are hard rules:
 - If the user dislikes a brand, model, feature (e.g. carbon plates), or shoe type, do not recommend it.
