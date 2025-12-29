@@ -81,13 +81,14 @@ All colors MUST be HSL.
     --tracking-normal: 0em;
     --spacing: 0.25rem;
 
-    /* Atmospheric nebula gradient - deep charcoal with orange and pastel blue glow */
-    --gradient-warm: linear-gradient(135deg, hsl(0 0% 6%) 0%, hsl(0 0% 4%) 100%);
-    --gradient-nebula-overlay: radial-gradient(ellipse 70% 50% at 20% 30%, hsl(20 100% 50% / 0.45) 0%, transparent 50%),
-                               radial-gradient(ellipse 50% 40% at 35% 50%, hsl(30 95% 55% / 0.3) 0%, transparent 45%),
-                               radial-gradient(ellipse 60% 50% at 80% 65%, hsl(210 70% 75% / 0.35) 0%, transparent 50%),
-                               radial-gradient(ellipse 45% 35% at 90% 25%, hsl(200 60% 80% / 0.25) 0%, transparent 40%),
-                               radial-gradient(ellipse 40% 30% at 10% 85%, hsl(220 65% 70% / 0.2) 0%, transparent 45%);
+    /* Atmospheric nebula gradient - lighter base with orange and pastel blue glow */
+    --gradient-warm: linear-gradient(135deg, hsl(0 0% 12%) 0%, hsl(0 0% 18%) 50%, hsl(0 0% 15%) 100%);
+    --gradient-nebula-overlay: radial-gradient(ellipse 80% 60% at 15% 30%, hsl(24 100% 55% / 0.55) 0%, hsl(30 95% 60% / 0.3) 30%, transparent 55%),
+                               radial-gradient(ellipse 60% 50% at 40% 60%, hsl(35 90% 65% / 0.25) 0%, transparent 45%),
+                               radial-gradient(ellipse 70% 55% at 85% 60%, hsl(210 70% 75% / 0.45) 0%, hsl(200 60% 80% / 0.2) 35%, transparent 55%),
+                               radial-gradient(ellipse 50% 40% at 95% 20%, hsl(195 55% 80% / 0.35) 0%, transparent 45%),
+                               radial-gradient(ellipse 45% 35% at 5% 85%, hsl(220 60% 75% / 0.25) 0%, transparent 50%),
+                               radial-gradient(ellipse 100% 80% at 50% 100%, hsl(0 0% 25% / 0.4) 0%, transparent 50%);
   }
 
   .dark {
@@ -156,7 +157,7 @@ All colors MUST be HSL.
     background: 
       var(--gradient-nebula-overlay),
       var(--gradient-warm);
-    background-color: hsl(0 0% 5%);
+    background-color: hsl(0 0% 12%);
     background-attachment: fixed;
     min-height: 100vh;
     color: hsl(var(--foreground));
