@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ChatMessage";
@@ -11,16 +10,16 @@ interface Message {
 }
 
 const mockResponse = `**Primary Recommendation**
-The Allbirds Tree Runners in natural grey would be an excellent choice for you.
+The Nike Pegasus 41 would be an excellent choice for your training.
 
 **Why It Fits**
-Based on your need for everyday comfort and sustainability, these shoes offer merino wool cushioning, breathable eucalyptus fiber, and a carbon-neutral footprint. The minimalist design pairs well with both casual and smart-casual outfits.
+Based on what you've shared, this shoe offers the right balance of cushioning and responsiveness for daily runs. The React foam provides durability for higher mileage weeks while remaining light enough for tempo efforts.
 
 **Trade-offs**
-They're not ideal for heavy rain or rigorous athletic use. The price point is mid-range at around $100.
+It's a versatile trainer rather than a specialist—not as bouncy as a super-shoe for racing, and not as cushioned as a max-stack recovery shoe.
 
 **One Follow-up Question**
-Do you prioritize slip-on convenience, or are laces fine for you?`;
+How do you feel about heel-toe drop—do you prefer something more traditional or are you open to lower-drop shoes?`;
 
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -54,29 +53,30 @@ const Chat = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(135deg, hsl(24 100% 70%) 0%, hsl(30 100% 85%) 50%, hsl(35 100% 92%) 100%)' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(135deg, hsl(20 100% 50%) 0%, hsl(24 100% 65%) 40%, hsl(35 100% 90%) 100%)' }}>
       {/* Header */}
-      <header className="w-full px-6 py-4 flex items-center justify-between">
-        <Link to="/" className="text-2xl font-semibold text-card hover:opacity-80 transition-opacity">
-          Cinda
-        </Link>
-        <span className="px-3 py-1 text-xs font-medium tracking-wider uppercase bg-card/80 text-card-foreground rounded-full border border-border/30 backdrop-blur-sm">
+      <header className="w-full px-6 py-3 flex items-center justify-between">
+        <div className="flex flex-col">
+          <span className="text-2xl font-semibold text-card">Cinda</span>
+          <span className="text-xs text-card/60 font-light tracking-wide">Find your perfect fit.</span>
+        </div>
+        <span className="px-3 py-1 text-[10px] font-medium tracking-wider uppercase text-card/70 border border-card/30 rounded-full">
           Alpha
         </span>
       </header>
 
       {/* Main chat area */}
-      <main className="flex-1 flex items-center justify-center px-4 py-6 md:px-6">
-        <div className="w-full max-w-3xl h-[calc(100vh-140px)] flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden">
+      <main className="flex-1 flex items-center justify-center px-4 py-4 md:px-6">
+        <div className="w-full max-w-3xl h-[calc(100vh-100px)] flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden">
           {/* Messages area */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             {messages.length === 0 && (
-              <div className="h-full flex flex-col items-center justify-center text-center space-y-4 py-12">
-                <h2 className="text-2xl font-medium text-primary-foreground/90">
-                  How can I help you today?
-                </h2>
-                <p className="text-muted-foreground max-w-md">
-                  Tell me what you're looking for—whether it's shoes, a jacket, or anything else—and I'll help you find the perfect match.
+              <div className="h-full flex flex-col items-center justify-center text-center space-y-3 py-8">
+                <p className="text-lg text-card-foreground/90 max-w-md leading-relaxed">
+                  Tell me about your running and what you're looking for.
+                </p>
+                <p className="text-muted-foreground max-w-md text-sm">
+                  I'll help you find the right shoe for how you train, race, and feel on your runs.
                 </p>
               </div>
             )}
