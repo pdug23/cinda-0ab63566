@@ -78,7 +78,7 @@ const Chat = () => {
 
       {/* Main chat area */}
       <main className="flex-1 flex items-center justify-center px-4 py-4 md:px-6">
-        <div className="w-full max-w-3xl h-[calc(100vh-100px)] flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden">
+        <div className="w-full max-w-3xl h-[calc(100vh-100px)] flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10">
           {/* Messages area */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             {messages.length === 0 && (
