@@ -157,8 +157,8 @@ const Chat = () => {
             )}
 
             <form onSubmit={handleSubmit}>
-              <div className="flex items-end gap-3 bg-input/50 rounded-xl px-4 py-3 border border-border/30 focus-within:border-accent/50 transition-colors">
-              <textarea
+              <div className="flex items-center gap-2 bg-input/50 rounded-xl px-3 py-2 border border-border/30 focus-within:border-accent/50 transition-colors">
+                <textarea
                   ref={textareaRef}
                   value={input}
                   onChange={(e) => {
@@ -177,8 +177,8 @@ const Chat = () => {
                   className="flex-1 bg-transparent text-card-foreground placeholder:text-muted-foreground focus:outline-none text-sm md:text-base resize-none overflow-y-auto scrollbar-styled leading-normal"
                   style={{ height: '24px', minHeight: '24px', maxHeight: '200px' }}
                 />
-                <Button type="submit" variant="send" size="icon" disabled={!input.trim()}>
-                  <Send className="w-4 h-4" />
+                <Button type="submit" variant="send" size="icon-sm" disabled={!input.trim()}>
+                  <Send />
                 </Button>
               </div>
             </form>
