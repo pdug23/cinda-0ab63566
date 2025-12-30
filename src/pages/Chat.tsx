@@ -168,7 +168,7 @@ const Chat = () => {
                   }}
                   placeholder="Tell me about your running…"
                   rows={1}
-                  className="flex-1 bg-transparent text-card-foreground placeholder:text-muted-foreground focus:outline-none text-sm md:text-base resize-none overflow-y-auto"
+                  className="flex-1 bg-transparent text-card-foreground placeholder:text-muted-foreground focus:outline-none text-sm md:text-base resize-none overflow-y-auto scrollbar-styled"
                   style={{ maxHeight: '200px' }}
                 />
                 <Button type="submit" variant="send" size="icon" disabled={!input.trim()}>
