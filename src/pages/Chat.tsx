@@ -10,6 +10,18 @@ interface Message {
   content: string;
 }
 
+const mockResponse = `**Primary Recommendation**
+The Nike Pegasus 41 would be an excellent choice for your training.
+
+**Why It Fits**
+Based on what you've shared, this shoe offers the right balance of cushioning and responsiveness for daily runs. The React foam provides durability for higher mileage weeks while remaining light enough for tempo efforts.
+
+**Trade-offs**
+It's a versatile trainer rather than a specialist-not as bouncy as a super-shoe for racing, and not as cushioned as a max-stack recovery shoe.
+
+**One Follow-up Question**
+How do you feel about heel-toe drop-do you prefer something more traditional or are you open to lower-drop shoes?`;
+
 const starterPrompts = [
   "I'm new to running and don't know where to start.",
   "I'm training for a race and need the right shoes.",
@@ -24,9 +36,9 @@ function applyRunnerProfileUpdates(prev: RunnerProfile, userText: string): Runne
 
   // Copy existing profile (we will return a modified copy)
   const next: RunnerProfile =
-  typeof structuredClone === "function"
-    ? structuredClone(prev)
-    : (JSON.parse(JSON.stringify(prev)) as RunnerProfile);
+    typeof structuredClone === "function"
+      ? structuredClone(prev)
+      : (JSON.parse(JSON.stringify(prev)) as RunnerProfile);
 
   // Helper to set a typed profile field safely
   const setField = <T,>(
@@ -139,8 +151,9 @@ const Chat = () => {
     if (!input.trim()) return;
 
     const userText = input.trim();
-    const updatedRunnerProfile = applyRunnerProfileUpdates(runnerProfile, userText); 
-      setRunnerProfile(updatedRunnerProfile);
+
+    const updatedRunnerProfile = applyRunnerProfileUpdates(runnerProfile, userText);
+    setRunnerProfile(updatedRunnerProfile);
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -156,25 +169,25 @@ const Chat = () => {
     const followUp = getNextQuestion(updatedRunnerProfile);
 
     if (followUp) {
-  const assistantMessage: Message = {
-    id: (Date.now() + 1).toString(),
-    role: "assistant",
-    content: followUp,
-  };
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: followUp,
+      };
 
-  setMessages((prev) => [...prev, assistantMessage]);
-  setIsTyping(false);
-  return;
-}
+      setMessages((prev) => [...prev, assistantMessage]);
+      setIsTyping(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           messages: [...messages, userMessage],
           runnerProfile: updatedRunnerProfile,
- }),
+        }),
       });
 
       if (!res.ok) {
@@ -207,8 +220,8 @@ const Chat = () => {
     <div className="h-[100dvh] flex flex-col overflow-hidden">
       {/* Header */}
       <header className="w-full px-6 py-3 flex items-center justify-between relative z-10 flex-shrink-0">
-        <button 
-          onClick={() => window.location.reload()} 
+        <button
+          onClick={() => window.location.reload()}
           className="flex flex-col gap-0.5 text-left hover:opacity-80 transition-opacity"
         >
           <span className="text-3xl font-extrabold tracking-tight text-card-foreground font-display">Cinda</span>
@@ -286,7 +299,7 @@ const Chat = () => {
                     value={input}
                     onChange={(e) => {
                       setInput(e.target.value);
-                      e.target.style.height = 'auto';
+                      e.target.style.height = "auto";
                       e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
                     }}
                     onKeyDown={(e) => {
@@ -298,7 +311,7 @@ const Chat = () => {
                     placeholder="Tell me about your running…"
                     rows={1}
                     className="flex-1 bg-transparent text-card-foreground placeholder:text-muted-foreground focus:outline-none text-base resize-none overflow-y-auto scrollbar-styled leading-normal"
-                    style={{ height: '24px', minHeight: '24px', maxHeight: '200px' }}
+                    style={{ height: "24px", minHeight: "24px", maxHeight: "200px" }}
                   />
                   <Button type="submit" variant="send" size="icon-sm" disabled={!input.trim()}>
                     <Send />
