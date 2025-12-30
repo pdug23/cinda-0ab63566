@@ -14,6 +14,38 @@ const CURATED_SHOES = {
   ],
 };
 
+function buildRunnerProfileContext(runnerProfile: any) {
+  if (!runnerProfile) return "";
+
+  const purpose = runnerProfile?.currentContext?.shoePurpose?.value ?? "unknown";
+  const width = runnerProfile?.profileCore?.footWidthVolume?.value ?? "unknown";
+  const stability = runnerProfile?.profileCore?.stabilityNeed?.value ?? "unknown";
+  const experience = runnerProfile?.profileCore?.experienceLevel?.value ?? "unknown";
+
+  const dislikesArr = runnerProfile?.shoeFeedback?.dislikes;
+  const dislikes =
+    Array.isArray(dislikesArr) && dislikesArr.length > 0
+      ? dislikesArr
+          .map((d: any) => d?.display_name || d?.raw_text)
+          .filter(Boolean)
+          .join(", ")
+      : "none";
+
+  return `
+Runner profile (session-only, may be incomplete):
+- shoe purpose: ${purpose}
+- foot width/volume: ${width}
+- stability need: ${stability}
+- experience level: ${experience}
+- disliked shoes: ${dislikes}
+
+Instruction:
+- Use this profile to guide recommendations.
+- If a field is unknown, make a reasonable assumption and briefly state it.
+- Do not ask lots of questions. Ask 1-2 that would genuinely change the recommendation.
+`.trim();
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
     return res.status(405).json({ reply: "Method not allowed" });
@@ -23,6 +55,11 @@ export default async function handler(req: any, res: any) {
     const messages = Array.isArray(req.body?.messages)
       ? req.body.messages
       : [];
+
+    const runnerProfile = 
+    req.body?.runnerProfile && typeof req.body.runnerProfile === "object"
+    ? req.body.runnerProfile
+    : null;
 
     if (messages.length === 0) {
       return res.status(400).json({
@@ -140,17 +177,23 @@ Response structure:
 
 You are not a sales assistant. You are a careful, opinionated running shoe expert.`;
 
-    const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt },
-        ...messages.map((m: any) => ({
-          role: m.role === "assistant" ? "assistant" : "user",
-          content: String(m.content ?? ""),
-        })),
-      ],
-      temperature: 0.6,
-    });
+const runnerProfileContext = buildRunnerProfileContext(runnerProfile);
+
+const openAiMessages = [
+  { role: "system", content: systemPrompt },
+  ...(runnerProfileContext ? [{ role: "user", content: runnerProfileContext }] : []),
+  ...messages.map((m: any) => ({
+    role: m.role === "assistant" ? "assistant" : "user",
+    content: String(m.content ?? ""),
+  })),
+];
+
+const completion = await client.chat.completions.create({
+  model: "gpt-4o-mini",
+  messages: openAiMessages,
+  temperature: 0.6,
+});
+
 
     const reply =
       completion.choices?.[0]?.message?.content?.trim() ||
