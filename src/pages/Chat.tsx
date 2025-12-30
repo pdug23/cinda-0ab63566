@@ -96,12 +96,15 @@ const Chat = () => {
     <div className="h-[100dvh] flex flex-col overflow-hidden">
       {/* Header */}
       <header className="w-full px-6 py-3 flex items-center justify-between relative z-10 flex-shrink-0">
-        <div className="flex flex-col gap-0.5">
+        <button 
+          onClick={() => window.location.reload()} 
+          className="flex flex-col gap-0.5 text-left hover:opacity-80 transition-opacity"
+        >
           <span className="text-3xl font-extrabold tracking-tight text-card-foreground font-display">Cinda</span>
           <span className="text-xs text-card-foreground italic font-medium tracking-wide">
             Find your perfect fit.
           </span>
-        </div>
+        </button>
         <span className="px-3 py-1 text-[10px] font-medium tracking-wider uppercase text-card-foreground/70 border border-card-foreground/30 rounded-full">
           Alpha
         </span>
