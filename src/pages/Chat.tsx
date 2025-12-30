@@ -95,10 +95,10 @@ const Chat = () => {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="w-full px-6 py-3 flex items-center justify-between relative z-10">
+      <header className="w-full px-6 py-4 flex items-center justify-between relative z-10">
         <div className="flex flex-col gap-0.5">
-          <span className="text-2xl font-extrabold tracking-tight text-foreground font-display">Cinda</span>
-          <span className="text-[11px] text-foreground/90 italic font-medium tracking-wide">
+          <span className="text-3xl font-extrabold tracking-tight text-card-foreground font-display">Cinda</span>
+          <span className="text-xs text-card-foreground italic font-medium tracking-wide">
             Find your perfect fit.
           </span>
         </div>
