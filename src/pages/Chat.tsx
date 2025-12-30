@@ -116,14 +116,16 @@ const Chat = () => {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="w-full px-6 py-3 flex items-center justify-between relative z-10">
-        <div className="flex flex-col">
-          <span className="text-2xl font-semibold text-card-foreground">Cinda</span>
-          <span className="text-xs text-card-foreground/60 font-light tracking-wide">
+      <header className="w-full px-6 py-4 flex items-center justify-between relative z-10">
+        <div className="flex items-baseline gap-3">
+          <span className="font-display text-2xl font-semibold tracking-tight text-card-foreground">
+            Cinda
+          </span>
+          <span className="text-sm text-muted-foreground font-light tracking-wide">
             Find your perfect fit.
           </span>
         </div>
-        <span className="px-3 py-1 text-[10px] font-medium tracking-wider uppercase text-card-foreground/70 border border-card-foreground/30 rounded-full">
+        <span className="px-2.5 py-0.5 text-[9px] font-medium tracking-widest uppercase text-accent/80 border border-accent/30 rounded-full bg-accent/5">
           Alpha
         </span>
       </header>
