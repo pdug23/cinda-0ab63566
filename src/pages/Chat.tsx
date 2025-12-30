@@ -25,7 +25,7 @@ const starterPrompts = [
   "I'm new to running and don't know where to start.",
   "I'm training for a race and need the right shoes.",
   "I'm bored of my current shoes and want something different.",
-  "I want a shoe for my everyday runs.",
+  "Tell me all about the different Asics running shoes.",
 ];
 
 const Chat = () => {
