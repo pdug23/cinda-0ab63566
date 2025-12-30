@@ -96,9 +96,9 @@ const Chat = () => {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="w-full px-6 py-3 flex items-center justify-between relative z-10">
-        <div className="flex flex-col">
-          <span className="text-2xl font-semibold text-card-foreground">Cinda</span>
-          <span className="text-xs text-card-foreground/60 font-light tracking-wide">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-2xl font-extrabold tracking-tight text-foreground font-display">Cinda</span>
+          <span className="text-[11px] text-foreground/90 italic font-medium tracking-wide">
             Find your perfect fit.
           </span>
         </div>
