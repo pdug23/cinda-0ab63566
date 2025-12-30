@@ -113,13 +113,12 @@ const Chat = () => {
           {/* Messages area */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             {messages.length === 0 && (
-              <div className="h-full flex flex-col items-center justify-center text-center space-y-3 py-8">
-                <p className="text-lg text-card-foreground/90 max-w-md leading-relaxed">
-                  Tell me about your running and what you're looking for.
+              <div className="h-full flex flex-col items-center justify-center text-center space-y-2 py-8">
+                <p className="text-2xl text-card-foreground/90 max-w-md leading-relaxed font-medium">
+                  👋 Hi, I'm Cinda!
                 </p>
                 <p className="text-muted-foreground max-w-md text-sm">
-                  I'll help you find the right shoe for how you train, race, and feel on your
-                  runs.
+                  Talk to me about your running and I'll help you find the right shoe for how you train, race, and feel on your runs.
                 </p>
               </div>
             )}
