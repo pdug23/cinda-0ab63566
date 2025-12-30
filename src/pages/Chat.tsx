@@ -29,35 +29,15 @@ const starterPrompts = [
   "I want a shoe for my everyday runs.",
 ];
 
-const welcomeMessage = "👋 Hi, I'm Cinda! Talk to me about your running and I'll help you find the right shoe for how you train, race, and feel on your runs.";
-
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [displayedWelcome, setDisplayedWelcome] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     textareaRef.current?.focus();
   }, []);
-
-  // Typewriter effect for welcome message
-  useEffect(() => {
-    if (messages.length > 0) return;
-    
-    let index = 0;
-    const timer = setInterval(() => {
-      if (index < welcomeMessage.length) {
-        setDisplayedWelcome(welcomeMessage.slice(0, index + 1));
-        index++;
-      } else {
-        clearInterval(timer);
-      }
-    }, 30);
-
-    return () => clearInterval(timer);
-  }, [messages.length]);
 
   const handleStarterClick = (prompt: string) => {
     setInput(prompt);
@@ -140,9 +120,8 @@ const Chat = () => {
                   alt="Cinda mascot" 
                   className="w-20 h-20 object-contain"
                 />
-                <p className="text-card-foreground/90 max-w-md leading-relaxed min-h-[3rem]">
-                  {displayedWelcome}
-                  <span className="inline-block w-0.5 h-4 bg-card-foreground/70 ml-0.5 animate-pulse" />
+                <p className="text-card-foreground/90 max-w-md leading-relaxed">
+                  👋 Hi, I'm Cinda. Talk to me about your running and I'll help you find the right shoe for how you train, race, and feel on your runs.
                 </p>
               </div>
             )}
