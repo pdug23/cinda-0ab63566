@@ -14,6 +14,38 @@ const CURATED_SHOES = {
   ],
 };
 
+function buildRunnerProfileContext(runnerProfile: any) {
+  if (!runnerProfile) return "";
+
+  const purpose = runnerProfile?.currentContext?.shoePurpose?.value ?? "unknown";
+  const width = runnerProfile?.profileCore?.footWidthVolume?.value ?? "unknown";
+  const stability = runnerProfile?.profileCore?.stabilityNeed?.value ?? "unknown";
+  const experience = runnerProfile?.profileCore?.experienceLevel?.value ?? "unknown";
+
+  const dislikesArr = runnerProfile?.shoeFeedback?.dislikes;
+  const dislikes =
+    Array.isArray(dislikesArr) && dislikesArr.length > 0
+      ? dislikesArr
+          .map((d: any) => d?.display_name || d?.raw_text)
+          .filter(Boolean)
+          .join(", ")
+      : "none";
+
+  return `
+Runner profile (session-only, may be incomplete):
+- shoe purpose: ${purpose}
+- foot width/volume: ${width}
+- stability need: ${stability}
+- experience level: ${experience}
+- disliked shoes: ${dislikes}
+
+Instruction:
+- Use this profile to guide recommendations.
+- If a field is unknown, make a reasonable assumption and briefly state it.
+- Do not ask lots of questions. Ask 1-2 that would genuinely change the recommendation.
+`.trim();
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
     return res.status(405).json({ reply: "Method not allowed" });
@@ -24,6 +56,11 @@ export default async function handler(req: any, res: any) {
       ? req.body.messages
       : [];
 
+    const runnerProfile = 
+    req.body?.runnerProfile && typeof req.body.runnerProfile === "object"
+    ? req.body.runnerProfile
+    : null;
+
     if (messages.length === 0) {
       return res.status(400).json({
         reply: "Tell me a bit about your running first.",
@@ -33,6 +70,8 @@ export default async function handler(req: any, res: any) {
     const client = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
+
+    const curatedShoesJson = JSON.stringify(CURATED_SHOES, null, 2);
 
     const systemPrompt = `You are Cinda, an expert running shoe specialist and genuine running shoe enthusiast.
 
@@ -109,6 +148,14 @@ If two shoes are similar, favour the one with a more stable platform, controlled
 Curated shoe context (use as your default shortlist of modern, enthusiast-relevant options, unless the user's constraints rule them out):
 - Modern, exciting daily trainers with bounce (not carbon): Adidas Evo SL; Nike Pegasus Premium; Hoka Bondi 9; Mizuno Neo Zen; Salomon Aero Glide 2; Skechers Aero Burst; Nike Vomero Plus; New Balance FuelCell Rebel v5; Puma MagMax Nitro.
 
+Curated shoes data (treat this as your primary pool for recommendations unless constraints rule them out):
+${curatedShoesJson}
+
+Rules for using curated shoes:
+- Default to curated shoes. Only recommend non-curated shoes if the user has a constraint that eliminates the curated pool, and you explicitly say which constraint caused that.
+- Only recommend a non-curated shoe if you explicitly state why none of the curated shoes fit the user’s constraints.
+- When you recommend from the curated pool, use the exact model names from the data.
+
 Prefer these over older retail-default picks when the user asks for a daily trainer, unless the user’s preferences clearly point elsewhere. You may recommend shoes outside this shortlist if you explicitly justify why.
 
 Important nuance: Many great modern trainers are "bouncy". The problem is not bounce itself - it’s bounce that feels unstable, uncontrolled, or awkward. When a user says "too bouncy" or "unstable", clarify and speak to stability/control (platform, geometry, sidewalls, transition), not simply "less bounce".
@@ -121,6 +168,7 @@ User constraints are hard rules:
 - If the user dislikes a brand, model, feature (e.g. carbon plates), or shoe type, do not recommend it.
 - Do not override preferences because something is "technically better".
 - When a user dislikes a shoe, explain what likely caused that experience and use it to guide alternatives.
+- If the user wants stability, prefer modern stable neutral shoes or stable platforms before classic stability-post models, unless the user explicitly asks for traditional stability shoes.
 
 Information gathering:
 - If sufficient information exists to make a reasonable recommendation, make the best call rather than delaying with more questions.
@@ -140,17 +188,23 @@ Response structure:
 
 You are not a sales assistant. You are a careful, opinionated running shoe expert.`;
 
-    const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt },
-        ...messages.map((m: any) => ({
-          role: m.role === "assistant" ? "assistant" : "user",
-          content: String(m.content ?? ""),
-        })),
-      ],
-      temperature: 0.6,
-    });
+    const runnerProfileContext = buildRunnerProfileContext(runnerProfile);
+
+const openAiMessages = [
+  { role: "system", content: systemPrompt },
+  ...(runnerProfileContext ? [{ role: "user", content: runnerProfileContext }] : []),
+  ...messages.map((m: any) => ({
+    role: m.role === "assistant" ? "assistant" : "user",
+    content: String(m.content ?? ""),
+  })),
+];
+
+const completion = await client.chat.completions.create({
+  model: "gpt-4o-mini",
+  messages: openAiMessages,
+  temperature: 0.6,
+});
+
 
     const reply =
       completion.choices?.[0]?.message?.content?.trim() ||
