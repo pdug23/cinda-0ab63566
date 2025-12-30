@@ -95,7 +95,7 @@ const Chat = () => {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="w-full px-6 py-4 flex items-center justify-between relative z-10">
+      <header className="w-full px-6 py-3 flex items-center justify-between relative z-10">
         <div className="flex flex-col gap-0.5">
           <span className="text-3xl font-extrabold tracking-tight text-card-foreground font-display">Cinda</span>
           <span className="text-xs text-card-foreground italic font-medium tracking-wide">
@@ -108,8 +108,8 @@ const Chat = () => {
       </header>
 
       {/* Main chat area */}
-      <main className="flex-1 flex items-center justify-center px-4 py-4 md:px-6">
-        <div className="w-full max-w-3xl h-[calc(100vh-100px)] flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10">
+      <main className="flex-1 flex items-start justify-center px-4 pt-2 pb-4 md:px-6">
+        <div className="w-full max-w-3xl h-[calc(100vh-88px)] flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10">
           {/* Messages area */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             {messages.length === 0 && (
