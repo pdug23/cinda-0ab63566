@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import cindaMascot from "@/assets/cinda-mascot.png";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ChatMessage";
@@ -113,13 +114,14 @@ const Chat = () => {
           {/* Messages area */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             {messages.length === 0 && (
-              <div className="h-full flex flex-col items-center justify-center text-center space-y-3 py-8">
-                <p className="text-lg text-card-foreground/90 max-w-md leading-relaxed">
-                  Tell me about your running and what you're looking for.
-                </p>
-                <p className="text-muted-foreground max-w-md text-sm">
-                  I'll help you find the right shoe for how you train, race, and feel on your
-                  runs.
+              <div className="h-full flex flex-col items-center justify-center text-center space-y-4 py-8">
+                <img 
+                  src={cindaMascot} 
+                  alt="Cinda mascot" 
+                  className="w-20 h-20 object-contain"
+                />
+                <p className="text-card-foreground/90 max-w-md leading-relaxed">
+                  👋 Hi, I'm Cinda. Talk to me about your running and I'll help you find the right shoe for how you train, race, and feel on your runs.
                 </p>
               </div>
             )}
