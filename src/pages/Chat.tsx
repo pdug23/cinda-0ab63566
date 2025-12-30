@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Plus } from "lucide-react";
+import { Send, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ChatMessage";
 
@@ -167,7 +167,7 @@ const Chat = () => {
                   className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-card-foreground hover:bg-border/20 transition-colors"
                   aria-label="New chat"
                 >
-                  <Plus className="w-5 h-5" />
+                  <RotateCcw className="w-5 h-5" />
                 </button>
                 <div className="flex-1 flex items-center gap-2 bg-input/50 rounded-xl px-3 py-2 border border-border/30 focus-within:border-accent/50 transition-colors">
                   <textarea
