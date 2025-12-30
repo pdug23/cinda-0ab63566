@@ -94,16 +94,34 @@ function applyRunnerProfileUpdates(prev: RunnerProfile, userText: string): Runne
     }
   }
 
-  // 4) Experience level (modifier)
-  if (!next.profileCore.experienceLevel.value) {
-    if (text.includes("new to running") || text.includes("just started") || text.includes("beginner")) {
-      setField(next.profileCore.experienceLevel, "beginner", userText, "high", "explicit");
-    } else if (text.includes("getting back into") || text.includes("returning") || text.includes("coming back")) {
-      setField(next.profileCore.experienceLevel, "returning", userText, "high", "explicit");
-    } else if (text.includes("experienced") || text.includes("been running for") || text.includes("i run a lot")) {
-      setField(next.profileCore.experienceLevel, "advanced", userText, "medium", "inferred");
+// 4) Experience level (modifier)
+if (!next.profileCore.experienceLevel.value) {
+  if (
+    text.includes("new to running") ||
+    text.includes("just started") ||
+    text.includes("beginner")
+  ) {
+    setField(next.profileCore.experienceLevel, "beginner", userText, "high", "explicit");
+
+    // If they're brand new and haven't said what the shoe is for, assume "daily trainer" to keep things flowing
+    if (!next.currentContext.shoePurpose.value) {
+      setField(next.currentContext.shoePurpose, "daily_trainer", userText, "medium", "inferred");
     }
+  } else if (
+    text.includes("getting back into") ||
+    text.includes("returning") ||
+    text.includes("coming back")
+  ) {
+    setField(next.profileCore.experienceLevel, "returning", userText, "high", "explicit");
+  } else if (
+    text.includes("experienced") ||
+    text.includes("been running for") ||
+    text.includes("i run a lot")
+  ) {
+    setField(next.profileCore.experienceLevel, "advanced", userText, "medium", "inferred");
   }
+}
+
 
   // Optional: store cross country mention as a note
   if (!next.currentContext.notes && (text.includes("cross country") || text.includes("xc"))) {
@@ -111,24 +129,6 @@ function applyRunnerProfileUpdates(prev: RunnerProfile, userText: string): Runne
   }
 
   return next;
-}
-
-function getNextQuestion(profile: RunnerProfile): string | null {
-  const purpose = profile.currentContext.shoePurpose.value;
-  const width = profile.profileCore.footWidthVolume.value;
-  const stability = profile.profileCore.stabilityNeed.value;
-
-  if (!purpose) {
-    return "What’s this shoe mainly for - easy miles, workouts, long runs, trail, or race day?";
-  }
-  if (!width) {
-    return "Do standard fits usually feel fine, or do you often want a bit more room in the forefoot?";
-  }
-  if (!stability) {
-    return "Do you usually go neutral, or do you like a bit of support/stability?";
-  }
-
-  return null;
 }
 
 const Chat = () => {
@@ -165,20 +165,6 @@ const Chat = () => {
     setInput("");
     setIsTyping(true);
     textareaRef.current?.blur();
-
-    const followUp = getNextQuestion(updatedRunnerProfile);
-
-    if (followUp) {
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: followUp,
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-      setIsTyping(false);
-      return;
-    }
 
     try {
       const res = await fetch("/api/chat", {
