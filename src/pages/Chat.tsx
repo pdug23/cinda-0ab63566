@@ -113,6 +113,25 @@ function applyRunnerProfileUpdates(prev: RunnerProfile, userText: string): Runne
   return next;
 }
 
+function getNextQuestion(profile: RunnerProfile): string | null {
+  const purpose = profile.currentContext.shoePurpose.value;
+  const width = profile.profileCore.footWidthVolume.value;
+  const stability = profile.profileCore.stabilityNeed.value;
+
+  if (!purpose) {
+    return "What’s this shoe mainly for - easy miles, workouts, long runs, trail, or race day?";
+  }
+  if (!width) {
+    return "Do standard fits usually feel fine, or do you often want a bit more room in the forefoot?";
+  }
+  if (!stability) {
+    return "Do you usually go neutral, or do you like a bit of support/stability?";
+  }
+
+  return null;
+}
+
+
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [runnerProfile, setRunnerProfile] = useState<RunnerProfile>(createEmptyRunnerProfile());
@@ -132,8 +151,6 @@ const Chat = () => {
     const updatedRunnerProfile = applyRunnerProfileUpdates(runnerProfile, userText); 
       setRunnerProfile(updatedRunnerProfile);
 
-      console.log("updatedRunnerProfile", updatedRunnerProfile);
-
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
@@ -143,6 +160,20 @@ const Chat = () => {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsTyping(true);
+
+const followUp = getNextQuestion(updatedRunnerProfile);
+
+if (followUp) {
+  const assistantMessage: Message = {
+    id: (Date.now() + 1).toString(),
+    role: "assistant",
+    content: followUp,
+  };
+
+  setMessages((prev) => [...prev, assistantMessage]);
+  setIsTyping(false);
+  return;
+}
 
     try {
       const res = await fetch("/api/chat", {
