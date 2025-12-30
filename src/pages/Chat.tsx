@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Send } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Send, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ChatMessage";
 import { createEmptyRunnerProfile, type RunnerProfile } from "@/lib/runnerProfile";
