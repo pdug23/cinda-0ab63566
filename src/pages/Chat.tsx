@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send } from "lucide-react";
+import { Send, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ChatMessage";
 
@@ -160,29 +160,39 @@ const Chat = () => {
             )}
 
             <form onSubmit={handleSubmit}>
-              <div className="flex items-center gap-2 bg-input/50 rounded-xl px-3 py-2 border border-border/30 focus-within:border-accent/50 transition-colors">
-                <textarea
-                  ref={textareaRef}
-                  value={input}
-                  onChange={(e) => {
-                    setInput(e.target.value);
-                    e.target.style.height = 'auto';
-                    e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSubmit(e);
-                    }
-                  }}
-                  placeholder="Tell me about your running…"
-                  rows={1}
-                  className="flex-1 bg-transparent text-card-foreground placeholder:text-muted-foreground focus:outline-none text-base resize-none overflow-y-auto scrollbar-styled leading-normal"
-                  style={{ height: '24px', minHeight: '24px', maxHeight: '200px' }}
-                />
-                <Button type="submit" variant="send" size="icon-sm" disabled={!input.trim()}>
-                  <Send />
-                </Button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.location.reload()}
+                  className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-card-foreground hover:bg-border/20 transition-colors"
+                  aria-label="New chat"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
+                <div className="flex-1 flex items-center gap-2 bg-input/50 rounded-xl px-3 py-2 border border-border/30 focus-within:border-accent/50 transition-colors">
+                  <textarea
+                    ref={textareaRef}
+                    value={input}
+                    onChange={(e) => {
+                      setInput(e.target.value);
+                      e.target.style.height = 'auto';
+                      e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSubmit(e);
+                      }
+                    }}
+                    placeholder="Tell me about your running…"
+                    rows={1}
+                    className="flex-1 bg-transparent text-card-foreground placeholder:text-muted-foreground focus:outline-none text-base resize-none overflow-y-auto scrollbar-styled leading-normal"
+                    style={{ height: '24px', minHeight: '24px', maxHeight: '200px' }}
+                  />
+                  <Button type="submit" variant="send" size="icon-sm" disabled={!input.trim()}>
+                    <Send />
+                  </Button>
+                </div>
               </div>
             </form>
           </div>
