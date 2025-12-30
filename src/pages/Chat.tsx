@@ -10,18 +10,6 @@ interface Message {
   content: string;
 }
 
-const mockResponse = `**Primary Recommendation**
-The Nike Pegasus 41 would be an excellent choice for your training.
-
-**Why It Fits**
-Based on what you've shared, this shoe offers the right balance of cushioning and responsiveness for daily runs. The React foam provides durability for higher mileage weeks while remaining light enough for tempo efforts.
-
-**Trade-offs**
-It's a versatile trainer rather than a specialist-not as bouncy as a super-shoe for racing, and not as cushioned as a max-stack recovery shoe.
-
-**One Follow-up Question**
-How do you feel about heel-toe drop-do you prefer something more traditional or are you open to lower-drop shoes?`;
-
 const starterPrompts = [
   "I'm new to running and don't know where to start.",
   "I'm training for a race and need the right shoes.",
