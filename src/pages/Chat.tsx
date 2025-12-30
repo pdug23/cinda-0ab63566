@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ChatMessage";
@@ -32,6 +32,11 @@ const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, []);
 
   const handleStarterClick = (prompt: string) => {
     setInput(prompt);
@@ -153,7 +158,8 @@ const Chat = () => {
 
             <form onSubmit={handleSubmit}>
               <div className="flex items-end gap-3 bg-input/50 rounded-xl px-4 py-3 border border-border/30 focus-within:border-accent/50 transition-colors">
-                <textarea
+              <textarea
+                  ref={textareaRef}
                   value={input}
                   onChange={(e) => {
                     setInput(e.target.value);
