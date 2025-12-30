@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ChatMessage";
-import { createEmptyRunnerProfile, type RunnerProfile } from "@/lib/runnerProfile";
 
 interface Message {
   id: string;
@@ -29,115 +28,10 @@ const starterPrompts = [
   "I want a shoe for my everyday runs.",
 ];
 
-const nowIso = () => new Date().toISOString();
-
-function applyRunnerProfileUpdates(prev: RunnerProfile, userText: string): RunnerProfile {
-  const text = userText.toLowerCase();
-
-  // Copy existing profile (we will return a modified copy)
-  const next: RunnerProfile =
-  typeof structuredClone === "function"
-    ? structuredClone(prev)
-    : (JSON.parse(JSON.stringify(prev)) as RunnerProfile);
-
-  // Helper to set a typed profile field safely
-  const setField = <T,>(
-    field: { value: T | null; source: any; confidence: any; updatedAt: string | null; raw: string | null },
-    value: T,
-    raw: string,
-    confidence: "low" | "medium" | "high" = "high",
-    source: "explicit" | "inferred" = "explicit"
-  ) => {
-    field.value = value;
-    field.raw = raw;
-    field.confidence = confidence;
-    field.source = source;
-    field.updatedAt = nowIso();
-  };
-
-  // 1) Shoe purpose (contextual)
-  if (!next.currentContext.shoePurpose.value) {
-    if (text.includes("race") || text.includes("marathon") || text.includes("half") || text.includes("10k") || text.includes("5k")) {
-      setField(next.currentContext.shoePurpose, "race", userText, "high", "explicit");
-    } else if (text.includes("trail") || text.includes("off-road") || text.includes("off road") || text.includes("cross country") || text.includes("xc")) {
-      setField(next.currentContext.shoePurpose, "trail", userText, "high", "explicit");
-    } else if (text.includes("tempo") || text.includes("interval") || text.includes("workout") || text.includes("speed")) {
-      // Keep it simple for v1: map all faster sessions to tempo_workout
-      setField(next.currentContext.shoePurpose, "tempo_workout", userText, "high", "explicit");
-    } else if (text.includes("easy") || text.includes("recovery")) {
-      setField(next.currentContext.shoePurpose, "easy_recovery", userText, "high", "explicit");
-    } else if (text.includes("daily") || text.includes("everyday") || text.includes("all round") || text.includes("all-round") || text.includes("do it all") || text.includes("do-it-all")) {
-      setField(next.currentContext.shoePurpose, "daily_trainer", userText, "high", "explicit");
-    }
-  }
-
-  // 2) Foot width/volume (global)
-  if (!next.profileCore.footWidthVolume.value) {
-    if (text.includes("wide") || text.includes("roomy") || text.includes("toe box") || text.includes("toebox")) {
-      setField(next.profileCore.footWidthVolume, "wide", userText, "high", "explicit");
-    } else if (text.includes("narrow") || text.includes("low volume") || text.includes("low-volume")) {
-      setField(next.profileCore.footWidthVolume, "narrow_low_volume", userText, "high", "explicit");
-    } else if (text.includes("standard") || text.includes("normal width") || text.includes("regular fit")) {
-      setField(next.profileCore.footWidthVolume, "standard", userText, "high", "explicit");
-    } else if (text.includes("high volume") || text.includes("high-volume")) {
-      setField(next.profileCore.footWidthVolume, "high_volume", userText, "high", "explicit");
-    }
-  }
-
-  // 3) Stability need (global)
-  if (!next.profileCore.stabilityNeed.value) {
-    if (text.includes("stability") || text.includes("support") || text.includes("overpronat") || text.includes("flat feet") || text.includes("ankle rolls") || text.includes("need support")) {
-      // v1: treat any explicit support request as stability
-      setField(next.profileCore.stabilityNeed, "stability", userText, "high", "explicit");
-    } else if (text.includes("neutral")) {
-      setField(next.profileCore.stabilityNeed, "neutral", userText, "high", "explicit");
-    }
-  }
-
-  // 4) Experience level (modifier)
-  if (!next.profileCore.experienceLevel.value) {
-    if (text.includes("new to running") || text.includes("just started") || text.includes("beginner")) {
-      setField(next.profileCore.experienceLevel, "beginner", userText, "high", "explicit");
-    } else if (text.includes("getting back into") || text.includes("returning") || text.includes("coming back")) {
-      setField(next.profileCore.experienceLevel, "returning", userText, "high", "explicit");
-    } else if (text.includes("experienced") || text.includes("been running for") || text.includes("i run a lot")) {
-      setField(next.profileCore.experienceLevel, "advanced", userText, "medium", "inferred");
-    }
-  }
-
-  // Optional: store cross country mention as a note
-  if (!next.currentContext.notes && (text.includes("cross country") || text.includes("xc"))) {
-    next.currentContext.notes = "Mentions cross country style running.";
-  }
-
-  return next;
-}
-
-function getNextQuestion(profile: RunnerProfile): string | null {
-  const purpose = profile.currentContext.shoePurpose.value;
-  const width = profile.profileCore.footWidthVolume.value;
-  const stability = profile.profileCore.stabilityNeed.value;
-
-  if (!purpose) {
-    return "What’s this shoe mainly for - easy miles, workouts, long runs, trail, or race day?";
-  }
-  if (!width) {
-    return "Do standard fits usually feel fine, or do you often want a bit more room in the forefoot?";
-  }
-  if (!stability) {
-    return "Do you usually go neutral, or do you like a bit of support/stability?";
-  }
-
-  return null;
-}
-
-
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [runnerProfile, setRunnerProfile] = useState<RunnerProfile>(createEmptyRunnerProfile());
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  
 
   const handleStarterClick = (prompt: string) => {
     setInput(prompt);
@@ -148,8 +42,6 @@ const Chat = () => {
     if (!input.trim()) return;
 
     const userText = input.trim();
-    const updatedRunnerProfile = applyRunnerProfileUpdates(runnerProfile, userText); 
-      setRunnerProfile(updatedRunnerProfile);
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -161,28 +53,11 @@ const Chat = () => {
     setInput("");
     setIsTyping(true);
 
-const followUp = getNextQuestion(updatedRunnerProfile);
-
-if (followUp) {
-  const assistantMessage: Message = {
-    id: (Date.now() + 1).toString(),
-    role: "assistant",
-    content: followUp,
-  };
-
-  setMessages((prev) => [...prev, assistantMessage]);
-  setIsTyping(false);
-  return;
-}
-
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          messages: [...messages, userMessage],
-          runnerProfile: updatedRunnerProfile,
- }),
+        body: JSON.stringify({ messages: [...messages, userMessage] }),
       });
 
       if (!res.ok) {
