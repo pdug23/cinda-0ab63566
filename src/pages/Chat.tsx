@@ -93,9 +93,9 @@ const Chat = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-[100dvh] flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="w-full px-6 py-3 flex items-center justify-between relative z-10">
+      <header className="w-full px-6 py-3 flex items-center justify-between relative z-10 flex-shrink-0">
         <div className="flex flex-col gap-0.5">
           <span className="text-3xl font-extrabold tracking-tight text-card-foreground font-display">Cinda</span>
           <span className="text-xs text-card-foreground italic font-medium tracking-wide">
@@ -108,8 +108,8 @@ const Chat = () => {
       </header>
 
       {/* Main chat area */}
-      <main className="flex-1 flex items-start justify-center px-4 pt-2 pb-4 md:px-6">
-        <div className="w-full max-w-3xl h-[calc(100dvh-80px)] md:h-[calc(100dvh-88px)] flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10">
+      <main className="flex-1 flex items-start justify-center px-4 pt-2 pb-[env(safe-area-inset-bottom,16px)] md:px-6 min-h-0">
+        <div className="w-full max-w-3xl h-full flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10">
           {/* Messages area */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             {messages.length === 0 && (
@@ -174,7 +174,7 @@ const Chat = () => {
                   }}
                   placeholder="Tell me about your running…"
                   rows={1}
-                  className="flex-1 bg-transparent text-card-foreground placeholder:text-muted-foreground focus:outline-none text-sm md:text-base resize-none overflow-y-auto scrollbar-styled leading-normal"
+                  className="flex-1 bg-transparent text-card-foreground placeholder:text-muted-foreground focus:outline-none text-base resize-none overflow-y-auto scrollbar-styled leading-normal"
                   style={{ height: '24px', minHeight: '24px', maxHeight: '200px' }}
                 />
                 <Button type="submit" variant="send" size="icon-sm" disabled={!input.trim()}>
