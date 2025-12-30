@@ -57,7 +57,7 @@ const Chat = () => {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsTyping(true);
-    textareaRef.current?.focus();
+    textareaRef.current?.blur();
 
     try {
       const res = await fetch("/api/chat", {
