@@ -155,7 +155,11 @@ const Chat = () => {
               <div className="flex items-end gap-3 bg-input/50 rounded-xl px-4 py-3 border border-border/30 focus-within:border-accent/50 transition-colors">
                 <textarea
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    e.target.style.height = 'auto';
+                    e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -164,7 +168,8 @@ const Chat = () => {
                   }}
                   placeholder="Tell me about your running…"
                   rows={1}
-                  className="flex-1 bg-transparent text-card-foreground placeholder:text-muted-foreground focus:outline-none text-sm md:text-base resize-none max-h-32 overflow-y-auto"
+                  className="flex-1 bg-transparent text-card-foreground placeholder:text-muted-foreground focus:outline-none text-sm md:text-base resize-none overflow-y-auto"
+                  style={{ maxHeight: '200px' }}
                 />
                 <Button type="submit" variant="send" size="icon" disabled={!input.trim()}>
                   <Send className="w-4 h-4" />
