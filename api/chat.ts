@@ -1,5 +1,17 @@
 import OpenAI from "openai";
-import { CURATED_SHOES } from "../src/lib/curatedShoes";
+const CURATED_SHOES = {
+  daily_trainer_modern_bouncy: [
+    "Adidas Evo SL",
+    "Nike Pegasus Premium",
+    "Hoka Bondi 9",
+    "Mizuno Neo Zen",
+    "Salomon Aero Glide 2",
+    "Skechers Aero Burst",
+    "Nike Vomero Plus",
+    "New Balance FuelCell Rebel v5",
+    "Puma MagMax Nitro",
+  ],
+} as const;
 
 function buildRunnerProfileContext(runnerProfile: any) {
   if (!runnerProfile) return "";
@@ -24,7 +36,7 @@ Runner profile (session-only, may be incomplete):
 - foot width/volume: ${width}
 - stability need: ${stability}
 - experience level: ${experience}
-- disliked shoes: ${dislikes}C
+- disliked shoes: ${dislikes}
 
 Instruction:
 - Use this profile to guide recommendations.
