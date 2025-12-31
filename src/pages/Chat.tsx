@@ -2,6 +2,16 @@ import { useState, useRef, useEffect } from "react";
 import { Send, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ChatMessage";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { createEmptyRunnerProfile, type RunnerProfile } from "@/lib/runnerProfile";
 
 interface Message {
@@ -124,7 +134,20 @@ const Chat = () => {
   const [runnerProfile, setRunnerProfile] = useState<RunnerProfile>(createEmptyRunnerProfile());
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [showRestartDialog, setShowRestartDialog] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleRestartClick = () => {
+    if (messages.length === 0) {
+      window.location.reload();
+    } else {
+      setShowRestartDialog(true);
+    }
+  };
+
+  const confirmRestart = () => {
+    window.location.reload();
+  };
 
   useEffect(() => {
     textareaRef.current?.focus();
@@ -195,7 +218,7 @@ const Chat = () => {
       {/* Header */}
       <header className="w-full px-6 py-3 flex items-center justify-between relative z-10 flex-shrink-0">
         <button
-          onClick={() => window.location.reload()}
+          onClick={handleRestartClick}
           className="flex flex-col gap-0.5 text-left hover:opacity-80 transition-opacity"
         >
           <span className="text-3xl font-extrabold tracking-tight text-card-foreground font-display">Cinda</span>
@@ -261,7 +284,7 @@ const Chat = () => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => window.location.reload()}
+                  onClick={handleRestartClick}
                   className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-card-foreground hover:bg-border/20 transition-colors"
                   aria-label="New chat"
                 >
@@ -296,6 +319,29 @@ const Chat = () => {
           </div>
         </div>
       </main>
+
+      {/* Restart confirmation dialog */}
+      <AlertDialog open={showRestartDialog} onOpenChange={setShowRestartDialog}>
+        <AlertDialogContent className="bg-card border-border/30">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-card-foreground">Restart chat?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              This will clear the current conversation and start fresh. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-border/30 text-card-foreground hover:bg-border/20">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmRestart}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Restart chat
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
