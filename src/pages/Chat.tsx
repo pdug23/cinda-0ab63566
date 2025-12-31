@@ -13,6 +13,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { createEmptyRunnerProfile, type RunnerProfile } from "@/lib/runnerProfile";
+import { applyNegativeSignals } from "@/lib/negativeSignals";
+import { CURATED_SHOE_NAMES } from "@/lib/curatedShoes";
+
 
 interface Message {
   id: string;
@@ -71,7 +74,7 @@ function applyRunnerProfileUpdates(prev: RunnerProfile, userText: string): Runne
 
   // 2) Foot width/volume (global)
   if (!next.profileCore.footWidthVolume.value) {
-    if (text.includes("wide") || text.includes("roomy") || text.includes("toe box") || text.includes("toebox")) {
+    if (text.includes("wide") || text.includes("roomy")) {
       setField(next.profileCore.footWidthVolume, "wide", userText, "high", "explicit");
     } else if (text.includes("narrow") || text.includes("low volume") || text.includes("low-volume")) {
       setField(next.profileCore.footWidthVolume, "narrow_low_volume", userText, "high", "explicit");
@@ -92,39 +95,33 @@ function applyRunnerProfileUpdates(prev: RunnerProfile, userText: string): Runne
     }
   }
 
-// 4) Experience level (modifier)
-if (!next.profileCore.experienceLevel.value) {
-  if (
-    text.includes("new to running") ||
-    text.includes("just started") ||
-    text.includes("beginner")
-  ) {
-    setField(next.profileCore.experienceLevel, "beginner", userText, "high", "explicit");
+  // 4) Experience level (modifier)
+  if (!next.profileCore.experienceLevel.value) {
+    if (text.includes("new to running") || text.includes("just started") || text.includes("beginner")) {
+      setField(next.profileCore.experienceLevel, "beginner", userText, "high", "explicit");
 
-    // If they're brand new and haven't said what the shoe is for, assume "daily trainer" to keep things flowing
-    if (!next.currentContext.shoePurpose.value) {
-      setField(next.currentContext.shoePurpose, "daily_trainer", userText, "medium", "inferred");
+      // If they're brand new and haven't said what the shoe is for, assume "daily trainer" to keep things flowing
+      if (!next.currentContext.shoePurpose.value) {
+        setField(next.currentContext.shoePurpose, "daily_trainer", userText, "medium", "inferred");
+      }
+    } else if (text.includes("getting back into") || text.includes("returning") || text.includes("coming back")) {
+      setField(next.profileCore.experienceLevel, "returning", userText, "high", "explicit");
+    } else if (text.includes("experienced") || text.includes("been running for") || text.includes("i run a lot")) {
+      setField(next.profileCore.experienceLevel, "advanced", userText, "medium", "inferred");
     }
-  } else if (
-    text.includes("getting back into") ||
-    text.includes("returning") ||
-    text.includes("coming back")
-  ) {
-    setField(next.profileCore.experienceLevel, "returning", userText, "high", "explicit");
-  } else if (
-    text.includes("experienced") ||
-    text.includes("been running for") ||
-    text.includes("i run a lot")
-  ) {
-    setField(next.profileCore.experienceLevel, "advanced", userText, "medium", "inferred");
   }
-}
-
 
   // Optional: store cross country mention as a note
   if (!next.currentContext.notes && (text.includes("cross country") || text.includes("xc"))) {
     next.currentContext.notes = "Mentions cross country style running.";
   }
+
+  applyNegativeSignals({
+    runnerProfile: next,
+    userText,
+    curatedShoeNames: [...CURATED_SHOE_NAMES],
+  });
+
 
   return next;
 }
@@ -172,7 +169,9 @@ const Chat = () => {
       content: userText,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const nextMessages = [...messages, userMessage];
+    
+    setMessages(nextMessages);
     setInput("");
     setIsTyping(true);
 
@@ -181,7 +180,7 @@ const Chat = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [...messages, userMessage],
+          messages: nextMessages,
           runnerProfile: updatedRunnerProfile,
         }),
       });

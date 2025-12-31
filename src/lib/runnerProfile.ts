@@ -60,16 +60,54 @@ export type ShoePurpose =
   | "unsure"
   | null;
 
+  export type NegativeReasonTag =
+  | "too_firm"
+  | "too_soft"
+  | "too_bouncy"
+  | "too_mushy"
+  | "too_dead"
+  | "too_stiff"
+  | "too_flexible"
+  | "too_unstable"
+  | "heel_slip"
+  | "toe_box_too_narrow"
+  | "midfoot_too_narrow"
+  | "arch_pressure"
+  | "blisters_hotspots"
+  | "runs_short"
+  | "runs_long";
+
+export type Severity = 1 | 2 | 3; // 1=mild, 2=moderate, 3=strong avoid
+
+export type BrandNegativeSignal = {
+  brand: string;
+  strength: Severity;
+  reasons?: NegativeReasonTag[];
+  updatedAt: string | null;
+  raw: string | null;
+};
+
+export type FeatureNegativeSignal = {
+  tag: NegativeReasonTag;
+  strength: Severity;
+  contexts?: ShoePurpose[];
+  updatedAt: string | null;
+  raw: string | null;
+};
+
 export type ShoeFeedbackItem = {
   raw_text: string;
   display_name: string | null;
   brand: string | null;
   canonical_model: string | null;
   version: string | null;
-  reasons: string[];
+  reasons: NegativeReasonTag[];
   match_confidence: "low" | "medium" | "high";
+  severity: Severity;
+  contexts?: ShoePurpose[];
   updatedAt: string | null;
 };
+
 
 export type RunnerProfile = {
   profileCore: {
@@ -77,17 +115,21 @@ export type RunnerProfile = {
     footWidthVolume: ProfileField<FootWidthVolume>;
     cushioningPreference: ProfileField<CushioningPreference>;
     experienceLevel: ProfileField<ExperienceLevel>;
-    // We’ll add the rest (mileage, surfaces, etc) later.
   };
   currentContext: {
     shoePurpose: ProfileField<ShoePurpose>;
     notes: string;
+  };
+  negativeSignals: {
+    brands: BrandNegativeSignal[];
+    features: FeatureNegativeSignal[];
   };
   shoeFeedback: {
     dislikes: ShoeFeedbackItem[];
     likes: ShoeFeedbackItem[];
   };
 };
+
 
 export const createEmptyRunnerProfile = (): RunnerProfile => ({
   profileCore: {
@@ -99,6 +141,10 @@ export const createEmptyRunnerProfile = (): RunnerProfile => ({
   currentContext: {
     shoePurpose: emptyField<ShoePurpose>(),
     notes: "",
+  },
+  negativeSignals: {
+    brands: [],
+    features: [],
   },
   shoeFeedback: {
     dislikes: [],

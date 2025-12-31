@@ -1,18 +1,5 @@
 import OpenAI from "openai";
-
-const CURATED_SHOES = {
-  daily_trainer_modern_bouncy: [
-    "Adidas Evo SL",
-    "Nike Pegasus Premium",
-    "Hoka Bondi 9",
-    "Mizuno Neo Zen",
-    "Salomon Aero Glide 2",
-    "Skechers Aero Burst",
-    "Nike Vomero Plus",
-    "New Balance FuelCell Rebel v5",
-    "Puma MagMax Nitro",
-  ],
-};
+import { CURATED_SHOES } from "@/lib/curatedShoes";
 
 function buildRunnerProfileContext(runnerProfile: any) {
   if (!runnerProfile) return "";
@@ -37,7 +24,7 @@ Runner profile (session-only, may be incomplete):
 - foot width/volume: ${width}
 - stability need: ${stability}
 - experience level: ${experience}
-- disliked shoes: ${dislikes}
+- disliked shoes: ${dislikes}C
 
 Instruction:
 - Use this profile to guide recommendations.
@@ -68,8 +55,6 @@ export default async function handler(req: any, res: any) {
     const client = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
-
-    const curatedShoesJson = JSON.stringify(CURATED_SHOES, null, 2);
 
     const systemPrompt = `You are Cinda, an expert running shoe specialist and genuine running shoe enthusiast.
 
