@@ -15,24 +15,34 @@ const normalise = (s: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-const NEGATIVE_TRIGGERS = [
-  "hate",
-  "hated",
-  "dislike",
-  "didnt like",
-  "didn't like",
-  "not for me",
-  "too bouncy",
-  "too soft",
-  "too firm",
-  "unstable",
-  "heel slip",
-  "blister",
-  "hotspot",
-  "rubbed",
-  "cramped",
-  "narrow",
-];
+const hasNegatedPattern = (textNorm: string, word: string) => {
+  // Matches: "not too soft", "not overly soft", "isn't too soft", "isnt too soft"
+  const re = new RegExp(`\\b(not|isn\\s*t|isnt)\\s+(too\\s+|overly\\s+|that\\s+)?${word}\\b`);
+  return re.test(textNorm);
+};
+
+const hasGeneralisationCue = (textNorm: string) => {
+  // Signals that the user is talking about a brand in general, not one model
+  return (
+    textNorm.includes("in general") ||
+    textNorm.includes("as a brand") ||
+    textNorm.includes("always") ||
+    textNorm.includes("every time") ||
+    textNorm.includes("often") ||
+    textNorm.includes("usually") ||
+    textNorm.includes("tend to") ||
+    textNorm.includes("generally") ||
+    textNorm.includes("never again") ||
+    textNorm.includes("doesnt work for me") ||
+    textNorm.includes("doesn't work for me") ||
+    textNorm.includes("dont get on with") ||
+    textNorm.includes("don't get on with") ||
+    textNorm.includes("just doesnt work") ||
+    textNorm.includes("just doesn't work") ||
+    textNorm.includes("any ") ||
+    textNorm.includes("all ")
+  );
+};
 
 const BRAND_LIST = [
   "nike",
@@ -54,9 +64,14 @@ function detectSeverity(textNorm: string): Severity {
 function detectReasonTags(textNorm: string): NegativeReasonTag[] {
   const tags: NegativeReasonTag[] = [];
 
-  if (textNorm.includes("too firm")) tags.push("too_firm");
-  if (textNorm.includes("too soft")) tags.push("too_soft");
-  if (textNorm.includes("too bouncy") || textNorm.includes("trampoline")) tags.push("too_bouncy");
+  if (textNorm.includes("too firm") && !hasNegatedPattern(textNorm, "firm")) tags.push("too_firm");
+  if (textNorm.includes("too soft") && !hasNegatedPattern(textNorm, "soft")) tags.push("too_soft");
+  if (
+    (textNorm.includes("too bouncy") || textNorm.includes("trampoline")) &&
+    !hasNegatedPattern(textNorm, "bouncy")
+  ) {
+    tags.push("too_bouncy");
+  }
   if (textNorm.includes("mushy")) tags.push("too_mushy");
   if (textNorm.includes("dead") || textNorm.includes("no pop")) tags.push("too_dead");
   if (textNorm.includes("too stiff")) tags.push("too_stiff");
@@ -78,21 +93,30 @@ function detectReasonTags(textNorm: string): NegativeReasonTag[] {
   return Array.from(new Set(tags));
 }
 
-function detectBrandGeneralisation(textNorm: string): string | null {
+function detectBrandGeneralisation(textNorm: string, shoeMatched: boolean): string | null {
   for (const brand of BRAND_LIST) {
     if (!textNorm.includes(brand)) continue;
 
-    const generalNeg =
+    const hasExplicitGeneralNeg =
       textNorm.includes("dont like") ||
       textNorm.includes("don't like") ||
-      textNorm.includes("never") ||
       textNorm.includes("hate") ||
       textNorm.includes("hated") ||
       textNorm.includes("doesnt work") ||
-      textNorm.includes("doesn't work");
+      textNorm.includes("doesn't work") ||
+      textNorm.includes("never again");
 
-    if (generalNeg) return brand;
+    // If we have a shoe match, only treat it as a brand-level negative signal
+    // when the user clearly generalises (always, in general, every time, etc).
+    if (shoeMatched) {
+      if (hasExplicitGeneralNeg && hasGeneralisationCue(textNorm)) return brand;
+      continue;
+    }
+
+    // If no shoe was matched, allow a brand-level dislike if they clearly express it.
+    if (hasExplicitGeneralNeg && hasGeneralisationCue(textNorm)) return brand;
   }
+
   return null;
 }
 
@@ -113,6 +137,12 @@ function detectCuratedShoe(
   }
 
   return null;
+}
+
+function deriveBrandFromDisplay(display: string): string | null {
+  const d = normalise(display);
+  if (d.startsWith("new balance")) return "New Balance";
+  return display.split(" ")[0] ?? null;
 }
 
 function upsertFeature(
@@ -192,27 +222,37 @@ export function applyNegativeSignals(params: {
   const { runnerProfile, userText, curatedShoeNames } = params;
 
   const textNorm = normalise(userText);
-  const looksNegative = NEGATIVE_TRIGGERS.some(t => textNorm.includes(normalise(t)));
-  if (!looksNegative) return runnerProfile;
-
   const severity = detectSeverity(textNorm);
   const reasonTags = detectReasonTags(textNorm);
+  const shoe = detectCuratedShoe(textNorm, curatedShoeNames);
+
+  const hasNegativeVerb =
+    textNorm.includes("hate") ||
+    textNorm.includes("hated") ||
+    textNorm.includes("dislike") ||
+    textNorm.includes("didnt like") ||
+    textNorm.includes("didn't like") ||
+    textNorm.includes("not for me") ||
+    textNorm.includes("never again");
+
+  // Only proceed if there is genuine negative content
+  if (!hasNegativeVerb && reasonTags.length === 0 && !shoe) return runnerProfile;
 
   for (const tag of reasonTags) {
     upsertFeature(runnerProfile, tag, severity, runnerProfile.currentContext.shoePurpose.value, userText);
   }
 
-  const brand = detectBrandGeneralisation(textNorm);
+  const brand = detectBrandGeneralisation(textNorm, Boolean(shoe));
   if (brand) {
     upsertBrand(runnerProfile, brand, severity, userText);
   }
 
-  const shoe = detectCuratedShoe(textNorm, curatedShoeNames);
-  if (shoe) {
+  // Only log a shoe dislike when the message is actually negative (verb or reasons)
+  if (shoe && (hasNegativeVerb || reasonTags.length > 0)) {
     upsertShoeDislike(runnerProfile, {
       raw_text: userText,
       display_name: shoe.display,
-      brand: shoe.display.split(" ")[0] ?? null,
+      brand: deriveBrandFromDisplay(shoe.display),
       canonical_model: shoe.display,
       version: null,
       reasons: reasonTags,
