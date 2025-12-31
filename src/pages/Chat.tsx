@@ -152,7 +152,6 @@ const Chat = () => {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsTyping(true);
-    textareaRef.current?.blur();
 
     try {
       const res = await fetch("/api/chat", {
@@ -187,6 +186,7 @@ const Chat = () => {
       setMessages((prev) => [...prev, assistantMessage]);
     } finally {
       setIsTyping(false);
+      textareaRef.current?.focus();
     }
   };
 
