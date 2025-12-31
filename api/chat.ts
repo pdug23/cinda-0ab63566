@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { CURATED_SHOES } from "@/lib/curatedShoes";
+import { CURATED_SHOES } from "../src/lib/curatedShoes";
 
 function buildRunnerProfileContext(runnerProfile: any) {
   if (!runnerProfile) return "";
