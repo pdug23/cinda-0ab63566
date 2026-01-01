@@ -279,7 +279,7 @@ const Chat = () => {
   };
 
   return (
-    <div className="h-[100dvh] flex flex-col overflow-hidden">
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
       <header className="w-full px-6 py-3 flex items-center justify-between relative z-10 flex-shrink-0">
         <button
