@@ -132,7 +132,10 @@ const Chat = () => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showRestartDialog, setShowRestartDialog] = useState(false);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const lastUserMessageRef = useRef<HTMLDivElement>(null);
 
   const handleRestartClick = () => {
     if (messages.length === 0) {
@@ -149,6 +152,63 @@ const Chat = () => {
   useEffect(() => {
     textareaRef.current?.focus();
   }, []);
+
+  // Handle scroll to position user message at top when sending
+  useEffect(() => {
+    if (shouldAutoScroll && lastUserMessageRef.current && messagesContainerRef.current) {
+      const container = messagesContainerRef.current;
+      const messageEl = lastUserMessageRef.current;
+      
+      // Scroll so the user message is at the top of the visible area
+      const containerRect = container.getBoundingClientRect();
+      const messageRect = messageEl.getBoundingClientRect();
+      const offsetFromContainerTop = messageRect.top - containerRect.top + container.scrollTop;
+      
+      container.scrollTo({
+        top: offsetFromContainerTop,
+        behavior: "smooth",
+      });
+    }
+  }, [shouldAutoScroll, messages.length]);
+
+  // Follow conversation while typing (streaming)
+  useEffect(() => {
+    if (shouldAutoScroll && isTyping && messagesContainerRef.current) {
+      const container = messagesContainerRef.current;
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [isTyping, shouldAutoScroll]);
+
+  // Scroll to bottom when assistant message arrives
+  useEffect(() => {
+    if (shouldAutoScroll && messagesContainerRef.current && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === "assistant") {
+        const container = messagesContainerRef.current;
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: "smooth",
+        });
+        setShouldAutoScroll(false);
+      }
+    }
+  }, [messages, shouldAutoScroll]);
+
+  // Detect manual scroll to disable auto-scroll
+  const handleScroll = () => {
+    if (!messagesContainerRef.current || !shouldAutoScroll) return;
+    
+    const container = messagesContainerRef.current;
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+    
+    // If user scrolled away from bottom during auto-scroll period, disable it
+    if (!isNearBottom && isTyping) {
+      setShouldAutoScroll(false);
+    }
+  };
 
   const handleStarterClick = (prompt: string) => {
     setInput(prompt);
@@ -174,6 +234,7 @@ const Chat = () => {
     setMessages(nextMessages);
     setInput("");
     setIsTyping(true);
+    setShouldAutoScroll(true);
 
     try {
       const res = await fetch("/api/chat", {
@@ -234,7 +295,11 @@ const Chat = () => {
       <main className="flex-1 flex items-start justify-center px-4 pt-2 pb-[env(safe-area-inset-bottom,16px)] md:px-6 min-h-0">
         <div className="w-full max-w-3xl h-full flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10">
           {/* Messages area */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div 
+            ref={messagesContainerRef}
+            onScroll={handleScroll}
+            className="flex-1 overflow-y-auto p-6 space-y-6"
+          >
             {messages.length === 0 && (
               <div className="h-full flex flex-col items-center justify-center text-center space-y-2 py-8">
                 <p className="text-2xl text-card-foreground/90 max-w-md leading-relaxed">
@@ -246,9 +311,18 @@ const Chat = () => {
               </div>
             )}
 
-            {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} />
-            ))}
+            {messages.map((message, index) => {
+              const isLastUserMessage = message.role === "user" && 
+                messages.slice(index + 1).every(m => m.role !== "user");
+              return (
+                <div 
+                  key={message.id} 
+                  ref={isLastUserMessage ? lastUserMessageRef : undefined}
+                >
+                  <ChatMessage message={message} />
+                </div>
+              );
+            })}
 
             {isTyping && (
               <div className="flex items-center gap-2 text-muted-foreground">
