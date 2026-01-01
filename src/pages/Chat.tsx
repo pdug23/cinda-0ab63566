@@ -235,6 +235,11 @@ const Chat = () => {
     setInput("");
     setIsTyping(true);
     setShouldAutoScroll(true);
+    
+    // Reset textarea height to single line
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "24px";
+    }
 
     try {
       const res = await fetch("/api/chat", {
