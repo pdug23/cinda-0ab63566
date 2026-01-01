@@ -153,51 +153,49 @@ const Chat = () => {
     textareaRef.current?.focus();
   }, []);
 
-  // Handle scroll to position user message near top when sending
+  // Handle scroll to position user message at top when sending
   useEffect(() => {
     if (shouldAutoScroll && lastUserMessageRef.current && messagesContainerRef.current) {
       const container = messagesContainerRef.current;
       const messageEl = lastUserMessageRef.current;
       
-      // Use requestAnimationFrame to ensure DOM is updated
-      requestAnimationFrame(() => {
-        const containerRect = container.getBoundingClientRect();
-        const messageRect = messageEl.getBoundingClientRect();
-        const offsetFromContainerTop = messageRect.top - containerRect.top + container.scrollTop;
-        
-        // Position user message near the top with 24px padding
-        const targetScrollTop = offsetFromContainerTop - 24;
-        
-        container.scrollTo({
-          top: Math.max(0, targetScrollTop),
-          behavior: "smooth",
-        });
+      // Scroll so the user message is at the top of the visible area
+      const containerRect = container.getBoundingClientRect();
+      const messageRect = messageEl.getBoundingClientRect();
+      const offsetFromContainerTop = messageRect.top - containerRect.top + container.scrollTop;
+      
+      container.scrollTo({
+        top: offsetFromContainerTop,
+        behavior: "smooth",
       });
     }
   }, [shouldAutoScroll, messages.length]);
 
-  // Follow conversation while streaming - scroll to show latest content
+  // Follow conversation while typing (streaming)
+  useEffect(() => {
+    if (shouldAutoScroll && isTyping && messagesContainerRef.current) {
+      const container = messagesContainerRef.current;
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [isTyping, shouldAutoScroll]);
+
+  // Scroll to bottom when assistant message arrives
   useEffect(() => {
     if (shouldAutoScroll && messagesContainerRef.current && messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
-      
-      // When assistant message is being streamed, follow it
       if (lastMessage.role === "assistant") {
         const container = messagesContainerRef.current;
         container.scrollTo({
           top: container.scrollHeight,
           behavior: "smooth",
         });
+        setShouldAutoScroll(false);
       }
     }
   }, [messages, shouldAutoScroll]);
-
-  // Stop auto-scroll when typing is done
-  useEffect(() => {
-    if (!isTyping && shouldAutoScroll) {
-      setShouldAutoScroll(false);
-    }
-  }, [isTyping, shouldAutoScroll]);
 
   // Detect manual scroll to disable auto-scroll
   const handleScroll = () => {
