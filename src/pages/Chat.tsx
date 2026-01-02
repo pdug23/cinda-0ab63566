@@ -357,7 +357,7 @@ const Chat = () => {
             {messages.length === 0 && (
               <div className="h-full flex flex-col items-center justify-center text-center py-8">
                 <div className="space-y-2 mb-8">
-                  <p className="text-2xl text-card-foreground/90 max-w-md leading-relaxed font-bold italic">
+                  <p className="text-2xl text-card-foreground/90 max-w-md leading-relaxed font-bold italic" style={{ fontVariantLigatures: 'none' }}>
                     Every runner deserves their perfect fit.
                   </p>
                   <p className="text-muted-foreground max-w-md text-sm">
