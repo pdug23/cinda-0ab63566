@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Send, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ChatMessage";
-import cindaLogo from "@/assets/cinda-logo.png";
+import cindaLogo from "@/assets/cinda-logo-white.png";
 import {
   AlertDialog,
   AlertDialogAction,
