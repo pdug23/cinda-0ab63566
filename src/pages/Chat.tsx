@@ -430,7 +430,7 @@ const Chat = () => {
                       handleSubmit(e);
                     }
                   }}
-                  placeholder="Ask away…"
+                  placeholder="Message Cinda…"
                   rows={1}
                   className="flex-1 bg-transparent text-card-foreground placeholder:text-muted-foreground focus:outline-none text-[14px] resize-none overflow-y-auto scrollbar-styled leading-normal"
                   style={{ height: "24px", minHeight: "24px", maxHeight: "200px" }}
