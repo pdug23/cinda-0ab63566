@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Send, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ChatMessage";
+import cindaLogo from "@/assets/cinda-logo.png";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -322,12 +323,9 @@ const Chat = () => {
       <header className="w-full px-6 py-3 flex items-center justify-between relative z-10 flex-shrink-0">
         <button
           onClick={handleRestartClick}
-          className="flex flex-col gap-0.5 text-left hover:opacity-80 transition-opacity"
+          className="hover:opacity-80 transition-opacity"
         >
-          <span className="text-3xl font-extrabold tracking-tight text-card-foreground font-display">Cinda</span>
-          <span className="text-xs text-card-foreground italic font-medium tracking-wide">
-            Find your perfect fit.
-          </span>
+          <img src={cindaLogo} alt="Cinda - Find your perfect fit" className="h-12" />
         </button>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 text-[10px] font-medium tracking-wider uppercase text-card-foreground/70 border border-card-foreground/30 rounded-full">
