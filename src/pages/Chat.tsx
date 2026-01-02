@@ -168,9 +168,13 @@ const Chat = () => {
     window.location.reload();
   };
 
+  const [a2hsModalOpen, setA2hsModalOpen] = useState(true);
+
   useEffect(() => {
-    textareaRef.current?.focus();
-  }, []);
+    if (!a2hsModalOpen) {
+      textareaRef.current?.focus();
+    }
+  }, [a2hsModalOpen]);
 
   // Handle scroll to position user message at top when sending
   useEffect(() => {
@@ -479,7 +483,7 @@ const Chat = () => {
       </AlertDialog>
 
       {/* Add to Home Screen onboarding modal */}
-      <AddToHomeScreenModal />
+      <AddToHomeScreenModal onClose={() => setA2hsModalOpen(false)} />
     </div>
   );
 };
