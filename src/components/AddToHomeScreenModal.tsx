@@ -35,7 +35,11 @@ function isStandalone(): boolean {
   );
 }
 
-export function AddToHomeScreenModal() {
+interface AddToHomeScreenModalProps {
+  onClose?: () => void;
+}
+
+export function AddToHomeScreenModal({ onClose }: AddToHomeScreenModalProps) {
   const [open, setOpen] = useState(false);
   const [platform, setPlatform] = useState<"ios" | "android">("ios");
 
@@ -63,11 +67,15 @@ export function AddToHomeScreenModal() {
 
   const handleClose = () => {
     setOpen(false);
+    onClose?.();
   };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[340px] rounded-2xl border-border/30 bg-card p-0 shadow-xl">
+      <DialogContent
+        className="max-w-[340px] rounded-2xl border-border/30 bg-card p-0 shadow-xl"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader className="px-5 pt-5 pb-2">
           <DialogTitle className="text-lg font-semibold text-card-foreground">
             Add Cinda to Home Screen
