@@ -292,23 +292,24 @@ const Chat = () => {
             Find your perfect fit.
           </span>
         </button>
-        <span className="px-3 py-1 text-[10px] font-medium tracking-wider uppercase text-card-foreground/70 border border-card-foreground/30 rounded-full">
-          Alpha
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 text-[10px] font-medium tracking-wider uppercase text-card-foreground/70 border border-card-foreground/30 rounded-full">
+            Alpha
+          </span>
+          <button
+            type="button"
+            onClick={handleRestartClick}
+            className="w-8 h-8 flex items-center justify-center rounded-full text-card-foreground/60 hover:text-card-foreground hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
+            aria-label="New chat"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </header>
 
       {/* Main chat area */}
       <main className="flex-1 flex items-start justify-center px-4 pt-2 pb-[env(safe-area-inset-bottom,16px)] md:px-6 min-h-0">
         <div className="w-full max-w-3xl h-full flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10">
-          {/* Restart button - top left of conversation container */}
-          <button
-            type="button"
-            onClick={handleRestartClick}
-            className="absolute top-3 left-3 z-10 w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground/60 hover:text-card-foreground hover:bg-border/20 transition-colors"
-            aria-label="New chat"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
 
           {/* Messages area */}
           <div 
