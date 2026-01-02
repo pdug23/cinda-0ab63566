@@ -12,6 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { AddToHomeScreenModal } from "@/components/AddToHomeScreenModal";
 import { createEmptyRunnerProfile, type RunnerProfile } from "@/lib/runnerProfile";
 import { applyNegativeSignals } from "@/lib/negativeSignals";
 import { CURATED_SHOE_NAMES } from "@/lib/curatedShoes";
@@ -420,6 +421,9 @@ const Chat = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Add to Home Screen onboarding modal */}
+      <AddToHomeScreenModal />
     </div>
   );
 };
