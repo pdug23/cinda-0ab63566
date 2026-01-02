@@ -360,7 +360,7 @@ const Chat = () => {
                 <div className="space-y-4 mb-8">
                   <img src={cindaLogo} alt="Cinda" className="h-20 mx-auto" />
                   <p className="text-2xl text-card-foreground/90 max-w-md leading-tight font-extrabold italic" style={{ fontVariantLigatures: 'none' }}>
-                    Every runner deserves their perfect fit.
+                    Every runner deserves to find their perfect fit.
                   </p>
                   <p className="text-muted-foreground max-w-md text-sm">
                     Tell me about your running and I'll help you find the right shoes for you.
