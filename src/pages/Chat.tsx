@@ -372,8 +372,12 @@ const Chat = () => {
                     return (
                       <button
                         key={index}
-                        onClick={() => handleStarterClick(prompt.message, index)}
-                        className={`text-xs rounded-full px-4 py-2 transition-all duration-300 ease-out animate-fade-in ${
+                        onClick={(e) => {
+                          handleStarterClick(prompt.message, index);
+                          // Blur button to remove focus state on mobile
+                          (e.target as HTMLButtonElement).blur();
+                        }}
+                        className={`text-xs rounded-full px-4 py-2 transition-all duration-300 ease-out animate-fade-in focus:outline-none ${
                           isSelected
                             ? "text-card-foreground bg-accent/15 border border-accent/30 shadow-[0_2px_16px_hsl(var(--accent)/0.15)]"
                             : "text-muted-foreground/70 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-accent/10 border border-accent/[0.08] hover:border-accent/25 hover:shadow-[0_2px_16px_hsl(var(--accent)/0.12)] hover:-translate-y-0.5"
