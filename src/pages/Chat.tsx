@@ -357,7 +357,7 @@ const Chat = () => {
                     👋 Hi, I'm <span className="font-display font-extrabold">Cinda</span>!
                   </p>
                   <p className="text-muted-foreground max-w-md text-sm">
-                    Talk to me about your running and I'll help you find the right shoe for how you train, race, and feel on your runs.
+                    Tell me about your running and I'll help you find the right shoes, whether you're running casually, training for something specific or looking to pb on race day.
                   </p>
                 </div>
                 
