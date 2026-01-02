@@ -30,8 +30,12 @@ const starterPrompts = [
     message: "I'm new to running and don't really know where to start. I'm looking for guidance on shoes that would suit a beginner.",
   },
   {
-    label: "race training",
-    message: "I'm training for a race and want help choosing the right shoes for my training and race day.",
+    label: "training help",
+    message: "I'm training for a goal and want help choosing the right shoes for my training.",
+  },
+  {
+    label: "pb time",
+    message: "I'm looking for a race-day shoe to help me perform at my best and run my fastest.",
   },
   {
     label: "mix things up",
