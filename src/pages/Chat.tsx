@@ -358,7 +358,7 @@ const Chat = () => {
             {messages.length === 0 && (
               <div className="h-full flex flex-col items-center justify-center text-center py-8">
                 <div className="space-y-4 mb-8">
-                  <img src={cindaLogo} alt="Cinda" className="h-20 mx-auto" />
+                  <img src={cindaLogo} alt="Cinda" className="h-[104px] mx-auto" />
                   <p className="text-2xl text-card-foreground/90 max-w-md leading-tight font-extrabold italic" style={{ fontVariantLigatures: 'none' }}>
                     Every runner deserves to find their perfect fit.
                   </p>
