@@ -320,12 +320,12 @@ const Chat = () => {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="w-full px-6 py-3 flex items-center justify-between relative z-10 flex-shrink-0">
+      <header className="w-full px-4 py-2 flex items-center justify-between relative z-10 flex-shrink-0">
         <button
           onClick={handleRestartClick}
           className="hover:opacity-80 transition-opacity"
         >
-          <img src={cindaLogo} alt="Cinda - Find your perfect fit" className="h-12" />
+          <img src={cindaLogo} alt="Cinda - Find your perfect fit" className="h-[72px]" />
         </button>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 text-[10px] font-medium tracking-wider uppercase text-card-foreground/70 border border-card-foreground/30 rounded-full">
