@@ -357,8 +357,8 @@ const Chat = () => {
             {messages.length === 0 && (
               <div className="h-full flex flex-col items-center justify-center text-center py-8">
                 <div className="space-y-2 mb-8">
-                  <p className="text-2xl text-card-foreground/90 max-w-md leading-relaxed">
-                    👋 Hi, I'm <span className="font-display font-extrabold">Cinda</span>!
+                  <p className="text-2xl text-card-foreground/90 max-w-md leading-relaxed font-bold italic">
+                    Every runner deserves their perfect fit.
                   </p>
                   <p className="text-muted-foreground max-w-md text-sm">
                     Tell me about your running and I'll help you find the right shoes for you.
