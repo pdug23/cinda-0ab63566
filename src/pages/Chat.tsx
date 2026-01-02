@@ -320,14 +320,25 @@ const Chat = () => {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="w-full px-4 py-1 flex items-center justify-between relative z-10 flex-shrink-0">
-        <span className="px-3 py-1 text-[10px] font-medium tracking-wider uppercase text-card-foreground/70 border border-card-foreground/30 rounded-full">
+      <header className="w-full px-4 py-3 flex items-center justify-center relative z-10 flex-shrink-0">
+        {/* Left: Report a Bug */}
+        <button
+          type="button"
+          className="absolute left-4 h-7 px-3 flex items-center justify-center rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
+        >
+          Report a Bug
+        </button>
+
+        {/* Center: Alpha badge with glow */}
+        <span className="h-7 px-4 flex items-center justify-center text-[10px] font-medium tracking-wider uppercase text-card-foreground/70 border border-card-foreground/30 rounded-full shadow-[0_0_20px_hsl(var(--accent)/0.3)]">
           Alpha
         </span>
+
+        {/* Right: Restart button */}
         <button
           type="button"
           onClick={handleRestartClick}
-          className="w-8 h-8 flex items-center justify-center rounded-full text-card-foreground/60 hover:text-card-foreground hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
+          className="absolute right-4 w-7 h-7 flex items-center justify-center rounded-full text-card-foreground/60 hover:text-card-foreground hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
           aria-label="New chat"
         >
           <RotateCcw className="w-3.5 h-3.5" />
