@@ -479,7 +479,7 @@ const Chat = () => {
       </AlertDialog>
 
       {/* Add to Home Screen onboarding modal */}
-      <AddToHomeScreenModal />
+      <AddToHomeScreenModal onClose={() => textareaRef.current?.focus()} />
     </div>
   );
 };

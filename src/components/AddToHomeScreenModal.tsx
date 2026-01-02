@@ -35,7 +35,11 @@ function isStandalone(): boolean {
   );
 }
 
-export function AddToHomeScreenModal() {
+interface AddToHomeScreenModalProps {
+  onClose?: () => void;
+}
+
+export function AddToHomeScreenModal({ onClose }: AddToHomeScreenModalProps) {
   const [open, setOpen] = useState(false);
   const [platform, setPlatform] = useState<"ios" | "android">("ios");
 
@@ -63,11 +67,21 @@ export function AddToHomeScreenModal() {
 
   const handleClose = () => {
     setOpen(false);
+    // Focus chat input after modal closes
+    onClose?.();
+  };
+
+  const handleOpenAutoFocus = (e: Event) => {
+    // Prevent auto-focus on any element inside the modal
+    e.preventDefault();
   };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[340px] rounded-2xl border-border/30 bg-card p-0 shadow-xl">
+      <DialogContent 
+        className="max-w-[340px] rounded-2xl border-border/30 bg-card p-0 shadow-xl"
+        onOpenAutoFocus={handleOpenAutoFocus}
+      >
         <DialogHeader className="px-5 pt-5 pb-2">
           <DialogTitle className="text-lg font-semibold text-card-foreground">
             Add Cinda to Home Screen
@@ -81,21 +95,21 @@ export function AddToHomeScreenModal() {
           <TabsList className="mx-5 grid w-[calc(100%-40px)] grid-cols-2 bg-secondary/50">
             <TabsTrigger
               value="ios"
-              className="data-[state=active]:bg-card data-[state=active]:text-card-foreground"
+              className="data-[state=active]:bg-card data-[state=active]:text-card-foreground focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
             >
               <AppleIcon className="mr-1.5 h-4 w-4" />
               iPhone
             </TabsTrigger>
             <TabsTrigger
               value="android"
-              className="data-[state=active]:bg-card data-[state=active]:text-card-foreground"
+              className="data-[state=active]:bg-card data-[state=active]:text-card-foreground focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
             >
               <AndroidIcon className="mr-1.5 h-4 w-4" />
               Android
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="ios" className="px-5 pb-5 pt-4">
+          <TabsContent value="ios" className="px-5 pb-5 pt-4 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
             <div className="space-y-4">
               <Step
                 number={1}
@@ -127,7 +141,7 @@ export function AddToHomeScreenModal() {
             </div>
           </TabsContent>
 
-          <TabsContent value="android" className="px-5 pb-5 pt-4">
+          <TabsContent value="android" className="px-5 pb-5 pt-4 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
             <div className="space-y-4">
               <Step
                 number={1}
