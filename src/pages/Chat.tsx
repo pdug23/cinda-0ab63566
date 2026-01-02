@@ -25,10 +25,22 @@ interface Message {
 }
 
 const starterPrompts = [
-  "I'm new to running and don't know where to start.",
-  "I'm training for a race and need the right shoes.",
-  "I'm bored of my current shoes and want something different.",
-  "Tell me all about the different Asics running shoes.",
+  {
+    label: "new to running",
+    message: "I'm new to running and don't really know where to start. I'm looking for guidance on shoes that would suit a beginner.",
+  },
+  {
+    label: "race training",
+    message: "I'm training for a race and want help choosing the right shoes for my training and race day.",
+  },
+  {
+    label: "mix things up",
+    message: "I've been running for a while but I'm bored of my current shoes and want to try something different.",
+  },
+  {
+    label: "explore a brand",
+    message: "I'd like to explore running shoes from a specific brand and understand how their models differ.",
+  },
 ];
 
 const nowIso = () => new Date().toISOString();
@@ -361,10 +373,10 @@ const Chat = () => {
                 {starterPrompts.map((prompt, index) => (
                   <button
                     key={index}
-                    onClick={() => handleStarterClick(prompt)}
+                    onClick={() => handleStarterClick(prompt.message)}
                     className="text-xs text-muted-foreground hover:text-card-foreground border border-border/30 hover:border-border/50 rounded-full px-3 py-1.5 transition-colors"
                   >
-                    {prompt}
+                    {prompt.label}
                   </button>
                 ))}
               </div>
