@@ -225,6 +225,14 @@ const Chat = () => {
 
   const handleStarterClick = (prompt: string) => {
     setInput(prompt);
+    // Trigger resize after React updates the value
+    requestAnimationFrame(() => {
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+        textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+        textareaRef.current.focus();
+      }
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
