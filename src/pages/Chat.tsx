@@ -143,6 +143,7 @@ const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [runnerProfile, setRunnerProfile] = useState<RunnerProfile>(createEmptyRunnerProfile());
   const [input, setInput] = useState("");
+  const [selectedPromptIndex, setSelectedPromptIndex] = useState<number | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [showRestartDialog, setShowRestartDialog] = useState(false);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(false);
@@ -223,16 +224,28 @@ const Chat = () => {
     }
   };
 
-  const handleStarterClick = (prompt: string) => {
-    setInput(prompt);
-    // Trigger resize after React updates the value
-    requestAnimationFrame(() => {
-      if (textareaRef.current) {
-        textareaRef.current.style.height = "auto";
-        textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
-        textareaRef.current.focus();
-      }
-    });
+  const handleStarterClick = (prompt: string, index: number) => {
+    // Toggle: if already selected, clear; otherwise select
+    if (selectedPromptIndex === index) {
+      setSelectedPromptIndex(null);
+      setInput("");
+      requestAnimationFrame(() => {
+        if (textareaRef.current) {
+          textareaRef.current.style.height = "24px";
+          textareaRef.current.focus();
+        }
+      });
+    } else {
+      setSelectedPromptIndex(index);
+      setInput(prompt);
+      requestAnimationFrame(() => {
+        if (textareaRef.current) {
+          textareaRef.current.style.height = "auto";
+          textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+          textareaRef.current.focus();
+        }
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -378,16 +391,23 @@ const Chat = () => {
             {/* Starter prompts - only show when no messages */}
             {messages.length === 0 && (
               <div className="flex flex-wrap gap-2 justify-center">
-                {starterPrompts.map((prompt, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleStarterClick(prompt.message)}
-                    className="text-xs text-muted-foreground/70 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-accent/10 border border-accent/[0.08] hover:border-accent/25 rounded-full px-4 py-2 transition-all duration-300 ease-out hover:shadow-[0_2px_16px_hsl(var(--accent)/0.12)] hover:-translate-y-0.5 animate-fade-in"
-                    style={{ animationDelay: `${index * 75}ms`, animationFillMode: 'backwards' }}
-                  >
-                    {prompt.label}
-                  </button>
-                ))}
+                {starterPrompts.map((prompt, index) => {
+                  const isSelected = selectedPromptIndex === index;
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => handleStarterClick(prompt.message, index)}
+                      className={`text-xs rounded-full px-4 py-2 transition-all duration-300 ease-out animate-fade-in ${
+                        isSelected
+                          ? "text-card-foreground bg-accent/15 border border-accent/30 shadow-[0_2px_16px_hsl(var(--accent)/0.15)]"
+                          : "text-muted-foreground/70 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-accent/10 border border-accent/[0.08] hover:border-accent/25 hover:shadow-[0_2px_16px_hsl(var(--accent)/0.12)] hover:-translate-y-0.5"
+                      }`}
+                      style={{ animationDelay: `${index * 75}ms`, animationFillMode: 'backwards' }}
+                    >
+                      {prompt.label}
+                    </button>
+                  );
+                })}
               </div>
             )}
 
