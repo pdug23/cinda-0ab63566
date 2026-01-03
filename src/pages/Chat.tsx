@@ -367,10 +367,7 @@ const Chat = () => {
                     Every runner deserves to find their perfect fit.
                   </p>
                   <p className="text-muted-foreground max-w-md text-sm">
-                    Tell me about your running and I'll help find the right shoes for you.
-                  </p>
-                  <p className="text-muted-foreground max-w-md text-sm">
-                    Whether you're running casually, training for something specific, or aiming for a pb on race day, I'm here to help.
+                    Tell me a bit about you and I'll recommend shoes that suit how you run.
                   </p>
                 </div>
                 
