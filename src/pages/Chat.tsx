@@ -39,7 +39,7 @@ const starterPrompts = [
     message: "I'm looking for a race-day shoe to help me perform at my best and run my fastest.",
   },
   {
-    label: "mix things up",
+    label: "something different",
     message: "I've been running for a while but I'm bored of my current shoes and want to try something different.",
   },
   {
