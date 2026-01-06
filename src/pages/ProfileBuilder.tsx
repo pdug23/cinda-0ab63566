@@ -389,17 +389,36 @@ const ProfileBuilder = () => {
               initialDistance={pbModalInitialDistance}
             />
 
-            {/* Action Button */}
-            <div className="flex justify-center pt-4">
-              <Button
-                onClick={handleNext}
-                variant="cta"
-                className="w-full max-w-[280px] min-h-[44px] text-sm"
-                disabled={!firstName.trim()}
-              >
-                next
-              </Button>
-            </div>
+            {/* Disclaimer and Action Button */}
+            {(() => {
+              const hasAge = age.trim() !== "";
+              const hasHeight = heightCm !== null;
+              const hasWeight = weightKg !== null;
+              const hasAnyPB = Object.values(personalBests).some(pb => pb !== null);
+              const allOptionalsFilled = hasAge && hasHeight && hasWeight && hasAnyPB;
+              
+              return (
+                <div className="flex flex-col items-center pt-4">
+                  <div className="h-6 flex items-center justify-center w-full">
+                    <p 
+                      className={`text-sm italic text-card-foreground/75 text-center transition-opacity duration-200 ${
+                        allOptionalsFilled ? "opacity-0" : "opacity-100"
+                      }`}
+                    >
+                      completing optional fields will help cinda better recommend shoes for how you run.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleNext}
+                    variant="cta"
+                    className="w-full max-w-[280px] min-h-[44px] text-sm mt-3"
+                    disabled={!firstName.trim()}
+                  >
+                    next
+                  </Button>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </main>
