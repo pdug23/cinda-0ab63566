@@ -375,9 +375,8 @@ const ProfileBuilder = () => {
                   ))}
                 </div>
               </div>
-              <p className="mt-3 text-sm">
-                <span className="italic text-orange-500">estimated race times</span>{" "}
-                <span className="text-muted-foreground">may or may not be your pb, but should reflect your current race pace for each distance.</span>
+              <p className="mt-3 text-sm text-muted-foreground">
+                estimated race times may or may not be your pb, but should reflect your current race pace for each distance.
               </p>
             </div>
 
@@ -402,7 +401,7 @@ const ProfileBuilder = () => {
               <div className="flex flex-col items-center px-6 md:px-8 pb-6 md:pb-8 pt-4">
                 <div className="h-5 flex items-center justify-center w-3/4 mb-1">
                   <p 
-                    className={`text-xs italic text-card-foreground/45 text-center transition-opacity duration-200 ${
+                    className={`text-xs italic text-orange-400/50 text-center transition-opacity duration-200 ${
                       allOptionalsFilled ? "opacity-0" : "opacity-100"
                     }`}
                   >
