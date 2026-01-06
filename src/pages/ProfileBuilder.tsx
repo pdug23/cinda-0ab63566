@@ -87,10 +87,6 @@ const ProfileBuilder = () => {
                 onChange={(e) => setAge(e.target.value.replace(/\D/g, ""))}
                 className="bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40"
               />
-              <FieldExplanation
-                question="why do you need my age?"
-                answer="helps us understand your running context and recommend shoes suited to your stage of life."
-              />
             </div>
 
             {/* Height - Optional */}
