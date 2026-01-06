@@ -16,7 +16,7 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground rounded-lg",
         link: "text-primary underline-offset-4 hover:underline",
         // Custom CTA button for landing page
-        cta: "bg-card text-card-foreground hover:bg-card/90 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 font-medium tracking-wide",
+        cta: "bg-accent text-accent-foreground hover:bg-accent/90 rounded-full shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 font-semibold tracking-wide",
         // Send button for chat input
         send: "bg-accent text-accent-foreground hover:bg-accent/90 rounded-full shadow-md disabled:bg-muted disabled:text-muted-foreground",
       },
