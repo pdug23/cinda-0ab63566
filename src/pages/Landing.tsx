@@ -10,13 +10,19 @@ const Landing = () => {
   };
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div 
+      className="min-h-[100dvh] overflow-y-auto" 
+      style={{ 
+        paddingTop: 'env(safe-area-inset-top)', 
+        paddingBottom: 'env(safe-area-inset-bottom)' 
+      }}
+    >
       {/* Main content area */}
-      <main className="flex-1 flex items-center justify-center px-4 py-8 md:px-6">
-        <div className="w-full max-w-lg flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10">
+      <main className="flex items-center justify-center px-4 py-8 md:px-6 min-h-[100dvh]">
+        <div className="w-full max-w-lg flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10 min-h-[540px]">
           
-          {/* Content */}
-          <div className="flex flex-col items-center justify-center text-center p-6 md:p-8">
+          {/* Content - vertically centered */}
+          <div className="flex flex-col items-center justify-center text-center p-6 md:p-8 flex-1">
             <div className="space-y-4 mb-10">
               <img src={cindaLogo} alt="Cinda" className="h-[104px] mx-auto" />
               <p 
