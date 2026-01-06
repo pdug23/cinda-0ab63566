@@ -239,7 +239,7 @@ const ProfileBuilder = () => {
             {/* First Name - Required */}
             <div>
               <label className="block text-sm text-card-foreground/90 mb-2">
-                what's your first name?
+                first name
               </label>
               <Input
                 type="text"
@@ -253,7 +253,7 @@ const ProfileBuilder = () => {
             {/* Age - Optional */}
             <div>
               <label className="block text-sm text-card-foreground/90 mb-2">
-                how old are you?
+                age
                 <OptionalBadge />
               </label>
               <Input
@@ -269,7 +269,7 @@ const ProfileBuilder = () => {
             {/* Height - Optional */}
             <div>
               <label className="block text-sm text-card-foreground/90 mb-2">
-                how tall are you?
+                height
                 <OptionalBadge />
               </label>
               <div className="flex gap-2 items-center">
@@ -326,7 +326,7 @@ const ProfileBuilder = () => {
             {/* Weight - Optional */}
             <div>
               <label className="block text-sm text-card-foreground/90 mb-2">
-                how much do you weigh?
+                weight
                 <OptionalBadge />
               </label>
               <div className="flex gap-2 items-center">
@@ -356,7 +356,7 @@ const ProfileBuilder = () => {
             {/* Personal Bests - Optional */}
             <div>
               <label className="block text-sm text-card-foreground/90 mb-2">
-                what are your current estimated race times?
+                estimated race times
                 <OptionalBadge />
               </label>
               <div className="overflow-x-auto -mx-1 px-1">
@@ -375,12 +375,10 @@ const ProfileBuilder = () => {
                   ))}
                 </div>
               </div>
-              <div className="mt-3">
-                <FieldExplanation
-                  question="why current times?"
-                  answer="race time may or may not be your pb, but it reflects your current race pace. we use this to gain insight into your training intensity and help recommend shoes that match your performance level."
-                />
-              </div>
+              <p className="mt-3 text-sm">
+                <span className="italic text-orange-500">estimated race times</span>{" "}
+                <span className="text-muted-foreground">may or may not be your pb, but should reflect your current race pace for each distance. we use this to gain insight into your training intensity and help recommend shoes that match your performance level.</span>
+              </p>
             </div>
 
             <PBPickerModal
