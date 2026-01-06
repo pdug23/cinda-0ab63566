@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Read shoebase.json
-const shoebasePath = path.join(__dirname, '../../src/data/shoebase.json');
+const shoebasePath = path.join(__dirname, '../src/data/shoebase.json');
 const shoebaseData = JSON.parse(fs.readFileSync(shoebasePath, 'utf8'));
 
 console.log('✅ Successfully loaded shoebase.json');

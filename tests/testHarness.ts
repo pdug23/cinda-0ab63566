@@ -3,11 +3,11 @@
 // End-to-end validation of the complete recommendation pipeline
 // ============================================================================
 
-import { analyzeRotation } from '../lib/rotationAnalyzer';
-import { identifyPrimaryGap } from '../lib/gapDetector';
-import { generateRecommendations } from '../lib/recommendationEngine';
-import type { RunnerProfile, CurrentShoe, Shoe, GapType, GapSeverity, RecommendedShoe } from '../types';
-import shoebase from '../../src/data/shoebase.json';
+import { analyzeRotation } from '../api/lib/rotationAnalyzer';
+import { identifyPrimaryGap } from '../api/lib/gapDetector';
+import { generateRecommendations } from '../api/lib/recommendationEngine';
+import type { RunnerProfile, CurrentShoe, Shoe, GapType, GapSeverity, RecommendedShoe } from '../api/types';
+import shoebase from '../src/data/shoebase.json';
 
 const catalogue = shoebase as Shoe[];
 
