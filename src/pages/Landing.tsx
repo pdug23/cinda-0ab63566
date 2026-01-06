@@ -34,9 +34,9 @@ const Landing = () => {
             <Button
               onClick={handleStartQuiz}
               variant="cta"
-              className="w-full max-w-[400px] min-h-[56px] text-base"
+              className="w-full max-w-[280px] min-h-[44px] text-sm"
             >
-              Start Quiz
+              Begin
             </Button>
           </div>
         </div>
