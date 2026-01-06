@@ -288,7 +288,7 @@ const ProfileBuilder = () => {
               </div>
               <FieldExplanation
                 question="why height?"
-                answer="taller runners often prefer more cushioning and stability. it helps us personalize recommendations."
+                answer="taller runners often prefer more cushioning and stability. it helps us personalise recommendations."
               />
             </div>
 
@@ -347,7 +347,7 @@ const ProfileBuilder = () => {
               <div className="mt-3">
                 <FieldExplanation
                   question="why current times?"
-                  answer="race time may or may not be your pb, but it is your current race pace. we use this to gain insight into your training intensity and help recommend shoes that match your performance level."
+                  answer="race time may or may not be your pb, but it reflects your current race pace. we use this to gain insight into your training intensity and help recommend shoes that match your performance level."
                 />
               </div>
             </div>
