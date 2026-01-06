@@ -398,7 +398,7 @@ const ProfileBuilder = () => {
               const allOptionalsFilled = hasAge && hasHeight && hasWeight && hasAnyPB;
               
               return (
-                <div className="flex flex-col items-center pt-7">
+                <div className="flex flex-col items-center pt-5">
                   <div className="h-5 flex items-center justify-center w-3/4">
                     <p 
                       className={`text-xs italic text-card-foreground/45 text-center transition-opacity duration-200 ${
@@ -411,7 +411,7 @@ const ProfileBuilder = () => {
                   <Button
                     onClick={handleNext}
                     variant="cta"
-                    className="w-full max-w-[280px] min-h-[44px] text-sm mt-3"
+                    className="w-full max-w-[280px] min-h-[44px] text-sm mt-5"
                     disabled={!firstName.trim()}
                   >
                     next
