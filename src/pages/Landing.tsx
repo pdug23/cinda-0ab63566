@@ -23,10 +23,10 @@ const Landing = () => {
                 className="text-2xl text-card-foreground/90 max-w-md leading-tight font-extrabold italic" 
                 style={{ fontVariantLigatures: 'none' }}
               >
-                every runner deserves to find their perfect fit.
+                Every runner deserves to find their perfect fit.
               </p>
               <p className="text-muted-foreground max-w-md text-sm">
-                tell me a bit about you and i'll recommend shoes that suit how you run.
+                Tell me a bit about you and I'll recommend shoes that suit how you run.
               </p>
             </div>
             
