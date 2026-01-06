@@ -377,7 +377,7 @@ const ProfileBuilder = () => {
               </div>
               <p className="mt-3 text-sm">
                 <span className="italic text-orange-500">estimated race times</span>{" "}
-                <span className="text-muted-foreground">may or may not be your pb, but should reflect your current race pace for each distance. we use this to understand your training intensity and recommend shoes that suit your current performance level.</span>
+                <span className="text-muted-foreground">may or may not be your pb, but should reflect your current race pace for each distance.</span>
               </p>
             </div>
 
@@ -399,8 +399,8 @@ const ProfileBuilder = () => {
             const allOptionalsFilled = hasAge && hasHeight && hasWeight && hasAnyPB;
             
             return (
-              <div className="flex flex-col items-center px-6 md:px-8 pb-6 md:pb-8 pt-2">
-                <div className="h-5 flex items-center justify-center w-3/4">
+              <div className="flex flex-col items-center px-6 md:px-8 pb-6 md:pb-8 pt-4">
+                <div className="h-5 flex items-center justify-center w-3/4 mb-1">
                   <p 
                     className={`text-xs italic text-card-foreground/45 text-center transition-opacity duration-200 ${
                       allOptionalsFilled ? "opacity-0" : "opacity-100"
@@ -412,7 +412,7 @@ const ProfileBuilder = () => {
                 <Button
                   onClick={handleNext}
                   variant="cta"
-                  className="w-full max-w-[280px] min-h-[44px] text-sm mt-3"
+                  className="w-full max-w-[280px] min-h-[44px] text-sm mt-4"
                   disabled={!firstName.trim()}
                 >
                   next
