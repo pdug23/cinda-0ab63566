@@ -346,8 +346,8 @@ const ProfileBuilder = () => {
               </div>
               <div className="mt-3">
                 <FieldExplanation
-                  question="why estimated times?"
-                  answer="we use this to gain insight into your training intensity and help recommend shoes that match your performance level."
+                  question="why current times?"
+                  answer="race time may or may not be your pb, but it is your current race pace. we use this to gain insight into your training intensity and help recommend shoes that match your performance level."
                 />
               </div>
             </div>
