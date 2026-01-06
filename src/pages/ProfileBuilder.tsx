@@ -349,7 +349,7 @@ const ProfileBuilder = () => {
               </div>
               <FieldExplanation
                 question="why weight?"
-                answer="weight affects how much a shoe compresses and how it feels underfoot."
+                answer="weight affects how much a shoe compresses and how stable it feels underfoot."
               />
             </div>
 
