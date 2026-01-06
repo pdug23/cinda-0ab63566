@@ -7,7 +7,7 @@ import { PBPickerModal, PersonalBests, PBKey, formatPBTime } from "@/components/
 
 // Optional badge component
 const OptionalBadge = () => (
-  <span className="ml-2 px-2 py-0.5 text-xs bg-card-foreground/5 border border-card-foreground/20 rounded text-card-foreground/50">
+  <span className="ml-2 px-2 py-0.5 text-xs bg-card-foreground/5 border border-card-foreground/15 rounded text-card-foreground/40">
     optional
   </span>
 );
@@ -49,12 +49,12 @@ const UnitToggle = ({
 );
 
 // Personal bests distance config
-const PB_DISTANCES: { key: PBKey; label: string }[] = [
-  { key: "mile", label: "1mi" },
-  { key: "5k", label: "5k" },
-  { key: "10k", label: "10k" },
-  { key: "half", label: "13.1mi" },
-  { key: "marathon", label: "26.2mi" },
+const PB_DISTANCES: { key: PBKey; label: string; placeholder: string }[] = [
+  { key: "mile", label: "1mi", placeholder: "mm:ss" },
+  { key: "5k", label: "5k", placeholder: "mm:ss" },
+  { key: "10k", label: "10k", placeholder: "mm:ss" },
+  { key: "half", label: "13.1mi", placeholder: "h:mm:ss" },
+  { key: "marathon", label: "26.2mi", placeholder: "h:mm:ss" },
 ];
 
 const ProfileBuilder = () => {
@@ -319,7 +319,7 @@ const ProfileBuilder = () => {
               </div>
               <FieldExplanation
                 question="why height?"
-                answer="taller runners often prefer more cushioning and stability. it helps us personalise recommendations."
+                answer="height can influence how shoes feel and perform under load. we use this to personalise recommendations and improve comfort and durability."
               />
             </div>
 
@@ -361,7 +361,7 @@ const ProfileBuilder = () => {
               </label>
               <div className="overflow-x-auto -mx-1 px-1">
                 <div className="grid grid-cols-5 gap-2 min-w-[320px]">
-                  {PB_DISTANCES.map(({ key, label }) => (
+                  {PB_DISTANCES.map(({ key, label, placeholder }) => (
                     <div key={key} className="text-center">
                       <span className="text-xs text-card-foreground/60 block mb-1.5">{label}</span>
                       <button
@@ -369,7 +369,7 @@ const ProfileBuilder = () => {
                         onClick={() => openPbModal(key)}
                         className="w-full h-10 px-1 text-sm rounded-md bg-card-foreground/5 border border-card-foreground/20 text-card-foreground hover:bg-card-foreground/10 transition-colors"
                       >
-                        {formatPBTime(personalBests[key])}
+                        {personalBests[key] ? formatPBTime(personalBests[key]) : <span className="text-card-foreground/30">{placeholder}</span>}
                       </button>
                     </div>
                   ))}
@@ -377,7 +377,7 @@ const ProfileBuilder = () => {
               </div>
               <p className="mt-3 text-sm">
                 <span className="italic text-orange-500">estimated race times</span>{" "}
-                <span className="text-muted-foreground">may or may not be your pb, but should reflect your current race pace for each distance. we use this to gain insight into your training intensity and help recommend shoes that match your current performance level.</span>
+                <span className="text-muted-foreground">may or may not be your pb, but should reflect your current race pace for each distance. we use this to understand your training intensity and recommend shoes that suit your current performance level.</span>
               </p>
             </div>
 
