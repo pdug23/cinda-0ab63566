@@ -5,8 +5,8 @@ import cindaLogo from "@/assets/cinda-logo-grey.png";
 const Landing = () => {
   const navigate = useNavigate();
 
-  const handleStartQuiz = () => {
-    navigate("/quiz");
+  const handleStartProfile = () => {
+    navigate("/profile");
   };
 
   return (
@@ -32,7 +32,7 @@ const Landing = () => {
             
             {/* CTA Button */}
             <Button
-              onClick={handleStartQuiz}
+              onClick={handleStartProfile}
               variant="cta"
               className="w-full max-w-[280px] min-h-[44px] text-sm"
             >
