@@ -86,49 +86,74 @@ const ScrollWheel = ({ values, selected, onChange, label }: ScrollWheelProps) =>
 
   return (
     <div className="flex flex-col items-center">
-      <span className="text-xs text-card-foreground/50 mb-2">{label}</span>
+      <span className="text-[10px] uppercase tracking-wider text-card-foreground/40 mb-3">{label}</span>
       <div className="relative">
-        {/* Selection indicator */}
+        {/* Subtle center accent line - top */}
         <div 
-          className="absolute left-0 right-0 pointer-events-none z-10 border-y border-orange-500/30 bg-orange-500/10"
+          className="absolute left-1/2 -translate-x-1/2 pointer-events-none z-10"
           style={{ 
-            top: `${ITEM_HEIGHT * 2}px`, 
-            height: `${ITEM_HEIGHT}px` 
+            top: `${ITEM_HEIGHT * 2 - 1}px`,
+            width: "24px",
+            height: "1px",
+            background: "linear-gradient(90deg, transparent, hsl(var(--primary) / 0.4), transparent)",
           }}
         />
-        {/* Gradient overlays */}
+        {/* Subtle center accent line - bottom */}
         <div 
-          className="absolute inset-x-0 top-0 pointer-events-none z-20 bg-gradient-to-b from-card to-transparent"
-          style={{ height: `${ITEM_HEIGHT * 1.5}px` }}
+          className="absolute left-1/2 -translate-x-1/2 pointer-events-none z-10"
+          style={{ 
+            top: `${ITEM_HEIGHT * 3}px`,
+            width: "24px",
+            height: "1px",
+            background: "linear-gradient(90deg, transparent, hsl(var(--primary) / 0.4), transparent)",
+          }}
+        />
+        {/* Gradient overlays for fade effect */}
+        <div 
+          className="absolute inset-x-0 top-0 pointer-events-none z-20"
+          style={{ 
+            height: `${ITEM_HEIGHT * 2}px`,
+            background: "linear-gradient(to bottom, hsl(var(--card)) 0%, hsl(var(--card) / 0.8) 50%, transparent 100%)",
+          }}
         />
         <div 
-          className="absolute inset-x-0 bottom-0 pointer-events-none z-20 bg-gradient-to-t from-card to-transparent"
-          style={{ height: `${ITEM_HEIGHT * 1.5}px` }}
+          className="absolute inset-x-0 bottom-0 pointer-events-none z-20"
+          style={{ 
+            height: `${ITEM_HEIGHT * 2}px`,
+            background: "linear-gradient(to top, hsl(var(--card)) 0%, hsl(var(--card) / 0.8) 50%, transparent 100%)",
+          }}
         />
         <div
           ref={containerRef}
           className="overflow-y-scroll scrollbar-hide"
           style={{ 
             height: `${ITEM_HEIGHT * VISIBLE_ITEMS}px`,
-            width: "60px",
+            width: "56px",
+            scrollBehavior: "smooth",
+            WebkitOverflowScrolling: "touch",
           }}
           onScroll={handleScroll}
         >
           {/* Top padding */}
           <div style={{ height: `${ITEM_HEIGHT * 2}px` }} />
-          {values.map((value) => (
-            <div
-              key={value}
-              className={`flex items-center justify-center transition-all ${
-                value === selected && !isScrolling
-                  ? "text-card-foreground font-medium"
-                  : "text-card-foreground/40"
-              }`}
-              style={{ height: `${ITEM_HEIGHT}px` }}
-            >
-              {String(value).padStart(2, "0")}
-            </div>
-          ))}
+          {values.map((value) => {
+            const isSelected = value === selected && !isScrolling;
+            return (
+              <div
+                key={value}
+                className="flex items-center justify-center transition-all duration-200"
+                style={{ 
+                  height: `${ITEM_HEIGHT}px`,
+                  color: isSelected ? "hsl(var(--card-foreground))" : "hsl(var(--card-foreground) / 0.25)",
+                  fontWeight: isSelected ? 500 : 400,
+                  fontSize: isSelected ? "22px" : "18px",
+                  textShadow: isSelected ? "0 0 20px hsl(var(--primary) / 0.5)" : "none",
+                }}
+              >
+                {String(value).padStart(2, "0")}
+              </div>
+            );
+          })}
           {/* Bottom padding */}
           <div style={{ height: `${ITEM_HEIGHT * 2}px` }} />
         </div>

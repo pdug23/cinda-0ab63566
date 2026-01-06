@@ -203,7 +203,7 @@ const ProfileBuilder = () => {
         <div className="w-full max-w-lg flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10">
           
           {/* Content */}
-          <div className="flex flex-col p-6 md:p-8 space-y-6">
+          <div className="flex flex-col p-6 md:p-8 space-y-7">
             
             {/* First Name - Required */}
             <div>
@@ -344,10 +344,12 @@ const ProfileBuilder = () => {
                   ))}
                 </div>
               </div>
-              <FieldExplanation
-                question="why personal bests?"
-                answer="your pbs give us insight into your training intensity and help recommend shoes that match your performance level."
-              />
+              <div className="mt-3">
+                <FieldExplanation
+                  question="why personal bests?"
+                  answer="your pbs give us insight into your training intensity and help recommend shoes that match your performance level."
+                />
+              </div>
             </div>
 
             <PBPickerModal
