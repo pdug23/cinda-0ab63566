@@ -3,7 +3,11 @@
     "allow": [
       "Bash(npm run build:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm run build:dev:*)"
+      "Bash(npm run build:dev:*)",
+      "Bash(node:*)",
+      "Bash(npx ts-node:*)",
+      "Bash(test:*)",
+      "Bash(cat:*)"
     ],
     "deny": [
       "Read(./.env)",
