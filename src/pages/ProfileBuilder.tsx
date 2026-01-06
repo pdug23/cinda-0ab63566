@@ -127,15 +127,31 @@ const ProfileBuilder = () => {
     }
   };
 
-  // Handle height unit change
+  // Handle height unit change with conversion
   const handleHeightUnitChange = useCallback((newUnit: string) => {
+    if (newUnit === heightUnit) return;
+    
+    if (newUnit === "ft/in" && heightCm) {
+      // Convert cm to ft/in
+      const totalInches = heightCm / 2.54;
+      const ft = Math.floor(totalInches / 12);
+      const inches = Math.round(totalInches % 12);
+      setHeightFt(ft.toString());
+      setHeightIn(inches.toString());
+      setHeightCmInput("");
+    } else if (newUnit === "cm" && (heightFt || heightIn)) {
+      // Convert ft/in to cm
+      const ftNum = parseInt(heightFt, 10) || 0;
+      const inNum = parseInt(heightIn, 10) || 0;
+      const cm = Math.round((ftNum * 12 + inNum) * 2.54);
+      setHeightCmInput(cm.toString());
+      setHeightCm(cm);
+      setHeightFt("");
+      setHeightIn("");
+    }
+    
     setHeightUnit(newUnit as "cm" | "ft/in");
-    // Clear inputs when switching units
-    setHeightCmInput("");
-    setHeightFt("");
-    setHeightIn("");
-    setHeightCm(null);
-  }, []);
+  }, [heightUnit, heightCm, heightFt, heightIn]);
 
   // Handle weight change
   const handleWeightChange = (value: string) => {
@@ -149,12 +165,27 @@ const ProfileBuilder = () => {
     }
   };
 
-  // Handle weight unit change
+  // Handle weight unit change with conversion
   const handleWeightUnitChange = useCallback((newUnit: string) => {
+    if (newUnit === weightUnit) return;
+    
+    if (weightInput) {
+      const currentValue = parseFloat(weightInput);
+      if (!isNaN(currentValue)) {
+        if (newUnit === "lbs") {
+          // Convert kg to lbs
+          const lbs = (currentValue * 2.20462).toFixed(1);
+          setWeightInput(lbs.replace(/\.0$/, ""));
+        } else {
+          // Convert lbs to kg
+          const kg = (currentValue * 0.453592).toFixed(1);
+          setWeightInput(kg.replace(/\.0$/, ""));
+        }
+      }
+    }
+    
     setWeightUnit(newUnit as "kg" | "lbs");
-    setWeightInput("");
-    setWeightKg(null);
-  }, []);
+  }, [weightUnit, weightInput]);
 
   // Open PB modal for a specific distance
   const openPbModal = (distance: PBKey) => {
