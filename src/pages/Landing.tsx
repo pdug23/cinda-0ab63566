@@ -36,7 +36,7 @@ const Landing = () => {
               variant="cta"
               className="w-full max-w-[280px] min-h-[44px] text-sm"
             >
-              Begin
+              begin
             </Button>
           </div>
         </div>
