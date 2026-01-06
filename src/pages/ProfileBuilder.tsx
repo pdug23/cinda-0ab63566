@@ -38,7 +38,7 @@ const ProfileBuilder = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <div className="min-h-[100dvh] flex flex-col overflow-y-auto" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {/* Header */}
       <header className="w-full px-4 py-3 flex items-center justify-between relative z-10 flex-shrink-0">
         <button
