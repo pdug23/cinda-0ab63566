@@ -377,7 +377,7 @@ const ProfileBuilder = () => {
               </div>
               <p className="mt-3 text-sm">
                 <span className="italic text-orange-500">estimated race times</span>{" "}
-                <span className="text-muted-foreground">may or may not be your pb, but should reflect your current race pace for each distance. we use this to gain insight into your training intensity and help recommend shoes that match your performance level.</span>
+                <span className="text-muted-foreground">may or may not be your pb, but should reflect your current race pace for each distance. we use this to gain insight into your training intensity and help recommend shoes that match your current performance level.</span>
               </p>
             </div>
 
