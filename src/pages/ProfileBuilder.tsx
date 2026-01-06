@@ -399,9 +399,9 @@ const ProfileBuilder = () => {
               
               return (
                 <div className="flex flex-col items-center pt-4">
-                  <div className="h-6 flex items-center justify-center w-full">
+                  <div className="h-5 flex items-center justify-center w-full">
                     <p 
-                      className={`text-sm italic text-card-foreground/75 text-center transition-opacity duration-200 ${
+                      className={`text-xs italic text-card-foreground/45 text-center transition-opacity duration-200 ${
                         allOptionalsFilled ? "opacity-0" : "opacity-100"
                       }`}
                     >
