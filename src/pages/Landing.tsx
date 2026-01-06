@@ -13,10 +13,10 @@ const Landing = () => {
     <div className="h-full flex flex-col overflow-hidden">
       {/* Main content area */}
       <main className="flex-1 flex items-center justify-center px-4 py-8 md:px-6">
-        <div className="w-full max-w-3xl flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10">
+        <div className="w-full max-w-lg flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10">
           
           {/* Content */}
-          <div className="flex flex-col items-center justify-center text-center p-8 md:p-12">
+          <div className="flex flex-col items-center justify-center text-center p-6 md:p-8">
             <div className="space-y-4 mb-10">
               <img src={cindaLogo} alt="Cinda" className="h-[104px] mx-auto" />
               <p 
