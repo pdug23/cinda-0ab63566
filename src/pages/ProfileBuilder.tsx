@@ -319,7 +319,7 @@ const ProfileBuilder = () => {
               </div>
               <FieldExplanation
                 question="why height?"
-                answer="height affects stride length and the forces going through the shoe. this can change how cushioning, stability and overall ride feel when you run."
+                answer="height affects stride mechanics and how forces travel through the shoe."
               />
             </div>
 
@@ -349,7 +349,7 @@ const ProfileBuilder = () => {
               </div>
               <FieldExplanation
                 question="why weight?"
-                answer="weight influences how much a shoe compresses and how stable it feels underfoot, which can affect comfort and durability over a run."
+                answer="weight affects how much a shoe compresses and how it feels underfoot."
               />
             </div>
 
