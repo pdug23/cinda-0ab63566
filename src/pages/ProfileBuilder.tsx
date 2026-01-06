@@ -234,7 +234,7 @@ const ProfileBuilder = () => {
         <div className="w-full max-w-lg flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10">
           
           {/* Content */}
-          <div className="flex flex-col p-6 md:p-8 space-y-7">
+          <div className="flex flex-col px-6 md:px-8 pt-6 md:pt-8 space-y-7">
             
             {/* First Name - Required */}
             <div>
@@ -388,38 +388,38 @@ const ProfileBuilder = () => {
               onSave={setPersonalBests}
               initialDistance={pbModalInitialDistance}
             />
-
-            {/* Disclaimer and Action Button */}
-            {(() => {
-              const hasAge = age.trim() !== "";
-              const hasHeight = heightCm !== null;
-              const hasWeight = weightKg !== null;
-              const hasAnyPB = Object.values(personalBests).some(pb => pb !== null);
-              const allOptionalsFilled = hasAge && hasHeight && hasWeight && hasAnyPB;
-              
-              return (
-                <div className="flex flex-col items-center pt-6">
-                  <div className="h-5 flex items-center justify-center w-3/4">
-                    <p 
-                      className={`text-xs italic text-card-foreground/45 text-center transition-opacity duration-200 ${
-                        allOptionalsFilled ? "opacity-0" : "opacity-100"
-                      }`}
-                    >
-                      completing optional fields will help cinda better recommend shoes for how you run.
-                    </p>
-                  </div>
-                  <Button
-                    onClick={handleNext}
-                    variant="cta"
-                    className="w-full max-w-[280px] min-h-[44px] text-sm mt-3"
-                    disabled={!firstName.trim()}
-                  >
-                    next
-                  </Button>
-                </div>
-              );
-            })()}
           </div>
+
+          {/* CTA Section - outside space-y-7 for controlled spacing */}
+          {(() => {
+            const hasAge = age.trim() !== "";
+            const hasHeight = heightCm !== null;
+            const hasWeight = weightKg !== null;
+            const hasAnyPB = Object.values(personalBests).some(pb => pb !== null);
+            const allOptionalsFilled = hasAge && hasHeight && hasWeight && hasAnyPB;
+            
+            return (
+              <div className="flex flex-col items-center px-6 md:px-8 pb-6 md:pb-8 pt-2">
+                <div className="h-5 flex items-center justify-center w-3/4">
+                  <p 
+                    className={`text-xs italic text-card-foreground/45 text-center transition-opacity duration-200 ${
+                      allOptionalsFilled ? "opacity-0" : "opacity-100"
+                    }`}
+                  >
+                    completing optional fields will help cinda better recommend shoes for how you run.
+                  </p>
+                </div>
+                <Button
+                  onClick={handleNext}
+                  variant="cta"
+                  className="w-full max-w-[280px] min-h-[44px] text-sm mt-3"
+                  disabled={!firstName.trim()}
+                >
+                  next
+                </Button>
+              </div>
+            );
+          })()}
         </div>
       </main>
     </div>
