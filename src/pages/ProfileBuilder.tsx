@@ -325,7 +325,7 @@ const ProfileBuilder = () => {
             {/* Personal Bests - Optional */}
             <div>
               <label className="block text-sm text-card-foreground/90 mb-2">
-                what are your personal bests?
+                what are your current estimated race times?
                 <OptionalBadge />
               </label>
               <div className="overflow-x-auto -mx-1 px-1">
@@ -346,8 +346,8 @@ const ProfileBuilder = () => {
               </div>
               <div className="mt-3">
                 <FieldExplanation
-                  question="why personal bests?"
-                  answer="your pbs give us insight into your training intensity and help recommend shoes that match your performance level."
+                  question="why estimated times?"
+                  answer="we use this to gain insight into your training intensity and help recommend shoes that match your performance level."
                 />
               </div>
             </div>
