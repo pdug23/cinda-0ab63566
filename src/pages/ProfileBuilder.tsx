@@ -360,22 +360,15 @@ const ProfileBuilder = () => {
               initialDistance={pbModalInitialDistance}
             />
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+            {/* Action Button */}
+            <div className="flex justify-center pt-4">
               <Button
                 onClick={handleNext}
                 variant="cta"
-                className="flex-1 min-h-[44px] text-sm"
+                className="w-full max-w-[280px] min-h-[44px] text-sm"
                 disabled={!firstName.trim()}
               >
                 next
-              </Button>
-              <Button
-                onClick={handleSkip}
-                variant="ghost"
-                className="flex-1 min-h-[44px] text-sm text-card-foreground/60 hover:text-card-foreground hover:bg-card-foreground/10"
-              >
-                skip to next step
               </Button>
             </div>
           </div>
