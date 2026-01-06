@@ -398,8 +398,8 @@ const ProfileBuilder = () => {
               const allOptionalsFilled = hasAge && hasHeight && hasWeight && hasAnyPB;
               
               return (
-                <div className="flex flex-col items-center pt-4">
-                  <div className="h-5 flex items-center justify-center w-full">
+                <div className="flex flex-col items-center pt-7">
+                  <div className="h-5 flex items-center justify-center w-3/4">
                     <p 
                       className={`text-xs italic text-card-foreground/45 text-center transition-opacity duration-200 ${
                         allOptionalsFilled ? "opacity-0" : "opacity-100"
