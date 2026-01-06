@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft } from "lucide-react";
+import { PBPickerModal, PersonalBests, PBKey, formatPBTime } from "@/components/PBPickerModal";
 
 // Optional badge component
 const OptionalBadge = () => (
@@ -47,14 +48,14 @@ const UnitToggle = ({
   </div>
 );
 
-// Personal bests type
-interface PersonalBests {
-  mile: string;
-  "5k": string;
-  "10k": string;
-  half: string;
-  marathon: string;
-}
+// Personal bests distance config
+const PB_DISTANCES: { key: PBKey; label: string }[] = [
+  { key: "mile", label: "1mi" },
+  { key: "5k", label: "5k" },
+  { key: "10k", label: "10k" },
+  { key: "half", label: "13.1mi" },
+  { key: "marathon", label: "26.2mi" },
+];
 
 const ProfileBuilder = () => {
   const navigate = useNavigate();
@@ -73,14 +74,16 @@ const ProfileBuilder = () => {
   const [weightUnit, setWeightUnit] = useState<"kg" | "lbs">("kg");
   const [weightInput, setWeightInput] = useState("");
   
-  // Personal bests - structured
+  // Personal bests - structured with hours, minutes, seconds
   const [personalBests, setPersonalBests] = useState<PersonalBests>({
-    mile: "",
-    "5k": "",
-    "10k": "",
-    half: "",
-    marathon: "",
+    mile: null,
+    "5k": null,
+    "10k": null,
+    half: null,
+    marathon: null,
   });
+  const [pbModalOpen, setPbModalOpen] = useState(false);
+  const [pbModalInitialDistance, setPbModalInitialDistance] = useState<PBKey>("mile");
 
   // Convert ft/in to cm
   const ftInToCm = (ft: number, inches: number): number => {
@@ -153,10 +156,10 @@ const ProfileBuilder = () => {
     setWeightKg(null);
   }, []);
 
-  // Handle PB time input - only allow digits and colons
-  const handlePbChange = (key: keyof PersonalBests, value: string) => {
-    const sanitized = value.replace(/[^\d:]/g, "");
-    setPersonalBests(prev => ({ ...prev, [key]: sanitized }));
+  // Open PB modal for a specific distance
+  const openPbModal = (distance: PBKey) => {
+    setPbModalInitialDistance(distance);
+    setPbModalOpen(true);
   };
 
   const handleNext = () => {
@@ -173,13 +176,6 @@ const ProfileBuilder = () => {
     console.log("Skipping to next step");
   };
 
-  const pbDistances: { key: keyof PersonalBests; label: string; placeholder: string }[] = [
-    { key: "mile", label: "1mi", placeholder: "mm:ss" },
-    { key: "5k", label: "5k", placeholder: "mm:ss" },
-    { key: "10k", label: "10k", placeholder: "mm:ss" },
-    { key: "half", label: "13.1mi", placeholder: "h:mm:ss" },
-    { key: "marathon", label: "26.2mi", placeholder: "h:mm:ss" },
-  ];
 
   return (
     <div 
@@ -334,27 +330,33 @@ const ProfileBuilder = () => {
               </label>
               <div className="overflow-x-auto -mx-1 px-1">
                 <div className="grid grid-cols-5 gap-2 min-w-[320px]">
-                  {pbDistances.map(({ key, label }) => (
+                  {PB_DISTANCES.map(({ key, label }) => (
                     <div key={key} className="text-center">
                       <span className="text-xs text-card-foreground/60 block mb-1.5">{label}</span>
-                      <Input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="—"
-                        value={personalBests[key]}
-                        onChange={(e) => handlePbChange(key, e.target.value)}
-                        className="bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40 text-center text-sm px-1"
-                      />
+                      <button
+                        type="button"
+                        onClick={() => openPbModal(key)}
+                        className="w-full h-10 px-1 text-sm rounded-md bg-card-foreground/5 border border-card-foreground/20 text-card-foreground hover:bg-card-foreground/10 transition-colors"
+                      >
+                        {formatPBTime(personalBests[key])}
+                      </button>
                     </div>
                   ))}
                 </div>
               </div>
-              <p className="mt-2 text-xs text-card-foreground/40">format: mm:ss (or h:mm:ss for half/marathon)</p>
               <FieldExplanation
                 question="why personal bests?"
                 answer="your pbs give us insight into your training intensity and help recommend shoes that match your performance level."
               />
             </div>
+
+            <PBPickerModal
+              open={pbModalOpen}
+              onOpenChange={setPbModalOpen}
+              personalBests={personalBests}
+              onSave={setPersonalBests}
+              initialDistance={pbModalInitialDistance}
+            />
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
