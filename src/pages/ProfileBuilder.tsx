@@ -80,10 +80,11 @@ const ProfileBuilder = () => {
                 <OptionalBadge />
               </label>
               <Input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 placeholder="e.g., 32"
                 value={age}
-                onChange={(e) => setAge(e.target.value)}
+                onChange={(e) => setAge(e.target.value.replace(/\D/g, ""))}
                 className="bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40"
               />
               <FieldExplanation
