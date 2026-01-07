@@ -58,7 +58,7 @@ const Landing = () => {
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:duration-150">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold">
+            <DialogTitle className="text-lg font-semibold text-primary">
               how cinda works
             </DialogTitle>
             <DialogDescription className="text-muted-foreground pt-3 space-y-3 text-sm">
