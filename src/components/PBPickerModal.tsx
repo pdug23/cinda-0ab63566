@@ -20,7 +20,6 @@ export interface PersonalBests {
 export type PBKey = keyof PersonalBests;
 
 const DISTANCES: { key: PBKey; label: string }[] = [
-  { key: "mile", label: "1mi" },
   { key: "5k", label: "5k" },
   { key: "10k", label: "10k" },
   { key: "half", label: "13.1mi" },
@@ -175,7 +174,7 @@ export const PBPickerModal = ({
   onOpenChange,
   personalBests,
   onSave,
-  initialDistance = "mile",
+  initialDistance = "5k",
 }: PBPickerModalProps) => {
   const [localPBs, setLocalPBs] = useState<PersonalBests>(personalBests);
   const [activeDistance, setActiveDistance] = useState<PBKey>(initialDistance);
