@@ -32,7 +32,7 @@ const Landing = () => {
             Every runner deserves to find their perfect fit.
           </p>
           <p className="text-muted-foreground max-w-md text-sm">
-            Tell me a bit about you and I'll recommend shoes that suit how you run.
+            tell me a bit about you and i'll recommend shoes that suit how you run.
           </p>
         </div>
 
@@ -47,8 +47,8 @@ const Landing = () => {
           </Button>
           <Button
             onClick={() => setShowModal(true)}
-            variant="outline"
-            className="min-h-[44px] text-sm bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground"
+            variant="cta"
+            className="min-h-[44px] text-sm"
           >
             how cinda works
           </Button>
@@ -63,7 +63,7 @@ const Landing = () => {
             </DialogTitle>
             <DialogDescription className="text-muted-foreground pt-3 space-y-3 text-sm">
               <span className="block">cinda helps runners find shoes that suit how they actually run.</span>
-              <span className="block">instead of guessing based on brand or hype, we understand your preferences and look at things like your body, pace and goals to find the right fit.</span>
+              <span className="block">instead of guessing based on brand or hype, i understand your preferences and look at things like your body, pace and goals to find the right fit.</span>
             </DialogDescription>
           </DialogHeader>
           <div className="pt-4">
