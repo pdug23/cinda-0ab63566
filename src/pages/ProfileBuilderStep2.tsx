@@ -199,16 +199,33 @@ const ProfileBuilderStep2 = () => {
         </div>
 
         {/* Card footer (fixed) */}
-        <footer className="flex flex-col items-center px-6 md:px-8 pt-4 pb-4 flex-shrink-0">
-          <Button
-            onClick={handleNext}
-            variant="cta"
-            className="w-full max-w-[280px] min-h-[44px] text-sm"
-            disabled={!canProceed}
-          >
-            next
-          </Button>
-        </footer>
+        {(() => {
+          const hasPattern = runningPattern !== null;
+          const hasAnyPB = Object.values(personalBests).some((pb) => pb !== null);
+          const allOptionalsFilled = hasPattern && (isBeginner || hasAnyPB);
+
+          return (
+            <footer className="flex flex-col items-center px-6 md:px-8 pt-4 pb-4 flex-shrink-0">
+              <div className="h-5 flex items-center justify-center w-3/4 mb-1">
+                <p
+                  className={`text-xs italic text-orange-400/50 text-center transition-opacity duration-200 ${
+                    allOptionalsFilled ? "opacity-0" : "opacity-100"
+                  }`}
+                >
+                  completing optional fields will help cinda better recommend shoes for how you run.
+                </p>
+              </div>
+              <Button
+                onClick={handleNext}
+                variant="cta"
+                className="w-full max-w-[280px] min-h-[44px] text-sm mt-4"
+                disabled={!canProceed}
+              >
+                next
+              </Button>
+            </footer>
+          );
+        })()}
 
         <PBPickerModal
           open={pbModalOpen}
