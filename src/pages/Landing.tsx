@@ -23,8 +23,11 @@ const Landing = () => {
   return (
     <OnboardingLayout centerContent>
       <PageTransition className="flex flex-col items-center justify-center text-center p-6 md:p-8 flex-1">
-        <div className="space-y-4 mb-10">
-          <img src={cindaLogo} alt="Cinda" className="h-[104px] mx-auto" />
+        {/* Logo */}
+        <img src={cindaLogo} alt="Cinda" className="h-[104px]" />
+
+        {/* Text block */}
+        <div className="space-y-4 text-center mt-8">
           <p
             className="text-2xl text-card-foreground/90 max-w-md leading-tight font-extrabold italic"
             style={{ fontVariantLigatures: "none" }}
@@ -36,22 +39,22 @@ const Landing = () => {
           </p>
         </div>
 
-        {/* CTA Buttons */}
-        <div className="flex flex-col items-center justify-center gap-3">
-          <Button
-            onClick={handleStartProfile}
-            variant="cta"
-            className="px-10 min-h-[44px] text-sm"
-          >
-            begin
-          </Button>
-          <button
-            onClick={() => setShowModal(true)}
-            className="text-xs italic text-orange-400/50 hover:text-orange-400/70 underline underline-offset-2 transition-colors cursor-pointer"
-          >
-            how does cinda work?
-          </button>
-        </div>
+        {/* Begin button */}
+        <Button
+          onClick={handleStartProfile}
+          variant="cta"
+          className="px-10 min-h-[44px] text-sm mt-8"
+        >
+          begin
+        </Button>
+
+        {/* How it works link */}
+        <button
+          onClick={() => setShowModal(true)}
+          className="text-xs italic text-orange-400/50 hover:text-orange-400/70 underline underline-offset-2 transition-colors cursor-pointer mt-8"
+        >
+          how does cinda work?
+        </button>
       </PageTransition>
 
       <Dialog open={showModal} onOpenChange={setShowModal}>
