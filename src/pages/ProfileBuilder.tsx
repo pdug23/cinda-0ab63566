@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft } from "lucide-react";
-import { PBPickerModal, PersonalBests, PBKey, formatPBTime } from "@/components/PBPickerModal";
 import { UnsavedChangesModal } from "@/components/UnsavedChangesModal";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
-import { useProfile } from "@/contexts/ProfileContext";
+import { useProfile, ExperienceLevel } from "@/contexts/ProfileContext";
+import { SelectionButton } from "@/components/SelectionButton";
+
 // Optional badge component
 const OptionalBadge = () => (
   <span className="ml-2 px-1.5 py-0.5 text-[10px] bg-orange-500/10 border border-orange-500/20 rounded text-orange-400/70 shadow-[0_0_8px_rgba(251,146,60,0.15)]">
@@ -51,12 +52,11 @@ const UnitToggle = ({
   </div>
 );
 
-// Personal bests distance config
-const PB_DISTANCES: { key: PBKey; label: string; placeholder: string }[] = [
-  { key: "5k", label: "5k", placeholder: "mm:ss" },
-  { key: "10k", label: "10k", placeholder: "mm:ss" },
-  { key: "half", label: "13.1mi", placeholder: "h:mm:ss" },
-  { key: "marathon", label: "26.2mi", placeholder: "h:mm:ss" },
+const EXPERIENCE_OPTIONS: { value: ExperienceLevel; label: string; description: string }[] = [
+  { value: "beginner", label: "beginner", description: "new to running or just getting started" },
+  { value: "intermediate", label: "intermediate", description: "running regularly for 6+ months" },
+  { value: "advanced", label: "advanced", description: "experienced runner with consistent training" },
+  { value: "racing_focused", label: "elite", description: "training seriously for competitive times" },
 ];
 
 const ProfileBuilder = () => {
@@ -79,10 +79,9 @@ const ProfileBuilder = () => {
   const [weightUnit, setWeightUnit] = useState<"kg" | "lbs">("kg");
   const [weightInput, setWeightInput] = useState(profileData.step1.weightKg?.toString() || "");
   
-  // Personal bests - structured with hours, minutes, seconds
-  const [personalBests, setPersonalBests] = useState<PersonalBests>(profileData.step1.personalBests);
-  const [pbModalOpen, setPbModalOpen] = useState(false);
-  const [pbModalInitialDistance, setPbModalInitialDistance] = useState<PBKey>("5k");
+  // Experience level
+  const [experience, setExperience] = useState<ExperienceLevel | null>(profileData.step1.experience);
+  
   const [unsavedModalOpen, setUnsavedModalOpen] = useState(false);
 
   // Check if form has any data (dirty state)
@@ -91,9 +90,9 @@ const ProfileBuilder = () => {
     const hasAge = age.trim() !== "";
     const hasHeight = heightCm !== null;
     const hasWeight = weightKg !== null;
-    const hasAnyPB = Object.values(personalBests).some((pb) => pb !== null);
-    return hasName || hasAge || hasHeight || hasWeight || hasAnyPB;
-  }, [firstName, age, heightCm, weightKg, personalBests]);
+    const hasExperience = experience !== null;
+    return hasName || hasAge || hasHeight || hasWeight || hasExperience;
+  }, [firstName, age, heightCm, weightKg, experience]);
 
   // Handle back navigation with dirty check
   const handleBack = () => {
@@ -111,6 +110,7 @@ const ProfileBuilder = () => {
     clearAll();
     navigate("/");
   };
+
   // Convert ft/in to cm
   const ftInToCm = (ft: number, inches: number): number => {
     return Math.round((ft * 12 + inches) * 2.54);
@@ -213,12 +213,6 @@ const ProfileBuilder = () => {
     setWeightUnit(newUnit as "kg" | "lbs");
   }, [weightUnit, weightInput]);
 
-  // Open PB modal for a specific distance
-  const openPbModal = (distance: PBKey) => {
-    setPbModalInitialDistance(distance);
-    setPbModalOpen(true);
-  };
-
   const handleNext = () => {
     // Save to context and navigate to step 2
     updateStep1({
@@ -226,15 +220,13 @@ const ProfileBuilder = () => {
       age,
       heightCm,
       weightKg,
-      personalBests,
+      experience,
     });
     navigate("/profile/step2");
   };
 
-  const handleSkip = () => {
-    console.log("Skipping to next step");
-  };
-
+  // Can proceed if name is filled and experience is selected
+  const canProceed = firstName.trim() !== "" && experience !== null;
 
   return (
     <OnboardingLayout scrollable>
@@ -269,6 +261,24 @@ const ProfileBuilder = () => {
                 onChange={(e) => setFirstName(e.target.value)}
                 className="bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40"
               />
+            </div>
+
+            {/* Experience Level - Required */}
+            <div>
+              <label className="block text-sm text-card-foreground/90 mb-3">
+                how would you describe your running experience?
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {EXPERIENCE_OPTIONS.map((option) => (
+                  <SelectionButton
+                    key={option.value}
+                    label={option.label}
+                    description={option.description}
+                    selected={experience === option.value}
+                    onClick={() => setExperience(option.value)}
+                  />
+                ))}
+              </div>
             </div>
 
             {/* Age - Optional */}
@@ -378,47 +388,6 @@ const ProfileBuilder = () => {
               />
             </div>
 
-            {/* Personal Bests - Optional */}
-            <div>
-              <label className="block text-sm text-card-foreground/90 mb-2">
-                estimated race times
-                <OptionalBadge />
-              </label>
-              <div className="overflow-x-auto -mx-1 px-1">
-                <div className="grid grid-cols-4 gap-3 min-w-[280px]">
-                  {PB_DISTANCES.map(({ key, label, placeholder }) => (
-                    <div key={key} className="text-center">
-                      <span className="text-xs text-card-foreground/60 block mb-1.5">
-                        {label}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => openPbModal(key)}
-                        className="w-full h-10 px-1 text-sm rounded-md bg-card-foreground/5 border border-card-foreground/20 text-card-foreground hover:bg-card-foreground/10 transition-colors"
-                      >
-                        {personalBests[key] ? (
-                          formatPBTime(personalBests[key])
-                        ) : (
-                          <span className="text-card-foreground/30">{placeholder}</span>
-                        )}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <p className="mt-3 text-sm text-muted-foreground">
-                estimated race times may or may not be your pb, but should reflect your current race pace for each distance.
-              </p>
-            </div>
-
-            <PBPickerModal
-              open={pbModalOpen}
-              onOpenChange={setPbModalOpen}
-              personalBests={personalBests}
-              onSave={setPersonalBests}
-              initialDistance={pbModalInitialDistance}
-            />
-
             <UnsavedChangesModal
               open={unsavedModalOpen}
               onOpenChange={setUnsavedModalOpen}
@@ -432,8 +401,7 @@ const ProfileBuilder = () => {
             const hasAge = age.trim() !== "";
             const hasHeight = heightCm !== null;
             const hasWeight = weightKg !== null;
-            const hasAnyPB = Object.values(personalBests).some((pb) => pb !== null);
-            const allOptionalsFilled = hasAge && hasHeight && hasWeight && hasAnyPB;
+            const allOptionalsFilled = hasAge && hasHeight && hasWeight;
 
             return (
               <footer className="flex flex-col items-center px-6 md:px-8 pt-4 pb-[calc(env(safe-area-inset-bottom)+16px)] flex-shrink-0">
@@ -450,7 +418,7 @@ const ProfileBuilder = () => {
                   onClick={handleNext}
                   variant="cta"
                   className="w-full max-w-[280px] min-h-[44px] text-sm mt-4"
-                  disabled={!firstName.trim()}
+                  disabled={!canProceed}
                 >
                   next
                 </Button>
