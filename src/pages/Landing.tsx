@@ -45,13 +45,12 @@ const Landing = () => {
           >
             begin
           </Button>
-          <Button
+          <button
             onClick={() => setShowModal(true)}
-            variant="cta"
-            className="min-h-[44px] text-sm"
+            className="text-xs italic text-orange-400/50 hover:text-orange-400/70 underline underline-offset-2 transition-colors cursor-pointer"
           >
-            how cinda works
-          </Button>
+            how does cinda work?
+          </button>
         </div>
       </PageTransition>
 
@@ -59,7 +58,7 @@ const Landing = () => {
         <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:duration-150">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold text-primary">
-              how cinda works
+              how does cinda work?
             </DialogTitle>
             <DialogDescription className="text-muted-foreground pt-3 space-y-3 text-sm">
               <span className="block">cinda helps runners find shoes that suit how they actually run.</span>
