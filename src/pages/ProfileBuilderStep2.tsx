@@ -114,7 +114,7 @@ const ProfileBuilderStep2 = () => {
             <label className="block text-sm text-card-foreground/90 mb-3">
               how would you describe your running experience?
             </label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {EXPERIENCE_OPTIONS.map((option) => (
                 <SelectionButton
                   key={option.value}
