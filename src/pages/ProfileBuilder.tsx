@@ -404,6 +404,14 @@ const ProfileBuilder = () => {
             />
           </div>
 
+          {/* Fade overlay above footer */}
+          <div 
+            className="h-8 flex-shrink-0 pointer-events-none" 
+            style={{ 
+              background: 'linear-gradient(to bottom, transparent, hsl(var(--card)))' 
+            }} 
+          />
+
           {/* Card footer (fixed) */}
           {(() => {
             const hasAge = age.trim() !== "";
