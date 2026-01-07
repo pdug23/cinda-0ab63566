@@ -23,12 +23,13 @@ const OnboardingLayout = ({
     >
       <main className="min-h-[calc(100dvh-32px)] flex items-center justify-center px-4 md:px-6">
         <div
-          className={`w-full max-w-lg flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10 min-h-[82dvh] md:min-h-[640px] ${
+          className={`w-full max-w-lg flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10 ${
             centerContent ? 'justify-center' : ''
           }`}
           style={{
-            maxHeight:
-              "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 32px)",
+            height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 32px)",
+            maxHeight: "720px",
+            minHeight: "540px",
           }}
         >
           {children}
