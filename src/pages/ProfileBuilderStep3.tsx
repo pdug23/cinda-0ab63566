@@ -29,7 +29,7 @@ const RUN_TYPE_OPTIONS: { value: ShoeRole; label: string }[] = [
   { value: "races", label: "races" },
   { value: "tempo", label: "tempo" },
   { value: "interval", label: "interval" },
-  { value: "easy_recovery", label: "easy pace" },
+  { value: "easy_recovery", label: "easy/ recovery" },
   { value: "trail", label: "trail" },
 ];
 
