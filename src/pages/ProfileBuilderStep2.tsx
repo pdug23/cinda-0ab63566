@@ -1,14 +1,15 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import { SelectionButton } from "@/components/SelectionButton";
 import { UnsavedChangesModal } from "@/components/UnsavedChangesModal";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
-import { useProfile, PrimaryGoal, RunningPattern } from "@/contexts/ProfileContext";
+import { useProfile, PrimaryGoal, RunningPattern, WeeklyVolume } from "@/contexts/ProfileContext";
 import { PBPickerModal, PersonalBests, PBKey, formatPBTime } from "@/components/PBPickerModal";
+import { Input } from "@/components/ui/input";
 
 // Optional badge component
 const OptionalBadge = () => (
@@ -51,6 +52,15 @@ const ProfileBuilderStep2 = () => {
   const [primaryGoal, setPrimaryGoal] = useState<PrimaryGoal | null>(profileData.step2.primaryGoal);
   const [personalBests, setPersonalBests] = useState<PersonalBests>(profileData.step2.personalBests);
   const [runningPattern, setRunningPattern] = useState<RunningPattern | null>(profileData.step2.runningPattern);
+  const [doesTrail, setDoesTrail] = useState<boolean>(profileData.step2.doesTrail);
+  const [weeklyVolume, setWeeklyVolume] = useState<WeeklyVolume | null>(profileData.step2.weeklyVolume);
+  const [volumeInput, setVolumeInput] = useState<string>(
+    profileData.step2.weeklyVolume?.value?.toString() || ""
+  );
+  const [volumeUnit, setVolumeUnit] = useState<"km" | "mi">(
+    profileData.step2.weeklyVolume?.unit || "km"
+  );
+  const [volumeError, setVolumeError] = useState<string | null>(null);
   const [unsavedModalOpen, setUnsavedModalOpen] = useState(false);
   const [pbModalOpen, setPbModalOpen] = useState(false);
   const [pbModalInitialDistance, setPbModalInitialDistance] = useState<PBKey>("5k");
@@ -60,12 +70,62 @@ const ProfileBuilderStep2 = () => {
     const hasGoal = primaryGoal !== null;
     const hasPattern = runningPattern !== null;
     const hasAnyPB = Object.values(personalBests).some((pb) => pb !== null);
-    return hasGoal || hasPattern || hasAnyPB;
-  }, [primaryGoal, runningPattern, personalBests]);
+    const hasTrail = doesTrail;
+    const hasVolume = volumeInput.trim() !== "";
+    return hasGoal || hasPattern || hasAnyPB || hasTrail || hasVolume;
+  }, [primaryGoal, runningPattern, personalBests, doesTrail, volumeInput]);
+
+  // Validate and parse weekly volume
+  const validateAndParseVolume = (): WeeklyVolume | null => {
+    const trimmed = volumeInput.trim();
+    if (!trimmed) return null;
+    
+    const value = parseInt(trimmed, 10);
+    if (isNaN(value)) {
+      setVolumeError("please enter a valid number");
+      return undefined as unknown as WeeklyVolume | null; // Signal error
+    }
+    
+    const maxValue = volumeUnit === "km" ? 300 : 186;
+    if (value < 0 || value > maxValue) {
+      setVolumeError(`please enter a value between 0 and ${maxValue} ${volumeUnit}`);
+      return undefined as unknown as WeeklyVolume | null;
+    }
+    
+    setVolumeError(null);
+    return { value, unit: volumeUnit };
+  };
+
+  // Handle unit switching with conversion
+  const handleUnitSwitch = (newUnit: "km" | "mi") => {
+    if (newUnit === volumeUnit) return;
+    
+    const trimmed = volumeInput.trim();
+    if (trimmed) {
+      const value = parseFloat(trimmed);
+      if (!isNaN(value)) {
+        const converted = newUnit === "mi" 
+          ? Math.round(value * 0.621371 * 10) / 10
+          : Math.round(value * 1.60934 * 10) / 10;
+        setVolumeInput(Math.round(converted).toString());
+      }
+    }
+    setVolumeUnit(newUnit);
+    setVolumeError(null);
+  };
+
+  // Handle volume input change (integers only)
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, "");
+    setVolumeInput(value);
+    setVolumeError(null);
+  };
 
   const handleBack = () => {
+    const parsedVolume = volumeInput.trim() ? validateAndParseVolume() : null;
+    const finalVolume = parsedVolume === undefined ? null : parsedVolume;
     // Save current state before navigating back (preserves data)
-    updateStep2({ primaryGoal, personalBests, runningPattern });
+    updateStep2({ primaryGoal, personalBests, runningPattern, doesTrail, weeklyVolume: finalVolume });
     navigate("/profile");
   };
 
@@ -85,9 +145,16 @@ const ProfileBuilderStep2 = () => {
   };
 
   const handleNext = () => {
-    // Save to context and proceed
-    updateStep2({ primaryGoal, personalBests, runningPattern });
-    console.log("Step 2 complete:", { primaryGoal, personalBests, runningPattern });
+    // Validate volume if entered
+    if (volumeInput.trim()) {
+      const parsedVolume = validateAndParseVolume();
+      if (parsedVolume === undefined) return; // Has error
+      setWeeklyVolume(parsedVolume);
+      updateStep2({ primaryGoal, personalBests, runningPattern, doesTrail, weeklyVolume: parsedVolume });
+    } else {
+      updateStep2({ primaryGoal, personalBests, runningPattern, doesTrail, weeklyVolume: null });
+    }
+    console.log("Step 2 complete:", { primaryGoal, personalBests, runningPattern, doesTrail, weeklyVolume });
     // TODO: Navigate to step 3
   };
 
@@ -199,13 +266,94 @@ const ProfileBuilderStep2 = () => {
               </p>
             </div>
           )}
+
+          {/* Trail Running - Optional */}
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => setDoesTrail(!doesTrail)}
+              className={`w-full min-h-[56px] px-4 py-3 flex items-center gap-3 rounded-lg border transition-all ${
+                doesTrail
+                  ? "border-orange-500 bg-orange-500/10 shadow-[0_0_12px_rgba(251,146,60,0.2)]"
+                  : "border-card-foreground/20 bg-card-foreground/5 hover:bg-card-foreground/10"
+              }`}
+            >
+              <div
+                className={`w-5 h-5 rounded flex items-center justify-center border transition-all ${
+                  doesTrail
+                    ? "bg-orange-500 border-orange-500"
+                    : "border-card-foreground/40 bg-transparent"
+                }`}
+              >
+                {doesTrail && <Check className="w-3.5 h-3.5 text-white" />}
+              </div>
+              <span className="text-sm text-card-foreground/90">
+                i do trail running / want to start trail running
+              </span>
+            </button>
+          </div>
+
+          {/* Weekly Volume - Optional */}
+          <div>
+            <label className="block text-sm text-card-foreground/90 mb-3">
+              average weekly volume
+              <OptionalBadge />
+            </label>
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={volumeInput}
+                  onChange={handleVolumeChange}
+                  placeholder="e.g., 40"
+                  className={`h-12 bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/30 ${
+                    volumeError ? "border-red-500" : ""
+                  }`}
+                />
+              </div>
+              <div className="flex rounded-lg overflow-hidden border border-card-foreground/20">
+                <button
+                  type="button"
+                  onClick={() => handleUnitSwitch("km")}
+                  className={`px-4 h-12 text-sm font-medium transition-colors ${
+                    volumeUnit === "km"
+                      ? "bg-orange-500 text-white"
+                      : "bg-card-foreground/5 text-card-foreground/60 hover:bg-card-foreground/10"
+                  }`}
+                >
+                  km
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleUnitSwitch("mi")}
+                  className={`px-4 h-12 text-sm font-medium transition-colors ${
+                    volumeUnit === "mi"
+                      ? "bg-orange-500 text-white"
+                      : "bg-card-foreground/5 text-card-foreground/60 hover:bg-card-foreground/10"
+                  }`}
+                >
+                  mi
+                </button>
+              </div>
+            </div>
+            {volumeError && (
+              <p className="mt-2 text-sm text-red-500">{volumeError}</p>
+            )}
+            <p className="mt-3 text-sm">
+              <span className="italic text-orange-500">why weekly volume?</span>{" "}
+              <span className="text-muted-foreground">helps us recommend shoes with appropriate durability and support for your mileage.</span>
+            </p>
+          </div>
         </div>
 
         {/* Card footer (fixed) */}
         {(() => {
           const hasPattern = runningPattern !== null;
           const hasAnyPB = Object.values(personalBests).some((pb) => pb !== null);
-          const allOptionalsFilled = hasPattern && (isBeginner || hasAnyPB);
+          const hasVolume = volumeInput.trim() !== "";
+          const allOptionalsFilled = hasPattern && (isBeginner || hasAnyPB) && hasVolume;
 
           return (
             <footer className="flex flex-col items-center px-6 md:px-8 pt-4 pb-4 flex-shrink-0">

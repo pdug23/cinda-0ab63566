@@ -256,14 +256,11 @@ export function hasCompletedProfile(): boolean {
   const profile = loadProfile();
   if (!profile) return false;
 
-  // Check required fields
+  // Check required fields (feel preferences are per-request now, not stored in profile)
   return !!(
     profile.firstName &&
     profile.experience &&
-    profile.primaryGoal &&
-    profile.feelPreferences?.softVsFirm &&
-    profile.feelPreferences?.stableVsNeutral &&
-    profile.feelPreferences?.bouncyVsDamped
+    profile.primaryGoal
   );
 }
 

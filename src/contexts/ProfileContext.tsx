@@ -15,11 +15,19 @@ export interface Step1Data {
   experience: ExperienceLevel | null;
 }
 
+// Weekly volume with unit
+export interface WeeklyVolume {
+  value: number;
+  unit: "km" | "mi";
+}
+
 // Step 2 data - goals + race times + pattern
 export interface Step2Data {
   primaryGoal: PrimaryGoal | null;
   personalBests: PersonalBests;
   runningPattern: RunningPattern | null;
+  doesTrail: boolean;
+  weeklyVolume: WeeklyVolume | null;
 }
 
 export interface ProfileData {
@@ -45,6 +53,8 @@ const defaultStep2: Step2Data = {
     marathon: null,
   },
   runningPattern: null,
+  doesTrail: false,
+  weeklyVolume: null,
 };
 
 interface ProfileContextType {
