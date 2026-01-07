@@ -37,6 +37,7 @@ const TRAIL_OPTIONS: { value: TrailRunning; label: string; description: string }
   { value: "most_runs", label: "i do trails for most or all of my runs", description: "trail shoes are a priority" },
   { value: "infrequent", label: "i do trails, but infrequently", description: "occasional trail capability" },
   { value: "want_to_start", label: "i want to start trail running", description: "looking to explore trails" },
+  { value: "no_trails", label: "no trails for me", description: "road running only" },
 ];
 
 // Unit toggle component (matches Step 1 styling)
@@ -339,11 +340,10 @@ const ProfileBuilderStep2 = () => {
             )}
           </div>
 
-          {/* Trail Running - Optional */}
+          {/* Trail Running */}
           <div>
             <label className="block text-sm text-card-foreground/90 mb-3">
               what about trail running?
-              <OptionalBadge />
             </label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {TRAIL_OPTIONS.map((option) => (
