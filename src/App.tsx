@@ -8,6 +8,8 @@ import Landing from "./pages/Landing";
 import Chat from "./pages/Chat";
 import ProfileBuilder from "./pages/ProfileBuilder";
 import ProfileBuilderStep2 from "./pages/ProfileBuilderStep2";
+import ProfileBuilderStep3 from "./pages/ProfileBuilderStep3";
+import ProfileBuilderStep4 from "./pages/ProfileBuilderStep4";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +26,8 @@ const App = () => (
             <Route path="/chat" element={<Chat />} />
             <Route path="/profile" element={<ProfileBuilder />} />
             <Route path="/profile/step2" element={<ProfileBuilderStep2 />} />
+            <Route path="/profile/step3" element={<ProfileBuilderStep3 />} />
+            <Route path="/profile/step4" element={<ProfileBuilderStep4 />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
