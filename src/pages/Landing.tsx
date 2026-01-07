@@ -59,7 +59,7 @@ const Landing = () => {
         {/* How it works link - positioned lower with reduced prominence */}
         <button
           onClick={() => setShowModal(true)}
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors cursor-pointer z-10"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors cursor-pointer z-10"
         >
           how does cinda work?
         </button>
