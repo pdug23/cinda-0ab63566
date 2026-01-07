@@ -287,14 +287,12 @@ const ProfileBuilderStep3 = () => {
 
   const handleSkip = () => {
     updateStep3({ currentShoes: [] });
-    console.log("Step 3 skipped");
-    // TODO: Navigate to step 4
+    navigate("/profile/step4");
   };
 
   const handleNext = () => {
     updateStep3({ currentShoes });
-    console.log("Step 3 complete:", { currentShoes });
-    // TODO: Navigate to step 4
+    navigate("/profile/step4");
   };
 
   return (
