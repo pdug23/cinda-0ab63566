@@ -1,13 +1,13 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { SelectionButton } from "@/components/SelectionButton";
 import { UnsavedChangesModal } from "@/components/UnsavedChangesModal";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
-import { useProfile, PrimaryGoal, RunningPattern, WeeklyVolume } from "@/contexts/ProfileContext";
+import { useProfile, PrimaryGoal, RunningPattern, TrailRunning, WeeklyVolume } from "@/contexts/ProfileContext";
 import { PBPickerModal, PersonalBests, PBKey, formatPBTime } from "@/components/PBPickerModal";
 import { Input } from "@/components/ui/input";
 
@@ -33,6 +33,40 @@ const PATTERN_OPTIONS: { value: RunningPattern; label: string; description: stri
   { value: "infrequent", label: "infrequent", description: "1 run/week or less" },
 ];
 
+const TRAIL_OPTIONS: { value: TrailRunning; label: string; description: string }[] = [
+  { value: "most_runs", label: "i do trails for most or all of my runs", description: "trail shoes are a priority" },
+  { value: "infrequent", label: "i do trails, but infrequently", description: "occasional trail capability" },
+  { value: "want_to_start", label: "i want to start trail running", description: "looking to explore trails" },
+];
+
+// Unit toggle component (matches Step 1 styling)
+const UnitToggle = ({ 
+  options, 
+  value, 
+  onChange 
+}: { 
+  options: { label: string; value: string }[]; 
+  value: string; 
+  onChange: (value: string) => void;
+}) => (
+  <div className="flex rounded-md overflow-hidden border border-card-foreground/20 flex-shrink-0">
+    {options.map((option) => (
+      <button
+        key={option.value}
+        type="button"
+        onClick={() => onChange(option.value)}
+        className={`px-3 py-1.5 text-xs transition-colors ${
+          value === option.value
+            ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+            : "bg-card-foreground/5 text-card-foreground/50 hover:text-card-foreground/70"
+        }`}
+      >
+        {option.label}
+      </button>
+    ))}
+  </div>
+);
+
 // Personal bests distance config
 const PB_DISTANCES: { key: PBKey; label: string; placeholder: string }[] = [
   { key: "5k", label: "5k", placeholder: "mm:ss" },
@@ -52,7 +86,7 @@ const ProfileBuilderStep2 = () => {
   const [primaryGoal, setPrimaryGoal] = useState<PrimaryGoal | null>(profileData.step2.primaryGoal);
   const [personalBests, setPersonalBests] = useState<PersonalBests>(profileData.step2.personalBests);
   const [runningPattern, setRunningPattern] = useState<RunningPattern | null>(profileData.step2.runningPattern);
-  const [doesTrail, setDoesTrail] = useState<boolean>(profileData.step2.doesTrail);
+  const [trailRunning, setTrailRunning] = useState<TrailRunning | null>(profileData.step2.trailRunning);
   const [weeklyVolume, setWeeklyVolume] = useState<WeeklyVolume | null>(profileData.step2.weeklyVolume);
   const [volumeInput, setVolumeInput] = useState<string>(
     profileData.step2.weeklyVolume?.value?.toString() || ""
@@ -70,10 +104,10 @@ const ProfileBuilderStep2 = () => {
     const hasGoal = primaryGoal !== null;
     const hasPattern = runningPattern !== null;
     const hasAnyPB = Object.values(personalBests).some((pb) => pb !== null);
-    const hasTrail = doesTrail;
+    const hasTrail = trailRunning !== null;
     const hasVolume = volumeInput.trim() !== "";
     return hasGoal || hasPattern || hasAnyPB || hasTrail || hasVolume;
-  }, [primaryGoal, runningPattern, personalBests, doesTrail, volumeInput]);
+  }, [primaryGoal, runningPattern, personalBests, trailRunning, volumeInput]);
 
   // Validate and parse weekly volume
   const validateAndParseVolume = (): WeeklyVolume | null => {
@@ -97,20 +131,21 @@ const ProfileBuilderStep2 = () => {
   };
 
   // Handle unit switching with conversion
-  const handleUnitSwitch = (newUnit: "km" | "mi") => {
-    if (newUnit === volumeUnit) return;
+  const handleUnitSwitch = (newUnit: string) => {
+    const unit = newUnit as "km" | "mi";
+    if (unit === volumeUnit) return;
     
     const trimmed = volumeInput.trim();
     if (trimmed) {
       const value = parseFloat(trimmed);
       if (!isNaN(value)) {
-        const converted = newUnit === "mi" 
+        const converted = unit === "mi" 
           ? Math.round(value * 0.621371 * 10) / 10
           : Math.round(value * 1.60934 * 10) / 10;
         setVolumeInput(Math.round(converted).toString());
       }
     }
-    setVolumeUnit(newUnit);
+    setVolumeUnit(unit);
     setVolumeError(null);
   };
 
@@ -125,7 +160,7 @@ const ProfileBuilderStep2 = () => {
     const parsedVolume = volumeInput.trim() ? validateAndParseVolume() : null;
     const finalVolume = parsedVolume === undefined ? null : parsedVolume;
     // Save current state before navigating back (preserves data)
-    updateStep2({ primaryGoal, personalBests, runningPattern, doesTrail, weeklyVolume: finalVolume });
+    updateStep2({ primaryGoal, personalBests, runningPattern, trailRunning, weeklyVolume: finalVolume });
     navigate("/profile");
   };
 
@@ -150,12 +185,17 @@ const ProfileBuilderStep2 = () => {
       const parsedVolume = validateAndParseVolume();
       if (parsedVolume === undefined) return; // Has error
       setWeeklyVolume(parsedVolume);
-      updateStep2({ primaryGoal, personalBests, runningPattern, doesTrail, weeklyVolume: parsedVolume });
+      updateStep2({ primaryGoal, personalBests, runningPattern, trailRunning, weeklyVolume: parsedVolume });
     } else {
-      updateStep2({ primaryGoal, personalBests, runningPattern, doesTrail, weeklyVolume: null });
+      updateStep2({ primaryGoal, personalBests, runningPattern, trailRunning, weeklyVolume: null });
     }
-    console.log("Step 2 complete:", { primaryGoal, personalBests, runningPattern, doesTrail, weeklyVolume });
+    console.log("Step 2 complete:", { primaryGoal, personalBests, runningPattern, trailRunning, weeklyVolume });
     // TODO: Navigate to step 3
+  };
+
+  const handleTrailToggle = (value: TrailRunning) => {
+    // Toggle behavior - clicking selected button deselects it
+    setTrailRunning((prev) => (prev === value ? null : value));
   };
 
   const handlePatternToggle = (value: RunningPattern) => {
@@ -267,84 +307,55 @@ const ProfileBuilderStep2 = () => {
             </div>
           )}
 
-          {/* Trail Running - Optional */}
-          <div className="mt-4">
-            <button
-              type="button"
-              onClick={() => setDoesTrail(!doesTrail)}
-              className={`w-full min-h-[56px] px-4 py-3 flex items-center gap-3 rounded-lg border transition-all ${
-                doesTrail
-                  ? "border-orange-500 bg-orange-500/10 shadow-[0_0_12px_rgba(251,146,60,0.2)]"
-                  : "border-card-foreground/20 bg-card-foreground/5 hover:bg-card-foreground/10"
-              }`}
-            >
-              <div
-                className={`w-5 h-5 rounded flex items-center justify-center border transition-all ${
-                  doesTrail
-                    ? "bg-orange-500 border-orange-500"
-                    : "border-card-foreground/40 bg-transparent"
-                }`}
-              >
-                {doesTrail && <Check className="w-3.5 h-3.5 text-white" />}
-              </div>
-              <span className="text-sm text-card-foreground/90">
-                i do trail running / want to start trail running
-              </span>
-            </button>
-          </div>
-
           {/* Weekly Volume - Optional */}
           <div>
-            <label className="block text-sm text-card-foreground/90 mb-3">
+            <label className="block text-sm text-card-foreground/90 mb-2">
               average weekly volume
               <OptionalBadge />
             </label>
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={volumeInput}
-                  onChange={handleVolumeChange}
-                  placeholder="e.g., 40"
-                  className={`h-12 bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/30 ${
-                    volumeError ? "border-red-500" : ""
-                  }`}
-                />
-              </div>
-              <div className="flex rounded-lg overflow-hidden border border-card-foreground/20">
-                <button
-                  type="button"
-                  onClick={() => handleUnitSwitch("km")}
-                  className={`px-4 h-12 text-sm font-medium transition-colors ${
-                    volumeUnit === "km"
-                      ? "bg-orange-500 text-white"
-                      : "bg-card-foreground/5 text-card-foreground/60 hover:bg-card-foreground/10"
-                  }`}
-                >
-                  km
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleUnitSwitch("mi")}
-                  className={`px-4 h-12 text-sm font-medium transition-colors ${
-                    volumeUnit === "mi"
-                      ? "bg-orange-500 text-white"
-                      : "bg-card-foreground/5 text-card-foreground/60 hover:bg-card-foreground/10"
-                  }`}
-                >
-                  mi
-                </button>
-              </div>
+            <div className="flex gap-2 items-center">
+              <Input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={volumeInput}
+                onChange={handleVolumeChange}
+                placeholder="e.g., 40"
+                className={`flex-1 bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40 ${
+                  volumeError ? "border-red-500" : ""
+                }`}
+              />
+              <UnitToggle
+                options={[
+                  { label: "km", value: "km" },
+                  { label: "mi", value: "mi" },
+                ]}
+                value={volumeUnit}
+                onChange={handleUnitSwitch}
+              />
             </div>
             {volumeError && (
               <p className="mt-2 text-sm text-red-500">{volumeError}</p>
             )}
-            <p className="mt-3 text-sm">
-              <span className="italic text-orange-500">why weekly volume?</span>{" "}
-              <span className="text-muted-foreground">helps us recommend shoes with appropriate durability and support for your mileage.</span>
-            </p>
+          </div>
+
+          {/* Trail Running - Optional */}
+          <div>
+            <label className="block text-sm text-card-foreground/90 mb-3">
+              what about trail running?
+              <OptionalBadge />
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {TRAIL_OPTIONS.map((option) => (
+                <SelectionButton
+                  key={option.value}
+                  label={option.label}
+                  description={option.description}
+                  selected={trailRunning === option.value}
+                  onClick={() => handleTrailToggle(option.value)}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
@@ -353,7 +364,8 @@ const ProfileBuilderStep2 = () => {
           const hasPattern = runningPattern !== null;
           const hasAnyPB = Object.values(personalBests).some((pb) => pb !== null);
           const hasVolume = volumeInput.trim() !== "";
-          const allOptionalsFilled = hasPattern && (isBeginner || hasAnyPB) && hasVolume;
+          const hasTrail = trailRunning !== null;
+          const allOptionalsFilled = hasPattern && (isBeginner || hasAnyPB) && hasVolume && hasTrail;
 
           return (
             <footer className="flex flex-col items-center px-6 md:px-8 pt-4 pb-4 flex-shrink-0">
