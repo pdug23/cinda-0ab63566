@@ -229,7 +229,7 @@ const ProfileBuilder = () => {
       </header>
 
       {/* Main content area */}
-      <main className="flex items-center justify-center px-4 py-8 md:px-6">
+      <main className="flex justify-center px-4 py-8 md:px-6">
         <div className="w-full max-w-lg flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10">
           
           {/* Content */}
