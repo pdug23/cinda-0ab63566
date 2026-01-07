@@ -10,6 +10,13 @@ import AnimatedBackground from "@/components/AnimatedBackground";
 import { useProfile, CurrentShoe, ShoeRole, ShoeSentiment } from "@/contexts/ProfileContext";
 import { cn } from "@/lib/utils";
 import shoebaseData from "@/data/shoebase.json";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 // Shoe type from shoebase.json
 interface Shoe {
@@ -184,6 +191,8 @@ const ProfileBuilderStep3 = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [unsavedModalOpen, setUnsavedModalOpen] = useState(false);
+  const [confirmShoesModalOpen, setConfirmShoesModalOpen] = useState(false);
+  const [confirmSkipModalOpen, setConfirmSkipModalOpen] = useState(false);
 
   // Search results
   const searchResults = useMemo(() => {
@@ -285,12 +294,22 @@ const ProfileBuilderStep3 = () => {
     navigate("/");
   };
 
-  const handleSkip = () => {
+  const handleSkipClick = () => {
+    setConfirmSkipModalOpen(true);
+  };
+
+  const handleConfirmSkip = () => {
+    setConfirmSkipModalOpen(false);
     updateStep3({ currentShoes: [] });
     navigate("/profile/step4");
   };
 
-  const handleNext = () => {
+  const handleNextClick = () => {
+    setConfirmShoesModalOpen(true);
+  };
+
+  const handleConfirmNext = () => {
+    setConfirmShoesModalOpen(false);
     updateStep3({ currentShoes });
     navigate("/profile/step4");
   };
@@ -380,17 +399,17 @@ const ProfileBuilderStep3 = () => {
           {/* Card footer */}
           <footer className="flex flex-col items-center px-6 md:px-8 pt-4 pb-4 flex-shrink-0 gap-3">
             <Button
-              onClick={handleSkip}
+              onClick={handleSkipClick}
               variant="ghost"
               className="text-card-foreground/50 hover:text-card-foreground/70 text-sm"
             >
               skip this step
             </Button>
             <Button
-              onClick={handleNext}
+              onClick={handleNextClick}
               variant="cta"
               className="w-full max-w-[280px] min-h-[44px] text-sm"
-              disabled={!allShoesComplete}
+              disabled={!allShoesComplete || currentShoes.length === 0}
             >
               next
             </Button>
@@ -402,6 +421,72 @@ const ProfileBuilderStep3 = () => {
             onStay={() => setUnsavedModalOpen(false)}
             onGoBack={handleConfirmLeave}
           />
+
+          {/* Confirm Shoes Modal */}
+          <Dialog open={confirmShoesModalOpen} onOpenChange={setConfirmShoesModalOpen}>
+            <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px]">
+              <DialogHeader>
+                <DialogTitle className="text-lg font-semibold text-primary">
+                  confirm your rotation
+                </DialogTitle>
+                <DialogDescription className="text-muted-foreground pt-3 text-sm">
+                  <ul className="space-y-1.5">
+                    {currentShoes.map((item) => (
+                      <li key={item.shoe.shoe_id} className="normal-case">
+                        {item.shoe.full_name}
+                      </li>
+                    ))}
+                  </ul>
+                </DialogDescription>
+              </DialogHeader>
+              <div className="pt-4 flex flex-col gap-2">
+                <Button
+                  onClick={handleConfirmNext}
+                  variant="cta"
+                  className="w-full text-sm"
+                >
+                  looks good
+                </Button>
+                <Button
+                  onClick={() => setConfirmShoesModalOpen(false)}
+                  variant="outline"
+                  className="w-full bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
+                >
+                  go back
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Confirm Skip Modal */}
+          <Dialog open={confirmSkipModalOpen} onOpenChange={setConfirmSkipModalOpen}>
+            <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px]">
+              <DialogHeader>
+                <DialogTitle className="text-lg font-semibold text-primary">
+                  are you sure?
+                </DialogTitle>
+                <DialogDescription className="text-muted-foreground pt-3 text-sm">
+                  skipping means cinda won't be able to analyse your rotation
+                </DialogDescription>
+              </DialogHeader>
+              <div className="pt-4 flex flex-col gap-2">
+                <Button
+                  onClick={handleConfirmSkip}
+                  variant="outline"
+                  className="w-full bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
+                >
+                  skip anyway
+                </Button>
+                <Button
+                  onClick={() => setConfirmSkipModalOpen(false)}
+                  variant="cta"
+                  className="w-full text-sm"
+                >
+                  go back
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </PageTransition>
       </OnboardingLayout>
     </>
