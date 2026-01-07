@@ -209,14 +209,14 @@ const ProfileBuilder = () => {
 
   return (
     <div 
-      className="min-h-[100dvh] overflow-y-auto" 
+      className="h-[100dvh] flex flex-col overflow-hidden" 
       style={{ 
         paddingTop: 'env(safe-area-inset-top)', 
         paddingBottom: 'env(safe-area-inset-bottom)' 
       }}
     >
       {/* Header */}
-      <header className="w-full px-4 py-3 flex items-center justify-between relative z-10">
+      <header className="w-full px-4 py-3 flex items-center justify-between relative z-10 flex-shrink-0">
         <button
           type="button"
           onClick={() => navigate("/")}
@@ -229,7 +229,10 @@ const ProfileBuilder = () => {
       </header>
 
       {/* Main content area */}
-      <main className="flex justify-center px-4 py-8 md:px-6">
+      <main
+        className="flex-1 min-h-0 overflow-y-auto scrollbar-styled flex justify-center px-4 pt-8 pb-[calc(env(safe-area-inset-bottom)+96px)] md:px-6"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
         <div className="w-full max-w-lg flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10">
           
           {/* Content */}
