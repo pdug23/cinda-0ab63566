@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import cindaLogo from "@/assets/cinda-logo-grey.png";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
-import LandingBackground from "@/components/LandingBackground";
+import AnimatedBackground from "@/components/AnimatedBackground";
 import { usePageNavigation } from "@/hooks/usePageNavigation";
 import {
   Dialog,
@@ -29,7 +29,7 @@ const Landing = () => {
   return (
     <>
       {/* Premium animated background */}
-      <LandingBackground />
+      <AnimatedBackground />
 
       <OnboardingLayout centerContent transparent>
         <PageTransition className="flex flex-col items-center justify-center text-center p-6 md:p-8 flex-1 relative z-10">
