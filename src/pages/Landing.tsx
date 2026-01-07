@@ -39,8 +39,8 @@ const Landing = () => {
           {/* Text block */}
           <div className="text-center mt-8">
             <p
-              className="text-2xl text-card-foreground/90 max-w-md leading-tight font-extrabold italic"
-              style={{ fontVariantLigatures: "none" }}
+              className="text-card-foreground/90 max-w-md leading-tight italic"
+              style={{ fontVariantLigatures: "none", fontSize: "25px", fontWeight: 900 }}
             >
               Every runner deserves to find their perfect fit.
             </p>
