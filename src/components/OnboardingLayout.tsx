@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 interface OnboardingLayoutProps {
   children: ReactNode;
@@ -6,13 +6,18 @@ interface OnboardingLayoutProps {
   scrollable?: boolean;
   /** Whether to center the content vertically within the card */
   centerContent?: boolean;
+  /** Whether the container should be transparent (for landing page) */
+  transparent?: boolean;
 }
 
 const OnboardingLayout = ({ 
   children, 
   scrollable = false,
-  centerContent = false 
+  centerContent = false,
+  transparent = false
 }: OnboardingLayoutProps) => {
+  const [showContainer, setShowContainer] = useState(!transparent);
+
   // Lock body scroll when this layout is mounted
   useEffect(() => {
     const html = document.documentElement;
@@ -39,6 +44,22 @@ const OnboardingLayout = ({
     };
   }, []);
 
+  // Listen for container reveal event (triggered before navigation)
+  useEffect(() => {
+    if (!transparent) return;
+
+    const handleReveal = () => {
+      setShowContainer(true);
+    };
+
+    window.addEventListener("reveal-container", handleReveal);
+    return () => window.removeEventListener("reveal-container", handleReveal);
+  }, [transparent]);
+
+  const containerClasses = transparent && !showContainer
+    ? "bg-transparent border-transparent shadow-none"
+    : "bg-card border-border/20 shadow-xl";
+
   return (
     <div
       className="fixed inset-0 overflow-hidden"
@@ -49,7 +70,7 @@ const OnboardingLayout = ({
     >
       <main className="h-full flex items-center justify-center px-4 md:px-6">
         <div
-          className={`w-full max-w-lg flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10 ${
+          className={`w-full max-w-lg flex flex-col rounded-2xl border overflow-hidden relative z-10 transition-all duration-300 ease-out ${containerClasses} ${
             centerContent ? 'justify-center' : ''
           }`}
           style={{
