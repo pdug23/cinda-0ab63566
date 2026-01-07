@@ -56,7 +56,7 @@ const Landing = () => {
       </PageTransition>
 
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="bg-card border-border/40 max-w-md data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:duration-150">
+        <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:duration-150">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold">
               how cinda works
