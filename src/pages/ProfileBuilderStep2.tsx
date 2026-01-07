@@ -37,7 +37,7 @@ const TRAIL_OPTIONS: { value: TrailRunning; label: string; description: string }
   { value: "most_runs", label: "i do trails for most or all of my runs", description: "trail shoes are a priority" },
   { value: "infrequent", label: "i do trails, but infrequently", description: "occasional trail capability" },
   { value: "want_to_start", label: "i want to start trail running", description: "looking to explore trails" },
-  { value: "no_trails", label: "no trails for me", description: "road running only" },
+  { value: "no_trails", label: "no trails for me", description: "road or treadmill only" },
 ];
 
 // Unit toggle component (matches Step 1 styling)
@@ -290,37 +290,44 @@ const ProfileBuilderStep2 = () => {
             </div>
           </div>
 
-          {/* Weekly Volume - Optional */}
-          <div>
-            <label className="block text-sm text-card-foreground/90 mb-2">
-              average weekly volume
-              <OptionalBadge />
-            </label>
-            <div className="flex gap-2 items-center">
-              <Input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={volumeInput}
-                onChange={handleVolumeChange}
-                placeholder="e.g., 40"
-                className={`flex-1 bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40 ${
-                  volumeError ? "border-red-500" : ""
-                }`}
-              />
-              <UnitToggle
-                options={[
-                  { label: "km", value: "km" },
-                  { label: "mi", value: "mi" },
-                ]}
-                value={volumeUnit}
-                onChange={handleUnitSwitch}
-              />
+          {/* Weekly Volume - Optional (hidden for beginners) */}
+          {!isBeginner && (
+            <div>
+              <label className="block text-sm text-card-foreground/90 mb-2">
+                average weekly volume
+                <OptionalBadge />
+              </label>
+              <div className="flex gap-2 items-center">
+                <div className="relative flex-1">
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={volumeInput}
+                    onChange={handleVolumeChange}
+                    placeholder="35"
+                    className={`w-full bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40 pr-10 ${
+                      volumeError ? "border-red-500" : ""
+                    }`}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-card-foreground/40">
+                    {volumeUnit}
+                  </span>
+                </div>
+                <UnitToggle
+                  options={[
+                    { label: "km", value: "km" },
+                    { label: "mi", value: "mi" },
+                  ]}
+                  value={volumeUnit}
+                  onChange={handleUnitSwitch}
+                />
+              </div>
+              {volumeError && (
+                <p className="mt-2 text-sm text-red-500">{volumeError}</p>
+              )}
             </div>
-            {volumeError && (
-              <p className="mt-2 text-sm text-red-500">{volumeError}</p>
-            )}
-          </div>
+          )}
 
           {/* Estimated Race Times - Optional (hidden for beginners) */}
           {!isBeginner && (
@@ -365,7 +372,7 @@ const ProfileBuilderStep2 = () => {
           const hasAnyPB = Object.values(personalBests).some((pb) => pb !== null);
           const hasVolume = volumeInput.trim() !== "";
           const hasTrail = trailRunning !== null;
-          const allOptionalsFilled = hasPattern && (isBeginner || hasAnyPB) && hasVolume && hasTrail;
+          const allOptionalsFilled = hasPattern && (isBeginner || (hasAnyPB && hasVolume)) && hasTrail;
 
           return (
             <footer className="flex flex-col items-center px-6 md:px-8 pt-4 pb-4 flex-shrink-0">
