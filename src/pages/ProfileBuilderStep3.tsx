@@ -320,10 +320,10 @@ const ProfileBuilderStep3 = () => {
             className="flex-1 min-h-0 overflow-y-auto scrollbar-styled touch-pan-y px-6 md:px-8 space-y-6 pb-6"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
-            {/* Heading */}
-            <h2 className="text-lg font-medium text-card-foreground/90">
+            {/* Intro sentence */}
+            <p className="italic text-orange-500 mb-3" style={{ fontSize: '16px' }}>
               add your current shoes (or skip if you don't have any)
-            </h2>
+            </p>
 
             {/* Search input */}
             <div className="relative">
