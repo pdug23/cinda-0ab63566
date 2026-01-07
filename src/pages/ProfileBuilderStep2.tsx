@@ -6,6 +6,7 @@ import { SelectionButton } from "@/components/SelectionButton";
 import { UnsavedChangesModal } from "@/components/UnsavedChangesModal";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
+import AnimatedBackground from "@/components/AnimatedBackground";
 import { useProfile, PrimaryGoal, RunningPattern } from "@/contexts/ProfileContext";
 import { PBPickerModal, PersonalBests, PBKey, formatPBTime } from "@/components/PBPickerModal";
 
@@ -104,8 +105,10 @@ const ProfileBuilderStep2 = () => {
   const canProceed = primaryGoal !== null;
 
   return (
-    <OnboardingLayout scrollable>
-      <PageTransition className="flex flex-col flex-1 min-h-0">
+    <>
+      <AnimatedBackground />
+      <OnboardingLayout scrollable>
+        <PageTransition className="flex flex-col flex-1 min-h-0">
         {/* Card header (fixed) */}
         <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between flex-shrink-0">
           <button
@@ -243,6 +246,7 @@ const ProfileBuilderStep2 = () => {
         />
       </PageTransition>
     </OnboardingLayout>
+    </>
   );
 };
 
