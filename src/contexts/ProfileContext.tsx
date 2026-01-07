@@ -5,7 +5,7 @@ import { PersonalBests } from "@/components/PBPickerModal";
 export type ExperienceLevel = "beginner" | "intermediate" | "advanced" | "racing_focused";
 export type PrimaryGoal = "general_fitness" | "improve_pace" | "train_for_race" | "comfort_recovery" | "just_for_fun";
 export type RunningPattern = "infrequent" | "mostly_easy" | "structured_training" | "workouts" | "long_run_focus";
-export type TrailRunning = "most_runs" | "infrequent" | "want_to_start";
+export type TrailRunning = "most_runs" | "infrequent" | "want_to_start" | "no_trails";
 
 // Step 1 data - basics + experience
 export interface Step1Data {
