@@ -157,6 +157,17 @@ All colors MUST be HSL.
     min-height: 100%;
   }
 
+  body {
+    min-height: 100dvh;
+    overflow-x: hidden;
+    background: 
+      var(--gradient-nebula-overlay),
+      var(--gradient-warm);
+    background-color: hsl(0 0% 12%);
+    background-attachment: fixed;
+    color: hsl(var(--foreground));
+  }
+
   #root {
     min-height: 100dvh;
   }
