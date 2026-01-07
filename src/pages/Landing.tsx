@@ -17,11 +17,16 @@ const Landing = () => {
   const [showModal, setShowModal] = useState(false);
 
   const handleStartProfile = () => {
-    navigateWithTransition("/profile");
+    // Trigger container reveal animation first
+    window.dispatchEvent(new CustomEvent("reveal-container"));
+    // Then navigate after the container animation starts
+    setTimeout(() => {
+      navigateWithTransition("/profile");
+    }, 150);
   };
 
   return (
-    <OnboardingLayout centerContent>
+    <OnboardingLayout centerContent transparent>
       <PageTransition className="flex flex-col items-center justify-center text-center p-6 md:p-8 flex-1">
         {/* Logo */}
         <img src={cindaLogo} alt="Cinda" className="h-[104px]" />
