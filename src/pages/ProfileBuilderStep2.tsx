@@ -272,6 +272,38 @@ const ProfileBuilderStep2 = () => {
             </div>
           </div>
 
+          {/* Weekly Volume - Optional */}
+          <div>
+            <label className="block text-sm text-card-foreground/90 mb-2">
+              average weekly volume
+              <OptionalBadge />
+            </label>
+            <div className="flex gap-2 items-center">
+              <Input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={volumeInput}
+                onChange={handleVolumeChange}
+                placeholder="e.g., 40"
+                className={`flex-1 bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40 ${
+                  volumeError ? "border-red-500" : ""
+                }`}
+              />
+              <UnitToggle
+                options={[
+                  { label: "km", value: "km" },
+                  { label: "mi", value: "mi" },
+                ]}
+                value={volumeUnit}
+                onChange={handleUnitSwitch}
+              />
+            </div>
+            {volumeError && (
+              <p className="mt-2 text-sm text-red-500">{volumeError}</p>
+            )}
+          </div>
+
           {/* Estimated Race Times - Optional (hidden for beginners) */}
           {!isBeginner && (
             <div>
@@ -307,38 +339,6 @@ const ProfileBuilderStep2 = () => {
               </p>
             </div>
           )}
-
-          {/* Weekly Volume - Optional */}
-          <div>
-            <label className="block text-sm text-card-foreground/90 mb-2">
-              average weekly volume
-              <OptionalBadge />
-            </label>
-            <div className="flex gap-2 items-center">
-              <Input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={volumeInput}
-                onChange={handleVolumeChange}
-                placeholder="e.g., 40"
-                className={`flex-1 bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40 ${
-                  volumeError ? "border-red-500" : ""
-                }`}
-              />
-              <UnitToggle
-                options={[
-                  { label: "km", value: "km" },
-                  { label: "mi", value: "mi" },
-                ]}
-                value={volumeUnit}
-                onChange={handleUnitSwitch}
-              />
-            </div>
-            {volumeError && (
-              <p className="mt-2 text-sm text-red-500">{volumeError}</p>
-            )}
-          </div>
 
           {/* Trail Running */}
           <div>
