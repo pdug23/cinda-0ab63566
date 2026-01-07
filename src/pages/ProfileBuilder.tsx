@@ -264,7 +264,7 @@ const ProfileBuilder = () => {
               </label>
               <Input
                 type="text"
-                placeholder="e.g., cinda"
+                placeholder="cinda"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 className="bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40"
@@ -280,7 +280,7 @@ const ProfileBuilder = () => {
               <Input
                 type="text"
                 inputMode="numeric"
-                placeholder="e.g., 32"
+                placeholder="22"
                 value={age}
                 onChange={(e) => setAge(e.target.value.replace(/\D/g, ""))}
                 className="bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40"
@@ -295,14 +295,19 @@ const ProfileBuilder = () => {
               </label>
               <div className="flex gap-2 items-center">
                 {heightUnit === "cm" ? (
-                  <Input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="178"
-                    value={heightCmInput}
-                    onChange={(e) => handleHeightCmChange(e.target.value)}
-                    className="flex-1 bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40"
-                  />
+                  <div className="relative flex-1">
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="178"
+                      value={heightCmInput}
+                      onChange={(e) => handleHeightCmChange(e.target.value)}
+                      className="w-full bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40 pr-10"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-card-foreground/40">
+                      cm
+                    </span>
+                  </div>
                 ) : (
                   <div className="flex-1 flex gap-2">
                     <div className="relative flex-1">
@@ -355,14 +360,19 @@ const ProfileBuilder = () => {
                 <OptionalBadge />
               </label>
               <div className="flex gap-2 items-center">
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder={weightUnit === "kg" ? "73" : "160"}
-                  value={weightInput}
-                  onChange={(e) => handleWeightChange(e.target.value)}
-                  className="flex-1 bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40"
-                />
+                <div className="relative flex-1">
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder={weightUnit === "kg" ? "73" : "160"}
+                    value={weightInput}
+                    onChange={(e) => handleWeightChange(e.target.value)}
+                    className="w-full bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40 pr-10"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-card-foreground/40">
+                    {weightUnit}
+                  </span>
+                </div>
                 <UnitToggle
                   options={[
                     { label: "kg", value: "kg" },
