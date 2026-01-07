@@ -154,23 +154,24 @@ All colors MUST be HSL.
   }
 
   html, body, #root {
-    height: 100%;
-    overflow: hidden;
+    min-height: 100%;
   }
 
   body {
+    min-height: 100dvh;
+    overflow-x: hidden;
     background: 
       var(--gradient-nebula-overlay),
       var(--gradient-warm);
     background-color: hsl(0 0% 12%);
     background-attachment: fixed;
     color: hsl(var(--foreground));
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
   }
+
+  #root {
+    min-height: 100dvh;
+  }
+
 
   /* Grain texture overlay for nebula depth */
   body::before {

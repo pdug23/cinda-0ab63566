@@ -3,9 +3,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ProfileProvider } from "@/contexts/ProfileContext";
 import Landing from "./pages/Landing";
 import Chat from "./pages/Chat";
-import Quiz from "./pages/Quiz";
+import ProfileBuilder from "./pages/ProfileBuilder";
+import ProfileBuilderStep2 from "./pages/ProfileBuilderStep2";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -13,16 +15,19 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/quiz" element={<Quiz />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <ProfileProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/profile" element={<ProfileBuilder />} />
+            <Route path="/profile/step2" element={<ProfileBuilderStep2 />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </ProfileProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

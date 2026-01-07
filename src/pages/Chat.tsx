@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Send, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ChatMessage";
+import AnimatedBackground from "@/components/AnimatedBackground";
 import cindaLogo from "@/assets/cinda-logo-grey.png";
 import {
   AlertDialog,
@@ -218,7 +219,9 @@ const Chat = () => {
   };
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <>
+      <AnimatedBackground />
+      <div className="h-full flex flex-col overflow-hidden relative z-10">
       {/* Header */}
       <header className="w-full px-4 py-3 flex items-center justify-between relative z-10 flex-shrink-0">
         {/* Left: Alpha badge + Report a Bug */}
@@ -378,6 +381,7 @@ const Chat = () => {
       {/* Add to Home Screen onboarding modal */}
       <AddToHomeScreenModal onClose={() => setA2hsModalOpen(false)} />
     </div>
+    </>
   );
 };
 
