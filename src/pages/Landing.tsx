@@ -12,7 +12,7 @@ const Landing = () => {
   };
 
   return (
-    <OnboardingLayout>
+    <OnboardingLayout centerContent>
       <PageTransition className="flex flex-col items-center justify-center text-center p-6 md:p-8 flex-1">
         <div className="space-y-4 mb-10">
           <img src={cindaLogo} alt="Cinda" className="h-[104px] mx-auto" />
