@@ -29,7 +29,7 @@ const RUN_TYPE_OPTIONS: { value: ShoeRole; label: string }[] = [
   { value: "races", label: "races" },
   { value: "tempo", label: "tempo" },
   { value: "interval", label: "interval" },
-  { value: "easy_recovery", label: "easy/recovery" },
+  { value: "easy_recovery", label: "easy pace" },
   { value: "trail", label: "trail" },
 ];
 
@@ -129,8 +129,8 @@ const ShoeCard = ({
       </button>
 
       {/* Shoe name */}
-      <h3 className="text-base font-medium text-card-foreground/90 pr-8 mb-4">
-        {shoe.full_name.toLowerCase()}
+      <h3 className="text-base font-medium text-card-foreground/90 pr-8 mb-4 normal-case">
+        {shoe.full_name}
       </h3>
 
       {/* Run type selection */}
@@ -208,11 +208,11 @@ const ProfileBuilderStep3 = () => {
     return currentShoes.length > 0;
   }, [currentShoes]);
 
-  // Add shoe
+  // Add shoe (newest at top)
   const handleAddShoe = (shoe: Shoe) => {
     setCurrentShoes((prev) => [
-      ...prev,
       { shoe, roles: [], sentiment: null },
+      ...prev,
     ]);
     setSearchQuery("");
     setShowDropdown(false);
@@ -352,9 +352,9 @@ const ProfileBuilderStep3 = () => {
                       type="button"
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => handleAddShoe(shoe)}
-                      className="w-full px-4 py-3 text-left text-sm text-card-foreground/80 hover:bg-orange-500/10 hover:text-orange-400 transition-colors border-b border-card-foreground/10 last:border-b-0"
+                      className="w-full px-4 py-3 text-left text-sm text-card-foreground/80 hover:bg-orange-500/10 hover:text-orange-400 transition-colors border-b border-card-foreground/10 last:border-b-0 normal-case"
                     >
-                      {shoe.full_name.toLowerCase()}
+                      {shoe.full_name}
                     </button>
                   ))}
                 </div>
