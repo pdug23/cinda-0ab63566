@@ -37,7 +37,7 @@ const Landing = () => {
         </div>
 
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="flex flex-col items-center justify-center gap-3">
           <Button
             onClick={handleStartProfile}
             variant="cta"
