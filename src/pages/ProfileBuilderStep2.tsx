@@ -42,6 +42,9 @@ const PB_DISTANCES: { key: PBKey; label: string; placeholder: string }[] = [
 const ProfileBuilderStep2 = () => {
   const navigate = useNavigate();
   const { profileData, updateStep2, clearAll } = useProfile();
+  
+  // Check if user is a beginner (hide race times for beginners)
+  const isBeginner = profileData.step1.experience === "beginner";
 
   // Local state initialized from context
   const [primaryGoal, setPrimaryGoal] = useState<PrimaryGoal | null>(profileData.step2.primaryGoal);
@@ -158,38 +161,40 @@ const ProfileBuilderStep2 = () => {
             </div>
           </div>
 
-          {/* Estimated Race Times - Optional */}
-          <div>
-            <label className="block text-sm text-card-foreground/90 mb-2">
-              estimated race times
-              <OptionalBadge />
-            </label>
-            <div className="overflow-x-auto -mx-1 px-1">
-              <div className="grid grid-cols-4 gap-3 min-w-[280px]">
-                {PB_DISTANCES.map(({ key, label, placeholder }) => (
-                  <div key={key} className="text-center">
-                    <span className="text-xs text-card-foreground/60 block mb-1.5">
-                      {label}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => openPbModal(key)}
-                      className="w-full h-10 px-1 text-sm rounded-md bg-card-foreground/5 border border-card-foreground/20 text-card-foreground hover:bg-card-foreground/10 transition-colors"
-                    >
-                      {personalBests[key] ? (
-                        formatPBTime(personalBests[key])
-                      ) : (
-                        <span className="text-card-foreground/30">{placeholder}</span>
-                      )}
-                    </button>
-                  </div>
-                ))}
+          {/* Estimated Race Times - Optional (hidden for beginners) */}
+          {!isBeginner && (
+            <div>
+              <label className="block text-sm text-card-foreground/90 mb-2">
+                estimated race times
+                <OptionalBadge />
+              </label>
+              <div className="overflow-x-auto -mx-1 px-1">
+                <div className="grid grid-cols-4 gap-3 min-w-[280px]">
+                  {PB_DISTANCES.map(({ key, label, placeholder }) => (
+                    <div key={key} className="text-center">
+                      <span className="text-xs text-card-foreground/60 block mb-1.5">
+                        {label}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => openPbModal(key)}
+                        className="w-full h-10 px-1 text-sm rounded-md bg-card-foreground/5 border border-card-foreground/20 text-card-foreground hover:bg-card-foreground/10 transition-colors"
+                      >
+                        {personalBests[key] ? (
+                          formatPBTime(personalBests[key])
+                        ) : (
+                          <span className="text-card-foreground/30">{placeholder}</span>
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
+              <p className="mt-3 text-sm text-muted-foreground">
+                estimated race times may or may not be your pb, but should reflect your current race pace for each distance.
+              </p>
             </div>
-            <p className="mt-3 text-sm text-muted-foreground">
-              estimated race times may or may not be your pb, but should reflect your current race pace for each distance.
-            </p>
-          </div>
+          )}
         </div>
 
         {/* Card footer (fixed) */}
