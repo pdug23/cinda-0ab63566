@@ -139,6 +139,25 @@ const ProfileBuilderStep2 = () => {
             </div>
           </div>
 
+          {/* Running Pattern - Optional */}
+          <div>
+            <label className="block text-sm text-card-foreground/90 mb-3">
+              what's your running pattern?
+              <OptionalBadge />
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {PATTERN_OPTIONS.map((option) => (
+                <SelectionButton
+                  key={option.value}
+                  label={option.label}
+                  description={option.description}
+                  selected={runningPattern === option.value}
+                  onClick={() => handlePatternToggle(option.value)}
+                />
+              ))}
+            </div>
+          </div>
+
           {/* Estimated Race Times - Optional */}
           <div>
             <label className="block text-sm text-card-foreground/90 mb-2">
@@ -170,25 +189,6 @@ const ProfileBuilderStep2 = () => {
             <p className="mt-3 text-sm text-muted-foreground">
               estimated race times may or may not be your pb, but should reflect your current race pace for each distance.
             </p>
-          </div>
-
-          {/* Running Pattern - Optional */}
-          <div>
-            <label className="block text-sm text-card-foreground/90 mb-3">
-              what's your running pattern?
-              <OptionalBadge />
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {PATTERN_OPTIONS.map((option) => (
-                <SelectionButton
-                  key={option.value}
-                  label={option.label}
-                  description={option.description}
-                  selected={runningPattern === option.value}
-                  onClick={() => handlePatternToggle(option.value)}
-                />
-              ))}
-            </div>
           </div>
         </div>
 
