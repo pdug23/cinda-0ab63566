@@ -52,6 +52,8 @@ export type PersonalBest = string;
 
 /**
  * Complete runner profile collected through quiz and profile UI
+ * NOTE: Feel preferences are now specified per-request (shopping mode) or per-gap (analysis mode)
+ * Global feel preferences removed from profile to support mode-specific preferences
  */
 export interface RunnerProfile {
   // Basic info
@@ -73,14 +75,6 @@ export interface RunnerProfile {
   experience: ExperienceLevel;
   primaryGoal: PrimaryGoal;
   runningPattern?: RunningPattern;
-
-  // Feel preferences (slider values)
-  // Scales match shoebase.json for direct comparison
-  feelPreferences: {
-    softVsFirm: FeelPreference;       // 5 = very soft, 1 = very firm
-    stableVsNeutral: FeelPreference;  // 5 = very stable, 1 = neutral
-    bouncyVsDamped: FeelPreference;   // 5 = very bouncy, 1 = damped
-  };
 
   // Optional fit sensitivities
   fitSensitivities?: {
@@ -424,12 +418,49 @@ export interface RecommendationResult {
 // ============================================================================
 
 /**
+ * Feel preferences for shoe recommendations (1-5 scale)
+ * Extracted from RunnerProfile to allow per-request/per-gap customization
+ */
+export interface FeelPreferences {
+  softVsFirm: FeelPreference;       // 5 = very soft, 1 = very firm
+  stableVsNeutral: FeelPreference;  // 5 = very stable, 1 = neutral
+  bouncyVsDamped: FeelPreference;   // 5 = very bouncy, 1 = damped
+}
+
+/**
+ * Represents a request for a specific shoe type with preferences (shopping mode)
+ */
+export interface ShoeRequest {
+  role: ShoeRole;
+  feelPreferences: FeelPreferences;
+}
+
+/**
+ * Result for a single shopping request
+ */
+export interface ShoppingResult {
+  role: ShoeRole;
+  recommendations: RecommendedShoe[]; // 2-3 shoes per role
+  reasoning: string;
+}
+
+/**
  * Request to analyze rotation and generate recommendations
+ * Supports three modes: gap_detection, shopping, analysis
  */
 export interface AnalyzeRequest {
-  profile: RunnerProfile;
+  profile: RunnerProfile; // Basic info only (no global feelPreferences)
   currentShoes: CurrentShoe[];
-  intent: "add" | "replace"; // Adding to rotation vs replacing a shoe
+  mode: "gap_detection" | "shopping" | "analysis";
+
+  // Shopping mode fields (when mode === "shopping")
+  shoeRequests?: ShoeRequest[]; // 1-3 shoe requests with role + preferences each
+
+  // Analysis mode fields (when mode === "analysis")
+  gap?: Gap; // Pre-identified gap from gap_detection call
+  feelPreferences?: FeelPreferences; // Preferences for the identified gap
+
+  // Optional constraints (all modes)
   constraints?: {
     brandOnly?: string; // Limit to specific brand
     stabilityPreference?: "neutral_only" | "stability_only" | "no_preference";
@@ -439,10 +470,22 @@ export interface AnalyzeRequest {
 
 /**
  * Response from analyze endpoint
+ * Structure depends on the mode
  */
 export interface AnalyzeResponse {
   success: boolean;
-  result?: RecommendationResult;
+  mode?: "gap_detection" | "shopping" | "analysis";
+  result?: {
+    // Gap detection mode: just return the gap
+    gap?: Gap;
+
+    // Shopping mode: recommendations per requested role
+    shoppingResults?: ShoppingResult[];
+
+    // Analysis mode: gap + recommendations (existing pattern)
+    recommendations?: RecommendedShoe[];
+    summaryReasoning?: string;
+  };
   error?: string;
 }
 

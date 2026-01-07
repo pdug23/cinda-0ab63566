@@ -7,12 +7,12 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { AnalyzeRequest, AnalyzeResponse, Shoe, Gap, RecommendedShoe } from './types';
 import { analyzeRotation } from './lib/rotationAnalyzer';
 import { identifyPrimaryGap } from './lib/gapDetector';
-import { generateRecommendations } from './lib/recommendationEngine';
+import { generateRecommendations, generateShoppingRecommendations } from './lib/recommendationEngine';
 import shoebase from '../src/data/shoebase.json';
 
 /**
  * Main handler for /api/analyze endpoint
- * Takes runner profile + current shoes, returns gap + 3 recommendations
+ * Supports three modes: gap_detection, shopping, analysis
  */
 export default async function handler(
   req: VercelRequest,
@@ -45,22 +45,22 @@ export default async function handler(
 
     const body = req.body as Partial<AnalyzeRequest>;
 
-    if (!body.profile || !Array.isArray(body.currentShoes) || !body.intent) {
+    if (!body.profile || !Array.isArray(body.currentShoes) || !body.mode) {
       res.status(400).json({
         success: false,
-        error: 'Invalid request body. Required: profile, currentShoes (array), intent.',
+        error: 'Invalid request body. Required: profile, currentShoes (array), mode.',
       } as AnalyzeResponse);
       return;
     }
 
-    const { profile, currentShoes, intent, constraints } = body as AnalyzeRequest;
+    const { profile, currentShoes, mode, constraints } = body as AnalyzeRequest;
 
     // Log request for debugging
     console.log('[analyze] Request:', {
+      mode,
       profileGoal: profile.primaryGoal,
       profileExperience: profile.experience,
       currentShoesCount: currentShoes.length,
-      intent,
       hasConstraints: !!constraints,
     });
 
@@ -81,83 +81,190 @@ export default async function handler(
 
     console.log('[analyze] Catalogue loaded:', catalogue.length, 'shoes');
 
-    // =========================================================================
-    // 3. ANALYZE ROTATION
-    // =========================================================================
-
     const startTime = Date.now();
 
-    const analysis = analyzeRotation(currentShoes, profile, catalogue);
-
-    console.log('[analyze] Rotation analyzed:', {
-      coveredRoles: analysis.coveredRoles,
-      missingRoles: analysis.missingRoles,
-      redundancyCount: analysis.redundancies.length,
-      allShoesLiked: analysis.allShoesLiked,
-    });
-
     // =========================================================================
-    // 4. IDENTIFY PRIMARY GAP
+    // 3. MODE: GAP DETECTION ONLY
     // =========================================================================
 
-    const gap = identifyPrimaryGap(analysis, profile, currentShoes, catalogue);
+    if (mode === "gap_detection") {
+      console.log('[analyze] Mode: Gap Detection');
 
-    console.log('[analyze] Gap identified:', {
-      type: gap.type,
-      severity: gap.severity,
-      missingCapability: gap.missingCapability,
-    });
+      const analysis = analyzeRotation(currentShoes, profile, catalogue);
+      const gap = identifyPrimaryGap(analysis, profile, currentShoes, catalogue);
 
-    // =========================================================================
-    // 5. GENERATE RECOMMENDATIONS
-    // =========================================================================
+      console.log('[analyze] Gap identified:', {
+        type: gap.type,
+        severity: gap.severity,
+        missingCapability: gap.missingCapability,
+      });
 
-    let recommendations;
-    try {
-      recommendations = generateRecommendations(gap, profile, currentShoes, catalogue);
-    } catch (error: any) {
-      console.error('[analyze] Recommendation generation failed:', error.message);
-      res.status(500).json({
-        success: false,
-        error: `Could not generate recommendations: ${error.message}`,
+      const elapsed = Date.now() - startTime;
+      console.log('[analyze] Gap detection complete. Elapsed time:', elapsed, 'ms');
+
+      res.status(200).json({
+        success: true,
+        mode: "gap_detection",
+        result: { gap },
       } as AnalyzeResponse);
       return;
     }
 
-    // Validate we got exactly 3 recommendations
-    if (recommendations.length !== 3) {
-      console.error('[analyze] Invalid recommendation count:', recommendations.length);
-      res.status(500).json({
-        success: false,
-        error: 'Could not generate 3 recommendations. Try relaxing constraints.',
+    // =========================================================================
+    // 4. MODE: SHOPPING
+    // =========================================================================
+
+    if (mode === "shopping") {
+      console.log('[analyze] Mode: Shopping');
+
+      const { shoeRequests } = body as AnalyzeRequest;
+
+      if (!shoeRequests || shoeRequests.length === 0) {
+        res.status(400).json({
+          success: false,
+          error: 'Shopping mode requires at least one shoe request',
+        } as AnalyzeResponse);
+        return;
+      }
+
+      if (shoeRequests.length > 3) {
+        res.status(400).json({
+          success: false,
+          error: 'Shopping mode supports a maximum of 3 shoe requests',
+        } as AnalyzeResponse);
+        return;
+      }
+
+      console.log('[analyze] Processing', shoeRequests.length, 'shoe requests');
+
+      const shoppingResults = shoeRequests.map((request, index) => {
+        console.log(`[analyze] Request ${index + 1}: ${request.role} shoes`);
+
+        try {
+          const recommendations = generateShoppingRecommendations(
+            request,
+            profile,
+            currentShoes,
+            catalogue
+          );
+
+          const reasoning = `Based on your preference for ${request.role} shoes with ${
+            request.feelPreferences.softVsFirm >= 4 ? 'soft' : request.feelPreferences.softVsFirm <= 2 ? 'firm' : 'balanced'
+          } cushion, ${
+            request.feelPreferences.bouncyVsDamped >= 4 ? 'bouncy' : request.feelPreferences.bouncyVsDamped <= 2 ? 'damped' : 'moderate'
+          } response, and ${
+            request.feelPreferences.stableVsNeutral >= 4 ? 'stable' : request.feelPreferences.stableVsNeutral <= 2 ? 'neutral' : 'balanced'
+          } platform.`;
+
+          return {
+            role: request.role,
+            recommendations,
+            reasoning,
+          };
+        } catch (error: any) {
+          console.error(`[analyze] Shopping request ${index + 1} failed:`, error.message);
+          throw new Error(`Failed to generate recommendations for ${request.role}: ${error.message}`);
+        }
+      });
+
+      const elapsed = Date.now() - startTime;
+      console.log('[analyze] Shopping mode complete. Elapsed time:', elapsed, 'ms');
+
+      res.status(200).json({
+        success: true,
+        mode: "shopping",
+        result: { shoppingResults },
       } as AnalyzeResponse);
       return;
     }
 
-    console.log('[analyze] Recommendations generated:',
-      recommendations.map(r => `${r.fullName} (${r.recommendationType})`)
-    );
-
     // =========================================================================
-    // 6. BUILD SUMMARY REASONING
+    // 5. MODE: ANALYSIS
     // =========================================================================
 
-    const summaryReasoning = buildSummaryReasoning(gap, recommendations);
+    if (mode === "analysis") {
+      console.log('[analyze] Mode: Analysis');
+
+      const { gap, feelPreferences } = body as AnalyzeRequest;
+
+      if (!gap) {
+        res.status(400).json({
+          success: false,
+          error: 'Analysis mode requires a gap from prior gap_detection call',
+        } as AnalyzeResponse);
+        return;
+      }
+
+      if (!feelPreferences) {
+        res.status(400).json({
+          success: false,
+          error: 'Analysis mode requires feelPreferences for the identified gap',
+        } as AnalyzeResponse);
+        return;
+      }
+
+      console.log('[analyze] Gap:', {
+        type: gap.type,
+        severity: gap.severity,
+        missingCapability: gap.missingCapability,
+      });
+
+      let recommendations;
+      try {
+        recommendations = generateRecommendations(
+          gap,
+          profile,
+          currentShoes,
+          catalogue,
+          feelPreferences
+        );
+      } catch (error: any) {
+        console.error('[analyze] Recommendation generation failed:', error.message);
+        res.status(500).json({
+          success: false,
+          error: `Could not generate recommendations: ${error.message}`,
+        } as AnalyzeResponse);
+        return;
+      }
+
+      // Validate we got exactly 3 recommendations
+      if (recommendations.length !== 3) {
+        console.error('[analyze] Invalid recommendation count:', recommendations.length);
+        res.status(500).json({
+          success: false,
+          error: 'Could not generate 3 recommendations. Try relaxing constraints.',
+        } as AnalyzeResponse);
+        return;
+      }
+
+      console.log('[analyze] Recommendations generated:',
+        recommendations.map(r => `${r.fullName} (${r.recommendationType})`)
+      );
+
+      const summaryReasoning = buildSummaryReasoning(gap, recommendations);
+
+      const elapsed = Date.now() - startTime;
+      console.log('[analyze] Analysis mode complete. Elapsed time:', elapsed, 'ms');
+
+      res.status(200).json({
+        success: true,
+        mode: "analysis",
+        result: {
+          gap,
+          recommendations,
+          summaryReasoning,
+        },
+      } as AnalyzeResponse);
+      return;
+    }
 
     // =========================================================================
-    // 7. RETURN SUCCESS RESPONSE
+    // 6. INVALID MODE
     // =========================================================================
 
-    const elapsed = Date.now() - startTime;
-    console.log('[analyze] Success. Elapsed time:', elapsed, 'ms');
-
-    res.status(200).json({
-      success: true,
-      result: {
-        gap,
-        recommendations,
-        summaryReasoning,
-      },
+    res.status(400).json({
+      success: false,
+      error: `Invalid mode: ${mode}. Supported modes: gap_detection, shopping, analysis`,
     } as AnalyzeResponse);
 
   } catch (error: any) {

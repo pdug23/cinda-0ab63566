@@ -10,7 +10,9 @@ import type {
   Shoe,
   RecommendedShoe,
   ShoeRole,
-  RecommendationType
+  RecommendationType,
+  FeelPreferences,
+  ShoeRequest
 } from '../types';
 import { getCandidates } from './shoeRetrieval';
 
@@ -24,21 +26,22 @@ import { getCandidates } from './shoeRetrieval';
 function buildConstraintsFromGap(
   gap: Gap,
   profile: RunnerProfile,
-  currentShoes: CurrentShoe[]
+  currentShoes: CurrentShoe[],
+  feelPreferences: FeelPreferences
 ): {
   roles?: ShoeRole[];
   stabilityNeed?: "neutral" | "stability" | "stable_feel";
-  feelPreferences?: typeof profile.feelPreferences;
+  feelPreferences?: FeelPreferences;
   excludeShoeIds?: string[];
   brandOnly?: string;
 } {
   const constraints: ReturnType<typeof buildConstraintsFromGap> = {
-    feelPreferences: profile.feelPreferences,
+    feelPreferences: feelPreferences,
     excludeShoeIds: currentShoes.map(s => s.shoeId),
   };
 
-  // Determine stability need from profile
-  if (profile.feelPreferences.stableVsNeutral >= 4) {
+  // Determine stability need from feel preferences
+  if (feelPreferences.stableVsNeutral >= 4) {
     constraints.stabilityNeed = "stable_feel";
   }
 
@@ -460,6 +463,7 @@ function identifyTradeoffs(
  * @param profile - Runner profile
  * @param currentShoes - Current shoe rotation
  * @param catalogue - Full shoe catalogue
+ * @param feelPreferences - Feel preferences for the recommendations
  * @returns Array of exactly 3 recommended shoes
  * @throws Error if unable to find 3 valid recommendations
  */
@@ -467,10 +471,11 @@ export function generateRecommendations(
   gap: Gap,
   profile: RunnerProfile,
   currentShoes: CurrentShoe[],
-  catalogue: Shoe[]
+  catalogue: Shoe[],
+  feelPreferences: FeelPreferences
 ): RecommendedShoe[] {
   // Step 1: Build constraints from gap
-  let constraints = buildConstraintsFromGap(gap, profile, currentShoes);
+  let constraints = buildConstraintsFromGap(gap, profile, currentShoes, feelPreferences);
 
   // Step 2: Get candidates
   let candidates = getCandidates(constraints, catalogue);
@@ -569,6 +574,278 @@ function buildRecommendedShoe(
     keyStrengths: extractKeyStrengths(shoe, gap),
     tradeOffs: identifyTradeoffs(shoe, currentShoes, catalogue, isTradeOff),
   };
+}
+
+// ============================================================================
+// SHOPPING MODE RECOMMENDATION FUNCTION
+// ============================================================================
+
+/**
+ * Generate recommendations for a specific shoe request (shopping mode)
+ * Similar to generateRecommendations but role-specific and using request's feel preferences
+ *
+ * @param request - Shoe request with role and feel preferences
+ * @param profile - Runner profile (basic info)
+ * @param currentShoes - Current shoe rotation (to exclude)
+ * @param catalogue - Full shoe catalogue
+ * @returns Array of 2-3 recommended shoes for the requested role
+ */
+export function generateShoppingRecommendations(
+  request: ShoeRequest,
+  profile: RunnerProfile,
+  currentShoes: CurrentShoe[],
+  catalogue: Shoe[]
+): RecommendedShoe[] {
+  // Step 1: Build constraints for this specific role and feel preferences
+  const constraints = {
+    roles: [request.role],
+    feelPreferences: request.feelPreferences,
+    excludeShoeIds: currentShoes.map(s => s.shoeId),
+    // Determine stability need from request preferences
+    stabilityNeed: request.feelPreferences.stableVsNeutral >= 4
+      ? ("stable_feel" as const)
+      : undefined,
+  };
+
+  // Step 2: Get candidates for this role
+  let candidates = getCandidates(constraints, catalogue);
+
+  // Step 3: If fewer than 3 candidates, relax constraints
+  if (candidates.length < 3) {
+    // Expand to related roles
+    const relatedRoles = getRelatedRolesForShopping(request.role);
+    const relaxedConstraints = {
+      ...constraints,
+      roles: [request.role, ...relatedRoles],
+    };
+    candidates = getCandidates(relaxedConstraints, catalogue);
+  }
+
+  // If still not enough, just take what we have
+  if (candidates.length === 0) {
+    throw new Error(`Unable to find any shoes for ${request.role} role with the specified preferences.`);
+  }
+
+  // Step 4: Score candidates based on how well they match the request
+  const scoredCandidates = candidates.map(shoe => ({
+    shoe,
+    totalScore: scoreShoeForRole(shoe, request.role, request.feelPreferences),
+  }));
+
+  // Step 5: Select top 2-3 shoes with diversity
+  const selectedShoes = selectShoppingShoes(scoredCandidates);
+
+  // Step 6: Build RecommendedShoe objects
+  // For shopping mode, we use a simpler recommendation pattern
+  const recommendations: RecommendedShoe[] = selectedShoes.map((shoe, index) => {
+    const recType: RecommendationType = index === 0
+      ? "close_match"
+      : index === 1
+        ? "close_match_2"
+        : "trade_off_option";
+
+    return buildShoppingRecommendedShoe(
+      shoe,
+      request.role,
+      recType,
+      currentShoes,
+      catalogue,
+      index === selectedShoes.length - 1 // isTradeOff for last shoe
+    );
+  });
+
+  return recommendations;
+}
+
+/**
+ * Get related roles for shopping mode fallback
+ */
+function getRelatedRolesForShopping(role: ShoeRole): ShoeRole[] {
+  const relatedMap: Record<ShoeRole, ShoeRole[]> = {
+    'daily': ['easy', 'long'],
+    'easy': ['daily', 'long'],
+    'long': ['daily', 'easy'],
+    'tempo': ['daily', 'intervals'],
+    'intervals': ['tempo', 'race'],
+    'race': ['intervals'],
+    'trail': [],
+  };
+  return relatedMap[role] || [];
+}
+
+/**
+ * Score a shoe for how well it matches a specific role and feel preferences
+ */
+function scoreShoeForRole(
+  shoe: Shoe,
+  role: ShoeRole,
+  feelPreferences: FeelPreferences
+): number {
+  let score = 0;
+
+  // Role match (0-40 points)
+  const roleField = getRoleFieldFromCapability(role);
+  if (roleField && shoe[roleField] === true) {
+    score += 40;
+  }
+
+  // Feel match (0-30 points) - using same logic as shoeRetrieval
+  const softScore = Math.max(0, 10 - Math.abs(shoe.cushion_softness_1to5 - feelPreferences.softVsFirm) * 2);
+  const stabilityScore = Math.max(0, 10 - Math.abs(shoe.stability_1to5 - feelPreferences.stableVsNeutral) * 2);
+  const bounceScore = Math.max(0, 10 - Math.abs(shoe.bounce_1to5 - feelPreferences.bouncyVsDamped) * 2);
+  score += softScore + stabilityScore + bounceScore;
+
+  // Availability bonus (0-15 points)
+  if (shoe.release_status === "available") {
+    score += 15;
+  } else if (shoe.release_status === "coming_soon") {
+    score += 10;
+  }
+
+  return score;
+}
+
+/**
+ * Select 2-3 shoes from scored candidates for shopping mode
+ */
+function selectShoppingShoes(scoredCandidates: ScoredShoe[]): Shoe[] {
+  if (scoredCandidates.length === 0) return [];
+  if (scoredCandidates.length === 1) return [scoredCandidates[0].shoe];
+  if (scoredCandidates.length === 2) return [scoredCandidates[0].shoe, scoredCandidates[1].shoe];
+
+  // Sort by score descending
+  const sorted = [...scoredCandidates].sort((a, b) => b.totalScore - a.totalScore);
+
+  // Take top 3, prioritizing diversity
+  const selected: Shoe[] = [sorted[0].shoe];
+
+  // Find second shoe (prefer similar to first)
+  for (let i = 1; i < sorted.length; i++) {
+    if (selected.length < 2) {
+      selected.push(sorted[i].shoe);
+      break;
+    }
+  }
+
+  // Find third shoe (prefer different from first two)
+  for (const candidate of sorted) {
+    if (selected.length >= 3) break;
+    if (selected.some(s => s.shoe_id === candidate.shoe.shoe_id)) continue;
+
+    // Prefer a different option
+    if (areDifferent(candidate.shoe, selected[0])) {
+      selected.push(candidate.shoe);
+      break;
+    }
+  }
+
+  // If we still don't have 3, just take the next best
+  if (selected.length < 3) {
+    for (const candidate of sorted) {
+      if (selected.length >= 3) break;
+      if (!selected.some(s => s.shoe_id === candidate.shoe.shoe_id)) {
+        selected.push(candidate.shoe);
+      }
+    }
+  }
+
+  return selected;
+}
+
+/**
+ * Build a RecommendedShoe object for shopping mode
+ */
+function buildShoppingRecommendedShoe(
+  shoe: Shoe,
+  role: ShoeRole,
+  type: RecommendationType,
+  currentShoes: CurrentShoe[],
+  catalogue: Shoe[],
+  isTradeOff: boolean
+): RecommendedShoe {
+  return {
+    shoeId: shoe.shoe_id,
+    fullName: shoe.full_name,
+    brand: shoe.brand,
+    model: shoe.model,
+    version: shoe.version,
+    weight_g: shoe.weight_g,
+    heel_drop_mm: shoe.heel_drop_mm,
+    has_plate: shoe.has_plate,
+    retail_price_category: shoe.retail_price_category,
+    release_status: shoe.release_status,
+    cushion_softness_1to5: shoe.cushion_softness_1to5,
+    bounce_1to5: shoe.bounce_1to5,
+    stability_1to5: shoe.stability_1to5,
+    recommendationType: type,
+    matchReason: generateShoppingMatchReason(shoe, role),
+    keyStrengths: extractKeyStrengthsForRole(shoe, role),
+    tradeOffs: identifyTradeoffs(shoe, currentShoes, catalogue, isTradeOff),
+  };
+}
+
+/**
+ * Generate match reason for shopping mode
+ */
+function generateShoppingMatchReason(shoe: Shoe, role: ShoeRole): string {
+  const roleDescriptions: Record<ShoeRole, string> = {
+    'daily': 'Versatile daily trainer for most of your weekly mileage',
+    'easy': 'Cushioned recovery shoe for easy days and building mileage safely',
+    'long': 'Protective long-run shoe with comfort for sustained miles',
+    'tempo': `${shoe.has_plate ? 'Plated' : 'Responsive'} trainer for tempo efforts`,
+    'intervals': 'Lightweight speed shoe for track workouts and fast efforts',
+    'race': 'Race shoe for maximum efficiency on race day',
+    'trail': 'Trail shoe for off-road adventures',
+  };
+  return roleDescriptions[role] || 'Well-rounded option for your needs';
+}
+
+/**
+ * Extract key strengths for a specific role (shopping mode)
+ */
+function extractKeyStrengthsForRole(shoe: Shoe, role: ShoeRole): string[] {
+  const strengths: string[] = [];
+
+  // Role-specific strengths
+  if (role === 'tempo' || role === 'intervals' || role === 'race') {
+    // Performance-focused roles
+    if (shoe.has_plate && shoe.plate_tech_name) {
+      strengths.push(`${shoe.plate_tech_name} adds snap and propulsion`);
+    } else if (shoe.has_plate) {
+      strengths.push(`${shoe.plate_material || 'Plate'} adds snap for faster paces`);
+    }
+    if (shoe.weight_g < 240) {
+      strengths.push(`Lightweight (${shoe.weight_g}g) for nimble feel`);
+    }
+    if (shoe.bounce_1to5 >= 4) {
+      strengths.push(`Energetic, bouncy foam returns energy`);
+    }
+  } else {
+    // Recovery/daily roles
+    if (shoe.cushion_softness_1to5 >= 4) {
+      strengths.push(`Soft, protective ${shoe.cushion_softness_1to5 === 5 ? 'max-' : ''}cushion ride`);
+    }
+    if (shoe.stability_1to5 >= 4) {
+      strengths.push(`Stable platform prevents excessive motion`);
+    }
+    // Versatility
+    const useCases = [
+      shoe.use_daily && 'daily',
+      shoe.use_easy_recovery && 'easy',
+      shoe.use_long_run && 'long',
+    ].filter(Boolean);
+    if (useCases.length >= 2) {
+      strengths.push(`Versatile across ${useCases.length}+ run types`);
+    }
+  }
+
+  // Always mention notable details if strengths list is short
+  if (strengths.length < 2 && shoe.notable_detail) {
+    strengths.push(shoe.notable_detail);
+  }
+
+  // Take first 3 strengths
+  return strengths.slice(0, 3);
 }
 
 // ============================================================================

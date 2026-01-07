@@ -6,7 +6,7 @@
 import { analyzeRotation } from '../api/lib/rotationAnalyzer';
 import { identifyPrimaryGap } from '../api/lib/gapDetector';
 import { generateRecommendations } from '../api/lib/recommendationEngine';
-import type { RunnerProfile, CurrentShoe, Shoe, GapType, GapSeverity, RecommendedShoe } from '../api/types';
+import type { RunnerProfile, CurrentShoe, Shoe, GapType, GapSeverity, RecommendedShoe, FeelPreferences } from '../api/types';
 import shoebase from '../src/data/shoebase.json';
 
 const catalogue = shoebase as Shoe[];
@@ -22,6 +22,7 @@ interface TestCase {
     expectedGapType: GapType;
     expectedSeverity: GapSeverity;
     description: string;
+    feelPreferences: FeelPreferences; // User's feel preferences for recommendations
 }
 
 const testCases: TestCase[] = [
@@ -34,11 +35,11 @@ const testCases: TestCase[] = [
             experience: 'beginner',
             primaryGoal: 'general_fitness',
             runningPattern: 'infrequent',
-            feelPreferences: {
-                softVsFirm: 4,
-                stableVsNeutral: 3,
-                bouncyVsDamped: 3,
-            },
+        },
+        feelPreferences: {
+            softVsFirm: 4,
+            stableVsNeutral: 3,
+            bouncyVsDamped: 3,
         },
         currentShoes: [],
         expectedGapType: 'coverage',
@@ -54,11 +55,11 @@ const testCases: TestCase[] = [
             experience: 'intermediate',
             primaryGoal: 'train_for_race',
             runningPattern: 'structured_training',
-            feelPreferences: {
-                softVsFirm: 3,
-                stableVsNeutral: 3,
-                bouncyVsDamped: 4,
-            },
+        },
+        feelPreferences: {
+            softVsFirm: 3,
+            stableVsNeutral: 3,
+            bouncyVsDamped: 4,
         },
         currentShoes: [
             {
@@ -80,11 +81,11 @@ const testCases: TestCase[] = [
             experience: 'advanced',
             primaryGoal: 'improve_pace',
             runningPattern: 'workouts',
-            feelPreferences: {
-                softVsFirm: 5,
-                stableVsNeutral: 3,
-                bouncyVsDamped: 4,
-            },
+        },
+        feelPreferences: {
+            softVsFirm: 5,
+            stableVsNeutral: 3,
+            bouncyVsDamped: 4,
         },
         currentShoes: [
             {
@@ -111,11 +112,11 @@ const testCases: TestCase[] = [
             experience: 'intermediate',
             primaryGoal: 'general_fitness',
             runningPattern: 'mostly_easy',
-            feelPreferences: {
-                softVsFirm: 5,
-                stableVsNeutral: 3,
-                bouncyVsDamped: 3,
-            },
+        },
+        feelPreferences: {
+            softVsFirm: 5,
+            stableVsNeutral: 3,
+            bouncyVsDamped: 3,
         },
         currentShoes: [
             {
@@ -230,7 +231,7 @@ function runTests() {
 
             const analysis = analyzeRotation(test.currentShoes, test.profile, catalogue);
             const gap = identifyPrimaryGap(analysis, test.profile, test.currentShoes, catalogue);
-            const recommendations = generateRecommendations(gap, test.profile, test.currentShoes, catalogue);
+            const recommendations = generateRecommendations(gap, test.profile, test.currentShoes, catalogue, test.feelPreferences);
 
             // ======================================================================
             // LOG RESULTS
