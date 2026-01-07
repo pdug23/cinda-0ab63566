@@ -19,7 +19,7 @@ const EXPERIENCE_OPTIONS: { value: ExperienceLevel; label: string; description: 
   { value: "beginner", label: "beginner", description: "new to running or just getting started" },
   { value: "intermediate", label: "intermediate", description: "running regularly for 6+ months" },
   { value: "advanced", label: "advanced", description: "experienced runner with consistent training" },
-  { value: "racing_focused", label: "racing-focused", description: "training seriously for competitive times" },
+  { value: "racing_focused", label: "elite", description: "training seriously for competitive times" },
 ];
 
 const GOAL_OPTIONS: { value: PrimaryGoal; label: string; description: string }[] = [
@@ -31,11 +31,10 @@ const GOAL_OPTIONS: { value: PrimaryGoal; label: string; description: string }[]
 ];
 
 const PATTERN_OPTIONS: { value: RunningPattern; label: string; description: string }[] = [
-  { value: "infrequent", label: "infrequent", description: "1-2 runs/week" },
-  { value: "mostly_easy", label: "mostly easy", description: "easy pace, occasional faster" },
-  { value: "structured_training", label: "structured training", description: "mix of easy, tempo, long" },
-  { value: "workouts", label: "workout-focused", description: "regular speed sessions" },
-  { value: "long_run_focus", label: "long-run focus", description: "building endurance" },
+  { value: "infrequent", label: "infrequent", description: "1 run/week or less" },
+  { value: "mostly_easy", label: "mostly easy", description: "2+ runs/week, mostly easy pace with the occasional faster effort" },
+  { value: "structured_training", label: "structured training", description: "2+ runs/week, mix of easy, tempo, and long runs" },
+  { value: "workouts", label: "workout-focused", description: "2+ runs/week, regular speed or interval sessions" },
 ];
 
 const ProfileBuilderStep2 = () => {
