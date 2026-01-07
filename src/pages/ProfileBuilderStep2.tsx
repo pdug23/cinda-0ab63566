@@ -198,7 +198,7 @@ const ProfileBuilderStep2 = () => {
         </div>
 
         {/* Card footer (fixed) */}
-        <footer className="flex flex-col items-center px-6 md:px-8 pt-4 pb-[calc(env(safe-area-inset-bottom)+16px)] flex-shrink-0">
+        <footer className="flex flex-col items-center px-6 md:px-8 pt-4 pb-4 flex-shrink-0">
           <Button
             onClick={handleNext}
             variant="cta"
