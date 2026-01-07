@@ -381,7 +381,7 @@ const ProfileBuilderStep3 = () => {
               />
 
               {/* Dropdown */}
-              {showDropdown && searchResults.length > 0 && (
+              {showDropdown && searchQuery.trim() && (
                 <div className="absolute z-50 w-full mt-1 bg-card border border-card-foreground/20 rounded-lg shadow-lg overflow-hidden">
                   {searchResults.map((shoe) => (
                     <button
@@ -389,23 +389,27 @@ const ProfileBuilderStep3 = () => {
                       type="button"
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => handleAddShoe(shoe)}
-                      className="w-full px-4 py-3 text-left text-sm text-card-foreground/80 hover:bg-orange-500/10 hover:text-orange-400 transition-colors border-b border-card-foreground/10 last:border-b-0 normal-case"
+                      className="w-full px-4 py-3 text-left text-sm text-card-foreground/80 hover:bg-orange-500/10 hover:text-orange-400 transition-colors border-b border-card-foreground/10 normal-case"
                     >
                       {shoe.full_name}
                     </button>
                   ))}
+                  {/* Divider when results exist */}
+                  {searchResults.length > 0 && (
+                    <div className="border-t border-card-foreground/20" />
+                  )}
+                  {/* Add manually option */}
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => setCustomShoeModalOpen(true)}
+                    className="w-full px-4 py-3 text-left text-sm text-orange-500 hover:bg-orange-500/10 hover:text-orange-400 transition-colors"
+                  >
+                    can't find your shoe? add it manually
+                  </button>
                 </div>
               )}
             </div>
-
-            {/* Add manually link */}
-            <button
-              type="button"
-              onClick={() => setCustomShoeModalOpen(true)}
-              className="text-sm text-orange-500 hover:text-orange-400 transition-colors"
-            >
-              can't find your shoe? add it manually
-            </button>
 
             {/* Selected shoes */}
             {currentShoes.length > 0 && (
