@@ -44,10 +44,10 @@ export const UnsavedChangesModal = ({
         <div className="flex gap-3 p-4 pt-0">
           <Button
             onClick={onGoBack}
-            variant="outline"
-            className="flex-1 min-h-[44px] text-sm border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            variant="cta"
+            className="flex-1 min-h-[44px] text-sm"
           >
-            go back
+            discard
           </Button>
           <Button
             onClick={handleClose}
