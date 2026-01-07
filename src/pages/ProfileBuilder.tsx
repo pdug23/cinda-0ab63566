@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft } from "lucide-react";
 import { PBPickerModal, PersonalBests, PBKey, formatPBTime } from "@/components/PBPickerModal";
+import { UnsavedChangesModal } from "@/components/UnsavedChangesModal";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
-
 // Optional badge component
 const OptionalBadge = () => (
   <span className="ml-2 px-1.5 py-0.5 text-[10px] bg-orange-500/10 border border-orange-500/20 rounded text-orange-400/70 shadow-[0_0_8px_rgba(251,146,60,0.15)]">
@@ -84,8 +84,49 @@ const ProfileBuilder = () => {
     marathon: null,
   });
   const [pbModalOpen, setPbModalOpen] = useState(false);
-  const [pbModalInitialDistance, setPbModalInitialDistance] = useState<PBKey>("mile");
+  const [pbModalInitialDistance, setPbModalInitialDistance] = useState<PBKey>("5k");
+  const [unsavedModalOpen, setUnsavedModalOpen] = useState(false);
 
+  // Check if form has any data (dirty state)
+  const isDirty = useCallback(() => {
+    const hasName = firstName.trim() !== "";
+    const hasAge = age.trim() !== "";
+    const hasHeight = heightCm !== null;
+    const hasWeight = weightKg !== null;
+    const hasAnyPB = Object.values(personalBests).some((pb) => pb !== null);
+    return hasName || hasAge || hasHeight || hasWeight || hasAnyPB;
+  }, [firstName, age, heightCm, weightKg, personalBests]);
+
+  // Handle back navigation with dirty check
+  const handleBack = () => {
+    if (isDirty()) {
+      setUnsavedModalOpen(true);
+    } else {
+      navigate("/");
+    }
+  };
+
+  // Confirm leaving and clear state
+  const handleConfirmLeave = () => {
+    setUnsavedModalOpen(false);
+    // Clear form state
+    setFirstName("");
+    setAge("");
+    setHeightCm(null);
+    setHeightCmInput("");
+    setHeightFt("");
+    setHeightIn("");
+    setWeightKg(null);
+    setWeightInput("");
+    setPersonalBests({
+      mile: null,
+      "5k": null,
+      "10k": null,
+      half: null,
+      marathon: null,
+    });
+    navigate("/");
+  };
   // Convert ft/in to cm
   const ftInToCm = (ft: number, inches: number): number => {
     return Math.round((ft * 12 + inches) * 2.54);
@@ -216,7 +257,7 @@ const ProfileBuilder = () => {
         <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between flex-shrink-0">
             <button
               type="button"
-              onClick={() => navigate("/")}
+              onClick={handleBack}
               className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -390,6 +431,13 @@ const ProfileBuilder = () => {
               personalBests={personalBests}
               onSave={setPersonalBests}
               initialDistance={pbModalInitialDistance}
+            />
+
+            <UnsavedChangesModal
+              open={unsavedModalOpen}
+              onOpenChange={setUnsavedModalOpen}
+              onStay={() => setUnsavedModalOpen(false)}
+              onGoBack={handleConfirmLeave}
             />
           </div>
 
