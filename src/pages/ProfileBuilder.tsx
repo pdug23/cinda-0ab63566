@@ -9,7 +9,7 @@ import PageTransition from "@/components/PageTransition";
 
 // Optional badge component
 const OptionalBadge = () => (
-  <span className="ml-2 px-2 py-0.5 text-xs bg-orange-500/10 border border-orange-500/20 rounded text-orange-400/70 shadow-[0_0_8px_rgba(251,146,60,0.15)]">
+  <span className="ml-2 px-1.5 py-0.5 text-[10px] bg-orange-500/10 border border-orange-500/20 rounded text-orange-400/70 shadow-[0_0_8px_rgba(251,146,60,0.15)]">
     optional
   </span>
 );
