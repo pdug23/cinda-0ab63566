@@ -1,23 +1,24 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 import { PersonalBests } from "@/components/PBPickerModal";
 
-// Step 1 data
+// Types - matches Epic 1 types
+export type ExperienceLevel = "beginner" | "intermediate" | "advanced" | "racing_focused";
+export type PrimaryGoal = "general_fitness" | "improve_pace" | "train_for_race" | "comfort_recovery" | "just_for_fun";
+export type RunningPattern = "infrequent" | "mostly_easy" | "structured_training" | "workouts" | "long_run_focus";
+
+// Step 1 data - basics + experience
 export interface Step1Data {
   firstName: string;
   age: string;
   heightCm: number | null;
   weightKg: number | null;
-  personalBests: PersonalBests;
+  experience: ExperienceLevel | null;
 }
 
-// Step 2 data - matches Epic 1 types
-export type ExperienceLevel = "beginner" | "intermediate" | "advanced" | "racing_focused";
-export type PrimaryGoal = "general_fitness" | "improve_pace" | "train_for_race" | "comfort_recovery" | "just_for_fun";
-export type RunningPattern = "infrequent" | "mostly_easy" | "structured_training" | "workouts" | "long_run_focus";
-
+// Step 2 data - goals + race times + pattern
 export interface Step2Data {
-  experience: ExperienceLevel | null;
   primaryGoal: PrimaryGoal | null;
+  personalBests: PersonalBests;
   runningPattern: RunningPattern | null;
 }
 
@@ -31,6 +32,11 @@ const defaultStep1: Step1Data = {
   age: "",
   heightCm: null,
   weightKg: null,
+  experience: null,
+};
+
+const defaultStep2: Step2Data = {
+  primaryGoal: null,
   personalBests: {
     mile: null,
     "5k": null,
@@ -38,11 +44,6 @@ const defaultStep1: Step1Data = {
     half: null,
     marathon: null,
   },
-};
-
-const defaultStep2: Step2Data = {
-  experience: null,
-  primaryGoal: null,
   runningPattern: null,
 };
 

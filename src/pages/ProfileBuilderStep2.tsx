@@ -6,7 +6,8 @@ import { SelectionButton } from "@/components/SelectionButton";
 import { UnsavedChangesModal } from "@/components/UnsavedChangesModal";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
-import { useProfile, ExperienceLevel, PrimaryGoal, RunningPattern } from "@/contexts/ProfileContext";
+import { useProfile, PrimaryGoal, RunningPattern } from "@/contexts/ProfileContext";
+import { PBPickerModal, PersonalBests, PBKey, formatPBTime } from "@/components/PBPickerModal";
 
 // Optional badge component
 const OptionalBadge = () => (
@@ -14,13 +15,6 @@ const OptionalBadge = () => (
     optional
   </span>
 );
-
-const EXPERIENCE_OPTIONS: { value: ExperienceLevel; label: string; description: string }[] = [
-  { value: "beginner", label: "beginner", description: "new to running or just getting started" },
-  { value: "intermediate", label: "intermediate", description: "running regularly for 6+ months" },
-  { value: "advanced", label: "advanced", description: "experienced runner with consistent training" },
-  { value: "racing_focused", label: "elite", description: "training seriously for competitive times" },
-];
 
 const GOAL_OPTIONS: { value: PrimaryGoal; label: string; description: string }[] = [
   { value: "general_fitness", label: "general fitness", description: "stay healthy and active" },
@@ -37,24 +31,37 @@ const PATTERN_OPTIONS: { value: RunningPattern; label: string; description: stri
   { value: "infrequent", label: "infrequent", description: "1 run/week or less" },
 ];
 
+// Personal bests distance config
+const PB_DISTANCES: { key: PBKey; label: string; placeholder: string }[] = [
+  { key: "5k", label: "5k", placeholder: "mm:ss" },
+  { key: "10k", label: "10k", placeholder: "mm:ss" },
+  { key: "half", label: "13.1mi", placeholder: "h:mm:ss" },
+  { key: "marathon", label: "26.2mi", placeholder: "h:mm:ss" },
+];
+
 const ProfileBuilderStep2 = () => {
   const navigate = useNavigate();
   const { profileData, updateStep2, clearAll } = useProfile();
 
   // Local state initialized from context
-  const [experience, setExperience] = useState<ExperienceLevel | null>(profileData.step2.experience);
   const [primaryGoal, setPrimaryGoal] = useState<PrimaryGoal | null>(profileData.step2.primaryGoal);
+  const [personalBests, setPersonalBests] = useState<PersonalBests>(profileData.step2.personalBests);
   const [runningPattern, setRunningPattern] = useState<RunningPattern | null>(profileData.step2.runningPattern);
   const [unsavedModalOpen, setUnsavedModalOpen] = useState(false);
+  const [pbModalOpen, setPbModalOpen] = useState(false);
+  const [pbModalInitialDistance, setPbModalInitialDistance] = useState<PBKey>("5k");
 
   // Check if this step has any data
   const isDirty = useCallback(() => {
-    return experience !== null || primaryGoal !== null || runningPattern !== null;
-  }, [experience, primaryGoal, runningPattern]);
+    const hasGoal = primaryGoal !== null;
+    const hasPattern = runningPattern !== null;
+    const hasAnyPB = Object.values(personalBests).some((pb) => pb !== null);
+    return hasGoal || hasPattern || hasAnyPB;
+  }, [primaryGoal, runningPattern, personalBests]);
 
   const handleBack = () => {
     // Save current state before navigating back (preserves data)
-    updateStep2({ experience, primaryGoal, runningPattern });
+    updateStep2({ primaryGoal, personalBests, runningPattern });
     navigate("/profile");
   };
 
@@ -75,8 +82,8 @@ const ProfileBuilderStep2 = () => {
 
   const handleNext = () => {
     // Save to context and proceed
-    updateStep2({ experience, primaryGoal, runningPattern });
-    console.log("Step 2 complete:", { experience, primaryGoal, runningPattern });
+    updateStep2({ primaryGoal, personalBests, runningPattern });
+    console.log("Step 2 complete:", { primaryGoal, personalBests, runningPattern });
     // TODO: Navigate to step 3
   };
 
@@ -85,7 +92,13 @@ const ProfileBuilderStep2 = () => {
     setRunningPattern((prev) => (prev === value ? null : value));
   };
 
-  const canProceed = experience !== null && primaryGoal !== null;
+  // Open PB modal for a specific distance
+  const openPbModal = (distance: PBKey) => {
+    setPbModalInitialDistance(distance);
+    setPbModalOpen(true);
+  };
+
+  const canProceed = primaryGoal !== null;
 
   return (
     <OnboardingLayout scrollable>
@@ -108,24 +121,6 @@ const ProfileBuilderStep2 = () => {
           className="flex-1 min-h-0 overflow-y-auto scrollbar-styled touch-pan-y px-6 md:px-8 space-y-7 pb-6"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
-          {/* Experience Level - Required */}
-          <div>
-            <label className="block text-sm text-card-foreground/90 mb-3">
-              how would you describe your running experience?
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {EXPERIENCE_OPTIONS.map((option) => (
-                <SelectionButton
-                  key={option.value}
-                  label={option.label}
-                  description={option.description}
-                  selected={experience === option.value}
-                  onClick={() => setExperience(option.value)}
-                />
-              ))}
-            </div>
-          </div>
-
           {/* Primary Goal - Required */}
           <div>
             <label className="block text-sm text-card-foreground/90 mb-3">
@@ -144,10 +139,43 @@ const ProfileBuilderStep2 = () => {
             </div>
           </div>
 
+          {/* Estimated Race Times - Optional */}
+          <div>
+            <label className="block text-sm text-card-foreground/90 mb-2">
+              estimated race times
+              <OptionalBadge />
+            </label>
+            <div className="overflow-x-auto -mx-1 px-1">
+              <div className="grid grid-cols-4 gap-3 min-w-[280px]">
+                {PB_DISTANCES.map(({ key, label, placeholder }) => (
+                  <div key={key} className="text-center">
+                    <span className="text-xs text-card-foreground/60 block mb-1.5">
+                      {label}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => openPbModal(key)}
+                      className="w-full h-10 px-1 text-sm rounded-md bg-card-foreground/5 border border-card-foreground/20 text-card-foreground hover:bg-card-foreground/10 transition-colors"
+                    >
+                      {personalBests[key] ? (
+                        formatPBTime(personalBests[key])
+                      ) : (
+                        <span className="text-card-foreground/30">{placeholder}</span>
+                      )}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <p className="mt-3 text-sm text-muted-foreground">
+              estimated race times may or may not be your pb, but should reflect your current race pace for each distance.
+            </p>
+          </div>
+
           {/* Running Pattern - Optional */}
           <div>
             <label className="block text-sm text-card-foreground/90 mb-3">
-              running pattern
+              what's your running pattern?
               <OptionalBadge />
             </label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -175,6 +203,14 @@ const ProfileBuilderStep2 = () => {
             next
           </Button>
         </footer>
+
+        <PBPickerModal
+          open={pbModalOpen}
+          onOpenChange={setPbModalOpen}
+          personalBests={personalBests}
+          onSave={setPersonalBests}
+          initialDistance={pbModalInitialDistance}
+        />
 
         <UnsavedChangesModal
           open={unsavedModalOpen}
