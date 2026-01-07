@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft } from "lucide-react";
 import { PBPickerModal, PersonalBests, PBKey, formatPBTime } from "@/components/PBPickerModal";
+import OnboardingLayout from "@/components/OnboardingLayout";
+import PageTransition from "@/components/PageTransition";
 
 // Optional badge component
 const OptionalBadge = () => (
@@ -208,23 +210,10 @@ const ProfileBuilder = () => {
 
 
   return (
-    <div
-      className="min-h-[100dvh]"
-      style={{
-        paddingTop: "calc(env(safe-area-inset-top) + 16px)",
-        paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
-      }}
-    >
-      <main className="min-h-[calc(100dvh-32px)] flex items-center justify-center px-4 md:px-6">
-        <section
-          className="w-full max-w-lg flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10 min-h-[82dvh] md:min-h-[640px]"
-          style={{
-            maxHeight:
-              "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 32px)",
-          }}
-        >
-          {/* Card header (fixed) */}
-          <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between flex-shrink-0">
+    <OnboardingLayout>
+      <PageTransition className="flex flex-col flex-1 min-h-0">
+        {/* Card header (fixed) */}
+        <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between flex-shrink-0">
             <button
               type="button"
               onClick={() => navigate("/")}
@@ -434,9 +423,8 @@ const ProfileBuilder = () => {
               </footer>
             );
           })()}
-        </section>
-      </main>
-    </div>
+      </PageTransition>
+    </OnboardingLayout>
   );
 };
 
