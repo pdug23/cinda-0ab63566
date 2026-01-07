@@ -404,7 +404,7 @@ const ProfileBuilder = () => {
             const allOptionalsFilled = hasAge && hasHeight && hasWeight;
 
             return (
-              <footer className="flex flex-col items-center px-6 md:px-8 pt-4 pb-[calc(env(safe-area-inset-bottom)+16px)] flex-shrink-0">
+              <footer className="flex flex-col items-center px-6 md:px-8 pt-4 pb-4 flex-shrink-0">
                 <div className="h-5 flex items-center justify-center w-3/4 mb-1">
                   <p
                     className={`text-xs italic text-orange-400/50 text-center transition-opacity duration-200 ${
