@@ -31,7 +31,7 @@ const Landing = () => {
         <Button
           onClick={handleStartProfile}
           variant="cta"
-          className="w-full max-w-[280px] min-h-[44px] text-sm"
+          className="px-10 min-h-[44px] text-sm"
         >
           begin
         </Button>
