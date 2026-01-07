@@ -263,24 +263,6 @@ const ProfileBuilder = () => {
               />
             </div>
 
-            {/* Experience Level - Required */}
-            <div>
-              <label className="block text-sm text-card-foreground/90 mb-3">
-                how would you describe your running experience?
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {EXPERIENCE_OPTIONS.map((option) => (
-                  <SelectionButton
-                    key={option.value}
-                    label={option.label}
-                    description={option.description}
-                    selected={experience === option.value}
-                    onClick={() => setExperience(option.value)}
-                  />
-                ))}
-              </div>
-            </div>
-
             {/* Age - Optional */}
             <div>
               <label className="block text-sm text-card-foreground/90 mb-2">
@@ -386,6 +368,24 @@ const ProfileBuilder = () => {
                 question="why weight?"
                 answer="weight affects how much a shoe compresses and how stable it feels underfoot."
               />
+            </div>
+
+            {/* Experience Level - Required */}
+            <div>
+              <label className="block text-sm text-card-foreground/90 mb-3">
+                how would you describe your running experience?
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {EXPERIENCE_OPTIONS.map((option) => (
+                  <SelectionButton
+                    key={option.value}
+                    label={option.label}
+                    description={option.description}
+                    selected={experience === option.value}
+                    onClick={() => setExperience(option.value)}
+                  />
+                ))}
+              </div>
             </div>
 
             <UnsavedChangesModal
