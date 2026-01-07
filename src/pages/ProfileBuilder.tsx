@@ -230,10 +230,10 @@ const ProfileBuilder = () => {
 
       {/* Main content area */}
       <main
-        className="flex-1 min-h-0 overflow-y-auto scrollbar-styled flex justify-center px-4 pt-8 pb-[calc(env(safe-area-inset-bottom)+96px)] md:px-6"
+        className="flex-1 min-h-0 overflow-y-auto scrollbar-styled touch-pan-y flex justify-center px-4 pt-8 pb-[calc(env(safe-area-inset-bottom)+96px)] md:px-6"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
-        <div className="w-full max-w-lg flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10">
+        <div className="w-full max-w-lg flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10 min-h-[76dvh] md:min-h-[640px]">
           
           {/* Content */}
           <div className="flex flex-col px-6 md:px-8 pt-6 md:pt-8 space-y-7">

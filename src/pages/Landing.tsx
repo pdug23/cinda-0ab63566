@@ -19,7 +19,7 @@ const Landing = () => {
     >
       {/* Main content area */}
       <main className="flex items-center justify-center px-4 py-8 md:px-6 min-h-[100dvh]">
-        <div className="w-full max-w-lg flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10 min-h-[540px]">
+        <div className="w-full max-w-lg flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10 min-h-[76dvh] md:min-h-[540px]">
           
           {/* Content - vertically centered */}
           <div className="flex flex-col items-center justify-center text-center p-6 md:p-8 flex-1">
