@@ -1,14 +1,14 @@
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import cindaLogo from "@/assets/cinda-logo-grey.png";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
+import { usePageNavigation } from "@/hooks/usePageNavigation";
 
 const Landing = () => {
-  const navigate = useNavigate();
+  const { navigateWithTransition } = usePageNavigation();
 
   const handleStartProfile = () => {
-    navigate("/profile");
+    navigateWithTransition("/profile");
   };
 
   return (

@@ -9,11 +9,22 @@ const PageTransition = ({ children, className = "" }: PageTransitionProps) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Small delay to ensure DOM is ready, then fade in
+    // Fade in on mount
     const timer = requestAnimationFrame(() => {
       setIsVisible(true);
     });
-    return () => cancelAnimationFrame(timer);
+
+    // Listen for exit event to fade out
+    const handleExit = () => {
+      setIsVisible(false);
+    };
+
+    window.addEventListener("page-exit", handleExit);
+
+    return () => {
+      cancelAnimationFrame(timer);
+      window.removeEventListener("page-exit", handleExit);
+    };
   }, []);
 
   return (
