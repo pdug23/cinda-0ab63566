@@ -1,11 +1,20 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import cindaLogo from "@/assets/cinda-logo-grey.png";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import { usePageNavigation } from "@/hooks/usePageNavigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const Landing = () => {
   const { navigateWithTransition } = usePageNavigation();
+  const [showModal, setShowModal] = useState(false);
 
   const handleStartProfile = () => {
     navigateWithTransition("/profile");
@@ -27,15 +36,47 @@ const Landing = () => {
           </p>
         </div>
 
-        {/* CTA Button */}
-        <Button
-          onClick={handleStartProfile}
-          variant="cta"
-          className="px-10 min-h-[44px] text-sm"
-        >
-          begin
-        </Button>
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Button
+            onClick={handleStartProfile}
+            variant="cta"
+            className="px-10 min-h-[44px] text-sm"
+          >
+            begin
+          </Button>
+          <Button
+            onClick={() => setShowModal(true)}
+            variant="outline"
+            className="min-h-[44px] text-sm bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground"
+          >
+            how cinda works
+          </Button>
+        </div>
       </PageTransition>
+
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent className="bg-card border-border/40 max-w-md data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:duration-150">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">
+              how cinda works
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground pt-3 space-y-3 text-sm">
+              <span className="block">cinda helps runners find shoes that suit how they actually run.</span>
+              <span className="block">instead of guessing based on brand or hype, we understand your preferences and look at things like your body, pace and goals to find the right fit.</span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="pt-4">
+            <Button
+              onClick={() => setShowModal(false)}
+              variant="outline"
+              className="w-full bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
+            >
+              got it
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </OnboardingLayout>
   );
 };
