@@ -106,13 +106,13 @@ const ProfileBuilderStep4 = () => {
             {/* Mode buttons */}
             <div className="space-y-4">
               <ModeButton
-                label="i need cinda to help find shoes for a specific run type"
+                label="find shoes for a specific run type"
                 description="tell cinda what you need and get recommendations"
                 onClick={handleShoppingMode}
               />
               <ModeButton
-                label="i need cinda to analyse my current rotation"
-                description="cinda will identify gaps and suggest what's missing"
+                label="analyse my current rotation"
+                description="ask cinda to identify any gaps and suggest improvements"
                 disabled={!hasShoes}
                 disabledReason={
                   !hasShoes
