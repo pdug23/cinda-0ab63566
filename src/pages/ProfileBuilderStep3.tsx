@@ -193,6 +193,8 @@ const ProfileBuilderStep3 = () => {
   const [unsavedModalOpen, setUnsavedModalOpen] = useState(false);
   const [confirmShoesModalOpen, setConfirmShoesModalOpen] = useState(false);
   const [confirmSkipModalOpen, setConfirmSkipModalOpen] = useState(false);
+  const [customShoeModalOpen, setCustomShoeModalOpen] = useState(false);
+  const [customShoeName, setCustomShoeName] = useState("");
 
   // Search results
   const searchResults = useMemo(() => {
@@ -225,6 +227,24 @@ const ProfileBuilderStep3 = () => {
     ]);
     setSearchQuery("");
     setShowDropdown(false);
+  };
+
+  // Add custom shoe
+  const handleAddCustomShoe = () => {
+    if (!customShoeName.trim()) return;
+    const customShoe: Shoe = {
+      full_name: customShoeName.trim(),
+      brand: "custom",
+      model: customShoeName.trim(),
+      shoe_id: `custom_${Date.now()}`,
+      version: "",
+    };
+    setCurrentShoes((prev) => [
+      { shoe: customShoe, roles: [], sentiment: null },
+      ...prev,
+    ]);
+    setCustomShoeName("");
+    setCustomShoeModalOpen(false);
   };
 
   // Remove shoe
@@ -378,6 +398,15 @@ const ProfileBuilderStep3 = () => {
               )}
             </div>
 
+            {/* Add manually link */}
+            <button
+              type="button"
+              onClick={() => setCustomShoeModalOpen(true)}
+              className="text-sm text-orange-500 hover:text-orange-400 transition-colors"
+            >
+              can't find your shoe? add it manually
+            </button>
+
             {/* Selected shoes */}
             {currentShoes.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -483,6 +512,51 @@ const ProfileBuilderStep3 = () => {
                   className="w-full text-sm"
                 >
                   go back
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Custom Shoe Modal */}
+          <Dialog open={customShoeModalOpen} onOpenChange={setCustomShoeModalOpen}>
+            <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px]">
+              <DialogHeader>
+                <DialogTitle className="text-lg font-semibold text-primary">
+                  enter shoe name
+                </DialogTitle>
+              </DialogHeader>
+              <div className="pt-3">
+                <Input
+                  type="text"
+                  value={customShoeName}
+                  onChange={(e) => setCustomShoeName(e.target.value)}
+                  placeholder="e.g., nike pegasus 40"
+                  className="w-full bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleAddCustomShoe();
+                    }
+                  }}
+                />
+              </div>
+              <div className="pt-4 flex flex-col gap-2">
+                <Button
+                  onClick={handleAddCustomShoe}
+                  variant="cta"
+                  className="w-full text-sm"
+                  disabled={!customShoeName.trim()}
+                >
+                  add shoe
+                </Button>
+                <Button
+                  onClick={() => {
+                    setCustomShoeName("");
+                    setCustomShoeModalOpen(false);
+                  }}
+                  variant="outline"
+                  className="w-full bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
+                >
+                  cancel
                 </Button>
               </div>
             </DialogContent>
