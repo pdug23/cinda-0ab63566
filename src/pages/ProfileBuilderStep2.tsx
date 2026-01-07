@@ -22,7 +22,7 @@ const GOAL_OPTIONS: { value: PrimaryGoal; label: string; description: string }[]
   { value: "general_fitness", label: "general fitness", description: "stay healthy and active" },
   { value: "improve_pace", label: "improve pace", description: "get faster and more efficient" },
   { value: "train_for_race", label: "train for race", description: "preparing for an event" },
-  { value: "comfort_recovery", label: "comfort/recovery", description: "easy miles and injury prevention" },
+  { value: "comfort_recovery", label: "recovery", description: "easy miles and injury prevention" },
   { value: "just_for_fun", label: "just for fun", description: "enjoy the run, no specific goals" },
 ];
 
