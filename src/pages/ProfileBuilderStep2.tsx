@@ -31,10 +31,10 @@ const GOAL_OPTIONS: { value: PrimaryGoal; label: string; description: string }[]
 ];
 
 const PATTERN_OPTIONS: { value: RunningPattern; label: string; description: string }[] = [
-  { value: "infrequent", label: "infrequent", description: "1 run/week or less" },
-  { value: "mostly_easy", label: "mostly easy", description: "2+ runs/week, mostly easy pace with the occasional faster effort" },
   { value: "structured_training", label: "structured training", description: "2+ runs/week, mix of easy, tempo, and long runs" },
-  { value: "workouts", label: "workout-focused", description: "2+ runs/week, regular speed or interval sessions" },
+  { value: "mostly_easy", label: "mostly easy", description: "2+ runs/week, mostly easy pace with the occasional faster effort" },
+  { value: "workouts", label: "workout-focused", description: "2+ runs/week, mostly workouts and hard efforts" },
+  { value: "infrequent", label: "infrequent", description: "1 run/week or less" },
 ];
 
 const ProfileBuilderStep2 = () => {
