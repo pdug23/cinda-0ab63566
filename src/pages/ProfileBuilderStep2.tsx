@@ -190,8 +190,9 @@ const ProfileBuilderStep2 = () => {
                   ))}
                 </div>
               </div>
-              <p className="mt-3 text-sm text-muted-foreground">
-                estimated race times may or may not be your pb, but should reflect your current race pace for each distance.
+              <p className="mt-3 text-sm">
+                <span className="text-orange-400">what about pbs?</span>{" "}
+                <span className="text-muted-foreground">estimated race times may or may not be your pb, but should reflect your current race pace for each distance.</span>
               </p>
             </div>
           )}
