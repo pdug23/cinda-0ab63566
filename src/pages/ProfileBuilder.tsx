@@ -208,36 +208,39 @@ const ProfileBuilder = () => {
 
 
   return (
-    <div 
-      className="h-[100dvh] flex flex-col overflow-hidden" 
-      style={{ 
-        paddingTop: 'env(safe-area-inset-top)', 
-        paddingBottom: 'env(safe-area-inset-bottom)' 
+    <div
+      className="min-h-[100dvh]"
+      style={{
+        paddingTop: "calc(env(safe-area-inset-top) + 16px)",
+        paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
       }}
     >
-      {/* Header */}
-      <header className="w-full px-4 py-3 flex items-center justify-between relative z-10 flex-shrink-0">
-        <button
-          type="button"
-          onClick={() => navigate("/")}
-          className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
+      <main className="min-h-[calc(100dvh-32px)] flex items-center justify-center px-4 md:px-6">
+        <section
+          className="w-full max-w-lg flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10 min-h-[82dvh] md:min-h-[640px]"
+          style={{
+            maxHeight:
+              "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 32px)",
+          }}
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          back
-        </button>
-        <span className="text-xs text-card-foreground/50">step 1 of 4</span>
-      </header>
+          {/* Card header (fixed) */}
+          <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              back
+            </button>
+            <span className="text-xs text-card-foreground/50">step 1 of 4</span>
+          </header>
 
-      {/* Main content area */}
-      <main
-        className="flex-1 min-h-0 overflow-y-auto scrollbar-styled touch-pan-y flex justify-center px-4 pt-8 pb-[calc(env(safe-area-inset-bottom)+96px)] md:px-6"
-        style={{ WebkitOverflowScrolling: "touch" }}
-      >
-        <div className="w-full max-w-lg flex flex-col bg-card rounded-2xl shadow-xl border border-border/20 overflow-hidden relative z-10 min-h-[76dvh] md:min-h-[640px]">
-          
-          {/* Content */}
-          <div className="flex flex-col px-6 md:px-8 pt-6 md:pt-8 space-y-7">
-            
+          {/* Scrollable form area */}
+          <div
+            className="flex-1 min-h-0 overflow-y-auto scrollbar-styled touch-pan-y px-6 md:px-8 space-y-7 pb-6"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
             {/* First Name - Required */}
             <div>
               <label className="block text-sm text-card-foreground/90 mb-2">
@@ -295,7 +298,9 @@ const ProfileBuilder = () => {
                         onChange={(e) => handleHeightFtChange(e.target.value)}
                         className="w-full bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40 pr-8"
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-card-foreground/40">ft</span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-card-foreground/40">
+                        ft
+                      </span>
                     </div>
                     <div className="relative flex-1">
                       <Input
@@ -306,7 +311,9 @@ const ProfileBuilder = () => {
                         onChange={(e) => handleHeightInChange(e.target.value)}
                         className="w-full bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40 pr-8"
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-card-foreground/40">in</span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-card-foreground/40">
+                        in
+                      </span>
                     </div>
                   </div>
                 )}
@@ -365,13 +372,19 @@ const ProfileBuilder = () => {
                 <div className="grid grid-cols-4 gap-3 min-w-[280px]">
                   {PB_DISTANCES.map(({ key, label, placeholder }) => (
                     <div key={key} className="text-center">
-                      <span className="text-xs text-card-foreground/60 block mb-1.5">{label}</span>
+                      <span className="text-xs text-card-foreground/60 block mb-1.5">
+                        {label}
+                      </span>
                       <button
                         type="button"
                         onClick={() => openPbModal(key)}
                         className="w-full h-10 px-1 text-sm rounded-md bg-card-foreground/5 border border-card-foreground/20 text-card-foreground hover:bg-card-foreground/10 transition-colors"
                       >
-                        {personalBests[key] ? formatPBTime(personalBests[key]) : <span className="text-card-foreground/30">{placeholder}</span>}
+                        {personalBests[key] ? (
+                          formatPBTime(personalBests[key])
+                        ) : (
+                          <span className="text-card-foreground/30">{placeholder}</span>
+                        )}
                       </button>
                     </div>
                   ))}
@@ -391,18 +404,18 @@ const ProfileBuilder = () => {
             />
           </div>
 
-          {/* CTA Section - outside space-y-7 for controlled spacing */}
+          {/* Card footer (fixed) */}
           {(() => {
             const hasAge = age.trim() !== "";
             const hasHeight = heightCm !== null;
             const hasWeight = weightKg !== null;
-            const hasAnyPB = Object.values(personalBests).some(pb => pb !== null);
+            const hasAnyPB = Object.values(personalBests).some((pb) => pb !== null);
             const allOptionalsFilled = hasAge && hasHeight && hasWeight && hasAnyPB;
-            
+
             return (
-              <div className="flex flex-col items-center px-6 md:px-8 pb-6 md:pb-8 pt-4">
+              <footer className="flex flex-col items-center px-6 md:px-8 pt-4 pb-[calc(env(safe-area-inset-bottom)+16px)] flex-shrink-0">
                 <div className="h-5 flex items-center justify-center w-3/4 mb-1">
-                  <p 
+                  <p
                     className={`text-xs italic text-orange-400/50 text-center transition-opacity duration-200 ${
                       allOptionalsFilled ? "opacity-0" : "opacity-100"
                     }`}
@@ -418,10 +431,10 @@ const ProfileBuilder = () => {
                 >
                   next
                 </Button>
-              </div>
+              </footer>
             );
           })()}
-        </div>
+        </section>
       </main>
     </div>
   );
