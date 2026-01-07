@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { PBPickerModal, PersonalBests, PBKey, formatPBTime } from "@/components/
 import { UnsavedChangesModal } from "@/components/UnsavedChangesModal";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
+import { useProfile } from "@/contexts/ProfileContext";
 // Optional badge component
 const OptionalBadge = () => (
   <span className="ml-2 px-1.5 py-0.5 text-[10px] bg-orange-500/10 border border-orange-500/20 rounded text-orange-400/70 shadow-[0_0_8px_rgba(251,146,60,0.15)]">
@@ -60,29 +61,26 @@ const PB_DISTANCES: { key: PBKey; label: string; placeholder: string }[] = [
 
 const ProfileBuilder = () => {
   const navigate = useNavigate();
-  const [firstName, setFirstName] = useState("");
-  const [age, setAge] = useState("");
+  const { profileData, updateStep1, clearAll } = useProfile();
+
+  // Initialize state from context
+  const [firstName, setFirstName] = useState(profileData.step1.firstName);
+  const [age, setAge] = useState(profileData.step1.age);
   
   // Height state - stored in cm internally
-  const [heightCm, setHeightCm] = useState<number | null>(null);
+  const [heightCm, setHeightCm] = useState<number | null>(profileData.step1.heightCm);
   const [heightUnit, setHeightUnit] = useState<"cm" | "ft/in">("cm");
-  const [heightCmInput, setHeightCmInput] = useState("");
+  const [heightCmInput, setHeightCmInput] = useState(profileData.step1.heightCm?.toString() || "");
   const [heightFt, setHeightFt] = useState("");
   const [heightIn, setHeightIn] = useState("");
   
   // Weight state - stored in kg internally
-  const [weightKg, setWeightKg] = useState<number | null>(null);
+  const [weightKg, setWeightKg] = useState<number | null>(profileData.step1.weightKg);
   const [weightUnit, setWeightUnit] = useState<"kg" | "lbs">("kg");
-  const [weightInput, setWeightInput] = useState("");
+  const [weightInput, setWeightInput] = useState(profileData.step1.weightKg?.toString() || "");
   
   // Personal bests - structured with hours, minutes, seconds
-  const [personalBests, setPersonalBests] = useState<PersonalBests>({
-    mile: null,
-    "5k": null,
-    "10k": null,
-    half: null,
-    marathon: null,
-  });
+  const [personalBests, setPersonalBests] = useState<PersonalBests>(profileData.step1.personalBests);
   const [pbModalOpen, setPbModalOpen] = useState(false);
   const [pbModalInitialDistance, setPbModalInitialDistance] = useState<PBKey>("5k");
   const [unsavedModalOpen, setUnsavedModalOpen] = useState(false);
@@ -109,22 +107,8 @@ const ProfileBuilder = () => {
   // Confirm leaving and clear state
   const handleConfirmLeave = () => {
     setUnsavedModalOpen(false);
-    // Clear form state
-    setFirstName("");
-    setAge("");
-    setHeightCm(null);
-    setHeightCmInput("");
-    setHeightFt("");
-    setHeightIn("");
-    setWeightKg(null);
-    setWeightInput("");
-    setPersonalBests({
-      mile: null,
-      "5k": null,
-      "10k": null,
-      half: null,
-      marathon: null,
-    });
+    // Clear all profile data from context
+    clearAll();
     navigate("/");
   };
   // Convert ft/in to cm
@@ -236,13 +220,15 @@ const ProfileBuilder = () => {
   };
 
   const handleNext = () => {
-    console.log({ 
-      firstName, 
-      age, 
-      heightCm, 
-      weightKg, 
-      personalBests 
+    // Save to context and navigate to step 2
+    updateStep1({
+      firstName,
+      age,
+      heightCm,
+      weightKg,
+      personalBests,
     });
+    navigate("/profile/step2");
   };
 
   const handleSkip = () => {
