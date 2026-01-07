@@ -190,8 +190,7 @@ const ProfileBuilderStep2 = () => {
     } else {
       updateStep2({ primaryGoal, personalBests, runningPattern, trailRunning, weeklyVolume: null });
     }
-    console.log("Step 2 complete:", { primaryGoal, personalBests, runningPattern, trailRunning, weeklyVolume });
-    // TODO: Navigate to step 3
+    navigate("/profile/step3");
   };
 
   const handleTrailToggle = (value: TrailRunning) => {
