@@ -236,181 +236,171 @@ const ProfileBuilder = () => {
             <span className="text-xs text-card-foreground/50">step 1 of 4</span>
           </header>
 
-          {/* Scrollable form area with fade overlay */}
-          <div className="relative flex-1 min-h-0">
-            <div
-              className="h-full overflow-y-auto scrollbar-styled touch-pan-y px-6 md:px-8 space-y-7 pb-12"
-              style={{ WebkitOverflowScrolling: "touch" }}
-            >
-              {/* First Name - Required */}
-              <div>
-                <label className="block text-sm text-card-foreground/90 mb-2">
-                  first name
-                </label>
-                <Input
-                  type="text"
-                  placeholder="e.g., cinda"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40"
-                />
-              </div>
+          {/* Scrollable form area */}
+          <div
+            className="flex-1 min-h-0 overflow-y-auto scrollbar-styled touch-pan-y px-6 md:px-8 space-y-7 pb-6"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
+            {/* First Name - Required */}
+            <div>
+              <label className="block text-sm text-card-foreground/90 mb-2">
+                first name
+              </label>
+              <Input
+                type="text"
+                placeholder="e.g., cinda"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40"
+              />
+            </div>
 
-              {/* Age - Optional */}
-              <div>
-                <label className="block text-sm text-card-foreground/90 mb-2">
-                  age
-                  <OptionalBadge />
-                </label>
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="e.g., 32"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value.replace(/\D/g, ""))}
-                  className="bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40"
-                />
-              </div>
+            {/* Age - Optional */}
+            <div>
+              <label className="block text-sm text-card-foreground/90 mb-2">
+                age
+                <OptionalBadge />
+              </label>
+              <Input
+                type="text"
+                inputMode="numeric"
+                placeholder="e.g., 32"
+                value={age}
+                onChange={(e) => setAge(e.target.value.replace(/\D/g, ""))}
+                className="bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40"
+              />
+            </div>
 
-              {/* Height - Optional */}
-              <div>
-                <label className="block text-sm text-card-foreground/90 mb-2">
-                  height
-                  <OptionalBadge />
-                </label>
-                <div className="flex gap-2 items-center">
-                  {heightUnit === "cm" ? (
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="178"
-                      value={heightCmInput}
-                      onChange={(e) => handleHeightCmChange(e.target.value)}
-                      className="flex-1 bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40"
-                    />
-                  ) : (
-                    <div className="flex-1 flex gap-2">
-                      <div className="relative flex-1">
-                        <Input
-                          type="text"
-                          inputMode="numeric"
-                          placeholder="5"
-                          value={heightFt}
-                          onChange={(e) => handleHeightFtChange(e.target.value)}
-                          className="w-full bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40 pr-8"
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-card-foreground/40">
-                          ft
-                        </span>
-                      </div>
-                      <div className="relative flex-1">
-                        <Input
-                          type="text"
-                          inputMode="numeric"
-                          placeholder="10"
-                          value={heightIn}
-                          onChange={(e) => handleHeightInChange(e.target.value)}
-                          className="w-full bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40 pr-8"
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-card-foreground/40">
-                          in
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                  <UnitToggle
-                    options={[
-                      { label: "cm", value: "cm" },
-                      { label: "ft/in", value: "ft/in" },
-                    ]}
-                    value={heightUnit}
-                    onChange={handleHeightUnitChange}
-                  />
-                </div>
-                <FieldExplanation
-                  question="why height?"
-                  answer="height affects stride mechanics and how forces travel through the shoe."
-                />
-              </div>
-
-              {/* Weight - Optional */}
-              <div>
-                <label className="block text-sm text-card-foreground/90 mb-2">
-                  weight
-                  <OptionalBadge />
-                </label>
-                <div className="flex gap-2 items-center">
+            {/* Height - Optional */}
+            <div>
+              <label className="block text-sm text-card-foreground/90 mb-2">
+                height
+                <OptionalBadge />
+              </label>
+              <div className="flex gap-2 items-center">
+                {heightUnit === "cm" ? (
                   <Input
                     type="text"
                     inputMode="numeric"
-                    placeholder={weightUnit === "kg" ? "73" : "160"}
-                    value={weightInput}
-                    onChange={(e) => handleWeightChange(e.target.value)}
+                    placeholder="178"
+                    value={heightCmInput}
+                    onChange={(e) => handleHeightCmChange(e.target.value)}
                     className="flex-1 bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40"
                   />
-                  <UnitToggle
-                    options={[
-                      { label: "kg", value: "kg" },
-                      { label: "lbs", value: "lbs" },
-                    ]}
-                    value={weightUnit}
-                    onChange={handleWeightUnitChange}
-                  />
-                </div>
-                <FieldExplanation
-                  question="why weight?"
-                  answer="weight affects how much a shoe compresses and how stable it feels underfoot."
+                ) : (
+                  <div className="flex-1 flex gap-2">
+                    <div className="relative flex-1">
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="5"
+                        value={heightFt}
+                        onChange={(e) => handleHeightFtChange(e.target.value)}
+                        className="w-full bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40 pr-8"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-card-foreground/40">
+                        ft
+                      </span>
+                    </div>
+                    <div className="relative flex-1">
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="10"
+                        value={heightIn}
+                        onChange={(e) => handleHeightInChange(e.target.value)}
+                        className="w-full bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40 pr-8"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-card-foreground/40">
+                        in
+                      </span>
+                    </div>
+                  </div>
+                )}
+                <UnitToggle
+                  options={[
+                    { label: "cm", value: "cm" },
+                    { label: "ft/in", value: "ft/in" },
+                  ]}
+                  value={heightUnit}
+                  onChange={handleHeightUnitChange}
                 />
               </div>
-
-              {/* Personal Bests - Optional */}
-              <div>
-                <label className="block text-sm text-card-foreground/90 mb-2">
-                  estimated race times
-                  <OptionalBadge />
-                </label>
-                <div className="overflow-x-auto -mx-1 px-1">
-                  <div className="grid grid-cols-4 gap-3 min-w-[280px]">
-                    {PB_DISTANCES.map(({ key, label, placeholder }) => (
-                      <div key={key} className="text-center">
-                        <span className="text-xs text-card-foreground/60 block mb-1.5">
-                          {label}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => openPbModal(key)}
-                          className="w-full h-10 px-1 text-sm rounded-md bg-card-foreground/5 border border-card-foreground/20 text-card-foreground hover:bg-card-foreground/10 transition-colors"
-                        >
-                          {personalBests[key] ? (
-                            formatPBTime(personalBests[key])
-                          ) : (
-                            <span className="text-card-foreground/30">{placeholder}</span>
-                          )}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <p className="mt-3 text-sm text-muted-foreground">
-                  estimated race times may or may not be your pb, but should reflect your current race pace for each distance.
-                </p>
-              </div>
-
-              <PBPickerModal
-                open={pbModalOpen}
-                onOpenChange={setPbModalOpen}
-                personalBests={personalBests}
-                onSave={setPersonalBests}
-                initialDistance={pbModalInitialDistance}
+              <FieldExplanation
+                question="why height?"
+                answer="height affects stride mechanics and how forces travel through the shoe."
               />
             </div>
-            
-            {/* Bottom fade overlay */}
-            <div 
-              className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none"
-              style={{
-                background: "linear-gradient(to bottom, transparent, hsl(var(--card)))"
-              }}
+
+            {/* Weight - Optional */}
+            <div>
+              <label className="block text-sm text-card-foreground/90 mb-2">
+                weight
+                <OptionalBadge />
+              </label>
+              <div className="flex gap-2 items-center">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder={weightUnit === "kg" ? "73" : "160"}
+                  value={weightInput}
+                  onChange={(e) => handleWeightChange(e.target.value)}
+                  className="flex-1 bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40"
+                />
+                <UnitToggle
+                  options={[
+                    { label: "kg", value: "kg" },
+                    { label: "lbs", value: "lbs" },
+                  ]}
+                  value={weightUnit}
+                  onChange={handleWeightUnitChange}
+                />
+              </div>
+              <FieldExplanation
+                question="why weight?"
+                answer="weight affects how much a shoe compresses and how stable it feels underfoot."
+              />
+            </div>
+
+            {/* Personal Bests - Optional */}
+            <div>
+              <label className="block text-sm text-card-foreground/90 mb-2">
+                estimated race times
+                <OptionalBadge />
+              </label>
+              <div className="overflow-x-auto -mx-1 px-1">
+                <div className="grid grid-cols-4 gap-3 min-w-[280px]">
+                  {PB_DISTANCES.map(({ key, label, placeholder }) => (
+                    <div key={key} className="text-center">
+                      <span className="text-xs text-card-foreground/60 block mb-1.5">
+                        {label}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => openPbModal(key)}
+                        className="w-full h-10 px-1 text-sm rounded-md bg-card-foreground/5 border border-card-foreground/20 text-card-foreground hover:bg-card-foreground/10 transition-colors"
+                      >
+                        {personalBests[key] ? (
+                          formatPBTime(personalBests[key])
+                        ) : (
+                          <span className="text-card-foreground/30">{placeholder}</span>
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground">
+                estimated race times may or may not be your pb, but should reflect your current race pace for each distance.
+              </p>
+            </div>
+
+            <PBPickerModal
+              open={pbModalOpen}
+              onOpenChange={setPbModalOpen}
+              personalBests={personalBests}
+              onSave={setPersonalBests}
+              initialDistance={pbModalInitialDistance}
             />
           </div>
 
