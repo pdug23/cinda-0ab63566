@@ -232,10 +232,11 @@ const ProfileBuilderStep3 = () => {
   // Add custom shoe
   const handleAddCustomShoe = () => {
     if (!customShoeName.trim()) return;
+    const userInput = customShoeName.trim();
     const customShoe: Shoe = {
-      full_name: customShoeName.trim(),
+      full_name: userInput,
       brand: "custom",
-      model: customShoeName.trim(),
+      model: userInput,
       shoe_id: `custom_${Date.now()}`,
       version: "",
     };
@@ -245,6 +246,19 @@ const ProfileBuilderStep3 = () => {
     ]);
     setCustomShoeName("");
     setCustomShoeModalOpen(false);
+
+    // Fire-and-forget tracking call
+    fetch('/api/track-custom-shoe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        shoeName: userInput,
+        userContext: {
+          experience: profileData?.step1?.experience,
+          primaryGoal: profileData?.step2?.primaryGoal
+        }
+      })
+    }).catch(err => console.error('Failed to track custom shoe:', err));
   };
 
   // Remove shoe
