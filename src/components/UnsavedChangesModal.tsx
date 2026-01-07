@@ -30,7 +30,7 @@ export const UnsavedChangesModal = ({
           >
             <X className="w-4 h-4" />
           </button>
-          <DialogTitle className="text-sm font-normal text-card-foreground/90">
+          <DialogTitle className="text-lg font-semibold text-primary">
             leave this step?
           </DialogTitle>
         </DialogHeader>
