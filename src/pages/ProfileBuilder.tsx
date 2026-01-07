@@ -50,7 +50,6 @@ const UnitToggle = ({
 
 // Personal bests distance config
 const PB_DISTANCES: { key: PBKey; label: string; placeholder: string }[] = [
-  { key: "mile", label: "1mi", placeholder: "mm:ss" },
   { key: "5k", label: "5k", placeholder: "mm:ss" },
   { key: "10k", label: "10k", placeholder: "mm:ss" },
   { key: "half", label: "13.1mi", placeholder: "h:mm:ss" },
@@ -360,7 +359,7 @@ const ProfileBuilder = () => {
                 <OptionalBadge />
               </label>
               <div className="overflow-x-auto -mx-1 px-1">
-                <div className="grid grid-cols-5 gap-2 min-w-[320px]">
+                <div className="grid grid-cols-4 gap-3 min-w-[280px]">
                   {PB_DISTANCES.map(({ key, label, placeholder }) => (
                     <div key={key} className="text-center">
                       <span className="text-xs text-card-foreground/60 block mb-1.5">{label}</span>
