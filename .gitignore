@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 .vercel
 .env*.local
+
+# Custom shoe tracking data (user-generated)
+data/custom-shoes.json
