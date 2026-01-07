@@ -198,18 +198,13 @@ const ProfileBuilderStep2 = () => {
     setTrailRunning((prev) => (prev === value ? null : value));
   };
 
-  const handlePatternToggle = (value: RunningPattern) => {
-    // Toggle behavior for optional field
-    setRunningPattern((prev) => (prev === value ? null : value));
-  };
-
   // Open PB modal for a specific distance
   const openPbModal = (distance: PBKey) => {
     setPbModalInitialDistance(distance);
     setPbModalOpen(true);
   };
 
-  const canProceed = primaryGoal !== null;
+  const canProceed = primaryGoal !== null && runningPattern !== null && trailRunning !== null;
 
   return (
     <>
@@ -252,11 +247,10 @@ const ProfileBuilderStep2 = () => {
             </div>
           </div>
 
-          {/* Running Pattern - Optional */}
+          {/* Running Pattern - Required */}
           <div>
             <label className="block text-sm text-card-foreground/90 mb-3">
               what's your running pattern?
-              <OptionalBadge />
             </label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {PATTERN_OPTIONS.map((option) => (
@@ -265,7 +259,7 @@ const ProfileBuilderStep2 = () => {
                   label={option.label}
                   description={option.description}
                   selected={runningPattern === option.value}
-                  onClick={() => handlePatternToggle(option.value)}
+                  onClick={() => setRunningPattern(option.value)}
                 />
               ))}
             </div>
