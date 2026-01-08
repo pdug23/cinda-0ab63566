@@ -112,6 +112,15 @@ const Landing = () => {
         {viewState === "orientation" && (
           <PageTransition className="flex flex-col items-center justify-center text-center p-6 md:p-8 flex-1 relative z-10">
             <div className="flex flex-col items-center max-w-md">
+              {/* Logo */}
+              <img 
+                src={cindaLogo} 
+                alt="Cinda" 
+                className={`h-[80px] mb-8 transition-all ${prefersReducedMotion ? "" : "duration-500"} ${
+                  showHeadline ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                }`}
+              />
+
               {/* Headline and subheading */}
               <div
                 className={`transition-all ${prefersReducedMotion ? "" : "duration-500"} ${
