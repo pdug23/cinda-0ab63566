@@ -42,9 +42,9 @@ export type DiscoveryShoeRole = "daily_trainer" | "recovery" | "tempo" | "race_d
 export type FeelValue = 1 | 2 | 3 | 4 | 5;
 
 export interface FeelPreferences {
-  softVsFirm: FeelValue;
-  stableVsNeutral: FeelValue;
-  bouncyVsDamped: FeelValue;
+  softVsFirm: FeelValue | null;
+  stableVsNeutral: FeelValue | null;
+  bouncyVsDamped: FeelValue | null;
 }
 
 export interface ShoeRequest {
