@@ -34,7 +34,7 @@ const Landing = () => {
     setIsExiting(true);
     
     const exitDuration = prefersReducedMotion ? 0 : 300;
-    const pauseDuration = prefersReducedMotion ? 0 : 800; // 0.8s pause with just background + jargon
+    const pauseDuration = prefersReducedMotion ? 0 : 500; // 0.5s pause with just background + jargon
     
     setTimeout(() => {
       setViewState("orientation");
