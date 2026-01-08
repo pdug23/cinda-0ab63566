@@ -52,8 +52,9 @@ const ProfileBuilderStep4a = () => {
 
   const handleNext = () => {
     if (selectedRoles.length === 0) return;
-    // TODO: Navigate to Step 4b (feel preferences)
-    console.log("Navigate to Step 4b with roles:", selectedRoles);
+    // Reset role index and navigate to feel preferences
+    updateStep4({ currentRoleIndex: 0, shoeRequests: [] });
+    navigate("/profile/step4b");
   };
 
   const isNextEnabled = selectedRoles.length >= 1;

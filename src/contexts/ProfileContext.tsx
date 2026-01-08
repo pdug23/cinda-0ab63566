@@ -38,6 +38,20 @@ export type ShoeSentiment = "love" | "like" | "neutral" | "dislike";
 // Step 4 shoe role selection for discovery mode
 export type DiscoveryShoeRole = "daily_trainer" | "recovery" | "tempo" | "race_day" | "trail";
 
+// Feel preferences for each shoe request (1-5 scale)
+export type FeelValue = 1 | 2 | 3 | 4 | 5;
+
+export interface FeelPreferences {
+  softVsFirm: FeelValue;
+  stableVsNeutral: FeelValue;
+  bouncyVsDamped: FeelValue;
+}
+
+export interface ShoeRequest {
+  role: DiscoveryShoeRole;
+  feelPreferences: FeelPreferences;
+}
+
 export interface CurrentShoe {
   shoe: {
     shoe_id: string;
@@ -59,6 +73,8 @@ export interface Step3Data {
 export interface Step4Data {
   mode: "discovery" | "analysis" | null;
   selectedRoles: DiscoveryShoeRole[];
+  currentRoleIndex: number;
+  shoeRequests: ShoeRequest[];
 }
 
 export interface ProfileData {
@@ -97,6 +113,8 @@ const defaultStep3: Step3Data = {
 const defaultStep4: Step4Data = {
   mode: null,
   selectedRoles: [],
+  currentRoleIndex: 0,
+  shoeRequests: [],
 };
 
 interface ProfileContextType {
