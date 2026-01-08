@@ -51,63 +51,79 @@ const SLIDERS: SliderConfig[] = [
   },
 ];
 
-// Custom slider component with value display
+// Custom slider component with "not sure" toggle
 const FeelSlider = ({
   config,
   value,
   onChange,
-  onNotSure,
+  onToggleNotSure,
 }: {
   config: SliderConfig;
-  value: FeelValue;
+  value: FeelValue | null;
   onChange: (value: FeelValue) => void;
-  onNotSure: () => void;
+  onToggleNotSure: () => void;
 }) => {
   const [isDragging, setIsDragging] = useState(false);
+  const isDisabled = value === null;
+  const displayValue = value ?? 3;
 
   return (
     <div className="space-y-3">
-      {/* Label row */}
-      <div className="flex items-center justify-between">
-        <label className="text-sm text-card-foreground/90">{config.label}</label>
+      {/* Label */}
+      <label className="block text-sm text-card-foreground/90">{config.label}</label>
+
+      {/* Slider row with "not sure" button */}
+      <div className="flex items-center gap-3">
+        {/* Slider container */}
+        <div className={cn("relative flex-1", isDisabled && "opacity-30")}>
+          <Slider
+            value={[displayValue]}
+            onValueChange={(vals) => {
+              if (!isDisabled) onChange(vals[0] as FeelValue);
+            }}
+            onPointerDown={() => !isDisabled && setIsDragging(true)}
+            onPointerUp={() => setIsDragging(false)}
+            min={1}
+            max={5}
+            step={1}
+            disabled={isDisabled}
+            className={cn("w-full", isDisabled && "pointer-events-none")}
+          />
+          
+          {/* Value indicator while dragging */}
+          {isDragging && !isDisabled && (
+            <div
+              className="absolute -top-8 transform -translate-x-1/2 bg-orange-400 text-white text-xs font-medium px-2 py-1 rounded transition-all"
+              style={{ left: `${((displayValue - 1) / 4) * 100}%` }}
+            >
+              {displayValue}
+            </div>
+          )}
+        </div>
+
+        {/* Not sure button */}
         <button
           type="button"
-          onClick={onNotSure}
-          className="text-xs text-card-foreground/40 hover:text-card-foreground/60 transition-colors italic"
+          onClick={onToggleNotSure}
+          className={cn(
+            "text-xs transition-colors italic whitespace-nowrap px-2 py-1 rounded",
+            isDisabled
+              ? "text-slate-400 bg-slate-500/20"
+              : "text-slate-500 hover:text-slate-400"
+          )}
         >
           not sure
         </button>
       </div>
 
-      {/* Slider with value display */}
-      <div className="relative">
-        <Slider
-          value={[value]}
-          onValueChange={(vals) => onChange(vals[0] as FeelValue)}
-          onPointerDown={() => setIsDragging(true)}
-          onPointerUp={() => setIsDragging(false)}
-          min={1}
-          max={5}
-          step={1}
-          className="w-full"
-        />
-        
-        {/* Value indicator while dragging */}
-        {isDragging && (
-          <div
-            className="absolute -top-8 transform -translate-x-1/2 bg-orange-500 text-white text-xs font-medium px-2 py-1 rounded transition-all"
-            style={{ left: `${((value - 1) / 4) * 100}%` }}
-          >
-            {value}
-          </div>
-        )}
-      </div>
-
       {/* Labels below slider */}
-      <div className="flex justify-between text-xs text-card-foreground/50">
-        <span className={cn(value === 1 && "text-orange-400")}>{config.leftLabel}</span>
-        <span className={cn(value === 3 && "text-orange-400")}>{config.middleLabel}</span>
-        <span className={cn(value === 5 && "text-orange-400")}>{config.rightLabel}</span>
+      <div className={cn(
+        "flex justify-between text-xs",
+        isDisabled ? "text-card-foreground/20" : "text-card-foreground/50"
+      )}>
+        <span className={cn(!isDisabled && value === 1 && "text-orange-400")}>{config.leftLabel}</span>
+        <span className={cn(!isDisabled && value === 3 && "text-orange-400")}>{config.middleLabel}</span>
+        <span className={cn(!isDisabled && value === 5 && "text-orange-400")}>{config.rightLabel}</span>
       </div>
     </div>
   );
@@ -170,8 +186,11 @@ const ProfileBuilderStep4b = () => {
     setPreferences((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleNotSure = (key: keyof FeelPreferences) => {
-    setPreferences((prev) => ({ ...prev, [key]: 3 }));
+  const handleToggleNotSure = (key: keyof FeelPreferences) => {
+    setPreferences((prev) => ({
+      ...prev,
+      [key]: prev[key] === null ? 3 : null,
+    }));
   };
 
   const handleNext = () => {
@@ -248,7 +267,7 @@ const ProfileBuilderStep4b = () => {
                   config={config}
                   value={preferences[config.key]}
                   onChange={(val) => handleSliderChange(config.key, val)}
-                  onNotSure={() => handleNotSure(config.key)}
+                  onToggleNotSure={() => handleToggleNotSure(config.key)}
                 />
               ))}
             </div>
