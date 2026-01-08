@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import shoes from "../src/data/shoebase.json" with { type: "json" };
+import shoes from "../src/data/shoebase.json";
 
 const SHORTLIST_DEBUG = true;
 
@@ -422,8 +422,8 @@ function getShortlist(runnerProfile: any, allShoes: any[], lastUserMessage: stri
     const hash = hashString(seedStr + "|" + shoe.full_name.toLowerCase());
     return { shoe, hash };
   })
-  .sort((a, b) => a.hash - b.hash)
-  .map(item => item.shoe);
+    .sort((a, b) => a.hash - b.hash)
+    .map(item => item.shoe);
 
   // Return 20-30 shoes (or all if fewer than 20 available)
   const targetSize = Math.min(30, Math.max(20, filtered.length));
@@ -494,9 +494,9 @@ function buildRunnerProfileContext(runnerProfile: any) {
   const dislikes =
     Array.isArray(dislikesArr) && dislikesArr.length > 0
       ? dislikesArr
-          .map((d: any) => d?.display_name || d?.raw_text)
-          .filter(Boolean)
-          .join(", ")
+        .map((d: any) => d?.display_name || d?.raw_text)
+        .filter(Boolean)
+        .join(", ")
       : "none";
 
   return `
@@ -746,13 +746,13 @@ Education-first mode (orientation):
       const lower = text.toLowerCase();
       // Existing patterns
       if (lower.includes("ready for recommendations") ||
-          lower.includes("want recommendations") ||
-          lower.includes("want me to recommend") ||
-          lower.includes("shall i recommend") ||
-          lower.includes("would you like recommendations") ||
-          lower.includes("would you like me to suggest") ||
-          lower.includes("want some options") ||
-          lower.includes("i can suggest")) {
+        lower.includes("want recommendations") ||
+        lower.includes("want me to recommend") ||
+        lower.includes("shall i recommend") ||
+        lower.includes("would you like recommendations") ||
+        lower.includes("would you like me to suggest") ||
+        lower.includes("want some options") ||
+        lower.includes("i can suggest")) {
         return true;
       }
       // Broader patterns
@@ -952,125 +952,125 @@ SPEC ACCURACY AND DATA SOURCE (STRICT):
       content: String(m.content ?? ""),
     }));
 
-let response;
-const started = Date.now();
+    let response;
+    const started = Date.now();
 
-try {
-  response = await client.responses.create(
-    {
-      model: "gpt-5-mini-2025-08-07",
+    try {
+      response = await client.responses.create(
+        {
+          model: "gpt-5-mini-2025-08-07",
 
-      // System-level instructions
-      instructions: instructionsContent,
+          // System-level instructions
+          instructions: instructionsContent,
 
-      // Conversation messages (user/assistant)
-      input: inputMessages,
+          // Conversation messages (user/assistant)
+          input: inputMessages,
 
-      // Token cap (Responses API uses max_output_tokens, not max_tokens)
-      max_output_tokens: 1200,
+          // Token cap (Responses API uses max_output_tokens, not max_tokens)
+          max_output_tokens: 1200,
 
-      // Keep it snappy while you tune prompts
-      reasoning: { effort: "minimal" },
-    },
-    { timeout: 30_000 }
-  );
+          // Keep it snappy while you tune prompts
+          reasoning: { effort: "minimal" },
+        },
+        { timeout: 30_000 }
+      );
 
-  console.log("[openai] ok in ms:", Date.now() - started);
+      console.log("[openai] ok in ms:", Date.now() - started);
 
-  // Debug logging for response quality (non-production only)
-  if (process.env.NODE_ENV !== "production") {
-    console.log("[openai-debug] response.status:", response?.status);
-    if (response?.incomplete_details) {
-      console.log("[openai-debug] response.incomplete_details:", response.incomplete_details);
+      // Debug logging for response quality (non-production only)
+      if (process.env.NODE_ENV !== "production") {
+        console.log("[openai-debug] response.status:", response?.status);
+        if (response?.incomplete_details) {
+          console.log("[openai-debug] response.incomplete_details:", response.incomplete_details);
+        }
+      }
+    } catch (err: any) {
+      console.error("[openai] failed in ms:", Date.now() - started);
+      console.error("[openai] status:", err?.status);
+      console.error("[openai] message:", err?.error?.message ?? err?.message);
+
+      return res.status(500).json({
+        reply: "Sorry - something went wrong while generating a response. Please try again.",
+        debug:
+          process.env.NODE_ENV === "production"
+            ? undefined
+            : {
+              status: err?.status ?? null,
+              message: err?.error?.message ?? err?.message ?? "Unknown error",
+            },
+      });
     }
-  }
-} catch (err: any) {
-  console.error("[openai] failed in ms:", Date.now() - started);
-  console.error("[openai] status:", err?.status);
-  console.error("[openai] message:", err?.error?.message ?? err?.message);
 
-  return res.status(500).json({
-    reply: "Sorry - something went wrong while generating a response. Please try again.",
-    debug:
-      process.env.NODE_ENV === "production"
-        ? undefined
-        : {
-            status: err?.status ?? null,
-            message: err?.error?.message ?? err?.message ?? "Unknown error",
-          },
-  });
-}
+    // Extract the assistant text from Responses API
+    const reply = response?.output_text?.trim();
 
-// Extract the assistant text from Responses API
-const reply = response?.output_text?.trim();
+    // Guard against empty or whitespace responses
+    if (!reply) {
+      if (process.env.NODE_ENV !== "production") {
+        console.error("[openai-debug] Empty response detected. Response keys:", Object.keys(response || {}));
+        console.error("[openai-debug] output_text value:", JSON.stringify(response?.output_text));
+      }
 
-// Guard against empty or whitespace responses
-if (!reply) {
-  if (process.env.NODE_ENV !== "production") {
-    console.error("[openai-debug] Empty response detected. Response keys:", Object.keys(response || {}));
-    console.error("[openai-debug] output_text value:", JSON.stringify(response?.output_text));
-  }
-
-  return res.status(200).json({
-    reply: "Tell me a bit about your running - what are you looking for in a shoe?",
-  });
-}
-
-// Validate that any shoe names mentioned in reply exist in catalogue
-const allCatalogueNames = shoes.map((s: any) => s.full_name);
-const invalidShoes: string[] = [];
-
-// Check each catalogue shoe name against the reply
-for (const shoeName of allCatalogueNames) {
-  if (reply.includes(shoeName)) {
-    // Valid mention - shoe exists in catalogue
-    continue;
-  }
-}
-
-// Also check for potential hallucinated shoe names by looking for brand patterns
-// Match patterns like "Nike [Word]" or "Adidas [Word] [Word]" that aren't in catalogue
-const brandPattern = /\b(Nike|Adidas|ASICS|Brooks|New Balance|Hoka|Saucony|Mizuno|On|Puma|Altra|Topo Athletic|Salomon)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:\s+\d+)?)\b/g;
-const potentialShoes = reply.match(brandPattern);
-
-if (potentialShoes) {
-  for (const potentialShoe of potentialShoes) {
-    // Check if this potential shoe name exists in catalogue
-    const existsInCatalogue = allCatalogueNames.some((catalogueName: string) =>
-      catalogueName.toLowerCase() === potentialShoe.toLowerCase() ||
-      catalogueName.toLowerCase().includes(potentialShoe.toLowerCase())
-    );
-
-    if (!existsInCatalogue) {
-      invalidShoes.push(potentialShoe);
+      return res.status(200).json({
+        reply: "Tell me a bit about your running - what are you looking for in a shoe?",
+      });
     }
-  }
-}
 
-// If invalid shoes found, return fallback
-if (invalidShoes.length > 0) {
-  console.error("[validation] Invalid shoe names in response:", invalidShoes);
-  console.error("[validation] User input:", lastUserMessageText);
-  console.error("[validation] Full reply:", reply);
+    // Validate that any shoe names mentioned in reply exist in catalogue
+    const allCatalogueNames = shoes.map((s: any) => s.full_name);
+    const invalidShoes: string[] = [];
 
-  // Extract main need from user message for fallback
-  let mainNeed = "your running needs";
-  if (lastUserMessageText.toLowerCase().includes("daily")) {
-    mainNeed = "daily training shoes";
-  } else if (lastUserMessageText.toLowerCase().includes("race")) {
-    mainNeed = "racing shoes";
-  } else if (lastUserMessageText.toLowerCase().includes("trail")) {
-    mainNeed = "trail shoes";
-  } else if (lastUserMessageText.toLowerCase().includes("long run")) {
-    mainNeed = "long run shoes";
-  }
+    // Check each catalogue shoe name against the reply
+    for (const shoeName of allCatalogueNames) {
+      if (reply.includes(shoeName)) {
+        // Valid mention - shoe exists in catalogue
+        continue;
+      }
+    }
 
-  return res.status(200).json({
-    reply: `I need to double-check that recommendation. Could you tell me more about ${mainNeed}?`,
-  });
-}
+    // Also check for potential hallucinated shoe names by looking for brand patterns
+    // Match patterns like "Nike [Word]" or "Adidas [Word] [Word]" that aren't in catalogue
+    const brandPattern = /\b(Nike|Adidas|ASICS|Brooks|New Balance|Hoka|Saucony|Mizuno|On|Puma|Altra|Topo Athletic|Salomon)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:\s+\d+)?)\b/g;
+    const potentialShoes = reply.match(brandPattern);
 
-return res.status(200).json({ reply });
+    if (potentialShoes) {
+      for (const potentialShoe of potentialShoes) {
+        // Check if this potential shoe name exists in catalogue
+        const existsInCatalogue = allCatalogueNames.some((catalogueName: string) =>
+          catalogueName.toLowerCase() === potentialShoe.toLowerCase() ||
+          catalogueName.toLowerCase().includes(potentialShoe.toLowerCase())
+        );
+
+        if (!existsInCatalogue) {
+          invalidShoes.push(potentialShoe);
+        }
+      }
+    }
+
+    // If invalid shoes found, return fallback
+    if (invalidShoes.length > 0) {
+      console.error("[validation] Invalid shoe names in response:", invalidShoes);
+      console.error("[validation] User input:", lastUserMessageText);
+      console.error("[validation] Full reply:", reply);
+
+      // Extract main need from user message for fallback
+      let mainNeed = "your running needs";
+      if (lastUserMessageText.toLowerCase().includes("daily")) {
+        mainNeed = "daily training shoes";
+      } else if (lastUserMessageText.toLowerCase().includes("race")) {
+        mainNeed = "racing shoes";
+      } else if (lastUserMessageText.toLowerCase().includes("trail")) {
+        mainNeed = "trail shoes";
+      } else if (lastUserMessageText.toLowerCase().includes("long run")) {
+        mainNeed = "long run shoes";
+      }
+
+      return res.status(200).json({
+        reply: `I need to double-check that recommendation. Could you tell me more about ${mainNeed}?`,
+      });
+    }
+
+    return res.status(200).json({ reply });
   } catch (e: any) {
     console.error("Chat API error:", e);
     return res.status(500).json({
@@ -1079,8 +1079,8 @@ return res.status(200).json({ reply });
         process.env.NODE_ENV === "production"
           ? undefined
           : {
-              message: e?.message ?? "Unknown error",
-            },
+            message: e?.message ?? "Unknown error",
+          },
     });
   }
 }
