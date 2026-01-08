@@ -140,7 +140,7 @@ const ProfileBuilderStep4Analysis = () => {
             {status === "success" && gap && (
               <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300 text-center">
                 <div className="w-full">
-                  <h2 className="text-lg font-medium text-foreground mb-4">
+                  <h2 className="text-lg font-medium text-card-foreground mb-4">
                     based on your rotation, we think you need a{" "}
                     <span className="text-orange-400 font-bold">
                       {getShoeTypeLabel(mapGapToRole(gap.missingCapability || "daily"))}
