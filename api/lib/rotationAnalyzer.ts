@@ -4,12 +4,12 @@
 // ============================================================================
 
 import type {
+  RotationAnalysis,
   CurrentShoe,
   RunnerProfile,
-  RotationAnalysis,
+  Shoe,
   ShoeRole,
-  Shoe
-} from '../types';
+} from '../types.js';
 
 // ============================================================================
 // EXPECTED ROLES BY PROFILE
@@ -281,7 +281,7 @@ export function hasAdequateCoverage(
 
   // Structured training needs tempo coverage
   if (profile.runningPattern === "structured_training" ||
-      profile.runningPattern === "workouts") {
+    profile.runningPattern === "workouts") {
     criticalRoles.add("tempo");
   }
 

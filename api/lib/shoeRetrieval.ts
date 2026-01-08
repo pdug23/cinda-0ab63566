@@ -3,7 +3,7 @@
 // Filters and scores the 72-shoe catalogue to return 20-30 candidates
 // ============================================================================
 
-import type { Shoe, ShoeRole, FeelPreference } from '../types';
+import type { Shoe, ShoeRole, FeelPreference } from '../types.js';
 
 // ============================================================================
 // TYPES

@@ -4,7 +4,7 @@
 // ============================================================================
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import type { AnalyzeRequest, AnalyzeResponse, Shoe, Gap, RecommendedShoe } from './types';
+import type { AnalyzeRequest, AnalyzeResponse, Shoe, Gap, RecommendedShoe } from './types.js';
 import { analyzeRotation } from './lib/rotationAnalyzer.js';
 import { identifyPrimaryGap } from './lib/gapDetector.js';
 import { generateRecommendations, generateShoppingRecommendations } from './lib/recommendationEngine.js';

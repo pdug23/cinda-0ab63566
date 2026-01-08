@@ -12,7 +12,7 @@ import type {
   CurrentShoe,
   Shoe,
   ShoeRole
-} from '../types';
+} from '../types.js';
 
 // ============================================================================
 // COVERAGE GAP DETECTION
@@ -68,13 +68,13 @@ function getCriticalRoles(profile: RunnerProfile): ShoeRole[] {
     critical.push("long");
   }
   if (profile.runningPattern === "structured_training" ||
-      profile.runningPattern === "workouts") {
+    profile.runningPattern === "workouts") {
     critical.push("tempo");
   }
 
   // Add based on goals
   if (profile.primaryGoal === "train_for_race" ||
-      profile.primaryGoal === "improve_pace") {
+    profile.primaryGoal === "improve_pace") {
     critical.push("tempo");
   }
 
@@ -145,8 +145,8 @@ function checkPerformanceGap(
   // Only check performance if goal is pace/racing oriented
   const performanceGoals = ["improve_pace", "train_for_race"];
   const isPerformanceFocused = performanceGoals.includes(profile.primaryGoal) ||
-                                profile.experience === "racing_focused" ||
-                                profile.experience === "advanced";
+    profile.experience === "racing_focused" ||
+    profile.experience === "advanced";
 
   if (!isPerformanceFocused) {
     return null; // Performance gap not relevant
@@ -210,8 +210,8 @@ function checkRecoveryGap(
 ): Gap | null {
   // Check if recovery is relevant for this runner
   const needsRecovery = profile.runningPattern === "structured_training" ||
-                         profile.runningPattern === "long_run_focus" ||
-                         profile.runningPattern === "mostly_easy";
+    profile.runningPattern === "long_run_focus" ||
+    profile.runningPattern === "mostly_easy";
 
   if (!needsRecovery) {
     return null; // Recovery gap not relevant
@@ -224,7 +224,7 @@ function checkRecoveryGap(
   // No recovery shoes at all = high severity for structured/long run folks
   if (!hasEasy && !hasLong) {
     const severity = (profile.runningPattern === "structured_training" ||
-                      profile.runningPattern === "long_run_focus") ? "high" : "medium";
+      profile.runningPattern === "long_run_focus") ? "high" : "medium";
 
     return {
       type: "recovery",

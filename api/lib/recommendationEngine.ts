@@ -5,16 +5,16 @@
 
 import type {
   Gap,
+  RecommendedShoe,
+  RecommendationType,
+  Shoe,
   RunnerProfile,
   CurrentShoe,
-  Shoe,
-  RecommendedShoe,
   ShoeRole,
-  RecommendationType,
   FeelPreferences,
-  ShoeRequest
-} from '../types';
-import { getCandidates } from './shoeRetrieval';
+  ShoeRequest,
+} from '../types.js';
+import { getCandidates } from './shoeRetrieval.js';
 
 // ============================================================================
 // CONSTRAINT BUILDING
@@ -41,7 +41,8 @@ function buildConstraintsFromGap(
   };
 
   // Determine stability need from feel preferences
-  if (feelPreferences.stableVsNeutral >= 4) {
+  const stableArr = Array.isArray(feelPreferences.stableVsNeutral) ? feelPreferences.stableVsNeutral : [feelPreferences.stableVsNeutral];
+  if (stableArr.includes(4) || stableArr.includes(5)) {
     constraints.stabilityNeed = "stable_feel";
   }
 
@@ -212,10 +213,10 @@ function areSimilar(shoe1: Shoe, shoe2: Shoe): boolean {
 
   // Similar if: close on all 3 feel dimensions AND similar weight AND same construction
   return cushionDiff <= 1 &&
-         bounceDiff <= 1 &&
-         stabilityDiff <= 1 &&
-         weightDiff <= 30 &&
-         sameConstruction;
+    bounceDiff <= 1 &&
+    stabilityDiff <= 1 &&
+    weightDiff <= 30 &&
+    sameConstruction;
 }
 
 /**
@@ -293,7 +294,7 @@ function selectDiverseThree(scoredCandidates: ScoredShoe[]): [Shoe, Shoe, Shoe] 
     if (closeMatch2 && candidate.shoe.shoe_id === closeMatch2.shoe_id) continue;
 
     if (areDifferent(candidate.shoe, closeMatch1) &&
-        (!closeMatch2 || areDifferent(candidate.shoe, closeMatch2))) {
+      (!closeMatch2 || areDifferent(candidate.shoe, closeMatch2))) {
       tradeOff = candidate.shoe;
       break;
     }
@@ -303,7 +304,7 @@ function selectDiverseThree(scoredCandidates: ScoredShoe[]): [Shoe, Shoe, Shoe] 
   if (!tradeOff) {
     for (const candidate of sorted) {
       if (candidate.shoe.shoe_id !== closeMatch1.shoe_id &&
-          (!closeMatch2 || candidate.shoe.shoe_id !== closeMatch2.shoe_id)) {
+        (!closeMatch2 || candidate.shoe.shoe_id !== closeMatch2.shoe_id)) {
         tradeOff = candidate.shoe;
         break;
       }
@@ -602,9 +603,10 @@ export function generateShoppingRecommendations(
     feelPreferences: request.feelPreferences,
     excludeShoeIds: currentShoes.map(s => s.shoeId),
     // Determine stability need from request preferences
-    stabilityNeed: request.feelPreferences.stableVsNeutral >= 4
-      ? ("stable_feel" as const)
-      : undefined,
+    stabilityNeed: (() => {
+      const stableArr = Array.isArray(request.feelPreferences.stableVsNeutral) ? request.feelPreferences.stableVsNeutral : [request.feelPreferences.stableVsNeutral];
+      return (stableArr.includes(4) || stableArr.includes(5)) ? ("stable_feel" as const) : undefined;
+    })(),
   };
 
   // Step 2: Get candidates for this role
@@ -690,9 +692,19 @@ function scoreShoeForRole(
   }
 
   // Feel match (0-30 points) - using same logic as shoeRetrieval
-  const softScore = Math.max(0, 10 - Math.abs(shoe.cushion_softness_1to5 - feelPreferences.softVsFirm) * 2);
-  const stabilityScore = Math.max(0, 10 - Math.abs(shoe.stability_1to5 - feelPreferences.stableVsNeutral) * 2);
-  const bounceScore = Math.max(0, 10 - Math.abs(shoe.bounce_1to5 - feelPreferences.bouncyVsDamped) * 2);
+  // Normalize preferences to arrays
+  const normalizePref = (pref: number | number[]): number[] => Array.isArray(pref) ? pref : [pref];
+  const softArr = normalizePref(feelPreferences.softVsFirm);
+  const stableArr = normalizePref(feelPreferences.stableVsNeutral);
+  const bounceArr = normalizePref(feelPreferences.bouncyVsDamped);
+
+  const minDistance = (shoeValue: number, prefArr: number[]): number => {
+    return Math.min(...prefArr.map(p => Math.abs(shoeValue - p)));
+  };
+
+  const softScore = Math.max(0, 10 - minDistance(shoe.cushion_softness_1to5, softArr) * 2);
+  const stabilityScore = Math.max(0, 10 - minDistance(shoe.stability_1to5, stableArr) * 2);
+  const bounceScore = Math.max(0, 10 - minDistance(shoe.bounce_1to5, bounceArr) * 2);
   score += softScore + stabilityScore + bounceScore;
 
   // Availability bonus (0-15 points)
