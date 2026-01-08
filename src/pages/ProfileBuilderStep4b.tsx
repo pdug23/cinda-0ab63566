@@ -95,7 +95,7 @@ const FeelSlider = ({
 
       {/* Slider row with "not sure" button */}
       <div className="flex items-center gap-4">
-        {/* Slider container */}
+        {/* Slider container with labels */}
         <div className={cn("relative flex-1", isDisabled && "opacity-30")}>
           <Slider
             value={[displayValue]}
@@ -120,6 +120,36 @@ const FeelSlider = ({
               {displayValue}
             </div>
           )}
+
+          {/* Labels positioned below slider - aligned to slider positions */}
+          <div className={cn(
+            "relative w-full mt-2 text-xs",
+            isDisabled ? "text-card-foreground/20" : "text-card-foreground/50"
+          )}>
+            {/* Left label - position 1 (0%) */}
+            <span className={cn(
+              "absolute left-0 -translate-x-0",
+              !isDisabled && value === 1 && "text-orange-400"
+            )}>
+              {config.leftLabel}
+            </span>
+            {/* Middle label - position 3 (50%) */}
+            <span className={cn(
+              "absolute left-1/2 -translate-x-1/2",
+              !isDisabled && value === 3 && "text-orange-400"
+            )}>
+              {config.middleLabel}
+            </span>
+            {/* Right label - position 5 (100%) */}
+            <span className={cn(
+              "absolute right-0 translate-x-0",
+              !isDisabled && value === 5 && "text-orange-400"
+            )}>
+              {config.rightLabel}
+            </span>
+            {/* Spacer for height */}
+            <span className="invisible">{config.middleLabel}</span>
+          </div>
         </div>
 
         {/* Not sure button - more prominent */}
@@ -127,7 +157,7 @@ const FeelSlider = ({
           type="button"
           onClick={onToggleNotSure}
           className={cn(
-            "text-xs transition-all italic whitespace-nowrap px-3 py-1.5 rounded-md border",
+            "text-xs transition-all italic whitespace-nowrap px-3 py-1.5 rounded-md border self-start mt-0",
             isDisabled
               ? "text-slate-300 bg-slate-500/20 border-slate-400/40"
               : "text-slate-500 border-slate-500/30 hover:text-slate-400 hover:border-slate-400/50 hover:bg-slate-500/10"
@@ -135,16 +165,6 @@ const FeelSlider = ({
         >
           not sure
         </button>
-      </div>
-
-      {/* Labels below slider */}
-      <div className={cn(
-        "flex justify-between text-xs",
-        isDisabled ? "text-card-foreground/20" : "text-card-foreground/50"
-      )}>
-        <span className={cn(!isDisabled && value === 1 && "text-orange-400")}>{config.leftLabel}</span>
-        <span className={cn(!isDisabled && value === 3 && "text-orange-400")}>{config.middleLabel}</span>
-        <span className={cn(!isDisabled && value === 5 && "text-orange-400")}>{config.rightLabel}</span>
       </div>
     </div>
   );
