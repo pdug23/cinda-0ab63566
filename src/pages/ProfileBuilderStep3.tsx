@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, X, Heart, ThumbsUp, Meh, ThumbsDown } from "lucide-react";
+import { ArrowLeft, X, Heart, ThumbsUp, Meh, ThumbsDown, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { UnsavedChangesModal } from "@/components/UnsavedChangesModal";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
@@ -30,15 +30,20 @@ interface Shoe {
 
 const shoes = shoebaseData as Shoe[];
 
-// Run type options
+// Run type options - "daily training" replaces "all runs"
 const RUN_TYPE_OPTIONS: { value: ShoeRole; label: string }[] = [
-  { value: "all_runs", label: "all runs" },
+  { value: "all_runs", label: "daily training" },
   { value: "races", label: "races" },
   { value: "tempo", label: "tempo" },
   { value: "interval", label: "interval" },
   { value: "easy_recovery", label: "easy pace" },
   { value: "trail", label: "trail" },
 ];
+
+// Roles that are blocked when "daily training" is selected
+const DAILY_TRAINING_BLOCKED_ROLES: ShoeRole[] = ["tempo", "interval", "easy_recovery"];
+// Roles that can combine with "daily training"
+const DAILY_TRAINING_ALLOWED_ROLES: ShoeRole[] = ["races", "trail"];
 
 // Sentiment options
 const SENTIMENT_OPTIONS: { value: ShoeSentiment; label: string; icon: React.ReactNode }[] = [
@@ -106,6 +111,27 @@ const SentimentButton = ({
   </button>
 );
 
+// Check if a role should be disabled based on current selections
+const getRoleDisabledState = (role: ShoeRole, currentRoles: ShoeRole[]): boolean => {
+  const hasDailyTraining = currentRoles.includes("all_runs");
+  const hasBlockedRole = currentRoles.some(r => DAILY_TRAINING_BLOCKED_ROLES.includes(r));
+
+  if (role === "all_runs") {
+    // Daily training is disabled if any blocked role is selected
+    return hasBlockedRole;
+  } else if (DAILY_TRAINING_BLOCKED_ROLES.includes(role)) {
+    // Blocked roles are disabled if daily training is selected
+    return hasDailyTraining;
+  }
+  // races and trail can always be toggled
+  return false;
+};
+
+// Check if shoe card is complete
+const isShoeComplete = (roles: ShoeRole[], sentiment: ShoeSentiment | null): boolean => {
+  return roles.length > 0 && sentiment !== null;
+};
+
 // Shoe card component
 const ShoeCard = ({
   shoe,
@@ -114,6 +140,8 @@ const ShoeCard = ({
   onRoleToggle,
   onSentimentChange,
   onRemove,
+  isCollapsed,
+  onToggleCollapse,
 }: {
   shoe: Shoe;
   roles: ShoeRole[];
@@ -121,11 +149,45 @@ const ShoeCard = ({
   onRoleToggle: (role: ShoeRole) => void;
   onSentimentChange: (sentiment: ShoeSentiment) => void;
   onRemove: () => void;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
 }) => {
-  const isAllRunsSelected = roles.includes("all_runs");
+  const complete = isShoeComplete(roles, sentiment);
 
   return (
-    <div className="bg-card-foreground/5 border border-card-foreground/20 rounded-xl p-4 relative">
+    <div 
+      className={cn(
+        "bg-card-foreground/5 rounded-xl p-4 relative transition-all duration-200",
+        "border-2",
+        complete 
+          ? "border-green-500/50" 
+          : roles.length === 0 || sentiment === null 
+            ? "border-red-500/30" 
+            : "border-card-foreground/20"
+      )}
+    >
+      {/* Header row with shoe name, collapse toggle, and remove button */}
+      <div className="flex items-center gap-2 pr-8">
+        {/* Collapse toggle */}
+        <button
+          type="button"
+          onClick={onToggleCollapse}
+          className="p-1 rounded-full hover:bg-card-foreground/10 text-card-foreground/50 hover:text-card-foreground/70 transition-colors flex-shrink-0"
+        >
+          {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+        </button>
+
+        {/* Complete checkmark */}
+        {complete && (
+          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+        )}
+
+        {/* Shoe name */}
+        <h3 className="text-base font-medium text-card-foreground/90 normal-case truncate flex-1">
+          {shoe.full_name}
+        </h3>
+      </div>
+
       {/* Remove button */}
       <button
         type="button"
@@ -135,49 +197,46 @@ const ShoeCard = ({
         <X className="w-4 h-4" />
       </button>
 
-      {/* Shoe name */}
-      <h3 className="text-base font-medium text-card-foreground/90 pr-8 mb-4 normal-case">
-        {shoe.full_name}
-      </h3>
+      {/* Collapsible content */}
+      {!isCollapsed && (
+        <div className="mt-4">
+          {/* Run type selection */}
+          <div className="mb-4">
+            <label className="block text-xs text-card-foreground/60 mb-2">
+              what do you use this shoe for?
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {RUN_TYPE_OPTIONS.map((option) => (
+                <RoleButton
+                  key={option.value}
+                  label={option.label}
+                  selected={roles.includes(option.value)}
+                  disabled={getRoleDisabledState(option.value, roles)}
+                  onClick={() => onRoleToggle(option.value)}
+                />
+              ))}
+            </div>
+          </div>
 
-      {/* Run type selection */}
-      <div className="mb-4">
-        <label className="block text-xs text-card-foreground/60 mb-2">
-          what do you use this shoe for?
-        </label>
-        <div className="grid grid-cols-3 gap-2">
-          {RUN_TYPE_OPTIONS.map((option) => (
-            <RoleButton
-              key={option.value}
-              label={option.label}
-              selected={roles.includes(option.value)}
-              disabled={
-                (option.value === "all_runs" && roles.length > 0 && !isAllRunsSelected) ||
-                (option.value !== "all_runs" && isAllRunsSelected)
-              }
-              onClick={() => onRoleToggle(option.value)}
-            />
-          ))}
+          {/* Sentiment selection */}
+          <div>
+            <label className="block text-xs text-card-foreground/60 mb-2">
+              how do you feel about this shoe?
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {SENTIMENT_OPTIONS.map((option) => (
+                <SentimentButton
+                  key={option.value}
+                  label={option.label}
+                  icon={option.icon}
+                  selected={sentiment === option.value}
+                  onClick={() => onSentimentChange(option.value)}
+                />
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-
-      {/* Sentiment selection */}
-      <div>
-        <label className="block text-xs text-card-foreground/60 mb-2">
-          how do you feel about this shoe?
-        </label>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {SENTIMENT_OPTIONS.map((option) => (
-            <SentimentButton
-              key={option.value}
-              label={option.label}
-              icon={option.icon}
-              selected={sentiment === option.value}
-              onClick={() => onSentimentChange(option.value)}
-            />
-          ))}
-        </div>
-      </div>
+      )}
     </div>
   );
 };
@@ -195,6 +254,20 @@ const ProfileBuilderStep3 = () => {
   const [confirmSkipModalOpen, setConfirmSkipModalOpen] = useState(false);
   const [customShoeModalOpen, setCustomShoeModalOpen] = useState(false);
   const [customShoeName, setCustomShoeName] = useState("");
+  const [collapsedShoes, setCollapsedShoes] = useState<Set<string>>(new Set());
+
+  // Toggle collapse state for a shoe
+  const toggleCollapse = (shoeId: string) => {
+    setCollapsedShoes(prev => {
+      const next = new Set(prev);
+      if (next.has(shoeId)) {
+        next.delete(shoeId);
+      } else {
+        next.add(shoeId);
+      }
+      return next;
+    });
+  };
 
   // Search results
   const searchResults = useMemo(() => {
@@ -266,26 +339,41 @@ const ProfileBuilderStep3 = () => {
     setCurrentShoes((prev) => prev.filter((s) => s.shoe.shoe_id !== shoeId));
   };
 
-  // Toggle role for a shoe
+  // Toggle role for a shoe with new validation logic
   const handleRoleToggle = (shoeId: string, role: ShoeRole) => {
     setCurrentShoes((prev) =>
       prev.map((s) => {
         if (s.shoe.shoe_id !== shoeId) return s;
 
+        const hasDailyTraining = s.roles.includes("all_runs");
+        const hasBlockedRole = s.roles.some(r => DAILY_TRAINING_BLOCKED_ROLES.includes(r));
+
         if (role === "all_runs") {
-          // Toggle all_runs - if selecting, clear other roles
-          if (s.roles.includes("all_runs")) {
-            return { ...s, roles: [] };
+          // Toggle daily training
+          if (hasDailyTraining) {
+            // Deselect daily training
+            return { ...s, roles: s.roles.filter((r) => r !== "all_runs") };
           } else {
-            return { ...s, roles: ["all_runs"] };
+            // Can't select if blocked roles are present
+            if (hasBlockedRole) return s;
+            // Select daily training (keep races/trail if present)
+            const allowedRoles = s.roles.filter(r => DAILY_TRAINING_ALLOWED_ROLES.includes(r));
+            return { ...s, roles: ["all_runs", ...allowedRoles] };
           }
-        } else {
-          // Toggle other role
+        } else if (DAILY_TRAINING_BLOCKED_ROLES.includes(role)) {
+          // Toggle tempo/interval/easy pace
           if (s.roles.includes(role)) {
             return { ...s, roles: s.roles.filter((r) => r !== role) };
           } else {
-            // Can't add if all_runs is selected
-            if (s.roles.includes("all_runs")) return s;
+            // Can't add if daily training is selected
+            if (hasDailyTraining) return s;
+            return { ...s, roles: [...s.roles, role] };
+          }
+        } else {
+          // Toggle races or trail (always allowed)
+          if (s.roles.includes(role)) {
+            return { ...s, roles: s.roles.filter((r) => r !== role) };
+          } else {
             return { ...s, roles: [...s.roles, role] };
           }
         }
@@ -342,9 +430,27 @@ const ProfileBuilderStep3 = () => {
     setConfirmShoesModalOpen(true);
   };
 
+  // Backend mapping: convert tempo+interval+easy_pace to daily_training
+  const mapRolesForSave = (shoes: CurrentShoe[]): CurrentShoe[] => {
+    return shoes.map(shoe => {
+      const hasAllThree = 
+        shoe.roles.includes("tempo") && 
+        shoe.roles.includes("interval") && 
+        shoe.roles.includes("easy_recovery");
+      
+      if (hasAllThree) {
+        // Replace with daily training, keep races/trail if present
+        const otherRoles = shoe.roles.filter(r => DAILY_TRAINING_ALLOWED_ROLES.includes(r));
+        return { ...shoe, roles: ["all_runs" as ShoeRole, ...otherRoles] };
+      }
+      return shoe;
+    });
+  };
+
   const handleConfirmNext = () => {
     setConfirmShoesModalOpen(false);
-    updateStep3({ currentShoes });
+    const mappedShoes = mapRolesForSave(currentShoes);
+    updateStep3({ currentShoes: mappedShoes });
     navigate("/profile/step4");
   };
 
@@ -436,6 +542,8 @@ const ProfileBuilderStep3 = () => {
                     onRoleToggle={(role) => handleRoleToggle(item.shoe.shoe_id, role)}
                     onSentimentChange={(sentiment) => handleSentimentChange(item.shoe.shoe_id, sentiment)}
                     onRemove={() => handleRemoveShoe(item.shoe.shoe_id)}
+                    isCollapsed={collapsedShoes.has(item.shoe.shoe_id)}
+                    onToggleCollapse={() => toggleCollapse(item.shoe.shoe_id)}
                   />
                 ))}
               </div>
