@@ -61,7 +61,12 @@ function checkCoverageGap(
  * Get critical roles based on profile
  */
 function getCriticalRoles(profile: RunnerProfile): ShoeRole[] {
-  const critical: ShoeRole[] = ["daily"]; // Everyone needs a daily trainer
+  const critical: ShoeRole[] = []; // Start empty, add based on context
+
+  // Only add daily if they truly need it (beginner or no other coverage)
+  if (profile.experience === "beginner") {
+    critical.push("daily");
+  }
 
   // Add based on running pattern
   if (profile.runningPattern === "long_run_focus") {
