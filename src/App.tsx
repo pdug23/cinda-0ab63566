@@ -11,6 +11,7 @@ import ProfileBuilderStep2 from "./pages/ProfileBuilderStep2";
 import ProfileBuilderStep3 from "./pages/ProfileBuilderStep3";
 import ProfileBuilderStep4 from "./pages/ProfileBuilderStep4";
 import ProfileBuilderStep4a from "./pages/ProfileBuilderStep4a";
+import ProfileBuilderStep4Analysis from "./pages/ProfileBuilderStep4Analysis";
 import ProfileBuilderStep4b from "./pages/ProfileBuilderStep4b";
 import NotFound from "./pages/NotFound";
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/profile/step3" element={<ProfileBuilderStep3 />} />
             <Route path="/profile/step4" element={<ProfileBuilderStep4 />} />
             <Route path="/profile/step4a" element={<ProfileBuilderStep4a />} />
+            <Route path="/profile/step4-analysis" element={<ProfileBuilderStep4Analysis />} />
             <Route path="/profile/step4b" element={<ProfileBuilderStep4b />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
