@@ -4,6 +4,7 @@ import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { useProfile } from "@/contexts/ProfileContext";
+import { usePageNavigation } from "@/hooks/usePageNavigation";
 import { cn } from "@/lib/utils";
 
 // Custom Discovery Icon - Geometric compass with targeting crosshairs
@@ -212,7 +213,8 @@ const ModeCard = ({
 
 const ProfileBuilderStep4 = () => {
   const navigate = useNavigate();
-  const { profileData } = useProfile();
+  const { navigateWithTransition } = usePageNavigation();
+  const { profileData, updateStep4 } = useProfile();
 
   const hasShoes = profileData.step3.currentShoes.length > 0;
 
@@ -227,8 +229,8 @@ const ProfileBuilderStep4 = () => {
 
   const handleAnalysisMode = () => {
     if (!hasShoes) return;
-    // TODO: Navigate to Analysis Mode flow (Step 4a)
-    console.log("Analysis Mode selected");
+    updateStep4({ mode: "analysis" });
+    navigateWithTransition("/profile/step4-analysis");
   };
 
   return (

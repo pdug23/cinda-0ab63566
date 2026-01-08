@@ -21,6 +21,7 @@ const ROLE_LABELS: Record<DiscoveryShoeRole, string> = {
   tempo: "tempo shoe",
   race_day: "race day shoe",
   trail: "trail shoe",
+  not_sure: "shoe",
 };
 
 // Slider configuration

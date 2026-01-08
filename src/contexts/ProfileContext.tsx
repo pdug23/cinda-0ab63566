@@ -36,7 +36,7 @@ export type ShoeRole = "all_runs" | "races" | "tempo" | "interval" | "easy_recov
 export type ShoeSentiment = "love" | "like" | "neutral" | "dislike";
 
 // Step 4 shoe role selection for discovery mode
-export type DiscoveryShoeRole = "daily_trainer" | "recovery" | "tempo" | "race_day" | "trail";
+export type DiscoveryShoeRole = "daily_trainer" | "recovery" | "tempo" | "race_day" | "trail" | "not_sure";
 
 // Feel preferences for each shoe request
 // Can be single value (auto-converts to range) or explicit range array
@@ -51,6 +51,13 @@ export interface FeelPreferences {
 export interface ShoeRequest {
   role: DiscoveryShoeRole;
   feelPreferences: FeelPreferences;
+}
+
+export interface GapData {
+  type: 'coverage' | 'performance' | 'recovery' | 'redundancy';
+  severity: 'low' | 'medium' | 'high';
+  reasoning: string;
+  missingCapability?: string;
 }
 
 export interface CurrentShoe {
@@ -76,6 +83,7 @@ export interface Step4Data {
   selectedRoles: DiscoveryShoeRole[];
   currentRoleIndex: number;
   shoeRequests: ShoeRequest[];
+  gap: GapData | null;
 }
 
 export interface ProfileData {
@@ -116,6 +124,7 @@ const defaultStep4: Step4Data = {
   selectedRoles: [],
   currentRoleIndex: 0,
   shoeRequests: [],
+  gap: null,
 };
 
 interface ProfileContextType {
