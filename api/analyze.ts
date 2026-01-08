@@ -5,9 +5,9 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { AnalyzeRequest, AnalyzeResponse, Shoe, Gap, RecommendedShoe } from './types';
-import { analyzeRotation } from './lib/rotationAnalyzer';
-import { identifyPrimaryGap } from './lib/gapDetector';
-import { generateRecommendations, generateShoppingRecommendations } from './lib/recommendationEngine';
+import { analyzeRotation } from './lib/rotationAnalyzer.js';
+import { identifyPrimaryGap } from './lib/gapDetector.js';
+import { generateRecommendations, generateShoppingRecommendations } from './lib/recommendationEngine.js';
 import shoebase from '../src/data/shoebase.json';
 
 /**
@@ -154,7 +154,7 @@ export default async function handler(
             request.feelPreferences.bouncyVsDamped >= 4 ? 'bouncy' : request.feelPreferences.bouncyVsDamped <= 2 ? 'damped' : 'moderate'
           } response, and ${
             request.feelPreferences.stableVsNeutral >= 4 ? 'stable' : request.feelPreferences.stableVsNeutral <= 2 ? 'neutral' : 'balanced'
-          } platform.`;
+            } platform.`;
 
           return {
             role: request.role,
