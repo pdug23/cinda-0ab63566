@@ -40,10 +40,8 @@ const RUN_TYPE_OPTIONS: { value: ShoeRole; label: string }[] = [
   { value: "trail", label: "trail" },
 ];
 
-// Roles that are blocked when "daily training" is selected
-const DAILY_TRAINING_BLOCKED_ROLES: ShoeRole[] = ["tempo", "interval", "easy_recovery"];
-// Roles that can combine with "daily training"
-const DAILY_TRAINING_ALLOWED_ROLES: ShoeRole[] = ["races", "trail"];
+// Roles that get normalized to daily training
+const NORMALIZABLE_ROLES: ShoeRole[] = ["tempo", "interval", "easy_recovery"];
 
 // Sentiment options
 const SENTIMENT_OPTIONS: { value: ShoeSentiment; label: string; icon: React.ReactNode }[] = [
@@ -53,29 +51,24 @@ const SENTIMENT_OPTIONS: { value: ShoeSentiment; label: string; icon: React.Reac
   { value: "dislike", label: "not for me", icon: <ThumbsDown className="w-4 h-4" /> },
 ];
 
-// Role selection button component
+// Role selection button component (no disabling - all buttons always enabled)
 const RoleButton = ({
   label,
   selected,
-  disabled,
   onClick,
 }: {
   label: string;
   selected: boolean;
-  disabled: boolean;
   onClick: () => void;
 }) => (
   <button
     type="button"
     onClick={onClick}
-    disabled={disabled}
     className={cn(
       "min-h-[44px] px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200",
       "border",
       selected
         ? "bg-orange-500/20 border-orange-500/50 text-orange-400 shadow-[0_0_12px_rgba(251,146,60,0.15)]"
-        : disabled
-        ? "bg-card-foreground/5 border-card-foreground/10 text-card-foreground/30 cursor-not-allowed"
         : "bg-card-foreground/5 border-card-foreground/20 text-card-foreground/70 hover:border-card-foreground/30 hover:bg-card-foreground/[0.07]"
     )}
   >
@@ -110,22 +103,6 @@ const SentimentButton = ({
     {label}
   </button>
 );
-
-// Check if a role should be disabled based on current selections
-const getRoleDisabledState = (role: ShoeRole, currentRoles: ShoeRole[]): boolean => {
-  const hasDailyTraining = currentRoles.includes("all_runs");
-  const hasBlockedRole = currentRoles.some(r => DAILY_TRAINING_BLOCKED_ROLES.includes(r));
-
-  if (role === "all_runs") {
-    // Daily training is disabled if any blocked role is selected
-    return hasBlockedRole;
-  } else if (DAILY_TRAINING_BLOCKED_ROLES.includes(role)) {
-    // Blocked roles are disabled if daily training is selected
-    return hasDailyTraining;
-  }
-  // races and trail can always be toggled
-  return false;
-};
 
 // Check if shoe card is complete
 const isShoeComplete = (roles: ShoeRole[], sentiment: ShoeSentiment | null): boolean => {
@@ -211,7 +188,6 @@ const ShoeCard = ({
                   key={option.value}
                   label={option.label}
                   selected={roles.includes(option.value)}
-                  disabled={getRoleDisabledState(option.value, roles)}
                   onClick={() => onRoleToggle(option.value)}
                 />
               ))}
@@ -339,43 +315,17 @@ const ProfileBuilderStep3 = () => {
     setCurrentShoes((prev) => prev.filter((s) => s.shoe.shoe_id !== shoeId));
   };
 
-  // Toggle role for a shoe with new validation logic
+  // Toggle role for a shoe (no restrictions - all combinations allowed)
   const handleRoleToggle = (shoeId: string, role: ShoeRole) => {
     setCurrentShoes((prev) =>
       prev.map((s) => {
         if (s.shoe.shoe_id !== shoeId) return s;
 
-        const hasDailyTraining = s.roles.includes("all_runs");
-        const hasBlockedRole = s.roles.some(r => DAILY_TRAINING_BLOCKED_ROLES.includes(r));
-
-        if (role === "all_runs") {
-          // Toggle daily training
-          if (hasDailyTraining) {
-            // Deselect daily training
-            return { ...s, roles: s.roles.filter((r) => r !== "all_runs") };
-          } else {
-            // Can't select if blocked roles are present
-            if (hasBlockedRole) return s;
-            // Select daily training (keep races/trail if present)
-            const allowedRoles = s.roles.filter(r => DAILY_TRAINING_ALLOWED_ROLES.includes(r));
-            return { ...s, roles: ["all_runs", ...allowedRoles] };
-          }
-        } else if (DAILY_TRAINING_BLOCKED_ROLES.includes(role)) {
-          // Toggle tempo/interval/easy pace
-          if (s.roles.includes(role)) {
-            return { ...s, roles: s.roles.filter((r) => r !== role) };
-          } else {
-            // Can't add if daily training is selected
-            if (hasDailyTraining) return s;
-            return { ...s, roles: [...s.roles, role] };
-          }
+        // Simple toggle - add if not present, remove if present
+        if (s.roles.includes(role)) {
+          return { ...s, roles: s.roles.filter((r) => r !== role) };
         } else {
-          // Toggle races or trail (always allowed)
-          if (s.roles.includes(role)) {
-            return { ...s, roles: s.roles.filter((r) => r !== role) };
-          } else {
-            return { ...s, roles: [...s.roles, role] };
-          }
+          return { ...s, roles: [...s.roles, role] };
         }
       })
     );
@@ -430,17 +380,20 @@ const ProfileBuilderStep3 = () => {
     setConfirmShoesModalOpen(true);
   };
 
-  // Backend mapping: convert tempo+interval+easy_pace to daily_training
+  // Backend normalization: normalize roles when saving
+  // If roles include daily_training + tempo + interval + easy_pace → save as just daily_training
+  // If roles = tempo + interval + easy_pace (no daily_training) → save as daily_training
   const mapRolesForSave = (shoes: CurrentShoe[]): CurrentShoe[] => {
     return shoes.map(shoe => {
-      const hasAllThree = 
+      const hasAllThreeNormalizable = 
         shoe.roles.includes("tempo") && 
         shoe.roles.includes("interval") && 
         shoe.roles.includes("easy_recovery");
       
-      if (hasAllThree) {
-        // Replace with daily training, keep races/trail if present
-        const otherRoles = shoe.roles.filter(r => DAILY_TRAINING_ALLOWED_ROLES.includes(r));
+      if (hasAllThreeNormalizable) {
+        // Remove tempo, interval, easy_recovery and ensure daily_training is present
+        // Keep races/trail if present
+        const otherRoles = shoe.roles.filter(r => r === "races" || r === "trail");
         return { ...shoe, roles: ["all_runs" as ShoeRole, ...otherRoles] };
       }
       return shoe;
