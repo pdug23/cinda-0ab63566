@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import shoes from "../src/data/shoebase.json";
+import shoes from "../src/data/shoebase.json" with { type: "json" };
 
 const SHORTLIST_DEBUG = true;
 

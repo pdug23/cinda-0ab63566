@@ -8,7 +8,7 @@ import type { AnalyzeRequest, AnalyzeResponse, Shoe, Gap, RecommendedShoe } from
 import { analyzeRotation } from './lib/rotationAnalyzer.js';
 import { identifyPrimaryGap } from './lib/gapDetector.js';
 import { generateRecommendations, generateShoppingRecommendations } from './lib/recommendationEngine.js';
-import shoebase from '../src/data/shoebase.json';
+import shoebase from '../src/data/shoebase.json' with { type: "json" };
 
 /**
  * Main handler for /api/analyze endpoint
