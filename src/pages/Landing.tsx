@@ -70,7 +70,7 @@ const Landing = () => {
 
   const steps = [
     "tell us about you and how you run",
-    "share your current shoes (optional)",
+    "share your current shoes (or don't!)",
     "get recommendations that actually fit your needs",
   ];
 
