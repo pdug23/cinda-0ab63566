@@ -380,6 +380,19 @@ const ProfileBuilderStep3 = () => {
     setConfirmShoesModalOpen(true);
   };
 
+  // Map frontend role values to backend ShoeRole enum values
+  const mapRoleToBackend = (role: ShoeRole): string => {
+    const mapping: Record<ShoeRole, string> = {
+      "all_runs": "daily",
+      "tempo": "tempo",
+      "interval": "intervals",
+      "easy_recovery": "easy",
+      "races": "race",
+      "trail": "trail",
+    };
+    return mapping[role] || role;
+  };
+
   // Backend normalization: normalize roles when saving
   // If roles include daily_training + tempo + interval + easy_pace → save as just daily_training
   // If roles = tempo + interval + easy_pace (no daily_training) → save as daily_training
@@ -390,13 +403,17 @@ const ProfileBuilderStep3 = () => {
         shoe.roles.includes("interval") && 
         shoe.roles.includes("easy_recovery");
       
+      let roles = shoe.roles;
       if (hasAllThreeNormalizable) {
         // Remove tempo, interval, easy_recovery and ensure daily_training is present
         // Keep races/trail if present
         const otherRoles = shoe.roles.filter(r => r === "races" || r === "trail");
-        return { ...shoe, roles: ["all_runs" as ShoeRole, ...otherRoles] };
+        roles = ["all_runs" as ShoeRole, ...otherRoles];
       }
-      return shoe;
+      
+      // Map all roles to backend values
+      const mappedRoles = roles.map(r => mapRoleToBackend(r)) as ShoeRole[];
+      return { ...shoe, roles: mappedRoles };
     });
   };
 
