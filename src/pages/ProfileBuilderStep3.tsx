@@ -65,7 +65,7 @@ const RoleButton = ({
     onClick={onClick}
     disabled={disabled}
     className={cn(
-      "min-h-[44px] px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+      "min-h-[44px] px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200",
       "border",
       selected
         ? "bg-orange-500/20 border-orange-500/50 text-orange-400 shadow-[0_0_12px_rgba(251,146,60,0.15)]"
@@ -94,7 +94,7 @@ const SentimentButton = ({
     type="button"
     onClick={onClick}
     className={cn(
-      "min-h-[44px] px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+      "min-h-[44px] px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200",
       "border flex items-center gap-2 justify-center",
       selected
         ? "bg-orange-500/20 border-orange-500/50 text-orange-400 shadow-[0_0_12px_rgba(251,146,60,0.15)]"
@@ -372,7 +372,7 @@ const ProfileBuilderStep3 = () => {
             style={{ WebkitOverflowScrolling: "touch" }}
           >
             {/* Intro sentence */}
-            <p className="italic text-orange-500 mb-3" style={{ fontSize: '16px' }}>
+            <p className="italic text-orange-500 mb-3 text-sm">
               add your current shoes (or skip if you don't have any)
             </p>
 

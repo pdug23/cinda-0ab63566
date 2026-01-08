@@ -253,7 +253,7 @@ const ProfileBuilder = () => {
             style={{ WebkitOverflowScrolling: "touch" }}
           >
             {/* Intro sentence */}
-            <p className="italic text-orange-500 mb-3" style={{ fontSize: '16px' }}>
+            <p className="italic text-orange-500 mb-3 text-sm">
               tell us about you, how you run and what you're looking for. cinda will do the rest.
             </p>
 

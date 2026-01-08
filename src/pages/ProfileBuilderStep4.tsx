@@ -6,7 +6,7 @@ import AnimatedBackground from "@/components/AnimatedBackground";
 import { useProfile } from "@/contexts/ProfileContext";
 import { cn } from "@/lib/utils";
 
-// Custom Discovery Icon - Compass with motion lines
+// Custom Discovery Icon - Geometric compass with targeting crosshairs
 const DiscoveryIcon = ({ className }: { className?: string }) => (
   <svg
     viewBox="0 0 32 32"
@@ -14,63 +14,45 @@ const DiscoveryIcon = ({ className }: { className?: string }) => (
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    {/* Outer ring with gradient */}
+    {/* Outer targeting circle */}
     <circle
       cx="16"
       cy="16"
-      r="13"
+      r="12"
       stroke="currentColor"
       strokeWidth="1.5"
-      strokeOpacity="0.4"
+      strokeOpacity="0.5"
     />
-    {/* Inner precision ring */}
+    {/* Inner circle */}
     <circle
       cx="16"
       cy="16"
-      r="9"
+      r="6"
       stroke="currentColor"
       strokeWidth="1"
-      strokeOpacity="0.3"
-      strokeDasharray="2 3"
+      strokeOpacity="0.4"
     />
-    {/* Compass diamond */}
+    {/* Crosshair lines */}
     <path
-      d="M16 6L18.5 14L16 16L13.5 14L16 6Z"
-      fill="currentColor"
-      fillOpacity="0.9"
-    />
-    <path
-      d="M16 26L13.5 18L16 16L18.5 18L16 26Z"
-      fill="currentColor"
-      fillOpacity="0.5"
-    />
-    <path
-      d="M6 16L14 13.5L16 16L14 18.5L6 16Z"
-      fill="currentColor"
-      fillOpacity="0.5"
-    />
-    <path
-      d="M26 16L18 18.5L16 16L18 13.5L26 16Z"
-      fill="currentColor"
-      fillOpacity="0.9"
-    />
-    {/* Center dot */}
-    <circle cx="16" cy="16" r="2" fill="currentColor" />
-    {/* Motion accent lines */}
-    <path
-      d="M5 11L3 9"
+      d="M16 2V7M16 25V30M2 16H7M25 16H30"
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeOpacity="0.6"
     />
+    {/* Center target dot */}
+    <circle cx="16" cy="16" r="2.5" fill="currentColor" />
+    {/* Direction indicator - arrow pointing NE */}
     <path
-      d="M5 21L3 23"
+      d="M22 10L24 8M24 8L22 8M24 8V10"
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
-      strokeOpacity="0.4"
+      strokeLinejoin="round"
     />
+    {/* Accent dots at cardinal points */}
+    <circle cx="16" cy="4" r="1" fill="currentColor" fillOpacity="0.7" />
+    <circle cx="28" cy="16" r="1" fill="currentColor" fillOpacity="0.5" />
   </svg>
 );
 
@@ -138,8 +120,8 @@ const ModeCard = ({
     onClick={onClick}
     disabled={disabled}
     className={cn(
-      "group relative w-full min-h-[160px] md:min-h-[180px] p-6 md:p-8 rounded-2xl text-left transition-all duration-300",
-      "flex flex-row items-center gap-6",
+      "group relative w-full p-5 rounded-xl text-left transition-all duration-300",
+      "flex flex-row items-center gap-5",
       // Glass morphism effect
       "bg-card-foreground/[0.03] backdrop-blur-sm",
       // Border with slate blue
@@ -177,7 +159,7 @@ const ModeCard = ({
     {/* Glow backdrop for enabled cards - slate blue */}
     {!disabled && (
       <div
-        className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+        className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
         style={{
           background:
             "radial-gradient(ellipse at center, rgba(148,163,184,0.1) 0%, transparent 70%)",
@@ -188,7 +170,7 @@ const ModeCard = ({
     {/* Icon */}
     <div
       className={cn(
-        "w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center transition-all duration-300 flex-shrink-0",
+        "w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-300 flex-shrink-0",
         disabled
           ? "bg-card-foreground/5 text-card-foreground/30"
           : "bg-slate-500/10 text-slate-400 group-hover:bg-slate-400/20 group-hover:text-slate-300 group-hover:scale-110"
@@ -201,7 +183,7 @@ const ModeCard = ({
     <div className="text-left relative z-10 flex-1">
       <span
         className={cn(
-          "block text-xl md:text-2xl font-bold tracking-wide transition-colors mb-2",
+          "block text-sm font-medium transition-colors mb-1",
           disabled
             ? "text-card-foreground/40"
             : "text-card-foreground/90 group-hover:text-card-foreground"
@@ -211,7 +193,7 @@ const ModeCard = ({
       </span>
       <span
         className={cn(
-          "block text-sm md:text-base",
+          "block text-xs",
           disabled
             ? "text-card-foreground/25"
             : "text-card-foreground/50 group-hover:text-card-foreground/60"
@@ -220,7 +202,7 @@ const ModeCard = ({
         {description}
       </span>
       {disabled && disabledReason && (
-        <span className="block text-xs italic text-card-foreground/35 mt-3 max-w-[280px]">
+        <span className="block text-xs italic text-card-foreground/35 mt-2">
           {disabledReason}
         </span>
       )}
@@ -267,26 +249,23 @@ const ProfileBuilderStep4 = () => {
             <span className="text-xs text-card-foreground/50">step 4 of 4</span>
           </header>
 
-          {/* Content - fills available space */}
-          <div className="flex-1 flex flex-col px-6 md:px-8 pb-6 md:pb-8 min-h-0">
-            {/* Heading - slate blue */}
-            <p
-              className="italic text-slate-400 mb-8 text-left"
-              style={{ fontSize: "18px" }}
-            >
+          {/* Content */}
+          <div className="flex flex-col px-6 md:px-8 pb-6 md:pb-8">
+            {/* Heading - orange, matches question text size */}
+            <p className="italic text-orange-500 mb-6 text-left text-sm">
               running basics and current shoes done, now... how can cinda help you?
             </p>
 
-            {/* Mode cards - stacked vertically with more spacing */}
-            <div className="flex-1 flex flex-col gap-6 md:gap-8 min-h-0">
+            {/* Mode cards - stacked vertically, full width */}
+            <div className="flex flex-col gap-4">
               <ModeCard
-                icon={<DiscoveryIcon className="w-8 h-8 md:w-9 md:h-9" />}
+                icon={<DiscoveryIcon className="w-6 h-6" />}
                 label="discovery"
                 description="looking for something specific? tell us what you need and we'll match you perfectly"
                 onClick={handleShoppingMode}
               />
               <ModeCard
-                icon={<AnalysisIcon className="w-8 h-8 md:w-9 md:h-9" />}
+                icon={<AnalysisIcon className="w-6 h-6" />}
                 label="analysis"
                 description="already have shoes? we'll analyze your rotation and spot what's missing"
                 disabled={!hasShoes}
