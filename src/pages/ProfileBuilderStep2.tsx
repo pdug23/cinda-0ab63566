@@ -269,7 +269,7 @@ const ProfileBuilderStep2 = () => {
             <label className="block text-sm text-card-foreground/90 mb-3">
               what about trail running?
             </label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {TRAIL_OPTIONS.map((option) => (
                 <SelectionButton
                   key={option.value}
