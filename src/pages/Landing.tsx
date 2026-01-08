@@ -34,7 +34,7 @@ const Landing = () => {
     setIsExiting(true);
     
     const exitDuration = prefersReducedMotion ? 0 : 300;
-    const pauseDuration = prefersReducedMotion ? 0 : 1500; // 1.5s pause with just background + jargon
+    const pauseDuration = prefersReducedMotion ? 0 : 800; // 0.8s pause with just background + jargon
     
     setTimeout(() => {
       setViewState("orientation");
@@ -117,14 +117,14 @@ const Landing = () => {
               <img 
                 src={cindaLogo} 
                 alt="Cinda" 
-                className={`h-[80px] mb-8 transition-all ${prefersReducedMotion ? "" : "duration-500"} ${
+                className={`h-[80px] mb-8 transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
                   showHeadline ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                 }`}
               />
 
               {/* Headline and subheading */}
               <div
-                className={`transition-all ${prefersReducedMotion ? "" : "duration-500"} ${
+                className={`transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
                   showHeadline ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                 }`}
               >
@@ -141,7 +141,7 @@ const Landing = () => {
 
               {/* Steps */}
               <div
-                className={`mt-10 w-full transition-all ${prefersReducedMotion ? "" : "duration-500"} ${
+                className={`mt-10 w-full transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
                   showSteps ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                 }`}
               >
@@ -167,7 +167,7 @@ const Landing = () => {
 
               {/* CTA */}
               <div
-                className={`mt-10 transition-all ${prefersReducedMotion ? "" : "duration-500"} ${
+                className={`mt-10 transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
                   showCta ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                 }`}
               >
