@@ -104,14 +104,17 @@ const ProfileBuilderStep4a = () => {
                 />
               ))}
 
-              {/* Not sure option - special styling */}
+              {/* Not sure option - slate blue styling */}
               <button
                 type="button"
                 onClick={handleNotSure}
-                className="w-full min-h-[56px] p-4 rounded-lg text-left transition-all duration-200 bg-card-foreground/5 border border-card-foreground/20 hover:border-card-foreground/30 hover:bg-card-foreground/[0.07]"
+                className="w-full min-h-[56px] p-4 rounded-lg text-left transition-all duration-200 bg-slate-500/5 border border-slate-500/30 hover:border-slate-400/50 hover:bg-slate-500/10 hover:shadow-[0_0_20px_rgba(100,116,139,0.15)]"
               >
-                <span className="block text-sm font-medium text-card-foreground/70 italic">
-                  not sure, analyse my rotation instead
+                <span className="block text-sm font-medium text-slate-400 italic">
+                  not sure
+                </span>
+                <span className="block text-xs text-slate-500/70 mt-1">
+                  analyse my rotation instead
                 </span>
               </button>
             </div>
