@@ -34,11 +34,12 @@ const Landing = () => {
     setIsExiting(true);
     
     const exitDuration = prefersReducedMotion ? 0 : 300;
+    const pauseDuration = prefersReducedMotion ? 0 : 1500; // 1.5s pause with just background + jargon
     
     setTimeout(() => {
       setViewState("orientation");
       setIsExiting(false);
-    }, exitDuration);
+    }, exitDuration + pauseDuration);
   };
 
   const handleStartProfile = () => {
@@ -77,8 +78,8 @@ const Landing = () => {
     <>
       <AnimatedBackground />
       
-      {/* Floating jargon layer - only visible during orientation */}
-      {viewState === "orientation" && <FloatingJargon />}
+      {/* Floating jargon layer - visible during transition and orientation */}
+      {(viewState === "orientation" || isExiting) && <FloatingJargon />}
 
       <OnboardingLayout centerContent transparent>
         {viewState === "landing" && (
