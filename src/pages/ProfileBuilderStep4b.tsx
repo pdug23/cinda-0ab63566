@@ -233,8 +233,15 @@ const ProfileBuilderStep4b = () => {
       // Go to previous role
       updateStep4({ currentRoleIndex: currentRoleIndex - 1 });
     } else {
-      // Go back to role selection
-      navigate("/profile/step4a");
+      // First role - check mode to determine where to go
+      const mode = profileData.step4.mode;
+      if (mode === "analysis") {
+        // Analysis mode: go back to mode selection (skip gap detection page)
+        navigate("/profile/step4");
+      } else {
+        // Shopping/discovery mode: go back to role selection
+        navigate("/profile/step4a");
+      }
     }
   };
 
