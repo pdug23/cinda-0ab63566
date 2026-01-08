@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Compass, Sparkles } from "lucide-react";
+import { ArrowLeft, Sparkles, Star } from "lucide-react";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
@@ -28,37 +28,37 @@ const ModeCard = ({
     onClick={onClick}
     disabled={disabled}
     className={cn(
-      "group relative w-full flex-1 min-h-[160px] md:min-h-[180px] p-6 md:p-8 rounded-2xl text-left transition-all duration-300",
-      "flex flex-col items-center justify-center gap-4",
+      "group relative w-full min-h-[160px] md:min-h-[180px] p-6 md:p-8 rounded-2xl text-left transition-all duration-300",
+      "flex flex-row items-center gap-6",
       // Glass morphism effect
       "bg-card-foreground/[0.03] backdrop-blur-sm",
-      // Border with gradient effect
-      "border border-card-foreground/10",
+      // Border with slate blue
+      "border border-slate-500/30",
       disabled
         ? "cursor-not-allowed opacity-50"
         : [
-            // Hover effects
-            "hover:scale-[1.02] hover:border-orange-500/40",
-            "hover:shadow-[0_0_30px_rgba(251,146,60,0.2),0_0_60px_rgba(251,146,60,0.1)]",
+            // Hover effects - slate blue
+            "hover:scale-[1.02] hover:border-slate-400/50",
+            "hover:shadow-[0_0_30px_rgba(148,163,184,0.2),0_0_60px_rgba(148,163,184,0.1)]",
             "hover:bg-card-foreground/[0.06]",
             // Idle glow animation
             "animate-glow-pulse",
           ]
     )}
     style={{
-      // Subtle gradient border overlay
+      // Subtle gradient border overlay - slate blue
       background: disabled
         ? undefined
-        : "linear-gradient(135deg, rgba(251,146,60,0.03) 0%, transparent 50%, rgba(251,146,60,0.02) 100%)",
+        : "linear-gradient(135deg, rgba(100,116,139,0.05) 0%, transparent 50%, rgba(100,116,139,0.03) 100%)",
     }}
   >
-    {/* Glow backdrop for enabled cards */}
+    {/* Glow backdrop for enabled cards - slate blue */}
     {!disabled && (
       <div
         className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse at center, rgba(251,146,60,0.08) 0%, transparent 70%)",
+            "radial-gradient(ellipse at center, rgba(148,163,184,0.1) 0%, transparent 70%)",
         }}
       />
     )}
@@ -66,20 +66,20 @@ const ModeCard = ({
     {/* Icon */}
     <div
       className={cn(
-        "w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center transition-all duration-300",
+        "w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center transition-all duration-300 flex-shrink-0",
         disabled
           ? "bg-card-foreground/5 text-card-foreground/30"
-          : "bg-orange-500/10 text-orange-400 group-hover:bg-orange-500/20 group-hover:scale-110"
+          : "bg-slate-500/10 text-slate-400 group-hover:bg-slate-400/20 group-hover:text-slate-300 group-hover:scale-110"
       )}
     >
       {icon}
     </div>
 
     {/* Text content */}
-    <div className="text-center relative z-10">
+    <div className="text-left relative z-10 flex-1">
       <span
         className={cn(
-          "block text-lg md:text-xl font-semibold transition-colors mb-2",
+          "block text-xl md:text-2xl font-bold tracking-wide transition-colors mb-2",
           disabled
             ? "text-card-foreground/40"
             : "text-card-foreground/90 group-hover:text-card-foreground"
@@ -98,7 +98,7 @@ const ModeCard = ({
         {description}
       </span>
       {disabled && disabledReason && (
-        <span className="block text-xs italic text-card-foreground/35 mt-3 max-w-[240px] mx-auto">
+        <span className="block text-xs italic text-card-foreground/35 mt-3 max-w-[280px]">
           {disabledReason}
         </span>
       )}
@@ -149,24 +149,24 @@ const ProfileBuilderStep4 = () => {
           <div className="flex-1 flex flex-col px-6 md:px-8 pb-6 md:pb-8 min-h-0">
             {/* Heading */}
             <p
-              className="italic text-orange-500 mb-6 text-center"
+              className="italic text-primary mb-8 text-left"
               style={{ fontSize: "18px" }}
             >
-              what would you like to do?
+              running basics and current shoes done, now... how can cinda help you?
             </p>
 
-            {/* Mode cards - take remaining space */}
-            <div className="flex-1 flex flex-col gap-4 md:gap-6 min-h-0">
+            {/* Mode cards - stacked vertically with more spacing */}
+            <div className="flex-1 flex flex-col gap-6 md:gap-8 min-h-0">
               <ModeCard
-                icon={<Compass className="w-7 h-7 md:w-8 md:h-8" />}
+                icon={<Star className="w-7 h-7 md:w-8 md:h-8" />}
                 label="find shoes for a specific run type"
-                description="tell cinda what you need and get recommendations"
+                description="tell us what you need, we'll find the perfect match"
                 onClick={handleShoppingMode}
               />
               <ModeCard
                 icon={<Sparkles className="w-7 h-7 md:w-8 md:h-8" />}
                 label="analyse my current rotation"
-                description="ask cinda to identify any gaps and suggest improvements"
+                description="we'll identify gaps and suggest the perfect additions"
                 disabled={!hasShoes}
                 disabledReason={
                   !hasShoes
