@@ -4,7 +4,7 @@ import { ArrowLeft, HelpCircle } from "lucide-react";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
-import { useProfile, DiscoveryShoeRole, FeelValue, FeelPreferences } from "@/contexts/ProfileContext";
+import { useProfile, DiscoveryShoeRole, FeelValue, FeelPreferencesUI, convertToRange } from "@/contexts/ProfileContext";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -25,7 +25,7 @@ const ROLE_LABELS: Record<DiscoveryShoeRole, string> = {
 
 // Slider configuration
 interface SliderConfig {
-  key: keyof FeelPreferences;
+  key: keyof FeelPreferencesUI;
   label: string;
   tooltip: string;
   leftLabel: string;
@@ -69,7 +69,7 @@ const FeelSlider = ({
 }: {
   config: SliderConfig;
   value: FeelValue | null;
-  onChange: (value: FeelValue) => void;
+  onChange: (val: FeelValue) => void;
   onToggleNotSure: () => void;
 }) => {
   const isDisabled = value === null;
@@ -171,33 +171,22 @@ const ProfileBuilderStep4b = () => {
   const totalRoles = selectedRoles.length;
   const currentRole = selectedRoles[currentRoleIndex];
 
-  // Initialize local state for current preferences
-  const [preferences, setPreferences] = useState<FeelPreferences>(() => {
-    // Check if we already have preferences for this role
-    const existingRequest = shoeRequests.find((r) => r.role === currentRole);
-    if (existingRequest) {
-      return existingRequest.feelPreferences;
-    }
-    return {
+  // Initialize local UI state for current preferences (slider values, not ranges)
+  const [preferencesUI, setPreferencesUI] = useState<FeelPreferencesUI>({
+    softVsFirm: 3,
+    stableVsNeutral: 3,
+    bouncyVsDamped: 3,
+  });
+
+  // Update UI preferences when role changes
+  useEffect(() => {
+    // Reset to defaults for each new role (we don't try to reverse-engineer ranges back to slider values)
+    setPreferencesUI({
       softVsFirm: 3,
       stableVsNeutral: 3,
       bouncyVsDamped: 3,
-    };
-  });
-
-  // Update preferences when role changes
-  useEffect(() => {
-    const existingRequest = shoeRequests.find((r) => r.role === currentRole);
-    if (existingRequest) {
-      setPreferences(existingRequest.feelPreferences);
-    } else {
-      setPreferences({
-        softVsFirm: 3,
-        stableVsNeutral: 3,
-        bouncyVsDamped: 3,
-      });
-    }
-  }, [currentRole, shoeRequests]);
+    });
+  }, [currentRole]);
 
   // Redirect if no roles selected
   useEffect(() => {
@@ -216,20 +205,26 @@ const ProfileBuilderStep4b = () => {
     }
   };
 
-  const handleSliderChange = (key: keyof FeelPreferences, value: FeelValue) => {
-    setPreferences((prev) => ({ ...prev, [key]: value }));
+  const handleSliderChange = (key: keyof FeelPreferencesUI, value: FeelValue) => {
+    setPreferencesUI((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleToggleNotSure = (key: keyof FeelPreferences) => {
-    setPreferences((prev) => ({
+  const handleToggleNotSure = (key: keyof FeelPreferencesUI) => {
+    setPreferencesUI((prev) => ({
       ...prev,
       [key]: prev[key] === null ? 3 : null,
     }));
   };
 
   const handleNext = () => {
-    // Save current preferences
-    const newRequest = { role: currentRole, feelPreferences: preferences };
+    // Convert UI slider values to ranges for storage
+    const feelPreferences = {
+      softVsFirm: convertToRange(preferencesUI.softVsFirm),
+      stableVsNeutral: convertToRange(preferencesUI.stableVsNeutral),
+      bouncyVsDamped: convertToRange(preferencesUI.bouncyVsDamped),
+    };
+
+    const newRequest = { role: currentRole, feelPreferences };
     const existingIndex = shoeRequests.findIndex((r) => r.role === currentRole);
     
     let updatedRequests: typeof shoeRequests;
@@ -298,7 +293,7 @@ const ProfileBuilderStep4b = () => {
                 <FeelSlider
                   key={config.key}
                   config={config}
-                  value={preferences[config.key]}
+                  value={preferencesUI[config.key]}
                   onChange={(val) => handleSliderChange(config.key, val)}
                   onToggleNotSure={() => handleToggleNotSure(config.key)}
                 />

@@ -40,8 +40,12 @@ function buildConstraintsFromGap(
     excludeShoeIds: currentShoes.map(s => s.shoeId),
   };
 
-  // Determine stability need from feel preferences
-  if (feelPreferences.stableVsNeutral >= 4) {
+  // Determine stability need from feel preferences (handle both single value and array)
+  const stableValue = feelPreferences.stableVsNeutral;
+  const stableAvg = Array.isArray(stableValue) 
+    ? stableValue.reduce((a, b) => a + b, 0) / stableValue.length 
+    : stableValue;
+  if (stableAvg >= 4) {
     constraints.stabilityNeed = "stable_feel";
   }
 
@@ -597,12 +601,17 @@ export function generateShoppingRecommendations(
   catalogue: Shoe[]
 ): RecommendedShoe[] {
   // Step 1: Build constraints for this specific role and feel preferences
+  // Handle stability need - support both single value and array
+  const stableValue = request.feelPreferences.stableVsNeutral;
+  const stableAvg = Array.isArray(stableValue)
+    ? stableValue.reduce((a, b) => a + b, 0) / stableValue.length
+    : stableValue;
+
   const constraints = {
     roles: [request.role],
     feelPreferences: request.feelPreferences,
     excludeShoeIds: currentShoes.map(s => s.shoeId),
-    // Determine stability need from request preferences
-    stabilityNeed: request.feelPreferences.stableVsNeutral >= 4
+    stabilityNeed: stableAvg >= 4
       ? ("stable_feel" as const)
       : undefined,
   };

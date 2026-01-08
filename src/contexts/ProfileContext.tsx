@@ -38,13 +38,35 @@ export type ShoeSentiment = "love" | "like" | "neutral" | "dislike";
 // Step 4 shoe role selection for discovery mode
 export type DiscoveryShoeRole = "daily_trainer" | "recovery" | "tempo" | "race_day" | "trail";
 
-// Feel preferences for each shoe request (1-5 scale)
+// Feel preferences for each shoe request (1-5 scale for UI, converted to ranges for API)
 export type FeelValue = 1 | 2 | 3 | 4 | 5;
 
+// Stored as arrays (ranges) in shoeRequests
 export interface FeelPreferences {
+  softVsFirm: number[];
+  stableVsNeutral: number[];
+  bouncyVsDamped: number[];
+}
+
+// UI state tracks the slider value and "not sure" state separately
+export interface FeelPreferencesUI {
   softVsFirm: FeelValue | null;
   stableVsNeutral: FeelValue | null;
   bouncyVsDamped: FeelValue | null;
+}
+
+// Helper to convert single slider value to range
+export function convertToRange(value: FeelValue | null): number[] {
+  if (value === null) return [2, 3, 4]; // "not sure" = balanced range
+  
+  switch (value) {
+    case 1: return [1, 2];
+    case 2: return [1, 2, 3];
+    case 3: return [2, 3, 4];
+    case 4: return [3, 4, 5];
+    case 5: return [4, 5];
+    default: return [2, 3, 4];
+  }
 }
 
 export interface ShoeRequest {
