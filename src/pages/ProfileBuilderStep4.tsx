@@ -253,7 +253,7 @@ const ProfileBuilderStep4 = () => {
           <div className="flex flex-col px-6 md:px-8 pb-6 md:pb-8">
             {/* Heading - orange, matches question text size */}
             <p className="italic text-orange-500 mb-6 text-left text-sm">
-              running basics and current shoes done, now... how can cinda help you?
+              profile complete. now, how can cinda help you?
             </p>
 
             {/* Mode cards - stacked vertically, full width */}
@@ -261,13 +261,13 @@ const ProfileBuilderStep4 = () => {
               <ModeCard
                 icon={<DiscoveryIcon className="w-6 h-6" />}
                 label="discovery"
-                description="looking for something specific? tell us what you need and we'll match you perfectly"
+                description="looking for something specific? cinda works with you to find the shoe you need"
                 onClick={handleShoppingMode}
               />
               <ModeCard
                 icon={<AnalysisIcon className="w-6 h-6" />}
                 label="analysis"
-                description="already have shoes? we'll analyze your rotation and spot what's missing"
+                description="not sure what you're missing? cinda reviews your current rotation and identifies what's missing"
                 disabled={!hasShoes}
                 disabledReason={
                   !hasShoes
