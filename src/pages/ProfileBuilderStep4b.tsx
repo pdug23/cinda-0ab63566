@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, HelpCircle } from "lucide-react";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { useProfile, DiscoveryShoeRole, FeelValue, FeelPreferences } from "@/contexts/ProfileContext";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 // Role display names
@@ -22,6 +27,7 @@ const ROLE_LABELS: Record<DiscoveryShoeRole, string> = {
 interface SliderConfig {
   key: keyof FeelPreferences;
   label: string;
+  tooltip: string;
   leftLabel: string;
   middleLabel: string;
   rightLabel: string;
@@ -30,24 +36,27 @@ interface SliderConfig {
 const SLIDERS: SliderConfig[] = [
   {
     key: "softVsFirm",
-    label: "cushion feel",
-    leftLabel: "soft & plush",
+    label: "cushioning",
+    tooltip: "how soft the midsole feels. soft provides plush comfort for easy miles. firm provides stable support for faster efforts.",
+    leftLabel: "soft",
     middleLabel: "balanced",
-    rightLabel: "firm & responsive",
+    rightLabel: "firm",
   },
   {
     key: "stableVsNeutral",
     label: "stability",
-    leftLabel: "stable & guided",
+    tooltip: "how much guidance the shoe provides. stable shoes help control motion. neutral shoes allow natural movement.",
+    leftLabel: "stable",
     middleLabel: "balanced",
-    rightLabel: "neutral & free",
+    rightLabel: "neutral",
   },
   {
     key: "bouncyVsDamped",
     label: "energy return",
-    leftLabel: "bouncy & springy",
+    tooltip: "how the shoe responds. bouncy shoes feel springy and propulsive. damped shoes absorb impact smoothly.",
+    leftLabel: "bouncy",
     middleLabel: "balanced",
-    rightLabel: "damped & smooth",
+    rightLabel: "damped",
   },
 ];
 
@@ -69,11 +78,23 @@ const FeelSlider = ({
 
   return (
     <div className="space-y-3">
-      {/* Label */}
-      <label className="block text-sm text-card-foreground/90">{config.label}</label>
+      {/* Label with tooltip */}
+      <div className="flex items-center gap-1.5">
+        <label className="text-sm text-card-foreground/90">{config.label}</label>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button type="button" className="text-card-foreground/40 hover:text-card-foreground/60 transition-colors">
+              <HelpCircle className="w-3.5 h-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-[260px] text-xs">
+            {config.tooltip}
+          </TooltipContent>
+        </Tooltip>
+      </div>
 
       {/* Slider row with "not sure" button */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         {/* Slider container */}
         <div className={cn("relative flex-1", isDisabled && "opacity-30")}>
           <Slider
@@ -101,15 +122,15 @@ const FeelSlider = ({
           )}
         </div>
 
-        {/* Not sure button */}
+        {/* Not sure button - more prominent */}
         <button
           type="button"
           onClick={onToggleNotSure}
           className={cn(
-            "text-xs transition-colors italic whitespace-nowrap px-2 py-1 rounded",
+            "text-xs transition-all italic whitespace-nowrap px-3 py-1.5 rounded-md border",
             isDisabled
-              ? "text-slate-400 bg-slate-500/20"
-              : "text-slate-500 hover:text-slate-400"
+              ? "text-slate-300 bg-slate-500/20 border-slate-400/40"
+              : "text-slate-500 border-slate-500/30 hover:text-slate-400 hover:border-slate-400/50 hover:bg-slate-500/10"
           )}
         >
           not sure
@@ -249,7 +270,7 @@ const ProfileBuilderStep4b = () => {
           >
             {/* Heading */}
             <p className="text-sm text-card-foreground/90 mb-2">
-              how do you want your {ROLE_LABELS[currentRole]} to feel?
+              how do you want your <span className="text-orange-400 font-semibold">{ROLE_LABELS[currentRole]}</span> to feel?
             </p>
 
             {/* Progress indicator for multiple roles */}
@@ -259,8 +280,8 @@ const ProfileBuilderStep4b = () => {
               </p>
             )}
 
-            {/* Sliders */}
-            <div className="flex flex-col gap-8 mt-6">
+            {/* Sliders - increased spacing */}
+            <div className="flex flex-col gap-10 mt-6">
               {SLIDERS.map((config) => (
                 <FeelSlider
                   key={config.key}
