@@ -381,7 +381,7 @@ const ProfileBuilderStep2 = () => {
               <Button
                 onClick={handleNext}
                 variant="cta"
-                className="w-full max-w-[280px] min-h-[44px] text-sm mt-4"
+                className="w-full min-h-[44px] text-sm mt-4 justify-start"
                 disabled={!canProceed}
               >
                 next

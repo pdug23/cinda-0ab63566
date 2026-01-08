@@ -7,7 +7,7 @@ import { useProfile, DiscoveryShoeRole } from "@/contexts/ProfileContext";
 import { SelectionButton } from "@/components/SelectionButton";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+
 
 const ROLE_OPTIONS: { value: DiscoveryShoeRole; label: string; description: string }[] = [
   { value: "daily_trainer", label: "daily trainer", description: "versatile shoe for most of your runs" },
@@ -124,20 +124,16 @@ const ProfileBuilderStep4a = () => {
           </div>
 
           {/* Footer with next button */}
-          <div className="px-6 md:px-8 pb-4 pt-2 flex-shrink-0">
+          <footer className="px-6 md:px-8 pb-4 pt-2 flex-shrink-0">
             <Button
               onClick={handleNext}
+              variant="cta"
+              className="w-full min-h-[44px] text-sm justify-start"
               disabled={!isNextEnabled}
-              className={cn(
-                "w-full h-12 rounded-lg text-sm font-medium transition-all duration-200",
-                isNextEnabled
-                  ? "bg-orange-500 hover:bg-orange-600 text-white"
-                  : "bg-card-foreground/10 text-card-foreground/30 cursor-not-allowed"
-              )}
             >
               next
             </Button>
-          </div>
+          </footer>
         </PageTransition>
       </OnboardingLayout>
     </>
