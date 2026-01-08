@@ -60,6 +60,31 @@ const SLIDERS: SliderConfig[] = [
   },
 ];
 
+/**
+ * Convert slider value to range for flexible backend matching
+ * Range logic:
+ * - 1 → [1, 2] (extreme: very soft/stable/bouncy - narrow range)
+ * - 2 → [1, 2, 3] (soft/stable/bouncy side - wider range)
+ * - 3 → [2, 3, 4] (balanced - exclude extremes)
+ * - 4 → [3, 4, 5] (firm/neutral/damped side - wider range)
+ * - 5 → [4, 5] (extreme: very firm/neutral/damped - narrow range)
+ * - null (not sure) → [2, 3, 4] (exclude extremes)
+ */
+function convertToRange(value: FeelValue | null): number[] {
+  if (value === null) {
+    return [2, 3, 4]; // "Not sure" - exclude extremes
+  }
+
+  switch (value) {
+    case 1: return [1, 2];       // Very soft/stable/bouncy
+    case 2: return [1, 2, 3];    // Soft/stable/bouncy side
+    case 3: return [2, 3, 4];    // Balanced (exclude extremes)
+    case 4: return [3, 4, 5];    // Firm/neutral/damped side
+    case 5: return [4, 5];       // Very firm/neutral/damped
+    default: return [2, 3, 4];   // Fallback: exclude extremes
+  }
+}
+
 // Custom slider component with "not sure" toggle
 const FeelSlider = ({
   config,
@@ -171,13 +196,13 @@ const ProfileBuilderStep4b = () => {
   const totalRoles = selectedRoles.length;
   const currentRole = selectedRoles[currentRoleIndex];
 
-  // Initialize local state for current preferences
-  const [preferences, setPreferences] = useState<FeelPreferences>(() => {
-    // Check if we already have preferences for this role
-    const existingRequest = shoeRequests.find((r) => r.role === currentRole);
-    if (existingRequest) {
-      return existingRequest.feelPreferences;
-    }
+  // Initialize local state for current slider values (before conversion to ranges)
+  const [sliderValues, setSliderValues] = useState<{
+    softVsFirm: FeelValue | null;
+    stableVsNeutral: FeelValue | null;
+    bouncyVsDamped: FeelValue | null;
+  }>(() => {
+    // Default to middle values
     return {
       softVsFirm: 3,
       stableVsNeutral: 3,
@@ -185,19 +210,15 @@ const ProfileBuilderStep4b = () => {
     };
   });
 
-  // Update preferences when role changes
+  // Reset slider values when role changes
   useEffect(() => {
-    const existingRequest = shoeRequests.find((r) => r.role === currentRole);
-    if (existingRequest) {
-      setPreferences(existingRequest.feelPreferences);
-    } else {
-      setPreferences({
-        softVsFirm: 3,
-        stableVsNeutral: 3,
-        bouncyVsDamped: 3,
-      });
-    }
-  }, [currentRole, shoeRequests]);
+    // Reset to defaults when switching roles
+    setSliderValues({
+      softVsFirm: 3,
+      stableVsNeutral: 3,
+      bouncyVsDamped: 3,
+    });
+  }, [currentRole]);
 
   // Redirect if no roles selected
   useEffect(() => {
@@ -216,22 +237,29 @@ const ProfileBuilderStep4b = () => {
     }
   };
 
-  const handleSliderChange = (key: keyof FeelPreferences, value: FeelValue) => {
-    setPreferences((prev) => ({ ...prev, [key]: value }));
+  const handleSliderChange = (key: "softVsFirm" | "stableVsNeutral" | "bouncyVsDamped", value: FeelValue) => {
+    setSliderValues((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleToggleNotSure = (key: keyof FeelPreferences) => {
-    setPreferences((prev) => ({
+  const handleToggleNotSure = (key: "softVsFirm" | "stableVsNeutral" | "bouncyVsDamped") => {
+    setSliderValues((prev) => ({
       ...prev,
       [key]: prev[key] === null ? 3 : null,
     }));
   };
 
   const handleNext = () => {
-    // Save current preferences
-    const newRequest = { role: currentRole, feelPreferences: preferences };
+    // Convert slider values to ranges for backend
+    const feelPreferences: FeelPreferences = {
+      softVsFirm: convertToRange(sliderValues.softVsFirm),
+      stableVsNeutral: convertToRange(sliderValues.stableVsNeutral),
+      bouncyVsDamped: convertToRange(sliderValues.bouncyVsDamped),
+    };
+
+    // Save current preferences as range-based request
+    const newRequest = { role: currentRole, feelPreferences };
     const existingIndex = shoeRequests.findIndex((r) => r.role === currentRole);
-    
+
     let updatedRequests: typeof shoeRequests;
     if (existingIndex >= 0) {
       updatedRequests = [...shoeRequests];
@@ -250,7 +278,7 @@ const ProfileBuilderStep4b = () => {
       // All roles complete - save and go to Step 5
       updateStep4({ shoeRequests: updatedRequests });
       // TODO: Navigate to Step 5 (fit sensitivities)
-      console.log("All preferences complete:", updatedRequests);
+      console.log("All preferences complete (with ranges):", updatedRequests);
     }
   };
 
@@ -298,7 +326,7 @@ const ProfileBuilderStep4b = () => {
                 <FeelSlider
                   key={config.key}
                   config={config}
-                  value={preferences[config.key]}
+                  value={sliderValues[config.key]}
                   onChange={(val) => handleSliderChange(config.key, val)}
                   onToggleNotSure={() => handleToggleNotSure(config.key)}
                 />

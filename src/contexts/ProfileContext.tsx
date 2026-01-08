@@ -38,13 +38,14 @@ export type ShoeSentiment = "love" | "like" | "neutral" | "dislike";
 // Step 4 shoe role selection for discovery mode
 export type DiscoveryShoeRole = "daily_trainer" | "recovery" | "tempo" | "race_day" | "trail";
 
-// Feel preferences for each shoe request (1-5 scale)
+// Feel preferences for each shoe request
+// Can be single value (auto-converts to range) or explicit range array
 export type FeelValue = 1 | 2 | 3 | 4 | 5;
 
 export interface FeelPreferences {
-  softVsFirm: FeelValue | null;
-  stableVsNeutral: FeelValue | null;
-  bouncyVsDamped: FeelValue | null;
+  softVsFirm: number[] | null;        // Range for flexible matching
+  stableVsNeutral: number[] | null;   // Range for flexible matching
+  bouncyVsDamped: number[] | null;    // Range for flexible matching
 }
 
 export interface ShoeRequest {
