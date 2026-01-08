@@ -455,7 +455,7 @@ const ProfileBuilderStep3 = () => {
             <Button
               onClick={handleNextClick}
               variant="cta"
-              className="w-full min-h-[44px] text-sm justify-start"
+              className="w-full min-h-[44px] text-sm"
               disabled={!allShoesComplete || currentShoes.length === 0}
             >
               next

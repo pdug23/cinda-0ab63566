@@ -435,7 +435,7 @@ const ProfileBuilder = () => {
                 <Button
                   onClick={handleNext}
                   variant="cta"
-                  className="w-full min-h-[44px] text-sm mt-4 justify-start"
+                  className="w-full min-h-[44px] text-sm mt-4"
                   disabled={!canProceed}
                 >
                   next
