@@ -61,7 +61,7 @@ const ProfileBuilderStep4a = () => {
   return (
     <>
       <AnimatedBackground />
-      <OnboardingLayout>
+      <OnboardingLayout scrollable>
         <PageTransition className="flex flex-col flex-1 min-h-0">
           {/* Card header */}
           <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between flex-shrink-0">
@@ -77,7 +77,10 @@ const ProfileBuilderStep4a = () => {
           </header>
 
           {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto px-6 md:px-8 pb-4">
+          <div
+            className="flex-1 min-h-0 overflow-y-auto scrollbar-styled touch-pan-y px-6 md:px-8 pb-4"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
             {/* Heading */}
             <p className="text-sm text-card-foreground/90 mb-2">
               what type of shoes are you looking for?
