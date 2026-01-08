@@ -12,7 +12,7 @@ import { toast } from "sonner";
 const ROLE_OPTIONS: { value: DiscoveryShoeRole; label: string; description: string }[] = [
   { value: "daily_trainer", label: "daily trainer", description: "versatile shoe for most of your runs" },
   { value: "recovery", label: "recovery/easy shoe", description: "cushioned comfort for easy days" },
-  { value: "tempo", label: "tempo/workout shoe", description: "responsive shoe for faster efforts" },
+  { value: "tempo", label: "tempo/interval shoe", description: "responsive shoe for faster efforts" },
   { value: "race_day", label: "race day shoe", description: "lightweight and fast for race day" },
   { value: "trail", label: "trail shoe", description: "grip and protection for off-road" },
 ];
