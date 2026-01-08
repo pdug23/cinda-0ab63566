@@ -221,8 +221,8 @@ const ProfileBuilderStep4 = () => {
   };
 
   const handleShoppingMode = () => {
-    // TODO: Navigate to Shopping Mode flow (Step 4a)
-    console.log("Shopping Mode selected");
+    // Navigate to Shopping Mode flow (Step 4a)
+    navigate("/profile/step4a");
   };
 
   const handleAnalysisMode = () => {
