@@ -32,6 +32,24 @@ interface FloatingTerm {
   punctuation: string;
 }
 
+// Exclusion zone where text content appears (in percentage coordinates)
+const EXCLUSION_ZONE = {
+  left: 20,
+  right: 80,
+  top: 15,
+  bottom: 85,
+  padding: 5, // Buffer around the zone
+};
+
+const isInExclusionZone = (x: number, y: number): boolean => {
+  return (
+    x > EXCLUSION_ZONE.left - EXCLUSION_ZONE.padding &&
+    x < EXCLUSION_ZONE.right + EXCLUSION_ZONE.padding &&
+    y > EXCLUSION_ZONE.top - EXCLUSION_ZONE.padding &&
+    y < EXCLUSION_ZONE.bottom + EXCLUSION_ZONE.padding
+  );
+};
+
 const FloatingJargon = () => {
   const [terms, setTerms] = useState<FloatingTerm[]>([]);
   const animationRef = useRef<number>();
@@ -106,7 +124,32 @@ const FloatingJargon = () => {
           let newVx = term.vx;
           let newVy = term.vy;
 
-          // Wrap around edges
+          const wasInZone = isInExclusionZone(term.x, term.y);
+          const willBeInZone = isInExclusionZone(newX, newY);
+
+          // Bounce off exclusion zone
+          if (willBeInZone && !wasInZone) {
+            // Determine which edge we're hitting
+            const fromLeft = term.x <= EXCLUSION_ZONE.left - EXCLUSION_ZONE.padding;
+            const fromRight = term.x >= EXCLUSION_ZONE.right + EXCLUSION_ZONE.padding;
+            const fromTop = term.y <= EXCLUSION_ZONE.top - EXCLUSION_ZONE.padding;
+            const fromBottom = term.y >= EXCLUSION_ZONE.bottom + EXCLUSION_ZONE.padding;
+
+            if (fromLeft || fromRight) {
+              newVx = -newVx * (0.8 + Math.random() * 0.2);
+              newVy += (Math.random() - 0.5) * 0.02; // Add slight random deflection
+            }
+            if (fromTop || fromBottom) {
+              newVy = -newVy * (0.8 + Math.random() * 0.2);
+              newVx += (Math.random() - 0.5) * 0.02;
+            }
+
+            // Keep position outside zone
+            newX = term.x + newVx;
+            newY = term.y + newVy;
+          }
+
+          // Wrap around screen edges
           if (newX > 110) {
             newX = -10;
           } else if (newX < -10) {
