@@ -159,14 +159,14 @@ const Landing = () => {
 
               {/* CTA */}
               <div
-                className={`mt-10 w-full transition-all ${prefersReducedMotion ? "" : "duration-500"} ${
+                className={`mt-10 transition-all ${prefersReducedMotion ? "" : "duration-500"} ${
                   showCta ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                 }`}
               >
                 <Button
                   onClick={handleStartProfile}
                   variant="cta"
-                  className="w-full min-h-[44px] text-sm"
+                  className="px-10 min-h-[44px] text-sm"
                 >
                   let's get started
                 </Button>

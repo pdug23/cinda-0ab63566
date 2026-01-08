@@ -15,15 +15,21 @@ const JARGON_TERMS = [
   "daily trainer", "race day geometry", "midfoot lockdown"
 ];
 
+const PUNCTUATION = ["?", "??", "?!?"];
+
+const getRandomPunctuation = () => PUNCTUATION[Math.floor(Math.random() * PUNCTUATION.length)];
+
 interface FloatingTerm {
   id: number;
   text: string;
   x: number;
   y: number;
-  speed: number;
+  vx: number;
+  vy: number;
   opacity: number;
   fontSize: number;
   angle: number;
+  punctuation: string;
 }
 
 const FloatingJargon = () => {
@@ -35,20 +41,28 @@ const FloatingJargon = () => {
   );
 
   useEffect(() => {
-    // Generate initial terms spread across the screen
+    // Generate terms starting from center, exploding outward
     const initialTerms: FloatingTerm[] = [];
-    const termCount = 20;
+    const termCount = 24;
+    const centerX = 50;
+    const centerY = 50;
 
     for (let i = 0; i < termCount; i++) {
+      // Random angle for explosion direction
+      const angle = (i / termCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+      const speed = 0.15 + Math.random() * 0.1; // Faster movement
+      
       initialTerms.push({
         id: i,
         text: JARGON_TERMS[Math.floor(Math.random() * JARGON_TERMS.length)],
-        x: Math.random() * 120 - 10, // -10% to 110% for seamless wrap
-        y: Math.random() * 100,
-        speed: 0.008 + Math.random() * 0.012, // Very slow movement
+        x: centerX + (Math.random() - 0.5) * 10, // Start near center
+        y: centerY + (Math.random() - 0.5) * 10,
+        vx: Math.cos(angle) * speed, // Velocity based on explosion angle
+        vy: Math.sin(angle) * speed,
         opacity: 0.04 + Math.random() * 0.06, // Very low opacity (4-10%)
         fontSize: 10 + Math.random() * 6, // 10-16px
         angle: -5 + Math.random() * 10, // Slight tilt
+        punctuation: getRandomPunctuation(),
       });
     }
 
@@ -59,16 +73,32 @@ const FloatingJargon = () => {
     // Animate the terms
     const animate = () => {
       setTerms((prev) =>
-        prev.map((term) => ({
-          ...term,
-          x: term.x - term.speed, // Move left
-          // Wrap around when off-screen
-          ...(term.x < -15 && {
-            x: 110,
-            y: Math.random() * 100,
-            text: JARGON_TERMS[Math.floor(Math.random() * JARGON_TERMS.length)],
-          }),
-        }))
+        prev.map((term) => {
+          let newX = term.x + term.vx;
+          let newY = term.y + term.vy;
+          let newVx = term.vx;
+          let newVy = term.vy;
+
+          // Wrap around edges
+          if (newX > 110) {
+            newX = -10;
+          } else if (newX < -10) {
+            newX = 110;
+          }
+          if (newY > 110) {
+            newY = -10;
+          } else if (newY < -10) {
+            newY = 110;
+          }
+
+          return {
+            ...term,
+            x: newX,
+            y: newY,
+            vx: newVx,
+            vy: newVy,
+          };
+        })
       );
       animationRef.current = requestAnimationFrame(animate);
     };
@@ -94,10 +124,10 @@ const FloatingJargon = () => {
             opacity: term.opacity,
             fontSize: `${term.fontSize}px`,
             transform: `rotate(${term.angle}deg)`,
-            willChange: "left",
+            willChange: "left, top",
           }}
         >
-          {term.text}
+          {term.text}{term.punctuation}
         </span>
       ))}
     </div>
