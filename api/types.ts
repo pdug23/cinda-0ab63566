@@ -418,13 +418,28 @@ export interface RecommendationResult {
 // ============================================================================
 
 /**
- * Feel preferences for shoe recommendations (1-5 scale)
- * Extracted from RunnerProfile to allow per-request/per-gap customization
+ * Feel preferences for shoe recommendations.
+ * Each dimension accepts:
+ * - Single number (1-5): Will be converted to range for flexible matching
+ * - Array of numbers: Direct range specification
+ *
+ * Range logic for single values:
+ * - 1 → [1, 2] (very soft/stable/bouncy - narrow range)
+ * - 2 → [1, 2, 3] (soft/stable/bouncy side - wider range)
+ * - 3 → [2, 3, 4] (balanced - exclude extremes)
+ * - 4 → [3, 4, 5] (firm/neutral/damped side - wider range)
+ * - 5 → [4, 5] (very firm/neutral/damped - narrow range)
+ * - "not sure" → [2, 3, 4] (exclude extremes only)
+ *
+ * This allows flexible matching while respecting user preferences.
+ * Extreme picks get narrower ranges, middle picks get wider ranges.
+ *
+ * Extracted from RunnerProfile to allow per-request/per-gap customization.
  */
 export interface FeelPreferences {
-  softVsFirm: FeelPreference;       // 5 = very soft, 1 = very firm
-  stableVsNeutral: FeelPreference;  // 5 = very stable, 1 = neutral
-  bouncyVsDamped: FeelPreference;   // 5 = very bouncy, 1 = damped
+  softVsFirm: FeelPreference | number[];       // 5 = very soft, 1 = very firm
+  stableVsNeutral: FeelPreference | number[];  // 5 = very stable, 1 = neutral
+  bouncyVsDamped: FeelPreference | number[];   // 5 = very bouncy, 1 = damped
 }
 
 /**

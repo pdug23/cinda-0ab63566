@@ -674,7 +674,27 @@ function getRelatedRolesForShopping(role: ShoeRole): ShoeRole[] {
 }
 
 /**
+ * Convert single value or array to range for flexible matching
+ * (Same logic as shoeRetrieval.ts for consistency)
+ */
+function normalizePreference(value: number | number[]): number[] {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  switch (value) {
+    case 1: return [1, 2];
+    case 2: return [1, 2, 3];
+    case 3: return [2, 3, 4];
+    case 4: return [3, 4, 5];
+    case 5: return [4, 5];
+    default: return [2, 3, 4];
+  }
+}
+
+/**
  * Score a shoe for how well it matches a specific role and feel preferences
+ * Uses range-based matching for flexible scoring
  */
 function scoreShoeForRole(
   shoe: Shoe,
@@ -689,10 +709,42 @@ function scoreShoeForRole(
     score += 40;
   }
 
-  // Feel match (0-30 points) - using same logic as shoeRetrieval
-  const softScore = Math.max(0, 10 - Math.abs(shoe.cushion_softness_1to5 - feelPreferences.softVsFirm) * 2);
-  const stabilityScore = Math.max(0, 10 - Math.abs(shoe.stability_1to5 - feelPreferences.stableVsNeutral) * 2);
-  const bounceScore = Math.max(0, 10 - Math.abs(shoe.bounce_1to5 - feelPreferences.bouncyVsDamped) * 2);
+  // Feel match (0-30 points) - using range-based matching
+  const softRange = normalizePreference(feelPreferences.softVsFirm);
+  const stableRange = normalizePreference(feelPreferences.stableVsNeutral);
+  const bounceRange = normalizePreference(feelPreferences.bouncyVsDamped);
+
+  // Score each dimension (0-10 points per dimension)
+  let softScore = 0;
+  if (softRange.includes(shoe.cushion_softness_1to5)) {
+    softScore = 10;
+  } else if (
+    softRange.includes(shoe.cushion_softness_1to5 - 1) ||
+    softRange.includes(shoe.cushion_softness_1to5 + 1)
+  ) {
+    softScore = 5;
+  }
+
+  let stabilityScore = 0;
+  if (stableRange.includes(shoe.stability_1to5)) {
+    stabilityScore = 10;
+  } else if (
+    stableRange.includes(shoe.stability_1to5 - 1) ||
+    stableRange.includes(shoe.stability_1to5 + 1)
+  ) {
+    stabilityScore = 5;
+  }
+
+  let bounceScore = 0;
+  if (bounceRange.includes(shoe.bounce_1to5)) {
+    bounceScore = 10;
+  } else if (
+    bounceRange.includes(shoe.bounce_1to5 - 1) ||
+    bounceRange.includes(shoe.bounce_1to5 + 1)
+  ) {
+    bounceScore = 5;
+  }
+
   score += softScore + stabilityScore + bounceScore;
 
   // Availability bonus (0-15 points)

@@ -13,9 +13,9 @@ interface RetrievalConstraints {
   roles?: ShoeRole[];
   stabilityNeed?: "neutral" | "stability" | "stable_feel";
   feelPreferences?: {
-    softVsFirm: FeelPreference;
-    stableVsNeutral: FeelPreference;
-    bouncyVsDamped: FeelPreference;
+    softVsFirm: FeelPreference | number[];
+    stableVsNeutral: FeelPreference | number[];
+    bouncyVsDamped: FeelPreference | number[];
   };
   excludeShoeIds?: string[];
   brandOnly?: string;
@@ -74,6 +74,43 @@ function getRelatedRoles(role: ShoeRole): ShoeRole[] {
     'trail': [], // Trail doesn't mix with road
   };
   return relatedMap[role] || [];
+}
+
+// ============================================================================
+// PREFERENCE NORMALIZATION
+// ============================================================================
+
+/**
+ * Convert single value or array to range for flexible matching
+ *
+ * Range logic:
+ * - 1 → [1, 2] (extreme: very soft/stable/bouncy - narrow range)
+ * - 2 → [1, 2, 3] (soft/stable/bouncy side - wider range)
+ * - 3 → [2, 3, 4] (balanced - exclude extremes)
+ * - 4 → [3, 4, 5] (firm/neutral/damped side - wider range)
+ * - 5 → [4, 5] (extreme: very firm/neutral/damped - narrow range)
+ * - default → [2, 3, 4] (exclude extremes, "not sure" fallback)
+ *
+ * This provides flexible matching while respecting user intent:
+ * - Extreme picks get narrow ranges (strong preference)
+ * - Middle picks get wider ranges (more flexible)
+ * - Excludes extremes for balanced/unsure picks
+ */
+function normalizePreference(value: number | number[]): number[] {
+  // If already array, return as-is (explicit range from frontend)
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  // Convert single value to range
+  switch (value) {
+    case 1: return [1, 2];       // Very soft/stable/bouncy
+    case 2: return [1, 2, 3];    // Soft/stable/bouncy side
+    case 3: return [2, 3, 4];    // Balanced (exclude extremes)
+    case 4: return [3, 4, 5];    // Firm/neutral/damped side
+    case 5: return [4, 5];       // Very firm/neutral/damped
+    default: return [2, 3, 4];   // Fallback: exclude extremes
+  }
 }
 
 // ============================================================================
@@ -155,33 +192,58 @@ function scoreRoleMatch(shoe: Shoe, roles: ShoeRole[] = []): number {
 
 /**
  * Score how well shoe's feel matches preferences (0-30 points)
- * Closer match = higher score
+ * Uses range-based matching for flexible scoring
  */
 function scoreFeelMatch(
   shoe: Shoe,
   prefs?: {
-    softVsFirm: FeelPreference;
-    stableVsNeutral: FeelPreference;
-    bouncyVsDamped: FeelPreference;
+    softVsFirm: FeelPreference | number[];
+    stableVsNeutral: FeelPreference | number[];
+    bouncyVsDamped: FeelPreference | number[];
   }
 ): number {
   if (!prefs) {
     return 15; // Neutral score if no preferences
   }
 
-  // For each feel dimension, calculate distance from preference
-  // NOTE: Scales are aligned (5=soft in both shoe and pref, 1=firm in both)
-  // This allows direct comparison without inversion
-  // Formula: 10 - abs(shoe_score - preference) * 2
-  // Perfect match (distance 0) = 10 points
-  // Distance 1 = 8 points
-  // Distance 2 = 6 points
-  // Distance 3 = 4 points
-  // Distance 4 = 2 points
+  // Convert preferences to ranges for flexible matching
+  const softRange = normalizePreference(prefs.softVsFirm);
+  const stableRange = normalizePreference(prefs.stableVsNeutral);
+  const bounceRange = normalizePreference(prefs.bouncyVsDamped);
 
-  const softScore = Math.max(0, 10 - Math.abs(shoe.cushion_softness_1to5 - prefs.softVsFirm) * 2);
-  const stabilityScore = Math.max(0, 10 - Math.abs(shoe.stability_1to5 - prefs.stableVsNeutral) * 2);
-  const bounceScore = Math.max(0, 10 - Math.abs(shoe.bounce_1to5 - prefs.bouncyVsDamped) * 2);
+  // Score each dimension (0-10 points per dimension)
+  // If shoe falls within range: 10 points
+  // If shoe is 1 away from range: 5 points
+  // Otherwise: 0 points
+  let softScore = 0;
+  if (softRange.includes(shoe.cushion_softness_1to5)) {
+    softScore = 10; // Perfect match: in range
+  } else if (
+    softRange.includes(shoe.cushion_softness_1to5 - 1) ||
+    softRange.includes(shoe.cushion_softness_1to5 + 1)
+  ) {
+    softScore = 5; // Close: adjacent to range
+  }
+
+  let stabilityScore = 0;
+  if (stableRange.includes(shoe.stability_1to5)) {
+    stabilityScore = 10;
+  } else if (
+    stableRange.includes(shoe.stability_1to5 - 1) ||
+    stableRange.includes(shoe.stability_1to5 + 1)
+  ) {
+    stabilityScore = 5;
+  }
+
+  let bounceScore = 0;
+  if (bounceRange.includes(shoe.bounce_1to5)) {
+    bounceScore = 10;
+  } else if (
+    bounceRange.includes(shoe.bounce_1to5 - 1) ||
+    bounceRange.includes(shoe.bounce_1to5 + 1)
+  ) {
+    bounceScore = 5;
+  }
 
   return softScore + stabilityScore + bounceScore;
 }
