@@ -96,7 +96,13 @@ const FeelSlider = ({
       {/* Slider row with "not sure" button */}
       <div className="flex items-center gap-4">
         {/* Slider container with labels */}
-        <div className={cn("relative flex-1", isDisabled && "opacity-30")}>
+        <div 
+          className={cn("relative flex-1", isDisabled && "opacity-30 cursor-pointer")}
+          onClick={() => {
+            // Re-enable slider by clicking the track area
+            if (isDisabled) onToggleNotSure();
+          }}
+        >
           <Slider
             value={[displayValue]}
             onValueChange={(vals) => {
