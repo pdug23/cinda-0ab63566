@@ -72,7 +72,6 @@ const FeelSlider = ({
   onChange: (value: FeelValue) => void;
   onToggleNotSure: () => void;
 }) => {
-  const [isDragging, setIsDragging] = useState(false);
   const isDisabled = value === null;
   const displayValue = value ?? 3;
 
@@ -108,24 +107,12 @@ const FeelSlider = ({
             onValueChange={(vals) => {
               if (!isDisabled) onChange(vals[0] as FeelValue);
             }}
-            onPointerDown={() => !isDisabled && setIsDragging(true)}
-            onPointerUp={() => setIsDragging(false)}
             min={1}
             max={5}
             step={1}
             disabled={isDisabled}
             className={cn("w-full", isDisabled && "pointer-events-none")}
           />
-          
-          {/* Value indicator while dragging */}
-          {isDragging && !isDisabled && (
-            <div
-              className="absolute -top-8 transform -translate-x-1/2 bg-orange-400 text-white text-xs font-medium px-2 py-1 rounded transition-all"
-              style={{ left: `${((displayValue - 1) / 4) * 100}%` }}
-            >
-              {displayValue}
-            </div>
-          )}
 
           {/* Labels positioned below slider - aligned to slider positions */}
           <div className={cn(
@@ -277,7 +264,7 @@ const ProfileBuilderStep4b = () => {
       <OnboardingLayout scrollable>
         <PageTransition className="flex flex-col flex-1 min-h-0">
           {/* Card header */}
-          <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between flex-shrink-0">
+          <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-start flex-shrink-0">
             <button
               type="button"
               onClick={handleBack}
@@ -286,7 +273,6 @@ const ProfileBuilderStep4b = () => {
               <ArrowLeft className="w-3.5 h-3.5" />
               back
             </button>
-            <span className="text-xs text-card-foreground/50">step 4 of 4</span>
           </header>
 
           {/* Scrollable content */}

@@ -212,7 +212,7 @@ const ProfileBuilderStep2 = () => {
       <OnboardingLayout scrollable>
         <PageTransition className="flex flex-col flex-1 min-h-0">
         {/* Card header (fixed) */}
-        <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between flex-shrink-0">
+        <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-start flex-shrink-0">
           <button
             type="button"
             onClick={handleBack}
@@ -221,7 +221,6 @@ const ProfileBuilderStep2 = () => {
             <ArrowLeft className="w-3.5 h-3.5" />
             back
           </button>
-          <span className="text-xs text-card-foreground/50">step 2 of 4</span>
         </header>
 
         {/* Scrollable form area */}
