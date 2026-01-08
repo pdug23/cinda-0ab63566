@@ -251,13 +251,8 @@ const ProfileBuilder = () => {
             className="flex-1 min-h-0 overflow-y-auto scrollbar-styled touch-pan-y px-6 md:px-8 space-y-7 pb-6"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
-            {/* Intro sentence */}
-            <p className="italic text-orange-500 mb-3 text-sm">
-              tell us about you, how you run and what you're looking for. cinda will do the rest.
-            </p>
-
             {/* First Name - Required */}
-            <div className="!mt-0">
+            <div>
               <label className="block text-card-foreground/90 mb-2" style={{ fontSize: '14px' }}>
                 first name
               </label>
