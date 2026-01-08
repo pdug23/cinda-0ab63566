@@ -35,6 +35,9 @@ export interface Step2Data {
 export type ShoeRole = "all_runs" | "races" | "tempo" | "interval" | "easy_recovery" | "trail";
 export type ShoeSentiment = "love" | "like" | "neutral" | "dislike";
 
+// Step 4 shoe role selection for discovery mode
+export type DiscoveryShoeRole = "daily_trainer" | "recovery" | "tempo" | "race_day" | "trail";
+
 export interface CurrentShoe {
   shoe: {
     shoe_id: string;
@@ -52,10 +55,17 @@ export interface Step3Data {
   currentShoes: CurrentShoe[];
 }
 
+// Step 4 data - discovery mode selections
+export interface Step4Data {
+  mode: "discovery" | "analysis" | null;
+  selectedRoles: DiscoveryShoeRole[];
+}
+
 export interface ProfileData {
   step1: Step1Data;
   step2: Step2Data;
   step3: Step3Data;
+  step4: Step4Data;
 }
 
 const defaultStep1: Step1Data = {
@@ -84,11 +94,17 @@ const defaultStep3: Step3Data = {
   currentShoes: [],
 };
 
+const defaultStep4: Step4Data = {
+  mode: null,
+  selectedRoles: [],
+};
+
 interface ProfileContextType {
   profileData: ProfileData;
   updateStep1: (data: Partial<Step1Data>) => void;
   updateStep2: (data: Partial<Step2Data>) => void;
   updateStep3: (data: Partial<Step3Data>) => void;
+  updateStep4: (data: Partial<Step4Data>) => void;
   clearAll: () => void;
 }
 
@@ -99,6 +115,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     step1: defaultStep1,
     step2: defaultStep2,
     step3: defaultStep3,
+    step4: defaultStep4,
   });
 
   const updateStep1 = (data: Partial<Step1Data>) => {
@@ -122,16 +139,24 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
+  const updateStep4 = (data: Partial<Step4Data>) => {
+    setProfileData((prev) => ({
+      ...prev,
+      step4: { ...prev.step4, ...data },
+    }));
+  };
+
   const clearAll = () => {
     setProfileData({
       step1: defaultStep1,
       step2: defaultStep2,
       step3: defaultStep3,
+      step4: defaultStep4,
     });
   };
 
   return (
-    <ProfileContext.Provider value={{ profileData, updateStep1, updateStep2, updateStep3, clearAll }}>
+    <ProfileContext.Provider value={{ profileData, updateStep1, updateStep2, updateStep3, updateStep4, clearAll }}>
       {children}
     </ProfileContext.Provider>
   );
