@@ -148,25 +148,12 @@ export default async function handler(
             catalogue
           );
 
-          // Helper to describe feel preference
-          const describePreference = (pref: number | number[], soft: string, firm: string, balanced: string) => {
-            if (Array.isArray(pref)) {
-              const avg = pref.reduce((a, b) => a + b, 0) / pref.length;
-              if (avg >= 4) return soft;
-              if (avg <= 2) return firm;
-              return balanced;
-            }
-            if (pref >= 4) return soft;
-            if (pref <= 2) return firm;
-            return balanced;
-          };
-
           const reasoning = `Based on your preference for ${request.role} shoes with ${
-            describePreference(request.feelPreferences.softVsFirm, 'soft', 'firm', 'balanced')
+            request.feelPreferences.softVsFirm >= 4 ? 'soft' : request.feelPreferences.softVsFirm <= 2 ? 'firm' : 'balanced'
           } cushion, ${
-            describePreference(request.feelPreferences.bouncyVsDamped, 'bouncy', 'damped', 'moderate')
+            request.feelPreferences.bouncyVsDamped >= 4 ? 'bouncy' : request.feelPreferences.bouncyVsDamped <= 2 ? 'damped' : 'moderate'
           } response, and ${
-            describePreference(request.feelPreferences.stableVsNeutral, 'stable', 'neutral', 'balanced')
+            request.feelPreferences.stableVsNeutral >= 4 ? 'stable' : request.feelPreferences.stableVsNeutral <= 2 ? 'neutral' : 'balanced'
           } platform.`;
 
           return {
