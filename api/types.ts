@@ -42,8 +42,10 @@ export type RunningPattern =
  * - softVsFirm: 5 = very soft, 1 = very firm
  * - stableVsNeutral: 5 = very stable, 1 = neutral/minimal
  * - bouncyVsDamped: 5 = very bouncy/responsive, 1 = damped/smooth
+ * 
+ * Can be a single value or an array to support flexible matching ranges
  */
-export type FeelPreference = 1 | 2 | 3 | 4 | 5;
+export type FeelPreference = number | number[];
 
 /**
  * Personal best time as a string (e.g., "5:30", "21:45", "3:45:22")

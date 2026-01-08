@@ -169,19 +169,32 @@ function scoreFeelMatch(
     return 15; // Neutral score if no preferences
   }
 
-  // For each feel dimension, calculate distance from preference
+  // Normalize preferences to arrays
+  const normalizePref = (pref: FeelPreference): number[] => {
+    return Array.isArray(pref) ? pref : [pref];
+  };
+
+  const softArr = normalizePref(prefs.softVsFirm);
+  const stableArr = normalizePref(prefs.stableVsNeutral);
+  const bounceArr = normalizePref(prefs.bouncyVsDamped);
+
+  // For each feel dimension, calculate minimum distance from preference array
   // NOTE: Scales are aligned (5=soft in both shoe and pref, 1=firm in both)
   // This allows direct comparison without inversion
-  // Formula: 10 - abs(shoe_score - preference) * 2
+  // Formula: 10 - min_distance * 2
   // Perfect match (distance 0) = 10 points
   // Distance 1 = 8 points
   // Distance 2 = 6 points
   // Distance 3 = 4 points
   // Distance 4 = 2 points
 
-  const softScore = Math.max(0, 10 - Math.abs(shoe.cushion_softness_1to5 - prefs.softVsFirm) * 2);
-  const stabilityScore = Math.max(0, 10 - Math.abs(shoe.stability_1to5 - prefs.stableVsNeutral) * 2);
-  const bounceScore = Math.max(0, 10 - Math.abs(shoe.bounce_1to5 - prefs.bouncyVsDamped) * 2);
+  const minDistance = (shoeValue: number, prefArr: number[]): number => {
+    return Math.min(...prefArr.map(p => Math.abs(shoeValue - p)));
+  };
+
+  const softScore = Math.max(0, 10 - minDistance(shoe.cushion_softness_1to5, softArr) * 2);
+  const stabilityScore = Math.max(0, 10 - minDistance(shoe.stability_1to5, stableArr) * 2);
+  const bounceScore = Math.max(0, 10 - minDistance(shoe.bounce_1to5, bounceArr) * 2);
 
   return softScore + stabilityScore + bounceScore;
 }

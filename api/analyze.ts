@@ -148,13 +148,20 @@ export default async function handler(
             catalogue
           );
 
-          const reasoning = `Based on your preference for ${request.role} shoes with ${
-            request.feelPreferences.softVsFirm >= 4 ? 'soft' : request.feelPreferences.softVsFirm <= 2 ? 'firm' : 'balanced'
-          } cushion, ${
-            request.feelPreferences.bouncyVsDamped >= 4 ? 'bouncy' : request.feelPreferences.bouncyVsDamped <= 2 ? 'damped' : 'moderate'
-          } response, and ${
-            request.feelPreferences.stableVsNeutral >= 4 ? 'stable' : request.feelPreferences.stableVsNeutral <= 2 ? 'neutral' : 'balanced'
-            } platform.`;
+          // Helper to describe array preference
+          const describeRange = (pref: number | number[], labels: [string, string, string]): string => {
+            const arr = Array.isArray(pref) ? pref : [pref];
+            const [low, mid, high] = labels;
+            if (arr.includes(1) || arr.includes(2)) return arr.includes(4) || arr.includes(5) ? mid : low;
+            if (arr.includes(4) || arr.includes(5)) return high;
+            return mid;
+          };
+
+          const softFirm = describeRange(request.feelPreferences.softVsFirm, ['soft', 'balanced', 'firm']);
+          const bouncyDamped = describeRange(request.feelPreferences.bouncyVsDamped, ['bouncy', 'moderate', 'damped']);
+          const stableNeutral = describeRange(request.feelPreferences.stableVsNeutral, ['stable', 'balanced', 'neutral']);
+
+          const reasoning = `Based on your preference for ${request.role} shoes with ${softFirm} cushion, ${bouncyDamped} response, and ${stableNeutral} platform.`;
 
           return {
             role: request.role,
