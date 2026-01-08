@@ -89,21 +89,19 @@ const Landing = () => {
                 prefersReducedMotion ? "" : "duration-300"
               } ${isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
             >
-              <img src={cindaLogo} alt="Cinda" className="h-[104px]" />
+              <img src={cindaLogo} alt="Cinda" className="h-[80px] mb-8" />
 
-              <div className="text-center mt-8">
-                <p
-                  className="text-card-foreground/90 max-w-md leading-tight italic"
-                  style={{ fontVariantLigatures: "none", fontSize: "25px", fontWeight: 900 }}
-                >
-                  every runner deserves to find their perfect fit.
-                </p>
-              </div>
+              <h1
+                className="text-card-foreground/90 max-w-md leading-tight italic text-center"
+                style={{ fontVariantLigatures: "none", fontSize: "24px", fontWeight: 900 }}
+              >
+                every runner deserves to find their perfect fit.
+              </h1>
 
               <Button
                 onClick={handleStartOrientation}
                 variant="cta"
-                className="px-10 min-h-[44px] text-sm mt-8"
+                className="px-10 min-h-[44px] text-sm mt-10"
               >
                 find yours
               </Button>

@@ -41,27 +41,54 @@ const FloatingJargon = () => {
   );
 
   useEffect(() => {
-    // Generate terms starting from center, exploding outward
+    // Generate terms starting off-screen, floating inward
     const initialTerms: FloatingTerm[] = [];
     const termCount = 24;
     const centerX = 50;
     const centerY = 50;
 
     for (let i = 0; i < termCount; i++) {
-      // Random angle for explosion direction
-      const angle = (i / termCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
-      const speed = 0.15 + Math.random() * 0.1; // Faster movement
+      // Start from edges - distribute around the perimeter
+      const edge = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
+      let startX: number, startY: number;
+      
+      switch (edge) {
+        case 0: // top
+          startX = Math.random() * 120 - 10;
+          startY = -15 - Math.random() * 20;
+          break;
+        case 1: // right
+          startX = 115 + Math.random() * 20;
+          startY = Math.random() * 120 - 10;
+          break;
+        case 2: // bottom
+          startX = Math.random() * 120 - 10;
+          startY = 115 + Math.random() * 20;
+          break;
+        default: // left
+          startX = -15 - Math.random() * 20;
+          startY = Math.random() * 120 - 10;
+          break;
+      }
+      
+      // Calculate velocity toward center (with some randomness)
+      const targetX = centerX + (Math.random() - 0.5) * 60;
+      const targetY = centerY + (Math.random() - 0.5) * 60;
+      const dx = targetX - startX;
+      const dy = targetY - startY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const speed = 0.06 + Math.random() * 0.04; // Gentle inward drift
       
       initialTerms.push({
         id: i,
         text: JARGON_TERMS[Math.floor(Math.random() * JARGON_TERMS.length)],
-        x: centerX + (Math.random() - 0.5) * 10, // Start near center
-        y: centerY + (Math.random() - 0.5) * 10,
-        vx: Math.cos(angle) * speed, // Velocity based on explosion angle
-        vy: Math.sin(angle) * speed,
-        opacity: 0.04 + Math.random() * 0.06, // Very low opacity (4-10%)
-        fontSize: 10 + Math.random() * 6, // 10-16px
-        angle: -5 + Math.random() * 10, // Slight tilt
+        x: startX,
+        y: startY,
+        vx: (dx / dist) * speed,
+        vy: (dy / dist) * speed,
+        opacity: 0.04 + Math.random() * 0.06,
+        fontSize: 10 + Math.random() * 6,
+        angle: -5 + Math.random() * 10,
         punctuation: getRandomPunctuation(),
       });
     }
