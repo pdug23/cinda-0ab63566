@@ -140,43 +140,74 @@ const ProfileBuilderStep4Analysis = () => {
     navigate("/profile/step4a");
   };
 
+  const RecommendationSection = () => {
+    if (!gap) return null;
+    
+    return (
+      <div className="w-full bg-slate-700/50 border border-slate-600/50 rounded-lg p-5 mb-6">
+        <h3 className="text-sm font-medium text-slate-400 mb-3 lowercase">
+          what you need next
+        </h3>
+        <p className="text-foreground mb-3 lowercase">
+          based on your rotation, you'd benefit from a{" "}
+          <span className="text-primary font-bold">
+            {getShoeTypeLabel(mapGapToRole(gap.missingCapability || "daily"))}
+          </span>
+        </p>
+        {gap.reasoning && (
+          <p className="text-sm text-muted-foreground lowercase">
+            {gap.reasoning}
+          </p>
+        )}
+      </div>
+    );
+  };
+
   const RotationSummarySection = () => {
     if (rotationSummary.length === 0) return null;
 
     return (
-      <div className="w-full mb-8">
-        <h3 className="text-sm font-medium text-muted-foreground mb-4 text-center">
-          your current rotation
+      <div className="w-full mb-6">
+        <h3 className="text-sm font-medium text-muted-foreground mb-4 lowercase">
+          what you have now
         </h3>
         <div className="flex flex-col gap-3">
-          {rotationSummary.map((item, index) => (
-            <div
-              key={item.shoe.shoe_id || index}
-              className={`bg-card/50 border rounded-lg p-4 ${
-                item.misuseLevel === "severe"
-                  ? "border-l-4 border-l-orange-500 border-orange-500/30"
-                  : "border-border/50"
-              }`}
-            >
-              <p className="text-foreground font-medium mb-2 lowercase">
-                {item.shoe.full_name}
-              </p>
-              <p className="text-sm text-muted-foreground mb-1 lowercase">
-                you use it for: {item.userRoles.map(formatRoleLabel).join(", ")}
-              </p>
-              <p className="text-sm text-muted-foreground lowercase">
-                best suited for: {item.capabilities.map(formatRoleLabel).join(", ")}
-              </p>
-              {item.misuseLevel === "severe" && item.misuseMessage && (
-                <div className="flex items-start gap-2 mt-3 p-2 bg-orange-500/10 rounded-md">
-                  <AlertTriangle className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-orange-400 lowercase">
-                    {item.misuseMessage}
+          {rotationSummary.map((item, index) => {
+            const isSevere = item.misuseLevel === "severe";
+            
+            return (
+              <div
+                key={item.shoe.shoe_id || index}
+                className={`bg-card/50 rounded-lg p-4 ${
+                  isSevere
+                    ? "border-l-4 border-l-orange-500 border border-orange-500/30"
+                    : "border-2 border-primary/40"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  {isSevere && (
+                    <AlertTriangle className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                  )}
+                  <p className="text-foreground font-medium lowercase">
+                    {item.shoe.full_name}
                   </p>
                 </div>
-              )}
-            </div>
-          ))}
+                <p className="text-sm text-muted-foreground mb-1 lowercase">
+                  you use it for: {item.userRoles.map(formatRoleLabel).join(", ")}
+                </p>
+                <p className="text-sm text-muted-foreground lowercase">
+                  best suited for: {item.capabilities.map(formatRoleLabel).join(", ")}
+                </p>
+                {isSevere && item.misuseMessage && (
+                  <div className="mt-3 p-2 bg-orange-500/15 border border-orange-500/30 rounded-md">
+                    <p className="text-sm text-orange-400 lowercase">
+                      {item.misuseMessage}
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     );
@@ -187,16 +218,16 @@ const ProfileBuilderStep4Analysis = () => {
       <AnimatedBackground />
       <OnboardingLayout>
         <PageTransition>
-          <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center min-h-[400px]">
+          <div className="w-full max-w-md mx-auto flex flex-col h-full">
             {/* Loading State */}
             {status === "loading" && (
-              <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
-                <Loader className="w-8 h-8 text-orange-400 animate-spin" />
+              <div className="flex flex-col items-center justify-center gap-6 animate-in fade-in duration-300 flex-1">
+                <Loader className="w-8 h-8 text-primary animate-spin" />
                 <div className="text-center">
-                  <h2 className="text-lg font-medium text-foreground mb-2">
+                  <h2 className="text-lg font-medium text-foreground mb-2 lowercase">
                     analysing your rotation...
                   </h2>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground lowercase">
                     this will take a few seconds
                   </p>
                 </div>
@@ -205,74 +236,69 @@ const ProfileBuilderStep4Analysis = () => {
 
             {/* Success State - Gap Found */}
             {status === "success" && gap && (
-              <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300 text-center w-full">
-                <RotationSummarySection />
-                <div className="w-full">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                    cinda's recommendation
-                  </h3>
-                  <h2 className="text-lg font-medium text-card-foreground mb-4">
-                    based on your rotation, we think you need a{" "}
-                    <span className="text-orange-400 font-bold">
-                      {getShoeTypeLabel(mapGapToRole(gap.missingCapability || "daily"))}
-                    </span>
-                  </h2>
-                  <p className="text-sm text-muted-foreground mb-8 lowercase">
-                    {gap.reasoning}
-                  </p>
+              <div className="flex flex-col animate-in fade-in duration-300 flex-1">
+                <div className="flex-1 overflow-y-auto pb-4">
+                  <RecommendationSection />
+                  <RotationSummarySection />
                 </div>
-                <Button
-                  onClick={handleSetPreferences}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white"
-                >
-                  set preferences for this shoe
-                </Button>
+                <div className="pt-4 border-t border-border/30">
+                  <Button
+                    onClick={handleSetPreferences}
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12"
+                  >
+                    set preferences for this shoe
+                  </Button>
+                </div>
               </div>
             )}
 
             {/* No Gap State */}
             {status === "no_gap" && (
-              <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300 w-full">
-                <RotationSummarySection />
-                <div className="text-center">
-                  <h2 className="text-lg font-medium text-foreground mb-4">
-                    your rotation looks great!
-                  </h2>
-                  <p className="text-sm text-muted-foreground mb-8">
-                    no obvious gaps found. want to add a specific shoe type instead?
-                  </p>
+              <div className="flex flex-col animate-in fade-in duration-300 flex-1">
+                <div className="flex-1 overflow-y-auto pb-4">
+                  <div className="w-full bg-slate-700/50 border border-slate-600/50 rounded-lg p-5 mb-6">
+                    <h3 className="text-sm font-medium text-slate-400 mb-3 lowercase">
+                      what you need next
+                    </h3>
+                    <p className="text-foreground lowercase">
+                      your rotation looks great! no obvious gaps found.
+                    </p>
+                  </div>
+                  <RotationSummarySection />
                 </div>
-                <Button
-                  onClick={handleChooseSpecific}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white"
-                >
-                  choose specific shoes
-                </Button>
+                <div className="pt-4 border-t border-border/30">
+                  <Button
+                    onClick={handleChooseSpecific}
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12"
+                  >
+                    choose specific shoes
+                  </Button>
+                </div>
               </div>
             )}
 
             {/* Error State */}
             {status === "error" && (
-              <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
+              <div className="flex flex-col items-center justify-center gap-6 animate-in fade-in duration-300 flex-1">
                 <div className="text-center">
-                  <h2 className="text-lg font-medium text-foreground mb-4">
+                  <h2 className="text-lg font-medium text-foreground mb-4 lowercase">
                     something went wrong
                   </h2>
-                  <p className="text-sm text-muted-foreground mb-8">
+                  <p className="text-sm text-muted-foreground mb-8 lowercase">
                     couldn't analyse your rotation. try again or choose specific shoes instead.
                   </p>
                 </div>
                 <div className="flex flex-col gap-3 w-full">
                   <Button
                     onClick={analyzeRotation}
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12"
                   >
                     try again
                   </Button>
                   <Button
                     onClick={handleChooseSpecific}
                     variant="outline"
-                    className="w-full"
+                    className="w-full h-12"
                   >
                     choose specific shoes
                   </Button>
