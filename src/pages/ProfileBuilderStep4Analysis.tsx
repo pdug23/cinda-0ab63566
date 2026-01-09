@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader, AlertTriangle, Check } from "lucide-react";
+import { Loader, AlertTriangle, Check, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import OnboardingLayout from "@/components/OnboardingLayout";
@@ -230,7 +230,18 @@ const ProfileBuilderStep4Analysis = () => {
       <AnimatedBackground />
       <OnboardingLayout scrollable>
         <PageTransition className="flex flex-col flex-1 min-h-0">
-          <div className="w-full max-w-md mx-auto flex flex-col flex-1 min-h-0 px-6 md:px-8 pt-6 md:pt-8">
+          {/* Card header with back button */}
+          <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-start flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => navigate("/profile/step3")}
+              className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              back
+            </button>
+          </header>
+          <div className="w-full max-w-md mx-auto flex flex-col flex-1 min-h-0 px-6 md:px-8">
             {/* Loading State */}
             {status === "loading" && (
               <div className="flex flex-col items-center justify-center gap-6 animate-in fade-in duration-300 flex-1">
