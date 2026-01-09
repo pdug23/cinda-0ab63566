@@ -148,7 +148,7 @@ const ProfileBuilderStep4Analysis = () => {
         <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
           cinda's recommendation
         </h3>
-        <div className="relative bg-primary/15 rounded-lg p-4 border-2 border-primary/50 overflow-hidden">
+        <div className="relative bg-white/10 rounded-lg p-4 border-2 border-primary/50 overflow-hidden">
           {/* Diagonal shimmer animation overlay */}
           <div 
             className="absolute inset-0 pointer-events-none"
