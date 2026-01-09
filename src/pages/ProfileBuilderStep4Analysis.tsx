@@ -190,13 +190,13 @@ const ProfileBuilderStep4Analysis = () => {
                 key={item.shoe.shoe_id || index}
                 className={`bg-card/80 rounded-lg p-4 border-2 ${
                   isSevere
-                    ? "border-orange-500"
+                    ? "border-red-500"
                     : "border-green-500"
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
                   {isSevere ? (
-                    <AlertTriangle className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                    <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
                   ) : (
                     <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                   )}
@@ -211,8 +211,8 @@ const ProfileBuilderStep4Analysis = () => {
                   best suited for: {item.capabilities.map(formatRoleLabel).join(", ")}
                 </p>
                 {isSevere && item.misuseMessage && (
-                  <div className="mt-3 p-2 bg-orange-500/15 border border-orange-500/30 rounded-md">
-                    <p className="text-sm text-orange-400 lowercase">
+                  <div className="mt-3 p-2 bg-red-500/15 border border-red-500/30 rounded-md">
+                    <p className="text-sm text-red-400 lowercase">
                       {item.misuseMessage}
                     </p>
                   </div>
