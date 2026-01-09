@@ -144,21 +144,23 @@ const ProfileBuilderStep4Analysis = () => {
     if (!gap) return null;
     
     return (
-              <div className="w-full bg-slate-600/60 border border-slate-500/50 rounded-lg p-5 mb-6">
-                <h3 className="text-sm font-medium text-slate-300 mb-3 lowercase">
-          what you need next
+      <div className="w-full mb-6">
+        <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
+          cinda's recommendation
         </h3>
-        <p className="text-white mb-3 lowercase">
-          based on your rotation, you'd benefit from a{" "}
-          <span className="text-primary font-bold">
-            {getShoeTypeLabel(mapGapToRole(gap.missingCapability || "daily"))}
-          </span>
-        </p>
-        {gap.reasoning && (
-          <p className="text-sm text-muted-foreground lowercase">
-            {gap.reasoning}
+        <div className="bg-card/80 rounded-lg p-4 border-2 border-slate-500/50">
+          <p className="text-white mb-3 lowercase">
+            based on your rotation, you'd benefit from a{" "}
+            <span className="text-primary font-bold">
+              {getShoeTypeLabel(mapGapToRole(gap.missingCapability || "daily"))}
+            </span>
           </p>
-        )}
+          {gap.reasoning && (
+            <p className="text-sm text-gray-300 lowercase">
+              {gap.reasoning}
+            </p>
+          )}
+        </div>
       </div>
     );
   };
@@ -169,7 +171,7 @@ const ProfileBuilderStep4Analysis = () => {
     return (
       <div className="w-full mb-6">
         <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
-          what you have now
+          your current rotation
         </h3>
         <div className="flex flex-col gap-3">
           {rotationSummary.map((item, index) => {
@@ -218,7 +220,7 @@ const ProfileBuilderStep4Analysis = () => {
       <AnimatedBackground />
       <OnboardingLayout>
         <PageTransition>
-          <div className="w-full max-w-md mx-auto flex flex-col h-full">
+          <div className="w-full max-w-md mx-auto flex flex-col h-full px-6 md:px-8 pt-6 md:pt-8">
             {/* Loading State */}
             {status === "loading" && (
               <div className="flex flex-col items-center justify-center gap-6 animate-in fade-in duration-300 flex-1">
@@ -236,44 +238,48 @@ const ProfileBuilderStep4Analysis = () => {
 
             {/* Success State - Gap Found */}
             {status === "success" && gap && (
-              <div className="flex flex-col animate-in fade-in duration-300 flex-1">
-                <div className="flex-1 overflow-y-auto pb-4">
+              <div className="flex flex-col animate-in fade-in duration-300 flex-1 min-h-0">
+                <div className="flex-1 overflow-y-auto pb-4 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
                   <RecommendationSection />
                   <RotationSummarySection />
                 </div>
-                <div className="pt-4 border-t border-border/30">
+                <footer className="pt-4 flex-shrink-0">
                   <Button
                     onClick={handleSetPreferences}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12"
+                    variant="cta"
+                    className="w-full min-h-[44px] text-sm"
                   >
                     set preferences for this shoe
                   </Button>
-                </div>
+                </footer>
               </div>
             )}
 
             {/* No Gap State */}
             {status === "no_gap" && (
-              <div className="flex flex-col animate-in fade-in duration-300 flex-1">
-                <div className="flex-1 overflow-y-auto pb-4">
-                  <div className="w-full bg-slate-700/50 border border-slate-600/50 rounded-lg p-5 mb-6">
-                    <h3 className="text-sm font-medium text-slate-400 mb-3 lowercase">
-                      what you need next
+              <div className="flex flex-col animate-in fade-in duration-300 flex-1 min-h-0">
+                <div className="flex-1 overflow-y-auto pb-4 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
+                  <div className="w-full mb-6">
+                    <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
+                      cinda's recommendation
                     </h3>
-                    <p className="text-white lowercase">
-                      your rotation looks great! no obvious gaps found.
-                    </p>
+                    <div className="bg-card/80 rounded-lg p-4 border-2 border-slate-500/50">
+                      <p className="text-white lowercase">
+                        your rotation looks great! no obvious gaps found.
+                      </p>
+                    </div>
                   </div>
                   <RotationSummarySection />
                 </div>
-                <div className="pt-4 border-t border-border/30">
+                <footer className="pt-4 flex-shrink-0">
                   <Button
                     onClick={handleChooseSpecific}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12"
+                    variant="cta"
+                    className="w-full min-h-[44px] text-sm"
                   >
                     choose specific shoes
                   </Button>
-                </div>
+                </footer>
               </div>
             )}
 
@@ -291,14 +297,15 @@ const ProfileBuilderStep4Analysis = () => {
                 <div className="flex flex-col gap-3 w-full">
                   <Button
                     onClick={analyzeRotation}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12"
+                    variant="cta"
+                    className="w-full min-h-[44px] text-sm"
                   >
                     try again
                   </Button>
                   <Button
                     onClick={handleChooseSpecific}
                     variant="outline"
-                    className="w-full h-12"
+                    className="w-full min-h-[44px] text-sm"
                   >
                     choose specific shoes
                   </Button>
