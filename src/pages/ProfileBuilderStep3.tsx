@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -252,6 +252,11 @@ const ProfileBuilderStep3 = () => {
   const [customShoeModalOpen, setCustomShoeModalOpen] = useState(false);
   const [customShoeName, setCustomShoeName] = useState("");
   const [collapsedShoes, setCollapsedShoes] = useState<Set<string>>(new Set());
+
+  // Sync local state with context when navigating back to this page
+  useEffect(() => {
+    setCurrentShoes(mapShoesFromBackend(profileData.step3.currentShoes));
+  }, [profileData.step3.currentShoes]);
 
   // Toggle collapse state for a shoe
   const toggleCollapse = (shoeId: string) => {
