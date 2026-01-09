@@ -222,3 +222,13 @@ All colors MUST be HSL.
     transform: translateX(100%);
   }
 }
+
+/* Glistening text animation for premium gradient effect */
+@keyframes text-glisten {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
