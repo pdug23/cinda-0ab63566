@@ -8,6 +8,7 @@ import type { AnalyzeRequest, AnalyzeResponse, Shoe, Gap, RecommendedShoe } from
 import { analyzeRotation } from './lib/rotationAnalyzer.js';
 import { identifyPrimaryGap } from './lib/gapDetector.js';
 import { generateRecommendations, generateShoppingRecommendations } from './lib/recommendationEngine.js';
+import { getShoeCapabilities, detectMisuse } from './lib/shoeCapabilities.js';
 import shoebase from '../src/data/shoebase.json' with { type: "json" };
 
 /**
@@ -250,6 +251,23 @@ export default async function handler(
 
       const summaryReasoning = buildSummaryReasoning(gap, recommendations);
 
+      // Build rotation summary for analysis mode
+      const rotationSummary = currentShoes.map(cs => {
+        const shoe = catalogue.find(s => s.shoe_id === cs.shoeId);
+        if (!shoe) return null;
+
+        const capabilities = getShoeCapabilities(shoe);
+        const misuse = detectMisuse(cs.roles, capabilities, shoe);
+
+        return {
+          shoe,
+          userRoles: cs.roles,
+          capabilities,
+          misuseLevel: misuse.level,
+          misuseMessage: misuse.message
+        };
+      }).filter(Boolean);
+
       const elapsed = Date.now() - startTime;
       console.log('[analyze] Analysis mode complete. Elapsed time:', elapsed, 'ms');
 
@@ -260,6 +278,7 @@ export default async function handler(
           gap,
           recommendations,
           summaryReasoning,
+          rotationSummary,
         },
       } as AnalyzeResponse);
       return;

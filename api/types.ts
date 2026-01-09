@@ -204,6 +204,16 @@ export interface Gap {
   redundantShoes?: string[]; // Shoe IDs if gap is redundancy
 }
 
+export type MisuseLevel = "severe" | "suboptimal" | "good";
+
+export interface RotationSummary {
+  shoe: Shoe;
+  userRoles: ShoeRole[];
+  capabilities: ShoeRole[];
+  misuseLevel: MisuseLevel;
+  misuseMessage?: string;
+}
+
 // ============================================================================
 // SHOEBASE.JSON STRUCTURE
 // ============================================================================
@@ -487,6 +497,7 @@ export interface AnalyzeResponse {
     // Analysis mode: gap + recommendations (existing pattern)
     recommendations?: RecommendedShoe[];
     summaryReasoning?: string;
+    rotationSummary?: RotationSummary[];
   };
   error?: string;
 }

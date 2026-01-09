@@ -24,7 +24,8 @@ import type {
  */
 function checkCoverageGap(
   analysis: RotationAnalysis,
-  profile: RunnerProfile
+  profile: RunnerProfile,
+  currentShoes: CurrentShoe[]
 ): Gap | null {
   if (analysis.missingRoles.length === 0) {
     return null; // No coverage gaps
@@ -328,7 +329,7 @@ export function identifyPrimaryGap(
   }
 
   // Priority 1: Coverage gaps (highest priority)
-  const coverageGap = checkCoverageGap(analysis, profile);
+  const coverageGap = checkCoverageGap(analysis, profile, currentShoes);
   if (coverageGap && coverageGap.severity === "high") {
     return coverageGap; // Critical coverage gap - return immediately
   }
