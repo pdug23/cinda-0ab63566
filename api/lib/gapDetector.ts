@@ -328,6 +328,45 @@ export function identifyPrimaryGap(
     };
   }
 
+  // High volume runners need more shoes
+  if (profile.weeklyVolume) {
+    const volumeKm = profile.weeklyVolume.unit === "mi"
+      ? profile.weeklyVolume.value * 1.6
+      : profile.weeklyVolume.value;
+
+    const shoeCount = currentShoes.length;
+
+    // 50+ km/week with only 1 shoe = high priority
+    if (volumeKm >= 50 && shoeCount < 2) {
+      return {
+        type: "coverage",
+        severity: "high",
+        reasoning: `Running ${profile.weeklyVolume.value}${profile.weeklyVolume.unit}/week on a single shoe puts a lot of stress on both you and the shoe. Rotating between at least 2 shoes helps prevent injury and extends shoe life.`,
+        missingCapability: "rotation variety",
+      };
+    }
+
+    // 70+ km/week with only 2 shoes = medium priority
+    if (volumeKm >= 70 && shoeCount < 3) {
+      return {
+        type: "coverage",
+        severity: "medium",
+        reasoning: `With ${profile.weeklyVolume.value}${profile.weeklyVolume.unit}/week, you'd benefit from a third shoe to spread the load and give you options for different workouts.`,
+        missingCapability: "rotation variety",
+      };
+    }
+
+    // 100+ km/week with only 3 shoes = low priority
+    if (volumeKm >= 100 && shoeCount < 4) {
+      return {
+        type: "coverage",
+        severity: "low",
+        reasoning: `At ${profile.weeklyVolume.value}${profile.weeklyVolume.unit}/week, a fourth shoe would give you more flexibility for recovery days, workouts, and long runs.`,
+        missingCapability: "rotation variety",
+      };
+    }
+  }
+
   // Priority 1: Coverage gaps (highest priority)
   const coverageGap = checkCoverageGap(analysis, profile, currentShoes);
   if (coverageGap && coverageGap.severity === "high") {

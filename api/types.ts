@@ -78,6 +78,12 @@ export interface RunnerProfile {
   primaryGoal: PrimaryGoal;
   runningPattern?: RunningPattern;
 
+  // Weekly training volume
+  weeklyVolume?: {
+    value: number;
+    unit: "km" | "mi";
+  };
+
   // Optional fit sensitivities
   fitSensitivities?: {
     needsWideWidth?: boolean;
