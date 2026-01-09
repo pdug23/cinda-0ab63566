@@ -148,21 +148,18 @@ const ProfileBuilderStep4Analysis = () => {
         <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
           cinda's recommendation
         </h3>
-        <div className="relative bg-transparent rounded-lg p-4 border-2 border-white overflow-hidden">
-          {/* Diagonal shimmer animation overlay */}
-          <div 
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: 'linear-gradient(110deg, transparent 20%, hsl(0 0% 100% / 0.03) 40%, hsl(0 0% 100% / 0.08) 50%, hsl(0 0% 100% / 0.03) 60%, transparent 80%)',
-              animation: 'shimmer-diagonal 3s ease-in-out infinite',
-            }}
-          />
-          <p className="text-white mb-3 lowercase relative z-10">
+        <div 
+          className="relative bg-transparent rounded-lg p-4 border-2 border-slate-500 overflow-hidden"
+          style={{
+            animation: 'border-glisten 4s ease-in-out infinite',
+          }}
+        >
+          <p className="text-white mb-3 lowercase">
             based on your rotation, you'd benefit from a{" "}
             <span 
               className="font-bold"
               style={{
-                background: 'linear-gradient(90deg, #ffffff 0%, #ffffff 35%, #94a3b8 50%, #ffffff 65%, #ffffff 100%)',
+                background: 'linear-gradient(90deg, #94a3b8 0%, #94a3b8 30%, #ffffff 50%, #94a3b8 70%, #94a3b8 100%)',
                 backgroundSize: '200% auto',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
