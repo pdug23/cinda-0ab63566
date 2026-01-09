@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader, AlertTriangle } from "lucide-react";
+import { Loader, AlertTriangle, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import OnboardingLayout from "@/components/OnboardingLayout";
@@ -148,15 +148,17 @@ const ProfileBuilderStep4Analysis = () => {
         <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
           cinda's recommendation
         </h3>
-        <div className="bg-card/80 rounded-lg p-4 border-2 border-slate-500/50">
-          <p className="text-white mb-3 lowercase">
+        <div className="relative bg-card/80 rounded-lg p-4 border-2 border-slate-500/50 overflow-hidden">
+          {/* Shimmer animation overlay */}
+          <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-slate-400/10 to-transparent pointer-events-none" />
+          <p className="text-white mb-3 lowercase relative z-10">
             based on your rotation, you'd benefit from a{" "}
-            <span className="text-primary font-bold">
+            <span className="text-slate-400 font-bold">
               {getShoeTypeLabel(mapGapToRole(gap.missingCapability || "daily"))}
             </span>
           </p>
           {gap.reasoning && (
-            <p className="text-sm text-gray-300 lowercase">
+            <p className="text-sm text-gray-300 lowercase relative z-10">
               {gap.reasoning}
             </p>
           )}
@@ -180,26 +182,28 @@ const ProfileBuilderStep4Analysis = () => {
             return (
               <div
                 key={item.shoe.shoe_id || index}
-                className={`bg-card/80 rounded-lg p-4 ${
+                className={`bg-card/80 rounded-lg p-4 border-2 ${
                   isSevere
-                    ? "border-l-4 border-l-orange-500 border border-orange-500/30"
-                    : "border-2 border-primary/40"
+                    ? "border-orange-500"
+                    : "border-green-500"
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  {isSevere && (
+                  {isSevere ? (
                     <AlertTriangle className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                  ) : (
+                    <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                   )}
-                        <p className="text-white font-medium lowercase">
-                          {item.shoe.full_name}
-                        </p>
+                  <p className="text-white font-medium">
+                    {item.shoe.full_name}
+                  </p>
                 </div>
-                      <p className="text-sm text-gray-300 mb-1 lowercase">
-                        you use it for: {item.userRoles.map(formatRoleLabel).join(", ")}
-                      </p>
-                      <p className="text-sm text-gray-300 lowercase">
-                        best suited for: {item.capabilities.map(formatRoleLabel).join(", ")}
-                      </p>
+                <p className="text-sm text-gray-300 mb-1 lowercase">
+                  you use it for: {item.userRoles.map(formatRoleLabel).join(", ")}
+                </p>
+                <p className="text-sm text-gray-300 lowercase">
+                  best suited for: {item.capabilities.map(formatRoleLabel).join(", ")}
+                </p>
                 {isSevere && item.misuseMessage && (
                   <div className="mt-3 p-2 bg-orange-500/15 border border-orange-500/30 rounded-md">
                     <p className="text-sm text-orange-400 lowercase">
@@ -239,18 +243,20 @@ const ProfileBuilderStep4Analysis = () => {
             {/* Success State - Gap Found */}
             {status === "success" && gap && (
               <div className="flex flex-col animate-in fade-in duration-300 flex-1 min-h-0">
-                <div className="flex-1 overflow-y-auto pb-4 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
+                <div className="flex-1 overflow-y-auto pb-20 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
                   <RecommendationSection />
                   <RotationSummarySection />
                 </div>
-                <footer className="pt-4 flex-shrink-0">
-                  <Button
-                    onClick={handleSetPreferences}
-                    variant="cta"
-                    className="w-full min-h-[44px] text-sm"
-                  >
-                    set preferences for this shoe
-                  </Button>
+                <footer className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50 z-10">
+                  <div className="max-w-md mx-auto">
+                    <Button
+                      onClick={handleSetPreferences}
+                      variant="cta"
+                      className="w-full min-h-[44px] text-sm"
+                    >
+                      set preferences for this shoe
+                    </Button>
+                  </div>
                 </footer>
               </div>
             )}
@@ -258,27 +264,30 @@ const ProfileBuilderStep4Analysis = () => {
             {/* No Gap State */}
             {status === "no_gap" && (
               <div className="flex flex-col animate-in fade-in duration-300 flex-1 min-h-0">
-                <div className="flex-1 overflow-y-auto pb-4 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
+                <div className="flex-1 overflow-y-auto pb-20 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
                   <div className="w-full mb-6">
                     <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
                       cinda's recommendation
                     </h3>
-                    <div className="bg-card/80 rounded-lg p-4 border-2 border-slate-500/50">
-                      <p className="text-white lowercase">
+                    <div className="relative bg-card/80 rounded-lg p-4 border-2 border-slate-500/50 overflow-hidden">
+                      <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-slate-400/10 to-transparent pointer-events-none" />
+                      <p className="text-white lowercase relative z-10">
                         your rotation looks great! no obvious gaps found.
                       </p>
                     </div>
                   </div>
                   <RotationSummarySection />
                 </div>
-                <footer className="pt-4 flex-shrink-0">
-                  <Button
-                    onClick={handleChooseSpecific}
-                    variant="cta"
-                    className="w-full min-h-[44px] text-sm"
-                  >
-                    choose specific shoes
-                  </Button>
+                <footer className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50 z-10">
+                  <div className="max-w-md mx-auto">
+                    <Button
+                      onClick={handleChooseSpecific}
+                      variant="cta"
+                      className="w-full min-h-[44px] text-sm"
+                    >
+                      choose specific shoes
+                    </Button>
+                  </div>
                 </footer>
               </div>
             )}
