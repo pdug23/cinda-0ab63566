@@ -328,7 +328,10 @@ export function identifyPrimaryGap(
     };
   }
 
-  // High volume runners need more shoes
+  // Calculate volume context (modifier, not blocker)
+  let volumeContext: string | null = null;
+  let volumeSeverityBoost = false;
+
   if (profile.weeklyVolume) {
     const volumeKm = profile.weeklyVolume.unit === "mi"
       ? profile.weeklyVolume.value * 1.6
@@ -336,88 +339,128 @@ export function identifyPrimaryGap(
 
     const shoeCount = currentShoes.length;
 
-    // 50+ km/week with only 1 shoe = high priority
     if (volumeKm >= 50 && shoeCount < 2) {
-      return {
-        type: "coverage",
-        severity: "high",
-        reasoning: `Running ${profile.weeklyVolume.value}${profile.weeklyVolume.unit}/week on a single shoe puts a lot of stress on both you and the shoe. Rotating between at least 2 shoes helps prevent injury and extends shoe life.`,
-        missingCapability: "rotation variety",
-      };
-    }
-
-    // 70+ km/week with only 2 shoes = medium priority
-    if (volumeKm >= 70 && shoeCount < 3) {
-      return {
-        type: "coverage",
-        severity: "medium",
-        reasoning: `With ${profile.weeklyVolume.value}${profile.weeklyVolume.unit}/week, you'd benefit from a third shoe to spread the load and give you options for different workouts.`,
-        missingCapability: "rotation variety",
-      };
-    }
-
-    // 100+ km/week with only 3 shoes = low priority
-    if (volumeKm >= 100 && shoeCount < 4) {
-      return {
-        type: "coverage",
-        severity: "low",
-        reasoning: `At ${profile.weeklyVolume.value}${profile.weeklyVolume.unit}/week, a fourth shoe would give you more flexibility for recovery days, workouts, and long runs.`,
-        missingCapability: "rotation variety",
-      };
+      volumeContext = `At ${profile.weeklyVolume.value}${profile.weeklyVolume.unit}/week with just one shoe, adding this would also help spread the load and prevent injury.`;
+      volumeSeverityBoost = true; // Boost severity to high
+    } else if (volumeKm >= 70 && shoeCount < 3) {
+      volumeContext = `With ${profile.weeklyVolume.value}${profile.weeklyVolume.unit}/week, a third shoe would help spread the load across your training.`;
+    } else if (volumeKm >= 100 && shoeCount < 4) {
+      volumeContext = `At ${profile.weeklyVolume.value}${profile.weeklyVolume.unit}/week, expanding to four shoes would give you more flexibility.`;
     }
   }
 
   // Priority 1: Coverage gaps (highest priority)
   const coverageGap = checkCoverageGap(analysis, profile, currentShoes);
   if (coverageGap && coverageGap.severity === "high") {
-    return coverageGap; // Critical coverage gap - return immediately
+    if (volumeContext) {
+      coverageGap.reasoning = `${coverageGap.reasoning} ${volumeContext}`;
+    }
+    return coverageGap;
   }
 
   // Priority 2: Performance gaps (if pace/racing focused)
   const performanceGap = checkPerformanceGap(analysis, profile, currentShoes, catalogue);
   if (performanceGap && performanceGap.severity === "high") {
-    return performanceGap; // High-priority performance gap
+    if (volumeContext) {
+      performanceGap.reasoning = `${performanceGap.reasoning} ${volumeContext}`;
+    }
+    return performanceGap;
   }
 
   // If we have medium coverage gap, return it now
   if (coverageGap && coverageGap.severity === "medium") {
+    if (volumeContext) {
+      coverageGap.reasoning = `${coverageGap.reasoning} ${volumeContext}`;
+      if (volumeSeverityBoost) {
+        coverageGap.severity = "high";
+      }
+    }
     return coverageGap;
   }
 
   // Priority 3: Recovery gaps (if high volume/structured training)
   const recoveryGap = checkRecoveryGap(analysis, profile, currentShoes, catalogue);
   if (recoveryGap && recoveryGap.severity === "high") {
-    return recoveryGap; // High-priority recovery gap
+    if (volumeContext) {
+      recoveryGap.reasoning = `${recoveryGap.reasoning} ${volumeContext}`;
+    }
+    return recoveryGap;
   }
 
   // Return any remaining gaps by priority
   if (performanceGap && performanceGap.severity === "medium") {
+    if (volumeContext) {
+      performanceGap.reasoning = `${performanceGap.reasoning} ${volumeContext}`;
+      if (volumeSeverityBoost) {
+        performanceGap.severity = "high";
+      }
+    }
     return performanceGap;
   }
 
   if (recoveryGap && recoveryGap.severity === "medium") {
+    if (volumeContext) {
+      recoveryGap.reasoning = `${recoveryGap.reasoning} ${volumeContext}`;
+      if (volumeSeverityBoost) {
+        recoveryGap.severity = "high";
+      }
+    }
     return recoveryGap;
   }
 
   // Priority 4: Redundancy opportunities (lowest priority)
   const redundancyGap = checkRedundancyGap(analysis);
   if (redundancyGap) {
+    if (volumeContext) {
+      redundancyGap.reasoning = `${redundancyGap.reasoning} ${volumeContext}`;
+      if (volumeSeverityBoost) {
+        redundancyGap.severity = "high";
+      }
+    }
     return redundancyGap;
   }
 
-  // Return low-severity gaps
-  if (coverageGap) return coverageGap;
-  if (performanceGap) return performanceGap;
-  if (recoveryGap) return recoveryGap;
+  // Return low-severity gaps with volume context
+  if (coverageGap) {
+    if (volumeContext) {
+      coverageGap.reasoning = `${coverageGap.reasoning} ${volumeContext}`;
+      if (volumeSeverityBoost) {
+        coverageGap.severity = "high";
+      }
+    }
+    return coverageGap;
+  }
+  if (performanceGap) {
+    if (volumeContext) {
+      performanceGap.reasoning = `${performanceGap.reasoning} ${volumeContext}`;
+      if (volumeSeverityBoost) {
+        performanceGap.severity = "high";
+      }
+    }
+    return performanceGap;
+  }
+  if (recoveryGap) {
+    if (volumeContext) {
+      recoveryGap.reasoning = `${recoveryGap.reasoning} ${volumeContext}`;
+      if (volumeSeverityBoost) {
+        recoveryGap.severity = "high";
+      }
+    }
+    return recoveryGap;
+  }
 
   // No gaps found - rotation is well-balanced
   // Suggest variety as low-severity coverage gap
-  return {
+  const defaultGap: Gap = {
     type: "coverage",
-    severity: "low",
-    reasoning: "Your rotation covers the basics well. Consider adding variety with a different shoe type or feel to expand your options.",
+    severity: volumeSeverityBoost ? "high" : "low",
+    reasoning: volumeContext
+      ? `Your rotation covers the basics well. ${volumeContext}`
+      : "Your rotation covers the basics well. Consider adding variety with a different shoe type or feel to expand your options.",
     missingCapability: "rotation variety",
   };
+
+  return defaultGap;
 }
 
 // ============================================================================
