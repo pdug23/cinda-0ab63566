@@ -102,11 +102,11 @@ function getCoverageReasoning(
 ): string {
   const roleReasoningMap: Record<ShoeRole, Record<string, string>> = {
     daily: {
-      high: "You need a versatile daily trainer to start building your rotation. This will be your go-to shoe for most runs.",
+      high: "You'd benefit from a versatile daily trainer to start building your rotation. This will be your go-to shoe for most runs.",
       medium: "Adding a daily trainer would give you a reliable workhorse for easy and moderate-pace runs.",
     },
     easy: {
-      high: "With your training volume, you need a comfortable easy/recovery shoe to protect your legs on easy days.",
+      high: "With your training volume, you'd benefit from a comfortable easy/recovery shoe to protect your legs on easy days.",
       medium: "An easy-day shoe would help you recover better between harder efforts.",
     },
     long: {
@@ -118,15 +118,15 @@ function getCoverageReasoning(
       medium: "A tempo shoe would give you a firmer, more responsive option for your faster-paced training runs.",
     },
     intervals: {
-      high: "Your workout-focused training needs a lightweight, responsive shoe for interval sessions.",
+      high: "Your workout-focused training could use a lightweight, responsive shoe for interval sessions.",
       medium: "Adding a speed shoe would give you a snappy option for track workouts and intervals.",
     },
     race: {
-      high: "As a racing-focused runner, you need a proper race-day shoe with a plate for your goal races.",
+      high: "As a racing-focused runner, you'd benefit from a proper race-day shoe with a plate for your goal races.",
       medium: "A carbon-plated race shoe would give you an extra edge on race day.",
     },
     trail: {
-      high: "You need a trail shoe with grip and protection for off-road running.",
+      high: "You'd benefit from a trail shoe with grip and protection for off-road running.",
       medium: "A trail shoe would let you safely explore off-road routes.",
     },
   };
@@ -236,7 +236,7 @@ function checkRecoveryGap(
       type: "recovery",
       severity,
       reasoning: severity === "high"
-        ? "Your training volume needs a protective, cushioned shoe for easy days and recovery runs. This will help you absorb the load and stay healthy."
+        ? "Your training volume would benefit from a protective, cushioned shoe for easy days and recovery runs. This will help you absorb the load and stay healthy."
         : "Adding a cushioned recovery shoe would help your legs bounce back between harder efforts.",
       missingCapability: "cushioned recovery shoe",
     };
@@ -323,7 +323,7 @@ export function identifyPrimaryGap(
     return {
       type: "coverage",
       severity: "high",
-      reasoning: "You need a versatile daily trainer to start building your rotation. This will be your go-to shoe for most runs.",
+      reasoning: "You'd benefit from a versatile daily trainer to start building your rotation. This will be your go-to shoe for most runs.",
       missingCapability: "daily",
     };
   }
