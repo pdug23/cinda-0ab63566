@@ -148,18 +148,28 @@ const ProfileBuilderStep4Analysis = () => {
         <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
           cinda's recommendation
         </h3>
-        <div className="relative bg-white/10 rounded-lg p-4 border-2 border-primary/50 overflow-hidden">
+        <div className="relative bg-white/10 rounded-lg p-4 border border-slate-500/30 overflow-hidden">
           {/* Diagonal shimmer animation overlay */}
           <div 
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'linear-gradient(110deg, transparent 20%, hsl(0 0% 100% / 0.08) 40%, hsl(0 0% 100% / 0.15) 50%, hsl(0 0% 100% / 0.08) 60%, transparent 80%)',
+              background: 'linear-gradient(110deg, transparent 20%, hsl(0 0% 100% / 0.06) 40%, hsl(0 0% 100% / 0.12) 50%, hsl(0 0% 100% / 0.06) 60%, transparent 80%)',
               animation: 'shimmer-diagonal 3s ease-in-out infinite',
             }}
           />
           <p className="text-white mb-3 lowercase relative z-10">
             based on your rotation, you'd benefit from a{" "}
-            <span className="text-primary font-bold">
+            <span 
+              className="font-bold"
+              style={{
+                background: 'linear-gradient(90deg, #ffffff 0%, #ffffff 35%, #94a3b8 50%, #ffffff 65%, #ffffff 100%)',
+                backgroundSize: '200% auto',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                animation: 'text-glisten 3s ease-in-out infinite',
+              }}
+            >
               {getShoeTypeLabel(mapGapToRole(gap.missingCapability || "daily"))}
             </span>
           </p>
@@ -188,11 +198,7 @@ const ProfileBuilderStep4Analysis = () => {
             return (
               <div
                 key={item.shoe.shoe_id || index}
-                className={`bg-card/80 rounded-lg p-4 border-2 ${
-                  isSevere
-                    ? "border-red-500"
-                    : "border-green-500"
-                }`}
+                className="bg-card/80 rounded-lg p-4 border border-slate-500/30"
               >
                 <div className="flex items-center gap-2 mb-2">
                   {isSevere ? (
@@ -284,11 +290,11 @@ const ProfileBuilderStep4Analysis = () => {
                     <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
                       cinda's recommendation
                     </h3>
-                    <div className="relative bg-primary/15 rounded-lg p-4 border-2 border-primary/50 overflow-hidden">
+                    <div className="relative bg-white/10 rounded-lg p-4 border border-slate-500/30 overflow-hidden">
                       <div 
                         className="absolute inset-0 pointer-events-none"
                         style={{
-                          background: 'linear-gradient(110deg, transparent 20%, hsl(var(--primary) / 0.15) 40%, hsl(var(--primary) / 0.25) 50%, hsl(var(--primary) / 0.15) 60%, transparent 80%)',
+                          background: 'linear-gradient(110deg, transparent 20%, hsl(0 0% 100% / 0.06) 40%, hsl(0 0% 100% / 0.12) 50%, hsl(0 0% 100% / 0.06) 60%, transparent 80%)',
                           animation: 'shimmer-diagonal 3s ease-in-out infinite',
                         }}
                       />
