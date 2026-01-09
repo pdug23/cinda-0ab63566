@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader } from "lucide-react";
+import { Loader, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import OnboardingLayout from "@/components/OnboardingLayout";
@@ -9,12 +9,35 @@ import { useProfile, DiscoveryShoeRole, GapData } from "@/contexts/ProfileContex
 
 type Status = "loading" | "success" | "no_gap" | "error";
 
+interface RotationShoeSummary {
+  shoe: { shoe_id: string; full_name: string };
+  userRoles: string[];
+  capabilities: string[];
+  misuseLevel: "severe" | "suboptimal" | "good";
+  misuseMessage?: string;
+}
+
+const formatRoleLabel = (role: string): string => {
+  const labels: Record<string, string> = {
+    daily: "daily training",
+    tempo: "tempo",
+    intervals: "intervals",
+    easy: "easy pace",
+    race: "races",
+    trail: "trail",
+    long_runs: "long runs",
+    recovery: "recovery",
+  };
+  return labels[role] || role.toLowerCase().replace(/_/g, " ");
+};
+
 const ProfileBuilderStep4Analysis = () => {
   const navigate = useNavigate();
   const { profileData, updateStep4 } = useProfile();
   const { step1, step2, step3 } = profileData;
   const [status, setStatus] = useState<Status>("loading");
   const [gap, setGap] = useState<GapData | null>(null);
+  const [rotationSummary, setRotationSummary] = useState<RotationShoeSummary[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const mapGapToRole = (missingCapability: string): DiscoveryShoeRole => {
@@ -83,6 +106,8 @@ const ProfileBuilderStep4Analysis = () => {
       }
 
       const detectedGap = data.result?.gap;
+      const summary = data.result?.rotationSummary || [];
+      setRotationSummary(summary);
 
       if (!detectedGap || detectedGap.severity === "low") {
         setStatus("no_gap");
@@ -115,6 +140,48 @@ const ProfileBuilderStep4Analysis = () => {
     navigate("/profile/step4a");
   };
 
+  const RotationSummarySection = () => {
+    if (rotationSummary.length === 0) return null;
+
+    return (
+      <div className="w-full mb-8">
+        <h3 className="text-sm font-medium text-muted-foreground mb-4 text-center">
+          your current rotation
+        </h3>
+        <div className="flex flex-col gap-3">
+          {rotationSummary.map((item, index) => (
+            <div
+              key={item.shoe.shoe_id || index}
+              className={`bg-card/50 border rounded-lg p-4 ${
+                item.misuseLevel === "severe"
+                  ? "border-l-4 border-l-orange-500 border-orange-500/30"
+                  : "border-border/50"
+              }`}
+            >
+              <p className="text-foreground font-medium mb-2 lowercase">
+                {item.shoe.full_name}
+              </p>
+              <p className="text-sm text-muted-foreground mb-1 lowercase">
+                you use it for: {item.userRoles.map(formatRoleLabel).join(", ")}
+              </p>
+              <p className="text-sm text-muted-foreground lowercase">
+                best suited for: {item.capabilities.map(formatRoleLabel).join(", ")}
+              </p>
+              {item.misuseLevel === "severe" && item.misuseMessage && (
+                <div className="flex items-start gap-2 mt-3 p-2 bg-orange-500/10 rounded-md">
+                  <AlertTriangle className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-orange-400 lowercase">
+                    {item.misuseMessage}
+                  </p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <AnimatedBackground />
@@ -138,8 +205,12 @@ const ProfileBuilderStep4Analysis = () => {
 
             {/* Success State - Gap Found */}
             {status === "success" && gap && (
-              <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300 text-center">
+              <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300 text-center w-full">
+                <RotationSummarySection />
                 <div className="w-full">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                    cinda's recommendation
+                  </h3>
                   <h2 className="text-lg font-medium text-card-foreground mb-4">
                     based on your rotation, we think you need a{" "}
                     <span className="text-orange-400 font-bold">
@@ -161,7 +232,8 @@ const ProfileBuilderStep4Analysis = () => {
 
             {/* No Gap State */}
             {status === "no_gap" && (
-              <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
+              <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300 w-full">
+                <RotationSummarySection />
                 <div className="text-center">
                   <h2 className="text-lg font-medium text-foreground mb-4">
                     your rotation looks great!
