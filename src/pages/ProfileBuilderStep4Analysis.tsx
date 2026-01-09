@@ -74,6 +74,7 @@ const ProfileBuilderStep4Analysis = () => {
         experience: step1.experience!,
         primaryGoal: step2.primaryGoal!,
         runningPattern: step2.runningPattern ?? undefined,
+        weeklyVolume: step2.weeklyVolume ?? undefined,
         pbs: {
           mile: step2.personalBests.mile ?? undefined,
           fiveK: step2.personalBests["5k"] ?? undefined,
