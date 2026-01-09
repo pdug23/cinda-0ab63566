@@ -144,11 +144,11 @@ const ProfileBuilderStep4Analysis = () => {
     if (!gap) return null;
     
     return (
-      <div className="w-full bg-slate-700/50 border border-slate-600/50 rounded-lg p-5 mb-6">
-        <h3 className="text-sm font-medium text-slate-400 mb-3 lowercase">
+              <div className="w-full bg-slate-600/60 border border-slate-500/50 rounded-lg p-5 mb-6">
+                <h3 className="text-sm font-medium text-slate-300 mb-3 lowercase">
           what you need next
         </h3>
-        <p className="text-foreground mb-3 lowercase">
+        <p className="text-white mb-3 lowercase">
           based on your rotation, you'd benefit from a{" "}
           <span className="text-primary font-bold">
             {getShoeTypeLabel(mapGapToRole(gap.missingCapability || "daily"))}
@@ -168,7 +168,7 @@ const ProfileBuilderStep4Analysis = () => {
 
     return (
       <div className="w-full mb-6">
-        <h3 className="text-sm font-medium text-muted-foreground mb-4 lowercase">
+        <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
           what you have now
         </h3>
         <div className="flex flex-col gap-3">
@@ -178,7 +178,7 @@ const ProfileBuilderStep4Analysis = () => {
             return (
               <div
                 key={item.shoe.shoe_id || index}
-                className={`bg-card/50 rounded-lg p-4 ${
+                className={`bg-card/80 rounded-lg p-4 ${
                   isSevere
                     ? "border-l-4 border-l-orange-500 border border-orange-500/30"
                     : "border-2 border-primary/40"
@@ -188,16 +188,16 @@ const ProfileBuilderStep4Analysis = () => {
                   {isSevere && (
                     <AlertTriangle className="w-4 h-4 text-orange-500 flex-shrink-0" />
                   )}
-                  <p className="text-foreground font-medium lowercase">
-                    {item.shoe.full_name}
-                  </p>
+                        <p className="text-white font-medium lowercase">
+                          {item.shoe.full_name}
+                        </p>
                 </div>
-                <p className="text-sm text-muted-foreground mb-1 lowercase">
-                  you use it for: {item.userRoles.map(formatRoleLabel).join(", ")}
-                </p>
-                <p className="text-sm text-muted-foreground lowercase">
-                  best suited for: {item.capabilities.map(formatRoleLabel).join(", ")}
-                </p>
+                      <p className="text-sm text-gray-300 mb-1 lowercase">
+                        you use it for: {item.userRoles.map(formatRoleLabel).join(", ")}
+                      </p>
+                      <p className="text-sm text-gray-300 lowercase">
+                        best suited for: {item.capabilities.map(formatRoleLabel).join(", ")}
+                      </p>
                 {isSevere && item.misuseMessage && (
                   <div className="mt-3 p-2 bg-orange-500/15 border border-orange-500/30 rounded-md">
                     <p className="text-sm text-orange-400 lowercase">
@@ -260,7 +260,7 @@ const ProfileBuilderStep4Analysis = () => {
                     <h3 className="text-sm font-medium text-slate-400 mb-3 lowercase">
                       what you need next
                     </h3>
-                    <p className="text-foreground lowercase">
+                    <p className="text-white lowercase">
                       your rotation looks great! no obvious gaps found.
                     </p>
                   </div>
