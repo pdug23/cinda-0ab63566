@@ -148,12 +148,18 @@ const ProfileBuilderStep4Analysis = () => {
         <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
           cinda's recommendation
         </h3>
-        <div className="relative bg-card/80 rounded-lg p-4 border-2 border-slate-500/50 overflow-hidden">
-          {/* Shimmer animation overlay */}
-          <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-slate-400/10 to-transparent pointer-events-none" />
+        <div className="relative bg-primary/15 rounded-lg p-4 border-2 border-primary/50 overflow-hidden">
+          {/* Diagonal shimmer animation overlay */}
+          <div 
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'linear-gradient(110deg, transparent 20%, hsl(var(--primary) / 0.15) 40%, hsl(var(--primary) / 0.25) 50%, hsl(var(--primary) / 0.15) 60%, transparent 80%)',
+              animation: 'shimmer-diagonal 3s ease-in-out infinite',
+            }}
+          />
           <p className="text-white mb-3 lowercase relative z-10">
             based on your rotation, you'd benefit from a{" "}
-            <span className="text-slate-400 font-bold">
+            <span className="text-primary font-bold">
               {getShoeTypeLabel(mapGapToRole(gap.missingCapability || "daily"))}
             </span>
           </p>
@@ -269,8 +275,14 @@ const ProfileBuilderStep4Analysis = () => {
                     <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
                       cinda's recommendation
                     </h3>
-                    <div className="relative bg-card/80 rounded-lg p-4 border-2 border-slate-500/50 overflow-hidden">
-                      <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-slate-400/10 to-transparent pointer-events-none" />
+                    <div className="relative bg-primary/15 rounded-lg p-4 border-2 border-primary/50 overflow-hidden">
+                      <div 
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: 'linear-gradient(110deg, transparent 20%, hsl(var(--primary) / 0.15) 40%, hsl(var(--primary) / 0.25) 50%, hsl(var(--primary) / 0.15) 60%, transparent 80%)',
+                          animation: 'shimmer-diagonal 3s ease-in-out infinite',
+                        }}
+                      />
                       <p className="text-white lowercase relative z-10">
                         your rotation looks great! no obvious gaps found.
                       </p>

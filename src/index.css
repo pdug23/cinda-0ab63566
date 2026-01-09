@@ -212,3 +212,13 @@ All colors MUST be HSL.
     background: hsl(var(--border) / 0.7);
   }
 }
+
+/* Diagonal shimmer animation for recommendation box */
+@keyframes shimmer-diagonal {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
