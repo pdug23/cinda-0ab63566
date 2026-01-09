@@ -121,7 +121,7 @@ const FeelSlider = ({
       {/* Slider row with "not sure" button */}
       <div className="flex items-center gap-4">
         {/* Slider container with labels */}
-        <div 
+        <div
           className={cn("relative flex-1", isDisabled && "opacity-30 cursor-pointer")}
           onClick={() => {
             // Re-enable slider by clicking the track area
@@ -192,7 +192,7 @@ const FeelSlider = ({
 const ProfileBuilderStep4b = () => {
   const navigate = useNavigate();
   const { profileData, updateStep4 } = useProfile();
-  
+
   const { selectedRoles, currentRoleIndex, shoeRequests } = profileData.step4;
   const totalRoles = selectedRoles.length;
   const currentRole = selectedRoles[currentRoleIndex];
@@ -283,10 +283,54 @@ const ProfileBuilderStep4b = () => {
         currentRoleIndex: currentRoleIndex + 1,
       });
     } else {
-      // All roles complete - save and go to Step 5
+      // All roles complete - save to context and localStorage, then navigate to recommendations
       updateStep4({ shoeRequests: updatedRequests });
-      // TODO: Navigate to Step 5 (fit sensitivities)
-      console.log("All preferences complete (with ranges):", updatedRequests);
+
+      // Save to localStorage for recommendations page
+      try {
+        // Save profile data
+        const profile = {
+          firstName: step1.firstName,
+          age: step1.age ? parseInt(step1.age) : undefined,
+          height: step1.heightCm ?? undefined,
+          weight: step1.weightKg ?? undefined,
+          experience: step1.experience!,
+          primaryGoal: step2.primaryGoal!,
+          runningPattern: step2.runningPattern ?? undefined,
+          weeklyVolume: step2.weeklyVolume ?? undefined,
+          pbs: {
+            mile: step2.personalBests.mile ?? undefined,
+            fiveK: step2.personalBests["5k"] ?? undefined,
+            tenK: step2.personalBests["10k"] ?? undefined,
+            half: step2.personalBests.half ?? undefined,
+            marathon: step2.personalBests.marathon ?? undefined,
+          },
+        };
+        localStorage.setItem("cindaProfile", JSON.stringify(profile));
+
+        // Save current shoes
+        const currentShoes = step3.currentShoes.map((shoe) => ({
+          shoeId: shoe.shoe.shoe_id,
+          roles: shoe.roles,
+          sentiment: shoe.sentiment ?? "neutral",
+        }));
+        localStorage.setItem("cindaShoes", JSON.stringify(currentShoes));
+
+        // Save shoe requests for shopping mode
+        localStorage.setItem("cindaShoeRequests", JSON.stringify(updatedRequests));
+
+        // Save gap if in analysis mode
+        if (profileData.step4.gap) {
+          localStorage.setItem("cindaGap", JSON.stringify(profileData.step4.gap));
+        }
+
+        console.log("All preferences complete. Navigating to recommendations...");
+        navigate("/recommendations");
+      } catch (error) {
+        console.error("Error saving to localStorage:", error);
+        // Navigate anyway - recommendations page will handle missing data
+        navigate("/recommendations");
+      }
     }
   };
 
