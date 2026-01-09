@@ -100,13 +100,33 @@ export default async function handler(
         missingCapability: gap.missingCapability,
       });
 
+      // Build rotation summary
+      const rotationSummary = currentShoes.map(cs => {
+        const shoe = catalogue.find(s => s.shoe_id === cs.shoeId);
+        if (!shoe) return null;
+
+        const capabilities = getShoeCapabilities(shoe);
+        const misuse = detectMisuse(cs.roles, capabilities, shoe);
+
+        return {
+          shoe: { shoe_id: shoe.shoe_id, full_name: shoe.full_name },
+          userRoles: cs.roles,
+          capabilities,
+          misuseLevel: misuse.level,
+          misuseMessage: misuse.message
+        };
+      }).filter(Boolean);
+
       const elapsed = Date.now() - startTime;
       console.log('[analyze] Gap detection complete. Elapsed time:', elapsed, 'ms');
 
       res.status(200).json({
         success: true,
         mode: "gap_detection",
-        result: { gap },
+        result: {
+          gap,
+          rotationSummary
+        },
       } as AnalyzeResponse);
       return;
     }
