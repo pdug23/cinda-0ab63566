@@ -230,7 +230,7 @@ const ProfileBuilderStep4Analysis = () => {
       <AnimatedBackground />
       <OnboardingLayout>
         <PageTransition>
-          <div className="w-full max-w-md mx-auto flex flex-col h-full px-6 md:px-8 pt-6 md:pt-8">
+          <div className="w-full max-w-md mx-auto flex flex-col h-full min-h-0 px-6 md:px-8 pt-6 md:pt-8">
             {/* Loading State */}
             {status === "loading" && (
               <div className="flex flex-col items-center justify-center gap-6 animate-in fade-in duration-300 flex-1">
@@ -248,8 +248,8 @@ const ProfileBuilderStep4Analysis = () => {
 
             {/* Success State - Gap Found */}
             {status === "success" && gap && (
-              <div className="flex flex-col animate-in fade-in duration-300 flex-1 min-h-0">
-                <div className="flex-1 overflow-y-auto pb-6 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
+              <div className="flex flex-col animate-in fade-in duration-300 flex-1 min-h-0 overflow-hidden">
+                <div className="flex-1 min-h-0 overflow-y-auto pb-6 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
                   <RecommendationSection />
                   <RotationSummarySection />
                 </div>
@@ -267,8 +267,8 @@ const ProfileBuilderStep4Analysis = () => {
 
             {/* No Gap State */}
             {status === "no_gap" && (
-              <div className="flex flex-col animate-in fade-in duration-300 flex-1 min-h-0">
-                <div className="flex-1 overflow-y-auto pb-6 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
+              <div className="flex flex-col animate-in fade-in duration-300 flex-1 min-h-0 overflow-hidden">
+                <div className="flex-1 min-h-0 overflow-y-auto pb-6 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
                   <div className="w-full mb-6">
                     <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
                       cinda's recommendation
