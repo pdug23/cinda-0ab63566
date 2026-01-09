@@ -249,7 +249,7 @@ const ProfileBuilderStep4Analysis = () => {
             {/* Success State - Gap Found */}
             {status === "success" && gap && (
               <div className="flex flex-col animate-in fade-in duration-300 flex-1 min-h-0 overflow-hidden">
-                <div className="flex-1 min-h-0 overflow-y-auto pb-6 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
+                <div className="flex-1 min-h-0 overflow-y-auto pb-6 pr-2 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
                   <RecommendationSection />
                   <RotationSummarySection />
                 </div>
