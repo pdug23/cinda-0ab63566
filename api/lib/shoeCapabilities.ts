@@ -4,7 +4,6 @@ export function getShoeCapabilities(shoe: Shoe): ShoeRole[] {
     const capabilities: ShoeRole[] = [];
     if (shoe.use_daily) capabilities.push("daily");
     if (shoe.use_easy_recovery) capabilities.push("easy");
-    if (shoe.use_long_run) capabilities.push("long");
     if (shoe.use_tempo_workout) capabilities.push("tempo");
     if (shoe.use_speed_intervals) capabilities.push("intervals");
     if (shoe.use_race) capabilities.push("race");
