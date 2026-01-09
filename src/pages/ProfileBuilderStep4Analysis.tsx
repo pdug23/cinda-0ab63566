@@ -249,28 +249,26 @@ const ProfileBuilderStep4Analysis = () => {
             {/* Success State - Gap Found */}
             {status === "success" && gap && (
               <div className="flex flex-col animate-in fade-in duration-300 flex-1 min-h-0">
-                <div className="flex-1 overflow-y-auto pb-20 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
+                <div className="flex-1 overflow-y-auto pb-6 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
                   <RecommendationSection />
                   <RotationSummarySection />
                 </div>
-                <footer className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50 z-10">
-                  <div className="max-w-md mx-auto">
-                    <Button
-                      onClick={handleSetPreferences}
-                      variant="default"
-                      className="w-full min-h-[44px] text-sm"
-                    >
-                      set preferences for this shoe
-                    </Button>
-                  </div>
-                </footer>
+                <div className="flex flex-col items-center pt-4 pb-4 flex-shrink-0">
+                  <Button
+                    onClick={handleSetPreferences}
+                    variant="cta"
+                    className="w-full min-h-[44px] text-sm"
+                  >
+                    set preferences for this shoe
+                  </Button>
+                </div>
               </div>
             )}
 
             {/* No Gap State */}
             {status === "no_gap" && (
               <div className="flex flex-col animate-in fade-in duration-300 flex-1 min-h-0">
-                <div className="flex-1 overflow-y-auto pb-20 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
+                <div className="flex-1 overflow-y-auto pb-6 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
                   <div className="w-full mb-6">
                     <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
                       cinda's recommendation
@@ -290,17 +288,15 @@ const ProfileBuilderStep4Analysis = () => {
                   </div>
                   <RotationSummarySection />
                 </div>
-                <footer className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50 z-10">
-                  <div className="max-w-md mx-auto">
-                    <Button
-                      onClick={handleChooseSpecific}
-                      variant="default"
-                      className="w-full min-h-[44px] text-sm"
-                    >
-                      choose specific shoes
-                    </Button>
-                  </div>
-                </footer>
+                <div className="flex flex-col items-center pt-4 pb-4 flex-shrink-0">
+                  <Button
+                    onClick={handleChooseSpecific}
+                    variant="cta"
+                    className="w-full min-h-[44px] text-sm"
+                  >
+                    choose specific shoes
+                  </Button>
+                </div>
               </div>
             )}
 
