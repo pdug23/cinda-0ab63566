@@ -270,7 +270,7 @@ const ProfileBuilderStep4Analysis = () => {
                     variant="cta"
                     className="w-full min-h-[44px] text-sm"
                   >
-                    set preferences for this shoe
+                    set preferences for your new {getShoeTypeLabel(mapGapToRole(gap.missingCapability || "daily"))}
                   </Button>
                 </div>
               </div>
