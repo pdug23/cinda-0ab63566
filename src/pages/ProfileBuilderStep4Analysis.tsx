@@ -148,12 +148,12 @@ const ProfileBuilderStep4Analysis = () => {
         <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
           cinda's recommendation
         </h3>
-        <div className="relative bg-white/10 rounded-lg p-4 border border-slate-500/30 overflow-hidden">
+        <div className="relative bg-transparent rounded-lg p-4 border-2 border-white overflow-hidden">
           {/* Diagonal shimmer animation overlay */}
           <div 
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'linear-gradient(110deg, transparent 20%, hsl(0 0% 100% / 0.06) 40%, hsl(0 0% 100% / 0.12) 50%, hsl(0 0% 100% / 0.06) 60%, transparent 80%)',
+              background: 'linear-gradient(110deg, transparent 20%, hsl(0 0% 100% / 0.03) 40%, hsl(0 0% 100% / 0.08) 50%, hsl(0 0% 100% / 0.03) 60%, transparent 80%)',
               animation: 'shimmer-diagonal 3s ease-in-out infinite',
             }}
           />
@@ -198,7 +198,9 @@ const ProfileBuilderStep4Analysis = () => {
             return (
               <div
                 key={item.shoe.shoe_id || index}
-                className="bg-card/80 rounded-lg p-4 border border-slate-500/30"
+                className={`bg-card/80 rounded-lg p-4 border-2 ${
+                  isSevere ? "border-red-500" : "border-green-500"
+                }`}
               >
                 <div className="flex items-center gap-2 mb-2">
                   {isSevere ? (
