@@ -43,6 +43,27 @@ const RUN_TYPE_OPTIONS: { value: ShoeRole; label: string }[] = [
 // Roles that get normalized to daily training
 const NORMALIZABLE_ROLES: ShoeRole[] = ["tempo", "interval", "easy_recovery"];
 
+// Map backend role values back to frontend ShoeRole enum values
+const mapRoleFromBackend = (role: string): ShoeRole => {
+  const mapping: Record<string, ShoeRole> = {
+    "daily": "all_runs",
+    "tempo": "tempo",
+    "intervals": "interval",
+    "easy": "easy_recovery",
+    "race": "races",
+    "trail": "trail",
+  };
+  return (mapping[role] || role) as ShoeRole;
+};
+
+// Convert shoes from backend format to frontend format for display
+const mapShoesFromBackend = (shoes: CurrentShoe[]): CurrentShoe[] => {
+  return shoes.map(shoe => ({
+    ...shoe,
+    roles: shoe.roles.map(r => mapRoleFromBackend(r as string)),
+  }));
+};
+
 // Sentiment options
 const SENTIMENT_OPTIONS: { value: ShoeSentiment; label: string; icon: React.ReactNode }[] = [
   { value: "love", label: "love it", icon: <Heart className="w-4 h-4" /> },
@@ -222,7 +243,7 @@ const ProfileBuilderStep3 = () => {
   const { profileData, updateStep3, clearAll } = useProfile();
 
   // Local state
-  const [currentShoes, setCurrentShoes] = useState<CurrentShoe[]>(profileData.step3.currentShoes);
+  const [currentShoes, setCurrentShoes] = useState<CurrentShoe[]>(mapShoesFromBackend(profileData.step3.currentShoes));
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [unsavedModalOpen, setUnsavedModalOpen] = useState(false);
