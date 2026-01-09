@@ -39,9 +39,9 @@ const SLIDERS: SliderConfig[] = [
     key: "softVsFirm",
     label: "cushioning",
     tooltip: "how soft the midsole feels. soft provides plush comfort for easy miles. firm provides stable support for faster efforts.",
-    leftLabel: "soft",
+    leftLabel: "max stack",
     middleLabel: "balanced",
-    rightLabel: "firm",
+    rightLabel: "minimal",
   },
   {
     key: "stableVsNeutral",
