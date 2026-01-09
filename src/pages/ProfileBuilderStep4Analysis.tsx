@@ -257,7 +257,7 @@ const ProfileBuilderStep4Analysis = () => {
                   <div className="max-w-md mx-auto">
                     <Button
                       onClick={handleSetPreferences}
-                      variant="cta"
+                      variant="default"
                       className="w-full min-h-[44px] text-sm"
                     >
                       set preferences for this shoe
@@ -294,7 +294,7 @@ const ProfileBuilderStep4Analysis = () => {
                   <div className="max-w-md mx-auto">
                     <Button
                       onClick={handleChooseSpecific}
-                      variant="cta"
+                      variant="default"
                       className="w-full min-h-[44px] text-sm"
                     >
                       choose specific shoes
@@ -318,7 +318,7 @@ const ProfileBuilderStep4Analysis = () => {
                 <div className="flex flex-col gap-3 w-full">
                   <Button
                     onClick={analyzeRotation}
-                    variant="cta"
+                    variant="default"
                     className="w-full min-h-[44px] text-sm"
                   >
                     try again
