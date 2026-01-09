@@ -153,7 +153,7 @@ const ProfileBuilderStep4Analysis = () => {
           <div 
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'linear-gradient(110deg, transparent 20%, hsl(var(--primary) / 0.15) 40%, hsl(var(--primary) / 0.25) 50%, hsl(var(--primary) / 0.15) 60%, transparent 80%)',
+              background: 'linear-gradient(110deg, transparent 20%, hsl(0 0% 100% / 0.08) 40%, hsl(0 0% 100% / 0.15) 50%, hsl(0 0% 100% / 0.08) 60%, transparent 80%)',
               animation: 'shimmer-diagonal 3s ease-in-out infinite',
             }}
           />
