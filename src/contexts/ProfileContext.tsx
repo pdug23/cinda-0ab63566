@@ -28,6 +28,7 @@ export interface Step2Data {
   personalBests: PersonalBests;
   runningPattern: RunningPattern | null;
   trailRunning: TrailRunning | null;
+  doesTrail?: boolean;
   weeklyVolume: WeeklyVolume | null;
 }
 
@@ -112,6 +113,7 @@ const defaultStep2: Step2Data = {
   },
   runningPattern: null,
   trailRunning: null,
+  doesTrail: false,
   weeklyVolume: null,
 };
 

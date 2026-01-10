@@ -298,7 +298,7 @@ const ProfileBuilderStep4b = () => {
           experience: step1.experience!,
           primaryGoal: step2.primaryGoal!,
           runningPattern: step2.runningPattern ?? undefined,
-          doesTrail: (step2 as any).doesTrail ?? false,
+          doesTrail: step2.doesTrail ?? false,
           weeklyVolume: step2.weeklyVolume ? {
             value: step2.weeklyVolume.value,
             unit: step2.weeklyVolume.unit
