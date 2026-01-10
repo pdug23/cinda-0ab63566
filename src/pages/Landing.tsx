@@ -72,7 +72,7 @@ const Landing = () => {
 
   const steps = [
     "tell us about you and how you run",
-    "share your current shoes (or don't!)",
+    "share your current shoes (or don't)",
     "get recommendations that actually fit your needs",
   ];
 
@@ -195,7 +195,7 @@ const Landing = () => {
         {viewState === "landing" && !isExiting && (
           <button
             onClick={() => setShowModal(true)}
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors cursor-pointer z-10"
+            className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/50 hover:text-muted-foreground/70 transition-all cursor-pointer z-10 underline underline-offset-2 decoration-dotted decoration-muted-foreground/30 hover:decoration-solid hover:decoration-muted-foreground/50"
           >
             how does cinda work?
           </button>
@@ -205,7 +205,7 @@ const Landing = () => {
         {viewState === "orientation" && !isExiting && (
           <button
             onClick={() => setShowA2HSModal(true)}
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors cursor-pointer z-10"
+            className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/50 hover:text-muted-foreground/70 transition-all cursor-pointer z-10 underline underline-offset-2 decoration-dotted decoration-muted-foreground/30 hover:decoration-solid hover:decoration-muted-foreground/50"
           >
             add cinda to your home screen
           </button>
