@@ -110,7 +110,7 @@ export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
         className={`relative w-full max-w-[90vw] min-w-[320px] rounded-2xl p-6 card-glow-${position}`}
         style={{
           background: "rgba(26, 26, 30, 0.95)",
-          border: "2px solid rgba(255, 255, 255, 0.25)",
+          border: "2px solid rgba(255, 255, 255, 0.85)",
         }}
       >
         {/* Shoe Image */}
