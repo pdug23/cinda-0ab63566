@@ -206,7 +206,7 @@ function AnalysisModeResults({
   }));
 
   return (
-    <div className="w-full">
+    <div className="w-full overflow-visible">
       <ShoeCarousel recommendations={carouselShoes} role={carouselRole} />
     </div>
   );
@@ -214,12 +214,12 @@ function AnalysisModeResults({
 
 function ShoppingModeResults({ result }: { result: ShoppingResult }) {
   return (
-    <div className="w-full space-y-8">
+    <div className="w-full space-y-8 overflow-visible">
       {result.shoppingResults.map((item, index) => {
         const carouselRole = mapRoleToCarouselRole(item.role);
 
         return (
-          <div key={item.role} className="w-full">
+          <div key={item.role} className="w-full overflow-visible">
             {index > 0 && (
               <div className="h-px bg-card-foreground/10 mx-6 mb-4" />
             )}
@@ -404,7 +404,7 @@ export default function RecommendationsPage() {
         </header>
 
         {/* Content */}
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col min-h-0 overflow-visible">
           {loading && <LoadingState />}
 
           {!loading && error && (
@@ -420,18 +420,18 @@ export default function RecommendationsPage() {
           )}
 
           {!loading && !error && !isEmpty && mode === "analysis" && analysisResult && gap && (
-            <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 flex flex-col min-h-0 overflow-visible">
               <PageHeader />
-              <div className="flex-1 flex items-center min-h-0">
+              <div className="flex-1 flex items-center min-h-0 overflow-visible">
                 <AnalysisModeResults result={analysisResult} gap={gap} />
               </div>
             </div>
           )}
 
           {!loading && !error && !isEmpty && mode === "shopping" && shoppingResult && (
-            <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 flex flex-col min-h-0 overflow-visible">
               <PageHeader />
-              <div className="flex-1 flex items-center min-h-0">
+              <div className="flex-1 flex items-center min-h-0 overflow-visible">
                 <ShoppingModeResults result={shoppingResult} />
               </div>
             </div>
