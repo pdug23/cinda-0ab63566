@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import AnimatedBackground from "@/components/AnimatedBackground";
+import OnboardingLayout from "@/components/OnboardingLayout";
 import { ShoeCarousel } from "@/components/results/ShoeCarousel";
 import { loadProfile, loadShoes, loadShoeRequests, loadGap } from "@/utils/storage";
 import type { FeelPreferences as APIFeelPreferences, CurrentShoe as APICurrentShoe } from "../../api/types";
@@ -433,12 +434,11 @@ export default function RecommendationsPage() {
     (mode === "shopping" && shoppingResult?.shoppingResults.length === 0);
 
   return (
-    <div className="relative min-h-screen w-full overflow-x-hidden">
+    <>
       <AnimatedBackground />
-
-      <div className="relative z-10 w-full max-w-3xl mx-auto px-4 py-6">
+      <OnboardingLayout scrollable>
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-foreground/10">
           <BackButton onClick={goBack} />
           <h1 className="text-lg font-semibold text-foreground lowercase">
             your recommendations
@@ -447,37 +447,39 @@ export default function RecommendationsPage() {
         </div>
 
         {/* Content */}
-        {loading && <LoadingState />}
+        <div className="flex-1 overflow-y-auto">
+          {loading && <LoadingState />}
 
-        {!loading && error && (
-          <ErrorState
-            error={error}
-            onRetry={loadDataAndFetch}
-            onBack={goBack}
-          />
-        )}
+          {!loading && error && (
+            <ErrorState
+              error={error}
+              onRetry={loadDataAndFetch}
+              onBack={goBack}
+            />
+          )}
 
-        {!loading && !error && isEmpty && (
-          <EmptyState onBack={goBack} />
-        )}
+          {!loading && !error && isEmpty && (
+            <EmptyState onBack={goBack} />
+          )}
 
-        {!loading && !error && !isEmpty && mode === "analysis" && analysisResult && gap && (
-          <>
-            <AnalysisHeader gap={gap} />
-            <AnalysisModeResults result={analysisResult} gap={gap} />
-          </>
-        )}
+          {!loading && !error && !isEmpty && mode === "analysis" && analysisResult && gap && (
+            <>
+              <AnalysisHeader gap={gap} />
+              <AnalysisModeResults result={analysisResult} gap={gap} />
+            </>
+          )}
 
-        {!loading && !error && !isEmpty && mode === "shopping" && shoppingResult && (
-          <>
-            <ShoppingHeader results={shoppingResult.shoppingResults} />
-            <ShoppingModeResults result={shoppingResult} />
-          </>
-        )}
+          {!loading && !error && !isEmpty && mode === "shopping" && shoppingResult && (
+            <>
+              <ShoppingHeader results={shoppingResult.shoppingResults} />
+              <ShoppingModeResults result={shoppingResult} />
+            </>
+          )}
 
-        {/* TODO Task 8: Rotation Panel */}
-        {/* TODO Task 7: CTAs */}
-      </div>
-    </div>
+          {/* TODO Task 8: Rotation Panel */}
+          {/* TODO Task 7: CTAs */}
+        </div>
+      </OnboardingLayout>
+    </>
   );
 }
