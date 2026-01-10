@@ -22,7 +22,7 @@ interface RecommendedShoe {
   heel_drop_mm: number;
   has_plate: boolean;
   plate_material: "Nylon" | "Plastic" | "Carbon" | null;
-  matchReason: string;
+  matchReason: string[];
   keyStrengths: string[];
   tradeOffs?: string[];
   similar_to?: string;

@@ -11,7 +11,7 @@ interface RecommendedShoe {
   fullName: string;
   model: string;
   version: string;
-  matchReason: string;
+  matchReason: string[];
   keyStrengths: string[];
   recommendationType: "close_match" | "close_match_2" | "trade_off_option";
   weight_feel_1to5: 1 | 2 | 3 | 4 | 5;
