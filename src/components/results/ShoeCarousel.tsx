@@ -31,7 +31,6 @@ interface ShoeCarouselProps {
 export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
   const swiperRef = useRef<SwiperType | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [collapseKey, setCollapseKey] = useState(0);
   const totalSlides = recommendations.length;
 
   // Disable loop if only 1 recommendation
@@ -70,8 +69,6 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
 
   const handleSlideChange = (swiper: SwiperType) => {
     setActiveIndex(swiper.realIndex);
-    // Increment collapse key to trigger all cards to collapse
-    setCollapseKey(prev => prev + 1);
   };
 
   if (totalSlides === 0) {
@@ -82,7 +79,7 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
   if (totalSlides === 1) {
     return (
       <div className="flex flex-col items-center py-2 px-4">
-        <ShoeCard shoe={recommendations[0]} role={role} collapseKey={collapseKey} />
+        <ShoeCard shoe={recommendations[0]} role={role} />
       </div>
     );
   }
@@ -132,7 +129,7 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
             aria-label={`Shoe ${index + 1} of ${totalSlides}: ${shoe.fullName}`}
           >
             <div className="flex justify-center">
-              <ShoeCard shoe={shoe} role={role} collapseKey={collapseKey} />
+              <ShoeCard shoe={shoe} role={role} />
             </div>
           </SwiperSlide>
         ))}
