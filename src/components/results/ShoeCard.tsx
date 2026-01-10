@@ -33,21 +33,21 @@ const ROLE_COLORS: Record<string, string> = {
 
 const getWeightLabel = (weight: 1 | 2 | 3 | 4 | 5): string => {
   const labels: Record<number, string> = {
-    1: "Ultra",
-    2: "Light",
-    3: "Balanced",
-    4: "Substantial",
-    5: "Heavy",
+    1: "ultra-light",
+    2: "light",
+    3: "balanced",
+    4: "substantial",
+    5: "heavy",
   };
   return labels[weight];
 };
 
-const getPlateDisplay = (
+const getPlateLabel = (
   hasPlate: boolean,
   material: "Nylon" | "Plastic" | "Carbon" | null
-): { icon: string; label: string } => {
-  if (!hasPlate) return { icon: "—", label: "Standard" };
-  return { icon: "⚡", label: material || "Plate" };
+): string => {
+  if (!hasPlate) return "none";
+  return material ? material.toLowerCase() : "none";
 };
 
 const getBadgeConfig = (type: ShoeCardProps["shoe"]["recommendationType"]): { text: string; color: string } => {
@@ -69,7 +69,7 @@ export function ShoeCard({ shoe, role, collapseKey }: ShoeCardProps) {
 
   const roleColor = ROLE_COLORS[role] || ROLE_COLORS.daily;
   const weightLabel = getWeightLabel(shoe.weight_feel_1to5);
-  const plateDisplay = getPlateDisplay(shoe.has_plate, shoe.plate_material);
+  const plateLabel = getPlateLabel(shoe.has_plate, shoe.plate_material);
   const badgeConfig = getBadgeConfig(shoe.recommendationType);
   
 
@@ -189,7 +189,7 @@ export function ShoeCard({ shoe, role, collapseKey }: ShoeCardProps) {
         </div>
         <div className="text-center">
           <span className="block text-xs text-card-foreground/40 uppercase tracking-wide mb-1">Plate</span>
-          <span className="block text-sm text-card-foreground/80 font-medium">{shoe.has_plate ? shoe.plate_material || "Yes" : "None"}</span>
+          <span className="block text-sm text-card-foreground/80 font-medium">{plateLabel}</span>
         </div>
       </div>
 
