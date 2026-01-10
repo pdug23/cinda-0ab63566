@@ -64,22 +64,21 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
     <article
       className="relative w-full max-w-[90vw] min-w-[320px] rounded-2xl p-6"
       style={{
-        background: "rgba(255, 255, 255, 0.03)",
+        background: "rgba(26, 26, 30, 0.95)",
         border: "1px solid rgba(255, 255, 255, 0.1)",
         borderLeft: `2px solid ${roleColor}`,
         boxShadow: "0 4px 24px rgba(0, 0, 0, 0.15)",
       }}
     >
-      {/* Brand Logo Placeholder */}
-      <div className="text-center mb-4">
-        {/* TODO: Replace with brand logo SVG */}
-        <span className="text-[55px] font-semibold text-foreground/80 uppercase leading-none">
+      {/* Brand Name */}
+      <div className="text-center mb-2">
+        <span className="text-sm font-medium text-foreground/50 uppercase tracking-wider">
           {shoe.brand}
         </span>
       </div>
 
-      {/* Shoe Name */}
-      <h2 className="text-2xl font-bold text-foreground text-center mb-4 lowercase">
+      {/* Model Name */}
+      <h2 className="text-2xl font-bold text-foreground text-center mb-4">
         {shoe.model} {shoe.version}
       </h2>
 
