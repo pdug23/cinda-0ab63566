@@ -34,6 +34,13 @@ async function generateMatchDescription(
   whyItFeelsThisWay: string,
   notableDetail: string
 ): Promise<string[]> {
+  // Debug logging
+  console.log('=== GPT-5-mini Input Debug ===');
+  console.log('Role:', role);
+  console.log('why_it_feels_this_way:', whyItFeelsThisWay);
+  console.log('notable_detail:', notableDetail);
+  console.log('================================');
+
   const prompt = `You're recommending a ${role} shoe to a runner.
 
 Write exactly TWO bullet points:
@@ -44,6 +51,10 @@ Shoe characteristics: ${whyItFeelsThisWay}
 What makes it special: ${notableDetail}
 
 Be conversational and confident. Return only the two bullet points, no numbering or formatting.`;
+
+  console.log('Full prompt being sent to GPT-5-mini:', prompt);
+  console.log('================================');
+
 
   try {
     const response = await openaiClient.chat.completions.create({
