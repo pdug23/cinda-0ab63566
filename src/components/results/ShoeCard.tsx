@@ -48,8 +48,11 @@ const getPlateDisplay = (
   return { icon: "⚡", label: material || "Plate" };
 };
 
-const getBadgeText = (type: ShoeCardProps["shoe"]["recommendationType"]): string => {
-  return type === "trade_off_option" ? "TRADE-OFF" : "CLOSE MATCH";
+const getBadgeConfig = (type: ShoeCardProps["shoe"]["recommendationType"]): { text: string; color: string } => {
+  if (type === "trade_off_option") {
+    return { text: "TRADE-OFF", color: "#F97316" }; // orange
+  }
+  return { text: "CLOSE MATCH", color: "#10B981" }; // green
 };
 
 export function ShoeCard({ shoe, role }: ShoeCardProps) {
@@ -58,7 +61,8 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
   const roleColor = ROLE_COLORS[role] || ROLE_COLORS.daily;
   const weightLabel = getWeightLabel(shoe.weight_feel_1to5);
   const plateDisplay = getPlateDisplay(shoe.has_plate, shoe.plate_material);
-  const badgeText = getBadgeText(shoe.recommendationType);
+  const badgeConfig = getBadgeConfig(shoe.recommendationType);
+  
 
   return (
     <article
@@ -85,16 +89,17 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
       {/* Badge */}
       <div className="flex justify-center mb-6">
         <span
-          className="text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium"
+          className="flex items-center gap-1.5 text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium"
           style={{
-            backgroundColor: `${roleColor}26`,
-            border: `1px solid ${roleColor}66`,
-            color: roleColor,
-            boxShadow: `0 0 12px ${roleColor}33`,
+            backgroundColor: `${badgeConfig.color}26`,
+            border: `1px solid ${badgeConfig.color}66`,
+            color: badgeConfig.color,
+            boxShadow: `0 0 12px ${badgeConfig.color}33`,
             letterSpacing: "0.5px",
           }}
         >
-          {badgeText}
+          <Check className="w-3.5 h-3.5" aria-hidden="true" />
+          {badgeConfig.text}
         </span>
       </div>
 
@@ -103,7 +108,7 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
 
       {/* Match Reason */}
       <p className="text-base text-foreground/80 leading-relaxed mb-4 line-clamp-3 text-center italic">
-        "{shoe.matchReason}"
+        {shoe.matchReason}
       </p>
 
       {/* Divider */}
