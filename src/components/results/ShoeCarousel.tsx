@@ -92,7 +92,7 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
         slidesPerView={1.3}
         centeredSlides={true}
         loop={enableLoop}
-        loopAdditionalSlides={2}
+        loopAdditionalSlides={totalSlides}
         keyboard={{ enabled: true }}
         grabCursor={true}
         breakpoints={{
