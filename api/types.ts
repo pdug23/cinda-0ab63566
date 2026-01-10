@@ -419,7 +419,7 @@ export interface RecommendedShoe {
   recommendationType: RecommendationType;
   matchReason: string; // Why this shoe fills the gap
   keyStrengths: string[]; // 2-3 key selling points
-  tradeOffs?: string; // What runner gives up with this choice (especially for trade_off_option)
+  tradeOffs?: string[]; // What runner gives up with this choice (especially for trade_off_option)
 }
 
 /**

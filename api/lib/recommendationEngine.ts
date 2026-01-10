@@ -482,7 +482,7 @@ function identifyTradeoffs(
   currentShoes: CurrentShoe[],
   catalogue: Shoe[],
   isTradeOffOption: boolean
-): string | undefined {
+): string[] | undefined {
   if (!isTradeOffOption) return undefined;
 
   const tradeoffs: string[] = [];
@@ -514,7 +514,7 @@ function identifyTradeoffs(
     tradeoffs.push(`More structured feel than neutral shoes`);
   }
 
-  return tradeoffs.length > 0 ? tradeoffs.join('; ') : undefined;
+  return tradeoffs.length > 0 ? tradeoffs : undefined;
 }
 
 /**
@@ -527,7 +527,7 @@ function identifyTradeoffsComparative(
   catalogue: Shoe[],
   isTradeOffOption: boolean,
   allThreeShoes: Shoe[]
-): string | undefined {
+): string[] | undefined {
   if (!isTradeOffOption) return undefined;
 
   const tradeoffs: string[] = [];
@@ -594,7 +594,7 @@ function identifyTradeoffsComparative(
     }
   }
 
-  return tradeoffs.length > 0 ? tradeoffs.slice(0, 2).join('; ') : undefined;
+  return tradeoffs.length > 0 ? tradeoffs.slice(0, 2) : undefined;
 }
 
 // ============================================================================
