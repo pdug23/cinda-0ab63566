@@ -10,14 +10,17 @@ interface OnboardingLayoutProps {
   transparent?: boolean;
   /** Whether to make just the background transparent (allows glow effects to show through) */
   transparentBackground?: boolean;
+  /** Whether to allow content to overflow (for glow effects) */
+  allowOverflow?: boolean;
 }
 
-const OnboardingLayout = ({ 
-  children, 
+const OnboardingLayout = ({
+  children,
   scrollable = false,
   centerContent = false,
   transparent = false,
-  transparentBackground = false
+  transparentBackground = false,
+  allowOverflow = false
 }: OnboardingLayoutProps) => {
   const [showContainer, setShowContainer] = useState(!transparent);
 
@@ -25,19 +28,19 @@ const OnboardingLayout = ({
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
-    
+
     // Store original styles
     const originalHtmlOverflow = html.style.overflow;
     const originalBodyOverflow = body.style.overflow;
     const originalHtmlHeight = html.style.height;
     const originalBodyHeight = body.style.height;
-    
+
     // Lock scroll
     html.style.overflow = "hidden";
     html.style.height = "100%";
     body.style.overflow = "hidden";
     body.style.height = "100%";
-    
+
     return () => {
       // Restore original styles on unmount
       html.style.overflow = originalHtmlOverflow;
@@ -75,9 +78,8 @@ const OnboardingLayout = ({
     >
       <main className="h-full flex items-center justify-center px-4 md:px-6">
         <div
-          className={`w-full max-w-lg flex flex-col rounded-2xl border overflow-hidden relative z-10 transition-all duration-300 ease-out ${containerClasses} ${
-            centerContent ? 'justify-center' : ''
-          }`}
+          className={`w-full max-w-lg flex flex-col rounded-2xl border ${allowOverflow ? 'overflow-visible' : 'overflow-hidden'} relative z-10 transition-all duration-300 ease-out ${containerClasses} ${centerContent ? 'justify-center' : ''
+            }`}
           style={{
             height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 32px)",
             maxHeight: "720px",
