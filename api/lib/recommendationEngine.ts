@@ -61,7 +61,7 @@ Be conversational and confident. Return only the two bullet points, no numbering
       model: 'gpt-5-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
-      max_tokens: 150,
+      max_completion_tokens: 150,
     });
 
     const content = response.choices[0]?.message?.content?.trim();
