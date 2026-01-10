@@ -70,7 +70,7 @@ const OnboardingLayout = ({
 
   return (
     <div
-      className={`fixed inset-0 ${allowOverflow ? '' : 'overflow-hidden'}`}
+      className={`fixed inset-0 ${allowOverflow ? 'overflow-x-hidden overflow-y-visible' : 'overflow-hidden'}`}
       style={{
         paddingTop: "calc(env(safe-area-inset-top) + 16px)",
         paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
@@ -78,7 +78,7 @@ const OnboardingLayout = ({
     >
       <main className="h-full flex items-center justify-center px-4 md:px-6">
         <div
-          className={`w-full max-w-lg flex flex-col rounded-2xl border ${allowOverflow ? 'overflow-visible' : 'overflow-hidden'} relative z-10 transition-all duration-300 ease-out ${containerClasses} ${centerContent ? 'justify-center' : ''
+          className={`w-full max-w-lg flex flex-col rounded-2xl border ${allowOverflow ? 'overflow-x-hidden overflow-y-visible' : 'overflow-hidden'} relative z-10 transition-all duration-300 ease-out ${containerClasses} ${centerContent ? 'justify-center' : ''
             }`}
           style={{
             height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 32px)",
