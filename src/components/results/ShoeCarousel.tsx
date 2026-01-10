@@ -141,7 +141,7 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
       {/* Counter only */}
       <div className="flex justify-center mt-4">
         <span
-          className="text-sm text-foreground/50"
+          className="text-sm text-card-foreground/50"
           aria-live="polite"
         >
           {activeIndex + 1} of {totalSlides}

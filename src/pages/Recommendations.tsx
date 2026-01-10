@@ -102,7 +102,7 @@ function LoadingState() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 px-4">
       <div className="relative w-full max-w-[320px] aspect-[3/4] rounded-2xl overflow-hidden">
-        <div className="absolute inset-0 bg-foreground/5 animate-pulse" />
+        <div className="absolute inset-0 bg-card-foreground/5 animate-pulse" />
         <div
           className="absolute inset-0"
           style={{
@@ -111,7 +111,7 @@ function LoadingState() {
           }}
         />
       </div>
-      <p className="text-foreground/60 text-base animate-pulse">
+      <p className="text-card-foreground/60 text-base animate-pulse">
         Finding your perfect matches...
       </p>
       <style>{`
@@ -137,7 +137,7 @@ function ErrorState({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 px-4 text-center">
-      <p className="text-foreground/70 text-lg">
+      <p className="text-card-foreground/70 text-lg">
         {error}
       </p>
       <button
@@ -153,7 +153,7 @@ function ErrorState({
 function EmptyState({ onBack }: { onBack: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 px-4 text-center">
-      <p className="text-foreground/70 text-lg">
+      <p className="text-card-foreground/70 text-lg">
         No shoes match your criteria
       </p>
       <button
@@ -170,7 +170,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 text-foreground/60 hover:text-foreground/90 transition-colors py-2 min-h-[44px]"
+      className="flex items-center gap-2 text-card-foreground/60 hover:text-card-foreground/90 transition-colors py-2 min-h-[44px]"
       aria-label="Go back"
     >
       <ArrowLeft className="w-5 h-5" />
@@ -182,7 +182,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
 function AnalysisHeader({ gap }: { gap: Gap }) {
   return (
     <div className="text-center py-6 px-5">
-      <h1 className="text-xl font-bold text-foreground/90 lowercase mb-1">
+      <h1 className="text-xl font-bold text-card-foreground/90 lowercase mb-1">
         cinda's recommendations
       </h1>
       <p className="text-lg text-primary font-medium lowercase">
@@ -196,7 +196,7 @@ function ShoppingHeader({ results }: { results: ShoppingResultItem[] }) {
   const roles = results.map(r => r.role).join(", ");
   return (
     <div className="text-center py-6 px-5">
-      <h1 className="text-xl font-bold text-foreground/90 lowercase mb-1">
+      <h1 className="text-xl font-bold text-card-foreground/90 lowercase mb-1">
         cinda's recommendations
       </h1>
       <p className="text-lg text-primary font-medium lowercase">
@@ -237,13 +237,13 @@ function ShoppingModeResults({ result }: { result: ShoppingResult }) {
         return (
           <div key={item.role} className="w-full">
             {index > 0 && (
-              <div className="h-px bg-foreground/10 mx-6 mb-8" />
+              <div className="h-px bg-card-foreground/10 mx-6 mb-8" />
             )}
             <div className="px-5 mb-4">
-              <h3 className="text-xl font-semibold text-foreground capitalize mb-2">
+              <h3 className="text-xl font-semibold text-card-foreground capitalize mb-2">
                 {item.role} shoes
               </h3>
-              <p className="text-[15px] text-foreground/60">
+              <p className="text-[15px] text-card-foreground/60">
                 {item.reasoning}
               </p>
             </div>

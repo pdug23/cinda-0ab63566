@@ -116,13 +116,13 @@ export function ShoeCard({ shoe, role, collapseKey }: ShoeCardProps) {
       >
         {/* Brand Name */}
         <div className="text-center mb-2">
-          <span className="text-sm font-medium text-foreground/50 uppercase tracking-wider">
+          <span className="text-sm font-medium text-card-foreground/50 uppercase tracking-wider">
             {shoe.brand}
           </span>
         </div>
 
         {/* Model Name */}
-        <h2 className="text-2xl font-bold text-foreground text-center mb-4 text-shimmer">
+        <h2 className="text-2xl font-bold text-card-foreground text-center mb-4 text-shimmer">
           {shoe.model} {shoe.version}
         </h2>
 
@@ -144,22 +144,22 @@ export function ShoeCard({ shoe, role, collapseKey }: ShoeCardProps) {
       </div>
 
       {/* Divider */}
-      <div className="h-px bg-foreground/10 mb-4" />
+      <div className="h-px bg-card-foreground/10 mb-4" />
 
       {/* Match Reason */}
-      <p className="text-base text-foreground/80 leading-relaxed mb-4 line-clamp-3 text-center italic">
+      <p className="text-base text-card-foreground/80 leading-relaxed mb-4 line-clamp-3 text-center italic">
         {shoe.matchReason}
       </p>
 
       {/* Divider */}
-      <div className="h-px bg-foreground/10 mb-4" />
+      <div className="h-px bg-card-foreground/10 mb-4" />
 
       {/* Key Strengths */}
       <ul className="space-y-2 mb-4">
         {shoe.keyStrengths.map((strength, i) => (
           <li
             key={i}
-            className="flex items-start gap-2 text-[15px] text-foreground/70"
+            className="flex items-start gap-2 text-[15px] text-card-foreground/70"
           >
             <Check
               className="w-4 h-4 mt-0.5 flex-shrink-0"
@@ -172,31 +172,31 @@ export function ShoeCard({ shoe, role, collapseKey }: ShoeCardProps) {
       </ul>
 
       {/* Divider */}
-      <div className="h-px bg-foreground/10 mb-4" />
+      <div className="h-px bg-card-foreground/10 mb-4" />
 
       {/* Specs Grid */}
       <div className="grid grid-cols-3 gap-4 mb-4">
         <div className="text-center">
-          <span className="block text-xs text-foreground/40 uppercase tracking-wide mb-1">Weight</span>
-          <span className="block text-sm text-foreground/80 font-medium">{weightLabel}</span>
+          <span className="block text-xs text-card-foreground/40 uppercase tracking-wide mb-1">Weight</span>
+          <span className="block text-sm text-card-foreground/80 font-medium">{weightLabel}</span>
         </div>
         <div className="text-center">
-          <span className="block text-xs text-foreground/40 uppercase tracking-wide mb-1">Drop</span>
-          <span className="block text-sm text-foreground/80 font-medium">{shoe.heel_drop_mm}mm</span>
+          <span className="block text-xs text-card-foreground/40 uppercase tracking-wide mb-1">Drop</span>
+          <span className="block text-sm text-card-foreground/80 font-medium">{shoe.heel_drop_mm}mm</span>
         </div>
         <div className="text-center">
-          <span className="block text-xs text-foreground/40 uppercase tracking-wide mb-1">Plate</span>
-          <span className="block text-sm text-foreground/80 font-medium">{shoe.has_plate ? shoe.plate_material || "Yes" : "None"}</span>
+          <span className="block text-xs text-card-foreground/40 uppercase tracking-wide mb-1">Plate</span>
+          <span className="block text-sm text-card-foreground/80 font-medium">{shoe.has_plate ? shoe.plate_material || "Yes" : "None"}</span>
         </div>
       </div>
 
       {/* Divider */}
-      <div className="h-px bg-foreground/10 mb-4" />
+      <div className="h-px bg-card-foreground/10 mb-4" />
 
       {/* Expandable Section Toggle */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-center gap-2 py-3 text-sm text-foreground/60 hover:text-foreground/80 transition-colors min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-md"
+        className="w-full flex items-center justify-center gap-2 py-3 text-sm text-card-foreground/60 hover:text-card-foreground/80 transition-colors min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-md"
         aria-expanded={isExpanded}
         aria-controls="shoe-details"
       >
@@ -216,13 +216,13 @@ export function ShoeCard({ shoe, role, collapseKey }: ShoeCardProps) {
           isExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        <div className="pt-4 border-t border-foreground/10 space-y-4">
+        <div className="pt-4 border-t border-card-foreground/10 space-y-4">
           {/* Why it matches */}
           <div>
-            <h4 className="text-sm font-medium text-foreground/80 mb-2">
+            <h4 className="text-sm font-medium text-card-foreground/80 mb-2">
               Why it matches your preferences:
             </h4>
-            <p className="text-sm text-foreground/60">
+            <p className="text-sm text-card-foreground/60">
               Based on your profile, this shoe aligns well with your training
               needs and feel preferences.
             </p>
@@ -231,12 +231,12 @@ export function ShoeCard({ shoe, role, collapseKey }: ShoeCardProps) {
           {/* Trade-offs (conditional) */}
           {shoe.tradeOffs && shoe.tradeOffs.length > 0 && (
             <div>
-              <h4 className="text-sm font-medium text-foreground/80 mb-2">
+              <h4 className="text-sm font-medium text-card-foreground/80 mb-2">
                 Trade-offs to consider:
               </h4>
               <ul className="space-y-1">
                 {shoe.tradeOffs.map((tradeOff, i) => (
-                  <li key={i} className="text-sm text-foreground/60">
+                  <li key={i} className="text-sm text-card-foreground/60">
                     • {tradeOff}
                   </li>
                 ))}
@@ -247,10 +247,10 @@ export function ShoeCard({ shoe, role, collapseKey }: ShoeCardProps) {
           {/* Similar alternatives (conditional) */}
           {shoe.similar_to && (
             <div>
-              <h4 className="text-sm font-medium text-foreground/80 mb-2">
+              <h4 className="text-sm font-medium text-card-foreground/80 mb-2">
                 Similar alternatives:
               </h4>
-              <p className="text-sm text-foreground/60">{shoe.similar_to}</p>
+              <p className="text-sm text-card-foreground/60">{shoe.similar_to}</p>
             </div>
           )}
         </div>
