@@ -137,7 +137,10 @@ const Landing = () => {
                 >
                   buying running shoes has never been more overwhelming.
                 </h1>
-                <p className="text-card-foreground/60 text-sm mt-3 leading-relaxed">
+                <p 
+                  className="text-card-foreground leading-tight italic mt-1"
+                  style={{ fontVariantLigatures: "none", fontSize: "24px", fontWeight: 900 }}
+                >
                   endless marketing. infinite options. zero clarity.
                 </p>
                 <p className="text-card-foreground/80 text-base mt-4">
