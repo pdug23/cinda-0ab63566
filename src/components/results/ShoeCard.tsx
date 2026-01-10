@@ -134,15 +134,20 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
       {/* Divider */}
       <div className="h-px bg-foreground/10 mb-4" />
 
-      {/* Specs Row */}
-      <div className="flex justify-center items-center gap-3 text-sm text-foreground/60 mb-4 flex-wrap">
-        <span>⚖️ {weightLabel}</span>
-        <span className="text-foreground/30">•</span>
-        <span>📏 {shoe.heel_drop_mm}mm</span>
-        <span className="text-foreground/30">•</span>
-        <span>
-          {plateDisplay.icon} {plateDisplay.label}
-        </span>
+      {/* Specs Grid */}
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="text-center">
+          <span className="block text-xs text-foreground/40 uppercase tracking-wide mb-1">Weight</span>
+          <span className="block text-sm text-foreground/80 font-medium">{weightLabel}</span>
+        </div>
+        <div className="text-center">
+          <span className="block text-xs text-foreground/40 uppercase tracking-wide mb-1">Drop</span>
+          <span className="block text-sm text-foreground/80 font-medium">{shoe.heel_drop_mm}mm</span>
+        </div>
+        <div className="text-center">
+          <span className="block text-xs text-foreground/40 uppercase tracking-wide mb-1">Plate</span>
+          <span className="block text-sm text-foreground/80 font-medium">{shoe.has_plate ? shoe.plate_material || "Yes" : "None"}</span>
+        </div>
       </div>
 
       {/* Divider */}
