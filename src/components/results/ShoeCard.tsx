@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Heart, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ShoeCardProps {
   shoe: {
@@ -114,6 +115,16 @@ export function ShoeCard({ shoe, role, collapseKey }: ShoeCardProps) {
           borderLeft: `2px solid ${roleColor}`,
         }}
       >
+        {/* Shoe Image */}
+        <div className="flex justify-center mb-4">
+          <img
+            src="/shoes/shoe-placeholder.png"
+            alt={`${shoe.brand} ${shoe.model} ${shoe.version}`}
+            className="w-40 h-auto object-contain"
+            style={{ imageRendering: "pixelated" }}
+          />
+        </div>
+
         {/* Brand Name */}
         <div className="text-center mb-2">
           <span className="text-sm font-medium text-card-foreground/50 uppercase tracking-wider">
@@ -254,6 +265,34 @@ export function ShoeCard({ shoe, role, collapseKey }: ShoeCardProps) {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Divider */}
+      <div className="h-px bg-card-foreground/10 my-4" />
+
+      {/* Action Buttons */}
+      <div className="flex flex-col gap-3">
+        <Button
+          className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 h-auto"
+          onClick={() => {
+            // TODO: Implement shortlist functionality
+            console.log("Added to shortlist:", shoe.fullName);
+          }}
+        >
+          <Heart className="w-4 h-4" />
+          Add to Shortlist
+        </Button>
+        <Button
+          variant="outline"
+          className="w-full gap-2 border-card-foreground/20 text-card-foreground/80 hover:bg-card-foreground/10 hover:text-card-foreground py-3 h-auto"
+          onClick={() => {
+            // TODO: Implement retailer links modal
+            console.log("Where to buy:", shoe.fullName);
+          }}
+        >
+          <ExternalLink className="w-4 h-4" />
+          Where to Buy
+        </Button>
       </div>
       </article>
     </>
