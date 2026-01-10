@@ -98,7 +98,7 @@ export function AddToHomeScreenModal({
                 icon={<Share className="h-4 w-4 text-primary" />}
                 text={
                   <>
-                    tap the <span className="font-medium text-card-foreground">share</span> button in safari
+                    tap the <span className="font-medium text-card-foreground">share</span> button in your browser
                   </>
                 }
               />
@@ -130,7 +130,7 @@ export function AddToHomeScreenModal({
                 icon={<MoreVertical className="h-4 w-4 text-primary" />}
                 text={
                   <>
-                    tap the <span className="font-medium text-card-foreground">menu</span> (⋮) in chrome
+                    tap the <span className="font-medium text-card-foreground">menu</span> icon in your browser
                   </>
                 }
               />
@@ -139,7 +139,7 @@ export function AddToHomeScreenModal({
                 icon={<Download className="h-4 w-4 text-primary" />}
                 text={
                   <>
-                    tap <span className="font-medium text-card-foreground">"install app"</span> or <span className="font-medium text-card-foreground">"add to home screen"</span>
+                    look for <span className="font-medium text-card-foreground">"install app"</span> or <span className="font-medium text-card-foreground">"add to home screen"</span>
                   </>
                 }
               />
@@ -148,7 +148,7 @@ export function AddToHomeScreenModal({
                 icon={<CheckIcon className="h-4 w-4 text-primary" />}
                 text={
                   <>
-                    tap <span className="font-medium text-card-foreground">"install"</span> to confirm
+                    tap <span className="font-medium text-card-foreground">"install"</span> or <span className="font-medium text-card-foreground">"add"</span> to confirm
                   </>
                 }
               />
