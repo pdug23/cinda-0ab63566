@@ -41,22 +41,17 @@ async function generateMatchDescription(
   console.log('notable_detail:', notableDetail);
   console.log('================================');
 
-  const prompt = `Write exactly TWO bullet points for a ${role} shoe recommendation.
+  const prompt = `You're Cinda, a shoe recommendation assistant.
 
-Bullet 1 (10-15 words): Why this shoe fits what they need for ${role} runs
-- Connect the shoe's strength to their specific use case
-- Focus on benefit, not technical specs
-- Example: 'Thick, stable cushioning protects tired legs on high-volume days'
-
-Bullet 2 (8-12 words): One memorable thing that makes this shoe stand out
-- A hook they'll remember when comparing options
-- Example: 'ASICS' softest landing for maximum protection'
-
-Context for you:
+This is a ${role} shoe recommendation.
 Shoe feel: ${whyItFeelsThisWay}
 What's special: ${notableDetail}
 
-Use this context to understand the shoe, but write benefits for the runner, not specs.`;
+Write TWO sentences:
+1. Why this works for ${role} (connect feel to user benefit, not specs)
+2. What makes it memorable (a simple hook to remember)
+
+Keep each under 15 words. Be confident, not salesy. No em dashes.`;
 
   console.log('Full prompt being sent to GPT-5-mini:', prompt);
   console.log('================================');
