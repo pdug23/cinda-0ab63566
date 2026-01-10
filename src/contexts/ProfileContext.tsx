@@ -44,9 +44,9 @@ export type DiscoveryShoeRole = "daily_trainer" | "recovery" | "tempo" | "race_d
 export type FeelValue = 1 | 2 | 3 | 4 | 5;
 
 export interface FeelPreferences {
-  softVsFirm: number[] | null;        // Range for flexible matching
-  stableVsNeutral: number[] | null;   // Range for flexible matching
-  bouncyVsDamped: number[] | null;    // Range for flexible matching
+  cushionAmount: number[] | null;      // Range for flexible matching (1=minimal, 5=max stack)
+  stabilityAmount: number[] | null;    // Range for flexible matching (1=neutral, 5=stable)
+  energyReturn: number[] | null;       // Range for flexible matching (1=damped, 5=bouncy)
 }
 
 export interface ShoeRequest {

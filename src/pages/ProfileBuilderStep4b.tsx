@@ -37,28 +37,28 @@ interface SliderConfig {
 
 const SLIDERS: SliderConfig[] = [
   {
-    key: "softVsFirm",
+    key: "cushionAmount",
     label: "cushioning",
-    tooltip: "how soft the midsole feels. soft provides plush comfort for easy miles. firm provides stable support for faster efforts.",
-    leftLabel: "max stack",
+    tooltip: "how much cushioning the shoe provides. minimal offers ground feel and responsiveness. max stack provides maximum protection.",
+    leftLabel: "minimal",
     middleLabel: "balanced",
-    rightLabel: "minimal",
+    rightLabel: "max stack",
   },
   {
-    key: "stableVsNeutral",
+    key: "stabilityAmount",
     label: "stability",
-    tooltip: "how much guidance the shoe provides. stable shoes help control motion. neutral shoes allow natural movement.",
-    leftLabel: "stable",
+    tooltip: "how much guidance the shoe provides. neutral shoes allow natural movement. stable shoes help control motion.",
+    leftLabel: "neutral",
     middleLabel: "balanced",
-    rightLabel: "neutral",
+    rightLabel: "stable",
   },
   {
-    key: "bouncyVsDamped",
+    key: "energyReturn",
     label: "energy return",
-    tooltip: "how the shoe responds. bouncy shoes feel springy and propulsive. damped shoes absorb impact smoothly.",
-    leftLabel: "bouncy",
+    tooltip: "how the shoe responds. damped shoes absorb impact smoothly. bouncy shoes feel springy and propulsive.",
+    leftLabel: "damped",
     middleLabel: "balanced",
-    rightLabel: "damped",
+    rightLabel: "bouncy",
   },
 ];
 
@@ -201,15 +201,15 @@ const ProfileBuilderStep4b = () => {
 
   // Initialize local state for current slider values (before conversion to ranges)
   const [sliderValues, setSliderValues] = useState<{
-    softVsFirm: FeelValue | null;
-    stableVsNeutral: FeelValue | null;
-    bouncyVsDamped: FeelValue | null;
+    cushionAmount: FeelValue | null;
+    stabilityAmount: FeelValue | null;
+    energyReturn: FeelValue | null;
   }>(() => {
     // Default to middle values
     return {
-      softVsFirm: 3,
-      stableVsNeutral: 3,
-      bouncyVsDamped: 3,
+      cushionAmount: 3,
+      stabilityAmount: 3,
+      energyReturn: 3,
     };
   });
 
@@ -217,9 +217,9 @@ const ProfileBuilderStep4b = () => {
   useEffect(() => {
     // Reset to defaults when switching roles
     setSliderValues({
-      softVsFirm: 3,
-      stableVsNeutral: 3,
-      bouncyVsDamped: 3,
+      cushionAmount: 3,
+      stabilityAmount: 3,
+      energyReturn: 3,
     });
   }, [currentRole]);
 
@@ -247,11 +247,11 @@ const ProfileBuilderStep4b = () => {
     }
   };
 
-  const handleSliderChange = (key: "softVsFirm" | "stableVsNeutral" | "bouncyVsDamped", value: FeelValue) => {
+  const handleSliderChange = (key: "cushionAmount" | "stabilityAmount" | "energyReturn", value: FeelValue) => {
     setSliderValues((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleToggleNotSure = (key: "softVsFirm" | "stableVsNeutral" | "bouncyVsDamped") => {
+  const handleToggleNotSure = (key: "cushionAmount" | "stabilityAmount" | "energyReturn") => {
     setSliderValues((prev) => ({
       ...prev,
       [key]: prev[key] === null ? 3 : null,
@@ -261,9 +261,9 @@ const ProfileBuilderStep4b = () => {
   const handleNext = () => {
     // Convert slider values to ranges for backend
     const feelPreferences: FeelPreferences = {
-      softVsFirm: convertToRange(sliderValues.softVsFirm),
-      stableVsNeutral: convertToRange(sliderValues.stableVsNeutral),
-      bouncyVsDamped: convertToRange(sliderValues.bouncyVsDamped),
+      cushionAmount: convertToRange(sliderValues.cushionAmount),
+      stabilityAmount: convertToRange(sliderValues.stabilityAmount),
+      energyReturn: convertToRange(sliderValues.energyReturn),
     };
 
     // Save current preferences as range-based request
