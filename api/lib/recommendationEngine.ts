@@ -66,7 +66,7 @@ Be conversational and confident. Return only the two bullet points, no numbering
       text: {
         verbosity: 'low'  // Keep it concise (2 bullet points)
       },
-      max_output_tokens: 150
+      max_output_tokens: 500
     });
 
     console.log('=== GPT-5-mini RESPONSE ===');
