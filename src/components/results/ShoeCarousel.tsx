@@ -79,7 +79,7 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
   if (totalSlides === 1) {
     return (
       <div className="flex flex-col items-center py-2 px-4">
-        <ShoeCard shoe={recommendations[0]} role={role} />
+        <ShoeCard shoe={recommendations[0]} role={role} position={1} />
       </div>
     );
   }
@@ -129,7 +129,7 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
             aria-label={`Shoe ${index + 1} of ${totalSlides}: ${shoe.fullName}`}
           >
             <div className="flex justify-center">
-              <ShoeCard shoe={shoe} role={role} />
+              <ShoeCard shoe={shoe} role={role} position={((index % 3) + 1) as 1 | 2 | 3} />
             </div>
           </SwiperSlide>
         ))}

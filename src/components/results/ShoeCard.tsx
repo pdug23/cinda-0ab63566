@@ -21,18 +21,15 @@ interface ShoeCardProps {
   position?: 1 | 2 | 3;
 }
 
-// Position-based color configurations
+// Position-based color configurations (shimmer/glow only, background stays dark)
 const POSITION_COLORS = {
   1: {
-    background: "#e2e8f0", // silver/platinum
     shimmer: "#60a5fa",    // soft blue
   },
   2: {
-    background: "#64748b", // slate grey
     shimmer: "#3b82f6",    // slate blue
   },
   3: {
-    background: "#2563eb", // brighter blue
     shimmer: "#06b6d4",    // cyan-blue
   },
 };
@@ -65,23 +62,22 @@ const getBadgeConfig = (type: ShoeCardProps["shoe"]["recommendationType"]): { te
 
 export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
   const positionConfig = POSITION_COLORS[position] || POSITION_COLORS[1];
+  const shimmer = positionConfig.shimmer;
   const weightLabel = getWeightLabel(shoe.weight_feel_1to5);
   const plateLabel = getPlateLabel(shoe.has_plate, shoe.plate_material);
   const badgeConfig = getBadgeConfig(shoe.recommendationType);
 
-  // Determine text color based on background brightness
-  const isDarkBackground = position === 2 || position === 3;
-  const textColor = isDarkBackground ? "rgba(255, 255, 255, 0.9)" : "rgba(30, 30, 35, 0.9)";
-  const textColorMuted = isDarkBackground ? "rgba(255, 255, 255, 0.6)" : "rgba(30, 30, 35, 0.6)";
-  const textColorSubtle = isDarkBackground ? "rgba(255, 255, 255, 0.4)" : "rgba(30, 30, 35, 0.4)";
-  const dividerColor = isDarkBackground ? "rgba(255, 255, 255, 0.1)" : "rgba(30, 30, 35, 0.1)";
-
+  // Always dark background - light text
+  const textColor = "rgba(255, 255, 255, 0.9)";
+  const textColorMuted = "rgba(255, 255, 255, 0.7)";
+  const textColorSubtle = "rgba(255, 255, 255, 0.5)";
+  const dividerColor = "rgba(255, 255, 255, 0.1)";
   return (
     <>
       <style>{`
         @keyframes border-glow-${position} {
-          0%, 100% { box-shadow: 0 0 8px ${positionConfig.shimmer}4D, 0 0 16px ${positionConfig.shimmer}26, 0 4px 24px rgba(0, 0, 0, 0.15); }
-          50% { box-shadow: 0 0 16px ${positionConfig.shimmer}80, 0 0 32px ${positionConfig.shimmer}40, 0 4px 24px rgba(0, 0, 0, 0.15); }
+          0%, 100% { box-shadow: 0 0 15px ${shimmer}80, 0 0 30px ${shimmer}50, 0 0 45px ${shimmer}30; }
+          50% { box-shadow: 0 0 25px ${shimmer}99, 0 0 50px ${shimmer}66, 0 0 75px ${shimmer}40; }
         }
         @keyframes text-shimmer-${position} {
           0% { background-position: -200% center; }
@@ -95,7 +91,7 @@ export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
             90deg,
             ${textColor} 0%,
             ${textColor} 25%,
-            ${positionConfig.shimmer} 50%,
+            ${shimmer} 50%,
             ${textColor} 75%,
             ${textColor} 100%
           );
@@ -106,15 +102,15 @@ export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
           animation: text-shimmer-${position} 4s linear infinite;
         }
         @media (prefers-reduced-motion: reduce) {
-          .card-glow-${position} { animation: none; box-shadow: 0 0 8px ${positionConfig.shimmer}4D, 0 4px 24px rgba(0, 0, 0, 0.15); }
+          .card-glow-${position} { animation: none; box-shadow: 0 0 15px ${shimmer}80; }
           .text-shimmer-${position} { animation: none; background: none; -webkit-text-fill-color: currentColor; }
         }
       `}</style>
       <article
         className={`relative w-full max-w-[90vw] min-w-[320px] rounded-2xl p-6 card-glow-${position}`}
         style={{
-          background: positionConfig.background,
-          border: `1px solid ${positionConfig.shimmer}4D`,
+          background: "rgba(26, 26, 30, 0.95)",
+          border: `2px solid ${shimmer}80`,
         }}
       >
         {/* Shoe Image */}
@@ -198,8 +194,8 @@ export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
             variant="outline"
             className="flex-1 min-w-0 gap-1.5 py-2.5 px-3 h-auto text-xs font-medium lowercase"
             style={{
-              backgroundColor: isDarkBackground ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.05)",
-              borderColor: isDarkBackground ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.15)",
+              backgroundColor: "rgba(0, 0, 0, 0.3)",
+              borderColor: "rgba(255, 255, 255, 0.2)",
               color: textColorMuted,
             }}
             onClick={() => {
@@ -214,8 +210,8 @@ export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
             variant="outline"
             className="flex-1 min-w-0 gap-1.5 py-2.5 px-3 h-auto text-xs font-medium lowercase"
             style={{
-              backgroundColor: isDarkBackground ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.05)",
-              borderColor: isDarkBackground ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.15)",
+              backgroundColor: "rgba(0, 0, 0, 0.3)",
+              borderColor: "rgba(255, 255, 255, 0.2)",
               color: textColorMuted,
             }}
             onClick={() => {
