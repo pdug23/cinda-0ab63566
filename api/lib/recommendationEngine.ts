@@ -57,6 +57,9 @@ Be conversational and confident. Return only the two bullet points, no numbering
 
 
   try {
+    console.log('=== GPT-5-mini API CALL ===');
+    console.log('Calling openaiClient.responses.create...');
+
     const response = await openaiClient.responses.create({
       model: 'gpt-5-mini',
       input: prompt,  // Just pass the prompt string directly
@@ -66,10 +69,52 @@ Be conversational and confident. Return only the two bullet points, no numbering
       max_output_tokens: 150
     });
 
-    console.log('[generateMatchDescription] Response:', JSON.stringify(response, null, 2));
+    console.log('=== GPT-5-mini RESPONSE ===');
+    console.log('Full response object:', JSON.stringify(response, null, 2));
+    console.log('Type of response.output:', typeof response.output);
+    console.log('Is response.output an array?:', Array.isArray(response.output));
+    console.log('response.output:', JSON.stringify(response.output, null, 2));
 
-    // Type assertion since TypeScript types may not be fully accurate for new API
-    const content = (response.output?.[0] as any)?.text?.trim();
+    if (response.output && Array.isArray(response.output) && response.output.length > 0) {
+      console.log('response.output[0]:', JSON.stringify(response.output[0], null, 2));
+      console.log('response.output[0] keys:', Object.keys(response.output[0] || {}));
+    }
+
+    // Try different possible response structures
+    let content: string | undefined;
+
+    // Option 1: response.output[0].text
+    content = (response.output?.[0] as any)?.text?.trim();
+    console.log('Try 1 - response.output[0].text:', content);
+
+    // Option 2: response.output.text (if output is not an array)
+    if (!content) {
+      content = (response.output as any)?.text?.trim();
+      console.log('Try 2 - response.output.text:', content);
+    }
+
+    // Option 3: response.output[0].content
+    if (!content) {
+      content = (response.output?.[0] as any)?.content?.trim();
+      console.log('Try 3 - response.output[0].content:', content);
+    }
+
+    // Option 4: response.output[0].message?.content
+    if (!content) {
+      content = (response.output?.[0] as any)?.message?.content?.trim();
+      console.log('Try 4 - response.output[0].message.content:', content);
+    }
+
+    // Option 5: response.output_text (some APIs use this)
+    if (!content) {
+      content = (response as any)?.output_text?.trim();
+      console.log('Try 5 - response.output_text:', content);
+    }
+
+    console.log('=== FINAL CONTENT ===');
+    console.log('Extracted content:', content);
+    console.log('Content length:', content?.length || 0);
+
     if (content) {
       // Split by newlines and filter out empty lines
       const lines = content
@@ -77,22 +122,39 @@ Be conversational and confident. Return only the two bullet points, no numbering
         .map(line => line.trim())
         .filter(line => line.length > 0);
 
+      console.log('=== LINE PARSING ===');
+      console.log('Number of lines after split:', lines.length);
+      console.log('All lines:', JSON.stringify(lines, null, 2));
+
       // Return first two non-empty lines
       if (lines.length >= 2) {
-        return [lines[0], lines[1]];
+        console.log('Returning 2 lines from GPT-5-mini');
+        const result = [lines[0], lines[1]];
+        console.log('Result:', JSON.stringify(result, null, 2));
+        return result;
       } else if (lines.length === 1) {
-        return [lines[0], notableDetail];
+        console.log('Only 1 line from GPT-5-mini, using notableDetail as fallback for line 2');
+        const result = [lines[0], notableDetail];
+        console.log('Result:', JSON.stringify(result, null, 2));
+        return result;
       }
+    } else {
+      console.log('No content extracted from response!');
     }
   } catch (error) {
     console.error('[generateMatchDescription] OpenAI API error:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
   }
 
   // Fallback to two bullet points using shoe data
-  return [
+  console.log('=== USING FALLBACK ===');
+  console.log('Fallback triggered - no valid content from GPT-5-mini');
+  const fallbackResult = [
     notableDetail,
     `Well-suited for ${role} runs.`
   ];
+  console.log('Fallback result:', JSON.stringify(fallbackResult, null, 2));
+  return fallbackResult;
 }
 
 // ============================================================================
