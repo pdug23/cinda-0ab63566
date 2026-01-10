@@ -39,9 +39,9 @@ export type RunningPattern =
 /**
  * Slider value for feel preferences (1-5 scale)
  * Scales match shoebase.json scoring for direct comparison
- * - softVsFirm: 5 = very soft, 1 = very firm
- * - stableVsNeutral: 5 = very stable, 1 = neutral/minimal
- * - bouncyVsDamped: 5 = very bouncy/responsive, 1 = damped/smooth
+ * - cushionAmount: 1 = minimal stack, 5 = max stack/cushion
+ * - stabilityAmount: 1 = neutral, 5 = stable
+ * - energyReturn: 1 = damped, 5 = bouncy
  * 
  * Can be a single value or an array to support flexible matching ranges
  */
@@ -440,9 +440,9 @@ export interface RecommendationResult {
  * Extracted from RunnerProfile to allow per-request/per-gap customization
  */
 export interface FeelPreferences {
-  softVsFirm: FeelPreference;       // 5 = very soft, 1 = very firm
-  stableVsNeutral: FeelPreference;  // 5 = very stable, 1 = neutral
-  bouncyVsDamped: FeelPreference;   // 5 = very bouncy, 1 = damped
+  cushionAmount: FeelPreference;    // 1 = minimal stack, 5 = max cushion
+  stabilityAmount: FeelPreference;  // 1 = neutral, 5 = stable
+  energyReturn: FeelPreference;     // 1 = damped, 5 = bouncy
 }
 
 /**

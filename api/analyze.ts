@@ -178,11 +178,11 @@ export default async function handler(
             return mid;
           };
 
-          const softFirm = describeRange(request.feelPreferences.softVsFirm, ['soft', 'balanced', 'firm']);
-          const bouncyDamped = describeRange(request.feelPreferences.bouncyVsDamped, ['bouncy', 'moderate', 'damped']);
-          const stableNeutral = describeRange(request.feelPreferences.stableVsNeutral, ['stable', 'balanced', 'neutral']);
+          const cushion = describeRange(request.feelPreferences.cushionAmount, ['minimal', 'balanced', 'max']);
+          const bounce = describeRange(request.feelPreferences.energyReturn, ['damped', 'moderate', 'bouncy']);
+          const stability = describeRange(request.feelPreferences.stabilityAmount, ['neutral', 'balanced', 'stable']);
 
-          const reasoning = `Based on your preference for ${request.role} shoes with ${softFirm} cushion, ${bouncyDamped} response, and ${stableNeutral} platform.`;
+          const reasoning = `Based on your preference for ${request.role} shoes with ${cushion} cushion, ${bounce} response, and ${stability} platform.`;
 
           return {
             role: request.role,

@@ -13,9 +13,9 @@ interface RetrievalConstraints {
   roles?: ShoeRole[];
   stabilityNeed?: "neutral" | "stability" | "stable_feel";
   feelPreferences?: {
-    softVsFirm: FeelPreference;
-    stableVsNeutral: FeelPreference;
-    bouncyVsDamped: FeelPreference;
+    cushionAmount: FeelPreference;
+    stabilityAmount: FeelPreference;
+    energyReturn: FeelPreference;
   };
   excludeShoeIds?: string[];
   brandOnly?: string;
@@ -160,9 +160,9 @@ function scoreRoleMatch(shoe: Shoe, roles: ShoeRole[] = []): number {
 function scoreFeelMatch(
   shoe: Shoe,
   prefs?: {
-    softVsFirm: FeelPreference;
-    stableVsNeutral: FeelPreference;
-    bouncyVsDamped: FeelPreference;
+    cushionAmount: FeelPreference;
+    stabilityAmount: FeelPreference;
+    energyReturn: FeelPreference;
   }
 ): number {
   if (!prefs) {
@@ -174,9 +174,9 @@ function scoreFeelMatch(
     return Array.isArray(pref) ? pref : [pref];
   };
 
-  const softArr = normalizePref(prefs.softVsFirm);
-  const stableArr = normalizePref(prefs.stableVsNeutral);
-  const bounceArr = normalizePref(prefs.bouncyVsDamped);
+  const cushionArr = normalizePref(prefs.cushionAmount);
+  const stabilityArr = normalizePref(prefs.stabilityAmount);
+  const bounceArr = normalizePref(prefs.energyReturn);
 
   // CRITICAL: User preferences are inverted from shoebase scale
   // User slider: 1=soft, 5=firm
@@ -184,8 +184,8 @@ function scoreFeelMatch(
   // We must invert user preferences before comparing
   const invertPrefArray = (arr: number[]): number[] => arr.map(v => 6 - v);
 
-  const invertedSoftArr = invertPrefArray(softArr);
-  const invertedStableArr = invertPrefArray(stableArr);
+  const invertedCushionArr = invertPrefArray(cushionArr);
+  const invertedStabilityArr = invertPrefArray(stabilityArr);
   const invertedBounceArr = invertPrefArray(bounceArr);
 
   // For each feel dimension, calculate minimum distance from preference array
@@ -200,11 +200,11 @@ function scoreFeelMatch(
     return Math.min(...prefArr.map(p => Math.abs(shoeValue - p)));
   };
 
-  const softScore = Math.max(0, 10 - minDistance(shoe.cushion_softness_1to5, invertedSoftArr) * 2);
-  const stabilityScore = Math.max(0, 10 - minDistance(shoe.stability_1to5, invertedStableArr) * 2);
+  const cushionScore = Math.max(0, 10 - minDistance(shoe.cushion_softness_1to5, invertedCushionArr) * 2);
+  const stabilityScore = Math.max(0, 10 - minDistance(shoe.stability_1to5, invertedStabilityArr) * 2);
   const bounceScore = Math.max(0, 10 - minDistance(shoe.bounce_1to5, invertedBounceArr) * 2);
 
-  return softScore + stabilityScore + bounceScore;
+  return cushionScore + stabilityScore + bounceScore;
 }
 
 /**

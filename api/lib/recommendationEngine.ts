@@ -41,7 +41,7 @@ function buildConstraintsFromGap(
   };
 
   // Determine stability need from feel preferences
-  const stableArr = Array.isArray(feelPreferences.stableVsNeutral) ? feelPreferences.stableVsNeutral : [feelPreferences.stableVsNeutral];
+  const stableArr = Array.isArray(feelPreferences.stabilityAmount) ? feelPreferences.stabilityAmount : [feelPreferences.stabilityAmount];
   if (stableArr.includes(4) || stableArr.includes(5)) {
     constraints.stabilityNeed = "stable_feel";
   }
@@ -64,7 +64,7 @@ function buildConstraintsFromGap(
       if (constraints.feelPreferences) {
         constraints.feelPreferences = {
           ...constraints.feelPreferences,
-          bouncyVsDamped: 4, // More bouncy for performance
+          energyReturn: 4, // More bouncy for performance
         };
       }
       break;
@@ -76,8 +76,8 @@ function buildConstraintsFromGap(
       if (constraints.feelPreferences) {
         constraints.feelPreferences = {
           ...constraints.feelPreferences,
-          softVsFirm: 5, // Very soft
-          stableVsNeutral: 4, // Stable
+          cushionAmount: 5, // Max cushion
+          stabilityAmount: 4, // Stable
         };
       }
       break;
@@ -750,7 +750,7 @@ export function generateShoppingRecommendations(
     excludeShoeIds: currentShoes.map(s => s.shoeId),
     // Determine stability need from request preferences
     stabilityNeed: (() => {
-      const stableArr = Array.isArray(request.feelPreferences.stableVsNeutral) ? request.feelPreferences.stableVsNeutral : [request.feelPreferences.stableVsNeutral];
+      const stableArr = Array.isArray(request.feelPreferences.stabilityAmount) ? request.feelPreferences.stabilityAmount : [request.feelPreferences.stabilityAmount];
       return (stableArr.includes(4) || stableArr.includes(5)) ? ("stable_feel" as const) : undefined;
     })(),
   };
@@ -840,18 +840,18 @@ function scoreShoeForRole(
   // Feel match (0-30 points) - using same logic as shoeRetrieval
   // Normalize preferences to arrays
   const normalizePref = (pref: number | number[]): number[] => Array.isArray(pref) ? pref : [pref];
-  const softArr = normalizePref(feelPreferences.softVsFirm);
-  const stableArr = normalizePref(feelPreferences.stableVsNeutral);
-  const bounceArr = normalizePref(feelPreferences.bouncyVsDamped);
+  const cushionArr = normalizePref(feelPreferences.cushionAmount);
+  const stabilityArr = normalizePref(feelPreferences.stabilityAmount);
+  const bounceArr = normalizePref(feelPreferences.energyReturn);
 
   const minDistance = (shoeValue: number, prefArr: number[]): number => {
     return Math.min(...prefArr.map(p => Math.abs(shoeValue - p)));
   };
 
-  const softScore = Math.max(0, 10 - minDistance(shoe.cushion_softness_1to5, softArr) * 2);
-  const stabilityScore = Math.max(0, 10 - minDistance(shoe.stability_1to5, stableArr) * 2);
+  const cushionScore = Math.max(0, 10 - minDistance(shoe.cushion_softness_1to5, cushionArr) * 2);
+  const stabilityScore = Math.max(0, 10 - minDistance(shoe.stability_1to5, stabilityArr) * 2);
   const bounceScore = Math.max(0, 10 - minDistance(shoe.bounce_1to5, bounceArr) * 2);
-  score += softScore + stabilityScore + bounceScore;
+  score += cushionScore + stabilityScore + bounceScore;
 
   // Availability bonus (0-15 points)
   if (shoe.release_status === "available") {
