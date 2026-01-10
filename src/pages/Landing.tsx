@@ -134,10 +134,10 @@ const Landing = () => {
                   className="text-card-foreground leading-tight italic"
                   style={{ fontVariantLigatures: "none", fontSize: "24px", fontWeight: 900 }}
                 >
-                  buying running shoes has never been more overwhelming.
+                  buying running shoes has never felt more overwhelming.
                 </h1>
                 <p 
-                  className="text-card-foreground leading-tight italic mt-1"
+                  className="text-card-foreground leading-tight italic mt-4"
                   style={{ fontVariantLigatures: "none", fontSize: "24px", fontWeight: 900 }}
                 >
                   endless marketing. infinite options. zero clarity.
