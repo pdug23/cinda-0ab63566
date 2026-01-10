@@ -3,6 +3,7 @@ import { Check, ChevronDown } from "lucide-react";
 
 interface ShoeCardProps {
   shoe: {
+    shoeId?: string;
     brand: string;
     fullName: string;
     model: string;
@@ -52,6 +53,32 @@ const getBadgeText = (type: ShoeCardProps["shoe"]["recommendationType"]): string
   return type === "trade_off_option" ? "TRADE-OFF" : "CLOSE MATCH";
 };
 
+const formatBrand = (brand: string): string => {
+  return brand
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
+const formatModel = (model: string, version: string): string => {
+  // Title case for model and version
+  const formatWord = (word: string): string => {
+    // Handle special cases like "FuelCell", "ZoomX", etc.
+    if (word.toLowerCase() === 'fuelcell') return 'FuelCell';
+    if (word.toLowerCase() === 'zoomx') return 'ZoomX';
+    if (word.toLowerCase() === 'vaporfly') return 'Vaporfly';
+    if (word.toLowerCase() === 'alphafly') return 'Alphafly';
+    if (word.toLowerCase() === 'superblast') return 'Superblast';
+    if (word.toLowerCase() === 'metaspeed') return 'Metaspeed';
+    // Default title case
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  };
+  
+  const modelFormatted = model.split(' ').map(formatWord).join(' ');
+  const versionFormatted = version ? ` ${version}` : '';
+  return `${modelFormatted}${versionFormatted}`;
+};
+
 export function ShoeCard({ shoe, role }: ShoeCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -64,23 +91,34 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
     <article
       className="relative w-full max-w-[90vw] min-w-[320px] rounded-2xl p-6"
       style={{
-        background: "rgba(255, 255, 255, 0.03)",
+        background: "rgba(26, 26, 30, 0.95)",
         border: "1px solid rgba(255, 255, 255, 0.1)",
         borderLeft: `2px solid ${roleColor}`,
         boxShadow: "0 4px 24px rgba(0, 0, 0, 0.15)",
       }}
     >
-      {/* Brand Logo Placeholder */}
-      <div className="text-center mb-4">
-        {/* TODO: Replace with brand logo SVG */}
-        <span className="text-[55px] font-semibold text-foreground/80 uppercase leading-none">
-          {shoe.brand}
+      {/* Shoe Image */}
+      <div className="flex justify-center mb-5">
+        <img
+          src={shoe.shoeId ? `/shoes/${shoe.shoeId}.png` : '/shoes/cinda_placeholder_shoeart.png'}
+          onError={(e) => {
+            e.currentTarget.src = '/shoes/cinda_placeholder_shoeart.png';
+          }}
+          alt={shoe.fullName}
+          className="w-40 h-auto block"
+        />
+      </div>
+
+      {/* Brand Name */}
+      <div className="text-center mb-1">
+        <span className="text-lg font-semibold text-foreground/80">
+          {formatBrand(shoe.brand)}
         </span>
       </div>
 
-      {/* Shoe Name */}
-      <h2 className="text-2xl font-bold text-foreground text-center mb-4 lowercase">
-        {shoe.model} {shoe.version}
+      {/* Shoe Model (bigger than brand) */}
+      <h2 className="text-[28px] font-bold text-foreground text-center mb-4">
+        {formatModel(shoe.model, shoe.version)}
       </h2>
 
       {/* Badge */}
