@@ -31,25 +31,17 @@ const openaiClient = new OpenAI({
  */
 async function generateMatchDescription(
   role: string,
-  whyItFeelsThisWay: string | undefined,
-  notableDetail: string | undefined
+  whyItFeelsThisWay: string,
+  notableDetail: string
 ): Promise<string[]> {
-  // Fallback if no shoe characteristics provided
-  if (!whyItFeelsThisWay && !notableDetail) {
-    return [
-      `Well-suited for ${role} runs based on your preferences.`,
-      `A solid option for this role.`
-    ];
-  }
-
   const prompt = `You're recommending a ${role} shoe to a runner.
 
 Write exactly TWO bullet points:
 1. Why this shoe is good for ${role} runs (connect the feel to the role)
 2. What's notable or unique about this shoe compared to other shoes
 
-Shoe characteristics: ${whyItFeelsThisWay || 'Not specified'}
-What makes it special: ${notableDetail || 'Not specified'}
+Shoe characteristics: ${whyItFeelsThisWay}
+What makes it special: ${notableDetail}
 
 Be conversational and confident. Return only the two bullet points, no numbering or formatting.`;
 
@@ -73,18 +65,18 @@ Be conversational and confident. Return only the two bullet points, no numbering
       if (lines.length >= 2) {
         return [lines[0], lines[1]];
       } else if (lines.length === 1) {
-        // If only one line, use it and add a fallback
-        return [lines[0], notableDetail || `A solid option for ${role} runs.`];
+        // If only one line, use it and add notable detail as second
+        return [lines[0], notableDetail];
       }
     }
   } catch (error) {
     console.error('[generateMatchDescription] OpenAI API error:', error);
   }
 
-  // Fallback to two bullet points
+  // Fallback to two bullet points using shoe data
   return [
-    notableDetail || `Well-suited for ${role} runs based on your preferences.`,
-    `A solid option for this role.`
+    notableDetail,
+    `Well-suited for ${role} runs.`
   ];
 }
 
