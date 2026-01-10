@@ -157,14 +157,6 @@ export function ShoeCard({ shoe, role, collapseKey }: ShoeCardProps) {
       {/* Divider */}
       <div className="h-px bg-card-foreground/10 mb-4" />
 
-      {/* Match Reason */}
-      <p className="text-base text-card-foreground/80 leading-relaxed mb-4 line-clamp-3 text-center italic">
-        {shoe.matchReason}
-      </p>
-
-      {/* Divider */}
-      <div className="h-px bg-card-foreground/10 mb-4" />
-
       {/* Key Strengths */}
       <ul className="space-y-2 mb-4">
         {shoe.keyStrengths.map((strength, i) => (
