@@ -81,14 +81,14 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
   // Single card - no carousel needed
   if (totalSlides === 1) {
     return (
-      <div className="flex flex-col items-center py-5 px-4">
+      <div className="flex flex-col items-center py-2 px-4">
         <ShoeCard shoe={recommendations[0]} role={role} collapseKey={collapseKey} />
       </div>
     );
   }
 
   return (
-    <div className="shoe-carousel w-full py-5">
+    <div className="shoe-carousel w-full py-2">
       <Swiper
         modules={[Keyboard]}
         spaceBetween={16}
