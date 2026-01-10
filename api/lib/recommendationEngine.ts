@@ -57,14 +57,19 @@ Be conversational and confident. Return only the two bullet points, no numbering
 
 
   try {
-    const response = await openaiClient.chat.completions.create({
+    const response = await openaiClient.responses.create({
       model: 'gpt-5-mini',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
-      max_completion_tokens: 150,
+      input: prompt,  // Just pass the prompt string directly
+      text: {
+        verbosity: 'low'  // Keep it concise (2 bullet points)
+      },
+      max_output_tokens: 150
     });
 
-    const content = response.choices[0]?.message?.content?.trim();
+    console.log('[generateMatchDescription] Response:', JSON.stringify(response, null, 2));
+
+    // Type assertion since TypeScript types may not be fully accurate for new API
+    const content = (response.output?.[0] as any)?.text?.trim();
     if (content) {
       // Split by newlines and filter out empty lines
       const lines = content
@@ -76,7 +81,6 @@ Be conversational and confident. Return only the two bullet points, no numbering
       if (lines.length >= 2) {
         return [lines[0], lines[1]];
       } else if (lines.length === 1) {
-        // If only one line, use it and add notable detail as second
         return [lines[0], notableDetail];
       }
     }
