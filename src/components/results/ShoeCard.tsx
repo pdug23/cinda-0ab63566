@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check, ChevronDown } from "lucide-react";
 
 interface ShoeCardProps {
@@ -18,6 +18,7 @@ interface ShoeCardProps {
     similar_to?: string;
   };
   role: "daily" | "tempo" | "race" | "easy" | "long" | "trail";
+  collapseKey?: number;
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -55,8 +56,15 @@ const getBadgeConfig = (type: ShoeCardProps["shoe"]["recommendationType"]): { te
   return { text: "CLOSE MATCH", color: "#10B981" }; // green
 };
 
-export function ShoeCard({ shoe, role }: ShoeCardProps) {
+export function ShoeCard({ shoe, role, collapseKey }: ShoeCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  // Collapse when collapseKey changes (triggered by slide change)
+  useEffect(() => {
+    if (collapseKey !== undefined && collapseKey > 0) {
+      setIsExpanded(false);
+    }
+  }, [collapseKey]);
 
   const roleColor = ROLE_COLORS[role] || ROLE_COLORS.daily;
   const weightLabel = getWeightLabel(shoe.weight_feel_1to5);
