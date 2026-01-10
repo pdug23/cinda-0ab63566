@@ -84,15 +84,30 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
   const isTradeOff = shoe.recommendationType === "trade_off_option";
 
   return (
-    <article
-      className="relative w-full max-w-[90vw] min-w-[320px] rounded-2xl p-6"
-      style={{
-        background: "rgba(26, 26, 30, 0.95)",
-        border: "1px solid rgba(255, 255, 255, 0.1)",
-        borderLeft: `2px solid ${roleColor}`,
-        boxShadow: "0 4px 24px rgba(0, 0, 0, 0.15)",
-      }}
-    >
+    <>
+      <style>{`
+        @keyframes border-glow {
+          0%, 100% { 
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), 0 0 20px ${roleColor}33;
+          }
+          50% { 
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), 0 0 30px ${roleColor}55;
+          }
+        }
+        @keyframes text-shimmer {
+          0%, 100% { opacity: 0.9; }
+          50% { opacity: 1; }
+        }
+      `}</style>
+      <article
+        className="relative w-full max-w-[90vw] min-w-[320px] rounded-2xl p-6"
+        style={{
+          background: "rgba(26, 26, 30, 0.95)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          borderLeft: `2px solid ${roleColor}`,
+          animation: "border-glow 2s ease-in-out infinite",
+        }}
+      >
       {/* Shoe Image */}
       <div className="flex justify-center mb-5">
         <img
@@ -113,7 +128,10 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
       </div>
 
       {/* Shoe Model (bigger than brand) */}
-      <h2 className="text-[28px] font-bold text-foreground text-center mb-4">
+      <h2 
+        className="text-[28px] font-bold text-foreground text-center mb-4"
+        style={{ animation: "text-shimmer 3s ease-in-out infinite" }}
+      >
         {formatModel(shoe.model, shoe.version)}
       </h2>
 
@@ -256,6 +274,7 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
         </div>
       </div>
     </article>
+    </>
   );
 }
 
