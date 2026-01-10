@@ -170,7 +170,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
+      className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-foreground/60 hover:text-foreground bg-foreground/[0.03] hover:bg-foreground/10 border border-foreground/20 transition-colors"
       aria-label="Go back"
     >
       <ArrowLeft className="w-3.5 h-3.5" />
@@ -181,8 +181,8 @@ function BackButton({ onClick }: { onClick: () => void }) {
 
 function PageHeader() {
   return (
-    <div className="text-center py-2 px-5">
-      <h1 className="text-xl font-bold text-card-foreground/90 lowercase">
+    <div className="text-center py-2 px-5 bg-background">
+      <h1 className="text-xl font-bold text-foreground/90 lowercase">
         cinda's recommendations
       </h1>
     </div>
@@ -398,10 +398,10 @@ export default function RecommendationsPage() {
     <>
       <AnimatedBackground />
       <OnboardingLayout scrollable>
-        {/* Back button */}
-        <div className="px-5 pt-2">
+        {/* Header - white background */}
+        <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-start flex-shrink-0 bg-background">
           <BackButton onClick={goBack} />
-        </div>
+        </header>
 
         {/* Content */}
         <div className="flex-1 flex flex-col min-h-0">
