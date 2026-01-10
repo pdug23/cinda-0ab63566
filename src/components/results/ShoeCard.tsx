@@ -116,7 +116,7 @@ export function ShoeCard({ shoe, role, collapseKey }: ShoeCardProps) {
         }}
       >
         {/* Shoe Image */}
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-2">
           <img
             src="/shoes/shoe-placeholder.png"
             alt={`${shoe.brand} ${shoe.model} ${shoe.version}`}
@@ -126,19 +126,19 @@ export function ShoeCard({ shoe, role, collapseKey }: ShoeCardProps) {
         </div>
 
         {/* Brand Name */}
-        <div className="text-center mb-2">
+        <div className="text-center mb-1">
           <span className="text-sm font-medium text-card-foreground/50 uppercase tracking-wider">
             {shoe.brand}
           </span>
         </div>
 
         {/* Model Name */}
-        <h2 className="text-2xl font-bold text-card-foreground text-center mb-4 text-shimmer">
+        <h2 className="text-2xl font-bold text-card-foreground text-center mb-3 text-shimmer">
           {shoe.model} {shoe.version}
         </h2>
 
       {/* Badge */}
-      <div className="flex justify-center mb-6">
+      <div className="flex justify-center mb-4">
         <span
           className="flex items-center gap-1.5 text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium"
           style={{
