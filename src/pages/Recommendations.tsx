@@ -182,10 +182,12 @@ function BackButton({ onClick }: { onClick: () => void }) {
 function AnalysisHeader({ gap }: { gap: Gap }) {
   return (
     <div className="text-center py-6 px-5">
-      <h2 className="text-xl font-bold text-foreground lowercase">
-        recommendations for your{" "}
-        <span className="text-primary">{gap.missingCapability}</span> shoe
-      </h2>
+      <h1 className="text-xl font-bold text-foreground/90 lowercase mb-1">
+        cinda's recommendations
+      </h1>
+      <p className="text-lg text-primary font-medium lowercase">
+        {gap.missingCapability} shoe
+      </p>
     </div>
   );
 }
@@ -194,9 +196,12 @@ function ShoppingHeader({ results }: { results: ShoppingResultItem[] }) {
   const roles = results.map(r => r.role).join(", ");
   return (
     <div className="text-center py-6 px-5">
-      <h2 className="text-xl font-bold text-foreground lowercase">
-        recommendations for {roles} {results.length === 1 ? 'shoe' : 'shoes'}
-      </h2>
+      <h1 className="text-xl font-bold text-foreground/90 lowercase mb-1">
+        cinda's recommendations
+      </h1>
+      <p className="text-lg text-primary font-medium lowercase">
+        {roles} {results.length === 1 ? 'shoe' : 'shoes'}
+      </p>
     </div>
   );
 }
@@ -417,13 +422,9 @@ export default function RecommendationsPage() {
     <>
       <AnimatedBackground />
       <OnboardingLayout scrollable>
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-foreground/10">
+        {/* Back button */}
+        <div className="px-5 pt-4">
           <BackButton onClick={goBack} />
-          <h1 className="text-lg font-semibold text-foreground lowercase">
-            your recommendations
-          </h1>
-          <div className="w-16" /> {/* Spacer for centering */}
         </div>
 
         {/* Content */}
