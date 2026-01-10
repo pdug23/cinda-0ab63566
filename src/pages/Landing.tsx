@@ -84,16 +84,23 @@ const Landing = () => {
       {(viewState === "orientation" || isExiting) && <FloatingJargon />}
 
       <OnboardingLayout centerContent transparent>
+        {/* Persistent Logo - always visible, spins on transition */}
+        <img 
+          src={cindaLogo} 
+          alt="Cinda" 
+          className={`h-[80px] absolute top-[60px] left-1/2 -translate-x-1/2 z-20 ${
+            isExiting ? "animate-spin-settle" : ""
+          }`}
+        />
+
         {viewState === "landing" && (
-          <PageTransition className="flex flex-col items-center justify-center text-center p-6 md:p-8 flex-1 relative z-10">
+          <PageTransition className="flex flex-col items-center text-center p-6 md:p-8 flex-1 relative z-10 pt-[160px]">
             {/* Landing content with exit animation */}
             <div
               className={`flex flex-col items-center transition-all ${
                 prefersReducedMotion ? "" : "duration-300"
               } ${isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
             >
-              <img src={cindaLogo} alt="Cinda" className="h-[80px] mb-8" />
-
               <h1
                 className="text-card-foreground/90 max-w-md leading-tight italic text-center"
                 style={{ fontVariantLigatures: "none", fontSize: "24px", fontWeight: 900 }}
@@ -113,17 +120,8 @@ const Landing = () => {
         )}
 
         {viewState === "orientation" && (
-          <PageTransition className="flex flex-col items-center justify-center text-center p-6 md:p-8 flex-1 relative z-10">
+          <PageTransition className="flex flex-col items-center text-center p-6 md:p-8 flex-1 relative z-10 pt-[160px]">
             <div className="flex flex-col items-center max-w-md">
-              {/* Logo */}
-              <img 
-                src={cindaLogo} 
-                alt="Cinda" 
-                className={`h-[80px] mb-8 transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
-                  showHeadline ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-                }`}
-              />
-
               {/* Headline and subheading */}
               <div
                 className={`transition-all ${prefersReducedMotion ? "" : "duration-700"} ${

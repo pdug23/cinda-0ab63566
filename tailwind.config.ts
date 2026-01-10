@@ -87,12 +87,27 @@ export default {
 				'50%': {
 					boxShadow: '0 0 25px rgba(100,116,139,0.12), 0 0 50px rgba(100,116,139,0.06)'
 				}
+			},
+			'spin-settle': {
+				'0%': {
+					transform: 'translateX(-50%) rotate(0deg)'
+				},
+				'70%': {
+					transform: 'translateX(-50%) rotate(360deg)'
+				},
+				'85%': {
+					transform: 'translateX(-50%) rotate(350deg)'
+				},
+				'100%': {
+					transform: 'translateX(-50%) rotate(360deg)'
+				}
 			}
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
-  			'glow-pulse': 'glow-pulse 8s ease-in-out infinite'
+  			'glow-pulse': 'glow-pulse 8s ease-in-out infinite',
+  			'spin-settle': 'spin-settle 0.6s ease-out'
   		},
 		fontFamily: {
 			sans: [
