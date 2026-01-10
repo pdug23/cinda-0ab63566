@@ -158,11 +158,12 @@ export default async function handler(
 
       console.log('[analyze] Processing', shoeRequests.length, 'shoe requests');
 
-      const shoppingResults = shoeRequests.map((request, index) => {
+      // Use Promise.all since generateShoppingRecommendations is now async
+      const shoppingResults = await Promise.all(shoeRequests.map(async (request, index) => {
         console.log(`[analyze] Request ${index + 1}: ${request.role} shoes`);
 
         try {
-          const recommendations = generateShoppingRecommendations(
+          const recommendations = await generateShoppingRecommendations(
             request,
             profile,
             currentShoes,
@@ -193,7 +194,7 @@ export default async function handler(
           console.error(`[analyze] Shopping request ${index + 1} failed:`, error.message);
           throw new Error(`Failed to generate recommendations for ${request.role}: ${error.message}`);
         }
-      });
+      }));
 
       const elapsed = Date.now() - startTime;
       console.log('[analyze] Shopping mode complete. Elapsed time:', elapsed, 'ms');
@@ -239,7 +240,7 @@ export default async function handler(
 
       let recommendations;
       try {
-        recommendations = generateRecommendations(
+        recommendations = await generateRecommendations(
           gap,
           profile,
           currentShoes,

@@ -3,6 +3,7 @@
 // Generates exactly 3 shoe recommendations that address the identified gap
 // ============================================================================
 
+import OpenAI from 'openai';
 import type {
   Gap,
   RecommendedShoe,
@@ -15,6 +16,58 @@ import type {
   ShoeRequest,
 } from '../types.js';
 import { getCandidates } from './shoeRetrieval.js';
+
+// ============================================================================
+// LLM-BASED MATCH DESCRIPTION GENERATOR
+// ============================================================================
+
+const openaiClient = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+/**
+ * Generate a custom match description using gpt-5-mini
+ * Explains why this specific shoe is good for the given role
+ */
+async function generateMatchDescription(
+  role: string,
+  whyItFeelsThisWay: string | undefined,
+  notableDetail: string | undefined
+): Promise<string> {
+  // Fallback if no shoe characteristics provided
+  if (!whyItFeelsThisWay && !notableDetail) {
+    return `Well-suited for ${role} runs based on your preferences.`;
+  }
+
+  const prompt = `You're recommending a ${role} shoe to a runner.
+
+Write 1-2 sentences explaining why this shoe is good for ${role} runs.
+
+Shoe characteristics: ${whyItFeelsThisWay || 'Not specified'}
+What makes it special: ${notableDetail || 'Not specified'}
+
+Connect the feel to why it works for ${role}. Be conversational and confident.
+Return only the description, no preamble.`;
+
+  try {
+    const response = await openaiClient.chat.completions.create({
+      model: 'gpt-5-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 100,
+    });
+
+    const content = response.choices[0]?.message?.content?.trim();
+    if (content) {
+      return content;
+    }
+  } catch (error) {
+    console.error('[generateMatchDescription] OpenAI API error:', error);
+  }
+
+  // Fallback to notable_detail or generic message
+  return notableDetail || `Well-suited for ${role} runs based on your preferences.`;
+}
 
 // ============================================================================
 // CONSTRAINT BUILDING
@@ -612,13 +665,13 @@ function identifyTradeoffsComparative(
  * @returns Array of exactly 3 recommended shoes
  * @throws Error if unable to find 3 valid recommendations
  */
-export function generateRecommendations(
+export async function generateRecommendations(
   gap: Gap,
   profile: RunnerProfile,
   currentShoes: CurrentShoe[],
   catalogue: Shoe[],
   feelPreferences: FeelPreferences
-): RecommendedShoe[] {
+): Promise<RecommendedShoe[]> {
   // Step 1: Build constraints from gap
   let constraints = buildConstraintsFromGap(gap, profile, currentShoes, feelPreferences);
 
@@ -672,12 +725,12 @@ export function generateRecommendations(
   const [closeMatch1, closeMatch2, tradeOff] = selectedThree;
   const allThreeShoes = [closeMatch1, closeMatch2, tradeOff];
 
-  // Step 6: Build RecommendedShoe objects with differentiated strengths
-  const recommendations: RecommendedShoe[] = [
+  // Step 6: Build RecommendedShoe objects with differentiated strengths (async)
+  const recommendations: RecommendedShoe[] = await Promise.all([
     buildRecommendedShoe(closeMatch1, gap, "close_match", currentShoes, catalogue, false, allThreeShoes),
     buildRecommendedShoe(closeMatch2, gap, "close_match_2", currentShoes, catalogue, false, allThreeShoes),
     buildRecommendedShoe(tradeOff, gap, "trade_off_option", currentShoes, catalogue, true, allThreeShoes),
-  ];
+  ]);
 
   // Final validation: ensure all shoes exist in catalogue
   for (const rec of recommendations) {
@@ -693,7 +746,7 @@ export function generateRecommendations(
 /**
  * Build a RecommendedShoe object from a Shoe
  */
-function buildRecommendedShoe(
+async function buildRecommendedShoe(
   shoe: Shoe,
   gap: Gap,
   type: RecommendationType,
@@ -701,7 +754,17 @@ function buildRecommendedShoe(
   catalogue: Shoe[],
   isTradeOff: boolean,
   allThreeShoes: Shoe[]
-): RecommendedShoe {
+): Promise<RecommendedShoe> {
+  // Get role from gap for LLM description
+  const role = gap.missingCapability || gap.type || 'daily';
+
+  // Generate match description using LLM (with fallback)
+  const matchReason = await generateMatchDescription(
+    role,
+    shoe.why_it_feels_this_way,
+    shoe.notable_detail
+  );
+
   return {
     shoeId: shoe.shoe_id,
     fullName: shoe.full_name,
@@ -719,7 +782,7 @@ function buildRecommendedShoe(
     bounce_1to5: shoe.bounce_1to5,
     stability_1to5: shoe.stability_1to5,
     recommendationType: type,
-    matchReason: generateMatchReason(shoe, gap),
+    matchReason,
     keyStrengths: extractDifferentiatedStrengths(shoe, gap, allThreeShoes),
     tradeOffs: identifyTradeoffsComparative(shoe, currentShoes, catalogue, isTradeOff, allThreeShoes),
   };
@@ -739,12 +802,12 @@ function buildRecommendedShoe(
  * @param catalogue - Full shoe catalogue
  * @returns Array of 2-3 recommended shoes for the requested role
  */
-export function generateShoppingRecommendations(
+export async function generateShoppingRecommendations(
   request: ShoeRequest,
   profile: RunnerProfile,
   currentShoes: CurrentShoe[],
   catalogue: Shoe[]
-): RecommendedShoe[] {
+): Promise<RecommendedShoe[]> {
   // Step 1: Build constraints for this specific role and feel preferences
   const constraints = {
     roles: [request.role],
@@ -785,9 +848,8 @@ export function generateShoppingRecommendations(
   // Step 5: Select top 2-3 shoes with diversity
   const selectedShoes = selectShoppingShoes(scoredCandidates);
 
-  // Step 6: Build RecommendedShoe objects
-  // For shopping mode, we use a simpler recommendation pattern
-  const recommendations: RecommendedShoe[] = selectedShoes.map((shoe, index) => {
+  // Step 6: Build RecommendedShoe objects (async with LLM match descriptions)
+  const recommendationPromises = selectedShoes.map((shoe, index) => {
     const recType: RecommendationType = index === 0
       ? "close_match"
       : index === 1
@@ -803,6 +865,8 @@ export function generateShoppingRecommendations(
       index === selectedShoes.length - 1 // isTradeOff for last shoe
     );
   });
+
+  const recommendations: RecommendedShoe[] = await Promise.all(recommendationPromises);
 
   return recommendations;
 }
@@ -915,14 +979,21 @@ function selectShoppingShoes(scoredCandidates: ScoredShoe[]): Shoe[] {
 /**
  * Build a RecommendedShoe object for shopping mode
  */
-function buildShoppingRecommendedShoe(
+async function buildShoppingRecommendedShoe(
   shoe: Shoe,
   role: ShoeRole,
   type: RecommendationType,
   currentShoes: CurrentShoe[],
   catalogue: Shoe[],
   isTradeOff: boolean
-): RecommendedShoe {
+): Promise<RecommendedShoe> {
+  // Generate match description using LLM (with fallback)
+  const matchReason = await generateMatchDescription(
+    role,
+    shoe.why_it_feels_this_way,
+    shoe.notable_detail
+  );
+
   return {
     shoeId: shoe.shoe_id,
     fullName: shoe.full_name,
@@ -940,7 +1011,7 @@ function buildShoppingRecommendedShoe(
     bounce_1to5: shoe.bounce_1to5,
     stability_1to5: shoe.stability_1to5,
     recommendationType: type,
-    matchReason: generateShoppingMatchReason(shoe, role),
+    matchReason,
     keyStrengths: extractKeyStrengthsForRole(shoe, role),
     tradeOffs: identifyTradeoffs(shoe, currentShoes, catalogue, isTradeOff),
   };
