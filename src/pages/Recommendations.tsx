@@ -170,41 +170,25 @@ function BackButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 text-card-foreground/60 hover:text-card-foreground/90 transition-colors py-2 min-h-[44px]"
+      className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
       aria-label="Go back"
     >
-      <ArrowLeft className="w-5 h-5" />
-      <span className="text-sm">Back</span>
+      <ArrowLeft className="w-3.5 h-3.5" />
+      back
     </button>
   );
 }
 
-function AnalysisHeader({ gap }: { gap: Gap }) {
+function PageHeader() {
   return (
     <div className="text-center py-6 px-5">
-      <h1 className="text-xl font-bold text-card-foreground/90 lowercase mb-1">
+      <h1 className="text-xl font-bold text-card-foreground/90 lowercase">
         cinda's recommendations
       </h1>
-      <p className="text-lg text-primary font-medium lowercase">
-        {gap.missingCapability} shoe
-      </p>
     </div>
   );
 }
 
-function ShoppingHeader({ results }: { results: ShoppingResultItem[] }) {
-  const roles = results.map(r => r.role).join(", ");
-  return (
-    <div className="text-center py-6 px-5">
-      <h1 className="text-xl font-bold text-card-foreground/90 lowercase mb-1">
-        cinda's recommendations
-      </h1>
-      <p className="text-lg text-primary font-medium lowercase">
-        {roles} {results.length === 1 ? 'shoe' : 'shoes'}
-      </p>
-    </div>
-  );
-}
 
 function AnalysisModeResults({
   result,
@@ -445,14 +429,14 @@ export default function RecommendationsPage() {
 
           {!loading && !error && !isEmpty && mode === "analysis" && analysisResult && gap && (
             <>
-              <AnalysisHeader gap={gap} />
+              <PageHeader />
               <AnalysisModeResults result={analysisResult} gap={gap} />
             </>
           )}
 
           {!loading && !error && !isEmpty && mode === "shopping" && shoppingResult && (
             <>
-              <ShoppingHeader results={shoppingResult.shoppingResults} />
+              <PageHeader />
               <ShoppingModeResults result={shoppingResult} />
             </>
           )}
