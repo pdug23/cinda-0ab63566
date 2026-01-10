@@ -18,15 +18,23 @@ interface ShoeCardProps {
     similar_to?: string;
   };
   role: "daily" | "tempo" | "race" | "easy" | "long" | "trail";
+  position?: 1 | 2 | 3;
 }
 
-const ROLE_COLORS: Record<string, string> = {
-  daily: "#F97316",
-  tempo: "#3B82F6",
-  race: "#EF4444",
-  easy: "#10B981",
-  long: "#8B5CF6",
-  trail: "#92400E",
+// Position-based color configurations
+const POSITION_COLORS = {
+  1: {
+    background: "#e2e8f0", // silver/platinum
+    shimmer: "#60a5fa",    // soft blue
+  },
+  2: {
+    background: "#64748b", // slate grey
+    shimmer: "#3b82f6",    // slate blue
+  },
+  3: {
+    background: "#2563eb", // brighter blue
+    shimmer: "#06b6d4",    // cyan-blue
+  },
 };
 
 const getWeightLabel = (weight: 1 | 2 | 3 | 4 | 5): string => {
@@ -55,53 +63,58 @@ const getBadgeConfig = (type: ShoeCardProps["shoe"]["recommendationType"]): { te
   return { text: "CLOSE MATCH", color: "#10B981" }; // green
 };
 
-export function ShoeCard({ shoe, role }: ShoeCardProps) {
-  const roleColor = ROLE_COLORS[role] || ROLE_COLORS.daily;
+export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
+  const positionConfig = POSITION_COLORS[position] || POSITION_COLORS[1];
   const weightLabel = getWeightLabel(shoe.weight_feel_1to5);
   const plateLabel = getPlateLabel(shoe.has_plate, shoe.plate_material);
   const badgeConfig = getBadgeConfig(shoe.recommendationType);
 
+  // Determine text color based on background brightness
+  const isDarkBackground = position === 2 || position === 3;
+  const textColor = isDarkBackground ? "rgba(255, 255, 255, 0.9)" : "rgba(30, 30, 35, 0.9)";
+  const textColorMuted = isDarkBackground ? "rgba(255, 255, 255, 0.6)" : "rgba(30, 30, 35, 0.6)";
+  const textColorSubtle = isDarkBackground ? "rgba(255, 255, 255, 0.4)" : "rgba(30, 30, 35, 0.4)";
+  const dividerColor = isDarkBackground ? "rgba(255, 255, 255, 0.1)" : "rgba(30, 30, 35, 0.1)";
 
   return (
     <>
       <style>{`
-        @keyframes border-glow {
-          0%, 100% { box-shadow: 0 0 8px rgba(56, 189, 248, 0.3), 0 0 16px rgba(56, 189, 248, 0.1), 0 4px 24px rgba(0, 0, 0, 0.15); }
-          50% { box-shadow: 0 0 12px rgba(56, 189, 248, 0.5), 0 0 24px rgba(56, 189, 248, 0.2), 0 4px 24px rgba(0, 0, 0, 0.15); }
+        @keyframes border-glow-${position} {
+          0%, 100% { box-shadow: 0 0 8px ${positionConfig.shimmer}4D, 0 0 16px ${positionConfig.shimmer}26, 0 4px 24px rgba(0, 0, 0, 0.15); }
+          50% { box-shadow: 0 0 16px ${positionConfig.shimmer}80, 0 0 32px ${positionConfig.shimmer}40, 0 4px 24px rgba(0, 0, 0, 0.15); }
         }
-        @keyframes text-shimmer {
+        @keyframes text-shimmer-${position} {
           0% { background-position: -200% center; }
           100% { background-position: 200% center; }
         }
-        .card-glow {
-          animation: border-glow 3s ease-in-out infinite;
+        .card-glow-${position} {
+          animation: border-glow-${position} 3s ease-in-out infinite;
         }
-        .text-shimmer {
+        .text-shimmer-${position} {
           background: linear-gradient(
             90deg,
-            rgba(255, 255, 255, 0.9) 0%,
-            rgba(255, 255, 255, 1) 25%,
-            rgba(56, 189, 248, 0.9) 50%,
-            rgba(255, 255, 255, 1) 75%,
-            rgba(255, 255, 255, 0.9) 100%
+            ${textColor} 0%,
+            ${textColor} 25%,
+            ${positionConfig.shimmer} 50%,
+            ${textColor} 75%,
+            ${textColor} 100%
           );
           background-size: 200% auto;
           background-clip: text;
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
-          animation: text-shimmer 4s linear infinite;
+          animation: text-shimmer-${position} 4s linear infinite;
         }
         @media (prefers-reduced-motion: reduce) {
-          .card-glow { animation: none; box-shadow: 0 0 8px rgba(56, 189, 248, 0.3), 0 4px 24px rgba(0, 0, 0, 0.15); }
-          .text-shimmer { animation: none; background: none; -webkit-text-fill-color: currentColor; }
+          .card-glow-${position} { animation: none; box-shadow: 0 0 8px ${positionConfig.shimmer}4D, 0 4px 24px rgba(0, 0, 0, 0.15); }
+          .text-shimmer-${position} { animation: none; background: none; -webkit-text-fill-color: currentColor; }
         }
       `}</style>
       <article
-        className="relative w-full max-w-[90vw] min-w-[320px] rounded-2xl p-6 card-glow"
+        className={`relative w-full max-w-[90vw] min-w-[320px] rounded-2xl p-6 card-glow-${position}`}
         style={{
-          background: "rgba(26, 26, 30, 0.95)",
-          border: "1px solid rgba(56, 189, 248, 0.3)",
-          borderLeft: `2px solid ${roleColor}`,
+          background: positionConfig.background,
+          border: `1px solid ${positionConfig.shimmer}4D`,
         }}
       >
         {/* Shoe Image */}
@@ -116,13 +129,16 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
 
         {/* Brand Name */}
         <div className="text-center mb-1">
-          <span className="text-sm font-medium text-card-foreground/50 uppercase tracking-wider">
+          <span 
+            className="text-sm font-medium uppercase tracking-wider"
+            style={{ color: textColorMuted }}
+          >
             {shoe.brand}
           </span>
         </div>
 
         {/* Model Name */}
-        <h2 className="text-2xl font-bold text-card-foreground text-center mb-3 text-shimmer">
+        <h2 className={`text-2xl font-bold text-center mb-3 text-shimmer-${position}`}>
           {shoe.model} {shoe.version}
         </h2>
 
@@ -144,40 +160,48 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-card-foreground/10 mb-4" />
+        <div className="h-px mb-4" style={{ backgroundColor: dividerColor }} />
 
       {/* Match Description */}
-      <p className="text-sm italic text-card-foreground/70 leading-relaxed mb-4 line-clamp-3">
+      <p 
+        className="text-sm italic leading-relaxed mb-4 line-clamp-3"
+        style={{ color: textColorMuted }}
+      >
         {shoe.matchReason}
       </p>
 
       {/* Divider */}
-      <div className="h-px bg-card-foreground/10 mb-4" />
+      <div className="h-px mb-4" style={{ backgroundColor: dividerColor }} />
 
         {/* Specs Grid */}
         <div className="grid grid-cols-3 gap-4 mb-4">
           <div className="text-center">
-            <span className="block text-xs text-card-foreground/40 uppercase tracking-wide mb-1">Weight</span>
-            <span className="block text-sm text-card-foreground/80 font-medium">{weightLabel}</span>
+            <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Weight</span>
+            <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{weightLabel}</span>
           </div>
           <div className="text-center">
-            <span className="block text-xs text-card-foreground/40 uppercase tracking-wide mb-1">Drop</span>
-            <span className="block text-sm text-card-foreground/80 font-medium">{shoe.heel_drop_mm}mm</span>
+            <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Drop</span>
+            <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{shoe.heel_drop_mm}mm</span>
           </div>
           <div className="text-center">
-            <span className="block text-xs text-card-foreground/40 uppercase tracking-wide mb-1">Plate</span>
-            <span className="block text-sm text-card-foreground/80 font-medium">{plateLabel}</span>
+            <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Plate</span>
+            <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{plateLabel}</span>
           </div>
         </div>
 
       {/* Divider */}
-      <div className="h-px bg-card-foreground/10 mb-4" />
+      <div className="h-px mb-4" style={{ backgroundColor: dividerColor }} />
 
         {/* Action Buttons */}
         <div className="flex gap-2 w-full">
           <Button
             variant="outline"
-            className="flex-1 min-w-0 gap-1.5 bg-card/50 border-card-foreground/20 text-card-foreground/80 hover:bg-card-foreground/10 hover:text-card-foreground py-2.5 px-3 h-auto text-xs font-medium lowercase"
+            className="flex-1 min-w-0 gap-1.5 py-2.5 px-3 h-auto text-xs font-medium lowercase"
+            style={{
+              backgroundColor: isDarkBackground ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.05)",
+              borderColor: isDarkBackground ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.15)",
+              color: textColorMuted,
+            }}
             onClick={() => {
               // TODO: Implement shortlist functionality
               console.log("Added to shortlist:", shoe.fullName);
@@ -188,7 +212,12 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
           </Button>
           <Button
             variant="outline"
-            className="flex-1 min-w-0 gap-1.5 bg-card/50 border-card-foreground/20 text-card-foreground/80 hover:bg-card-foreground/10 hover:text-card-foreground py-2.5 px-3 h-auto text-xs font-medium lowercase"
+            className="flex-1 min-w-0 gap-1.5 py-2.5 px-3 h-auto text-xs font-medium lowercase"
+            style={{
+              backgroundColor: isDarkBackground ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.05)",
+              borderColor: isDarkBackground ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.15)",
+              color: textColorMuted,
+            }}
             onClick={() => {
               // TODO: Implement retailer links modal
               console.log("Buy now:", shoe.fullName);
