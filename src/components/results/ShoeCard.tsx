@@ -65,26 +65,58 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
   
 
   return (
-    <article
-      className="relative w-full max-w-[90vw] min-w-[320px] rounded-2xl p-6"
-      style={{
-        background: "rgba(26, 26, 30, 0.95)",
-        border: "1px solid rgba(255, 255, 255, 0.1)",
-        borderLeft: `2px solid ${roleColor}`,
-        boxShadow: "0 4px 24px rgba(0, 0, 0, 0.15)",
-      }}
-    >
-      {/* Brand Name */}
-      <div className="text-center mb-2">
-        <span className="text-sm font-medium text-foreground/50 uppercase tracking-wider">
-          {shoe.brand}
-        </span>
-      </div>
+    <>
+      <style>{`
+        @keyframes border-glow {
+          0%, 100% { box-shadow: 0 0 8px rgba(56, 189, 248, 0.3), 0 0 16px rgba(56, 189, 248, 0.1), 0 4px 24px rgba(0, 0, 0, 0.15); }
+          50% { box-shadow: 0 0 12px rgba(56, 189, 248, 0.5), 0 0 24px rgba(56, 189, 248, 0.2), 0 4px 24px rgba(0, 0, 0, 0.15); }
+        }
+        @keyframes text-shimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        .card-glow {
+          animation: border-glow 3s ease-in-out infinite;
+        }
+        .text-shimmer {
+          background: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.9) 0%,
+            rgba(255, 255, 255, 1) 25%,
+            rgba(56, 189, 248, 0.9) 50%,
+            rgba(255, 255, 255, 1) 75%,
+            rgba(255, 255, 255, 0.9) 100%
+          );
+          background-size: 200% auto;
+          background-clip: text;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          animation: text-shimmer 4s linear infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .card-glow { animation: none; box-shadow: 0 0 8px rgba(56, 189, 248, 0.3), 0 4px 24px rgba(0, 0, 0, 0.15); }
+          .text-shimmer { animation: none; background: none; -webkit-text-fill-color: currentColor; }
+        }
+      `}</style>
+      <article
+        className="relative w-full max-w-[90vw] min-w-[320px] rounded-2xl p-6 card-glow"
+        style={{
+          background: "rgba(26, 26, 30, 0.95)",
+          border: "1px solid rgba(56, 189, 248, 0.3)",
+          borderLeft: `2px solid ${roleColor}`,
+        }}
+      >
+        {/* Brand Name */}
+        <div className="text-center mb-2">
+          <span className="text-sm font-medium text-foreground/50 uppercase tracking-wider">
+            {shoe.brand}
+          </span>
+        </div>
 
-      {/* Model Name */}
-      <h2 className="text-2xl font-bold text-foreground text-center mb-4">
-        {shoe.model} {shoe.version}
-      </h2>
+        {/* Model Name */}
+        <h2 className="text-2xl font-bold text-foreground text-center mb-4 text-shimmer">
+          {shoe.model} {shoe.version}
+        </h2>
 
       {/* Badge */}
       <div className="flex justify-center mb-6">
@@ -215,7 +247,8 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
           )}
         </div>
       </div>
-    </article>
+      </article>
+    </>
   );
 }
 
