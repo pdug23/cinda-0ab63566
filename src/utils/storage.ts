@@ -8,6 +8,7 @@ import type {
   Gap,
   RecommendedShoe
 } from '../../api/types';
+import type { ShoeRequest, GapData } from '../contexts/ProfileContext';
 
 // localStorage Helper Utilities for Cinda
 // Use these functions to ensure consistent data handling across all epics
@@ -243,6 +244,112 @@ export function loadRecommendations(): StoredRecommendations | null {
  */
 export function clearRecommendations(): void {
   localStorage.removeItem(STORAGE_KEYS.RECOMMENDATIONS);
+}
+
+// ============================================================================
+// SHOE REQUESTS (Epic 2.5 - Shopping Mode)
+// ============================================================================
+
+export interface StoredShoeRequests {
+  schemaVersion: number;
+  shoeRequests: ShoeRequest[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Save shoe requests to localStorage
+ */
+export function saveShoeRequests(shoeRequests: ShoeRequest[]): boolean {
+  try {
+    const stored: StoredShoeRequests = {
+      schemaVersion: SCHEMA_VERSION,
+      shoeRequests,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    localStorage.setItem('cindaShoeRequests', JSON.stringify(stored));
+    return true;
+  } catch (error) {
+    console.error('Failed to save shoe requests:', error);
+    return false;
+  }
+}
+
+/**
+ * Load shoe requests from localStorage
+ */
+export function loadShoeRequests(): ShoeRequest[] | null {
+  try {
+    const stored = localStorage.getItem('cindaShoeRequests');
+    if (!stored) return null;
+
+    const data = JSON.parse(stored) as StoredShoeRequests;
+    return data.shoeRequests || null;
+  } catch (error) {
+    console.error('Failed to load shoe requests:', error);
+    return null;
+  }
+}
+
+/**
+ * Clear shoe requests data
+ */
+export function clearShoeRequests(): void {
+  localStorage.removeItem('cindaShoeRequests');
+}
+
+// ============================================================================
+// GAP DATA (Epic 2.5 - Analysis Mode)
+// ============================================================================
+
+export interface StoredGap {
+  schemaVersion: number;
+  gap: GapData;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Save gap data to localStorage
+ */
+export function saveGap(gap: GapData): boolean {
+  try {
+    const stored: StoredGap = {
+      schemaVersion: SCHEMA_VERSION,
+      gap,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    localStorage.setItem('cindaGap', JSON.stringify(stored));
+    return true;
+  } catch (error) {
+    console.error('Failed to save gap:', error);
+    return false;
+  }
+}
+
+/**
+ * Load gap data from localStorage
+ */
+export function loadGap(): GapData | null {
+  try {
+    const stored = localStorage.getItem('cindaGap');
+    if (!stored) return null;
+
+    const data = JSON.parse(stored) as StoredGap;
+    return data.gap || null;
+  } catch (error) {
+    console.error('Failed to load gap:', error);
+    return null;
+  }
+}
+
+/**
+ * Clear gap data
+ */
+export function clearGap(): void {
+  localStorage.removeItem('cindaGap');
 }
 
 // ============================================================================

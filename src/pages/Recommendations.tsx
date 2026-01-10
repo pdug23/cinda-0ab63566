@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { ShoeCarousel } from "@/components/results/ShoeCarousel";
-import { loadProfile, loadShoes } from "@/utils/storage";
+import { loadProfile, loadShoes, loadShoeRequests, loadGap } from "@/utils/storage";
 import type { FeelPreferences as APIFeelPreferences, CurrentShoe as APICurrentShoe } from "../../api/types";
 
 // ============================================================================
@@ -30,9 +30,9 @@ interface RecommendedShoe {
 
 interface Gap {
   type: string;
-  role: string;
   severity: string;
   reasoning: string;
+  missingCapability?: string;
 }
 
 interface ShoeRequest {
@@ -62,15 +62,7 @@ interface ShoppingResult {
 
 type Mode = "analysis" | "shopping";
 
-// ============================================================================
-// STORAGE KEYS
-// ============================================================================
-
-const STORAGE_KEYS = {
-  GAP: "cindaGap",
-  SHOE_REQUESTS: "cindaShoeRequests",
-  FEEL_PREFERENCES: "cindaFeelPreferences",
-};
+// STORAGE_KEYS constant removed - using storage utilities instead
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -110,7 +102,7 @@ function LoadingState() {
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 px-4">
       <div className="relative w-full max-w-[320px] aspect-[3/4] rounded-2xl overflow-hidden">
         <div className="absolute inset-0 bg-foreground/5 animate-pulse" />
-        <div 
+        <div
           className="absolute inset-0"
           style={{
             background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)",
@@ -131,17 +123,17 @@ function LoadingState() {
   );
 }
 
-function ErrorState({ 
-  error, 
-  onRetry, 
-  onBack 
-}: { 
-  error: string; 
-  onRetry: () => void; 
+function ErrorState({
+  error,
+  onRetry,
+  onBack
+}: {
+  error: string;
+  onRetry: () => void;
   onBack: () => void;
 }) {
   const isInvalidRequest = error.includes("Invalid");
-  
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 px-4 text-center">
       <p className="text-foreground/70 text-lg">
@@ -195,7 +187,7 @@ function AnalysisHeader({ gap }: { gap: Gap }) {
       </h2>
       <p className="text-xl text-foreground/80 mb-3">
         You'd benefit from a{" "}
-        <strong className="text-primary uppercase">{gap.role} shoe</strong>
+        <strong className="text-primary uppercase">{gap.missingCapability} shoe</strong>
       </p>
       <p className="text-base text-foreground/60 leading-relaxed">
         {gap.reasoning}
@@ -228,15 +220,15 @@ function ShoppingHeader({ results }: { results: ShoppingResultItem[] }) {
   );
 }
 
-function AnalysisModeResults({ 
-  result, 
-  gap 
-}: { 
-  result: AnalysisResult; 
+function AnalysisModeResults({
+  result,
+  gap
+}: {
+  result: AnalysisResult;
   gap: Gap;
 }) {
-  const carouselRole = mapRoleToCarouselRole(gap.role);
-  
+  const carouselRole = mapRoleToCarouselRole(gap.missingCapability || 'daily');
+
   // Transform recommendations for ShoeCarousel
   const carouselShoes = result.recommendations.map((shoe) => ({
     ...shoe,
@@ -255,7 +247,7 @@ function ShoppingModeResults({ result }: { result: ShoppingResult }) {
     <div className="w-full space-y-12">
       {result.shoppingResults.map((item, index) => {
         const carouselRole = mapRoleToCarouselRole(item.role);
-        
+
         return (
           <div key={item.role} className="w-full">
             {index > 0 && (
@@ -306,9 +298,9 @@ export default function RecommendationsPage() {
       // 1. Load data from localStorage
       const profile = loadProfile();
       const shoes = loadShoes();
-      const storedGap = loadFromStorage<Gap>(STORAGE_KEYS.GAP);
-      const shoeRequests = loadFromStorage<ShoeRequest[]>(STORAGE_KEYS.SHOE_REQUESTS);
-      const feelPreferences = loadFromStorage<APIFeelPreferences>(STORAGE_KEYS.FEEL_PREFERENCES);
+      const storedGap = loadGap();
+      const shoeRequests = loadShoeRequests();
+      const feelPreferences = loadFromStorage<APIFeelPreferences>('cindaFeelPreferences');  // Keep this one for now
 
       // 2. Validate required data
       if (!profile) {
@@ -321,7 +313,7 @@ export default function RecommendationsPage() {
       // Analysis mode: has gap + feelPreferences
       // Shopping mode: has shoeRequests
       let detectedMode: Mode;
-      
+
       if (storedGap && feelPreferences) {
         detectedMode = "analysis";
         setGap(storedGap);
@@ -436,14 +428,14 @@ export default function RecommendationsPage() {
   }, [loadDataAndFetch]);
 
   // Check for empty results
-  const isEmpty = 
+  const isEmpty =
     (mode === "analysis" && analysisResult?.recommendations.length === 0) ||
     (mode === "shopping" && shoppingResult?.shoppingResults.length === 0);
 
   return (
     <div className="relative min-h-screen w-full overflow-x-hidden">
       <AnimatedBackground />
-      
+
       <div className="relative z-10 w-full max-w-3xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
@@ -456,26 +448,26 @@ export default function RecommendationsPage() {
 
         {/* Content */}
         {loading && <LoadingState />}
-        
+
         {!loading && error && (
-          <ErrorState 
-            error={error} 
-            onRetry={loadDataAndFetch} 
-            onBack={goBack} 
+          <ErrorState
+            error={error}
+            onRetry={loadDataAndFetch}
+            onBack={goBack}
           />
         )}
-        
+
         {!loading && !error && isEmpty && (
           <EmptyState onBack={goBack} />
         )}
-        
+
         {!loading && !error && !isEmpty && mode === "analysis" && analysisResult && gap && (
           <>
             <AnalysisHeader gap={gap} />
             <AnalysisModeResults result={analysisResult} gap={gap} />
           </>
         )}
-        
+
         {!loading && !error && !isEmpty && mode === "shopping" && shoppingResult && (
           <>
             <ShoppingHeader results={shoppingResult.shoppingResults} />

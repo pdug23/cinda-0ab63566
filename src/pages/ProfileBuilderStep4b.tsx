@@ -13,7 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { saveProfile, saveShoes } from "@/utils/storage";
+import { saveProfile, saveShoes, saveShoeRequests, saveGap } from "@/utils/storage";
 
 // Role display names
 const ROLE_LABELS: Record<DiscoveryShoeRole, string> = {
@@ -323,11 +323,11 @@ const ProfileBuilderStep4b = () => {
         saveShoes(currentShoes as any);  // Uses storage utility with proper format
 
         // Save shoe requests for shopping mode
-        localStorage.setItem("cindaShoeRequests", JSON.stringify(updatedRequests));
+        saveShoeRequests(updatedRequests);
 
         // Save gap if in analysis mode
         if (profileData.step4.gap) {
-          localStorage.setItem("cindaGap", JSON.stringify(profileData.step4.gap));
+          saveGap(profileData.step4.gap);
         }
 
         console.log("All preferences complete. Navigating to recommendations...");
