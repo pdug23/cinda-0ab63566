@@ -41,16 +41,12 @@ const getWeightLabel = (weight: 1 | 2 | 3 | 4 | 5): string => {
   return labels[weight];
 };
 
-const getPlateDisplay = (
+const getPlateLabel = (
   hasPlate: boolean,
   material: "Nylon" | "Plastic" | "Carbon" | null
-): { icon: string; label: string } => {
-  if (!hasPlate) return { icon: "—", label: "Standard" };
-  return { icon: "⚡", label: material || "Plate" };
-};
-
-const getBadgeText = (type: ShoeCardProps["shoe"]["recommendationType"]): string => {
-  return type === "trade_off_option" ? "TRADE-OFF" : "CLOSE MATCH";
+): string => {
+  if (!hasPlate) return "None";
+  return material || "Standard";
 };
 
 const formatBrand = (brand: string): string => {
@@ -84,8 +80,8 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
 
   const roleColor = ROLE_COLORS[role] || ROLE_COLORS.daily;
   const weightLabel = getWeightLabel(shoe.weight_feel_1to5);
-  const plateDisplay = getPlateDisplay(shoe.has_plate, shoe.plate_material);
-  const badgeText = getBadgeText(shoe.recommendationType);
+  const plateLabel = getPlateLabel(shoe.has_plate, shoe.plate_material);
+  const isTradeOff = shoe.recommendationType === "trade_off_option";
 
   return (
     <article
@@ -124,16 +120,14 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
       {/* Badge */}
       <div className="flex justify-center mb-6">
         <span
-          className="text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium"
+          className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium text-white"
           style={{
-            backgroundColor: `${roleColor}26`,
-            border: `1px solid ${roleColor}66`,
-            color: roleColor,
-            boxShadow: `0 0 12px ${roleColor}33`,
+            backgroundColor: isTradeOff ? "#10B981" : "#64748b",
             letterSpacing: "0.5px",
           }}
         >
-          {badgeText}
+          <Check size={14} aria-hidden="true" />
+          {isTradeOff ? "TRADE-OFF" : "CLOSE MATCH"}
         </span>
       </div>
 
@@ -141,8 +135,8 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
       <div className="h-px bg-foreground/10 mb-4" />
 
       {/* Match Reason */}
-      <p className="text-base text-foreground/80 leading-relaxed mb-4 line-clamp-3 text-center italic">
-        "{shoe.matchReason}"
+      <p className="text-base text-foreground/70 leading-relaxed mb-4 line-clamp-3 text-center italic">
+        {shoe.matchReason}
       </p>
 
       {/* Divider */}
@@ -168,15 +162,32 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
       {/* Divider */}
       <div className="h-px bg-foreground/10 mb-4" />
 
-      {/* Specs Row */}
-      <div className="flex justify-center items-center gap-3 text-sm text-foreground/60 mb-4 flex-wrap">
-        <span>⚖️ {weightLabel}</span>
-        <span className="text-foreground/30">•</span>
-        <span>📏 {shoe.heel_drop_mm}mm</span>
-        <span className="text-foreground/30">•</span>
-        <span>
-          {plateDisplay.icon} {plateDisplay.label}
-        </span>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="text-center">
+          <div className="text-xs uppercase tracking-wider text-foreground/60 mb-1">
+            Weight
+          </div>
+          <div className="text-base font-semibold text-foreground">
+            {weightLabel}
+          </div>
+        </div>
+        <div className="text-center">
+          <div className="text-xs uppercase tracking-wider text-foreground/60 mb-1">
+            Heel Drop
+          </div>
+          <div className="text-base font-semibold text-foreground">
+            {shoe.heel_drop_mm}mm
+          </div>
+        </div>
+        <div className="text-center">
+          <div className="text-xs uppercase tracking-wider text-foreground/60 mb-1">
+            Plate
+          </div>
+          <div className="text-base font-semibold text-foreground">
+            {plateLabel}
+          </div>
+        </div>
       </div>
 
       {/* Divider */}
