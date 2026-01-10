@@ -36,6 +36,23 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
   // Disable loop if only 1 recommendation
   const enableLoop = totalSlides > 1;
 
+  // Duplicate slides for small lists to ensure smooth bidirectional looping
+  // Swiper needs enough slides for proper loop behavior with centeredSlides + fractional slidesPerView
+  const minSlidesForLoop = 6;
+  const renderSlides = (() => {
+    if (!enableLoop || totalSlides >= minSlidesForLoop) {
+      return recommendations.map((shoe, index) => ({ shoe, originalIndex: index }));
+    }
+    // Duplicate until we have at least minSlidesForLoop
+    const duplicated: { shoe: RecommendedShoe; originalIndex: number }[] = [];
+    let i = 0;
+    while (duplicated.length < minSlidesForLoop) {
+      duplicated.push({ shoe: recommendations[i % totalSlides], originalIndex: i % totalSlides });
+      i++;
+    }
+    return duplicated;
+  })();
+
   useEffect(() => {
     // Inject custom styles for slides
     const style = document.createElement("style");
@@ -68,7 +85,8 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
   }, []);
 
   const handleSlideChange = (swiper: SwiperType) => {
-    setActiveIndex(swiper.realIndex);
+    // Use realIndex to get the correct original index
+    setActiveIndex(swiper.realIndex % totalSlides);
   };
 
   if (totalSlides === 0) {
@@ -92,7 +110,8 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
         slidesPerView={1.3}
         centeredSlides={true}
         loop={enableLoop}
-        loopAdditionalSlides={totalSlides}
+        loopAdditionalSlides={Math.max(totalSlides, minSlidesForLoop)}
+        watchSlidesProgress={true}
         keyboard={{ enabled: true }}
         grabCursor={true}
         breakpoints={{
@@ -123,13 +142,14 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
         }}
         aria-label="Shoe recommendations carousel"
       >
-        {recommendations.map((shoe, index) => (
+        {renderSlides.map(({ shoe, originalIndex }, renderIndex) => (
           <SwiperSlide
-            key={shoe.shoeId || `shoe-${index}`}
-            aria-label={`Shoe ${index + 1} of ${totalSlides}: ${shoe.fullName}`}
+            key={`${shoe.shoeId || shoe.fullName}-${renderIndex}`}
+            virtualIndex={originalIndex}
+            aria-label={`Shoe ${originalIndex + 1} of ${totalSlides}: ${shoe.fullName}`}
           >
             <div className="flex justify-center">
-              <ShoeCard shoe={shoe} role={role} position={((index % 3) + 1) as 1 | 2 | 3} />
+              <ShoeCard shoe={shoe} role={role} position={((originalIndex % 3) + 1) as 1 | 2 | 3} />
             </div>
           </SwiperSlide>
         ))}
