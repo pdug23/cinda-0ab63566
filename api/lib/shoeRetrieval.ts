@@ -178,9 +178,17 @@ function scoreFeelMatch(
   const stableArr = normalizePref(prefs.stableVsNeutral);
   const bounceArr = normalizePref(prefs.bouncyVsDamped);
 
+  // CRITICAL: User preferences are inverted from shoebase scale
+  // User slider: 1=soft, 5=firm
+  // Shoebase: 1=firm, 5=soft
+  // We must invert user preferences before comparing
+  const invertPrefArray = (arr: number[]): number[] => arr.map(v => 6 - v);
+
+  const invertedSoftArr = invertPrefArray(softArr);
+  const invertedStableArr = invertPrefArray(stableArr);
+  const invertedBounceArr = invertPrefArray(bounceArr);
+
   // For each feel dimension, calculate minimum distance from preference array
-  // NOTE: Scales are aligned (5=soft in both shoe and pref, 1=firm in both)
-  // This allows direct comparison without inversion
   // Formula: 10 - min_distance * 2
   // Perfect match (distance 0) = 10 points
   // Distance 1 = 8 points
@@ -192,9 +200,9 @@ function scoreFeelMatch(
     return Math.min(...prefArr.map(p => Math.abs(shoeValue - p)));
   };
 
-  const softScore = Math.max(0, 10 - minDistance(shoe.cushion_softness_1to5, softArr) * 2);
-  const stabilityScore = Math.max(0, 10 - minDistance(shoe.stability_1to5, stableArr) * 2);
-  const bounceScore = Math.max(0, 10 - minDistance(shoe.bounce_1to5, bounceArr) * 2);
+  const softScore = Math.max(0, 10 - minDistance(shoe.cushion_softness_1to5, invertedSoftArr) * 2);
+  const stabilityScore = Math.max(0, 10 - minDistance(shoe.stability_1to5, invertedStableArr) * 2);
+  const bounceScore = Math.max(0, 10 - minDistance(shoe.bounce_1to5, invertedBounceArr) * 2);
 
   return softScore + stabilityScore + bounceScore;
 }
