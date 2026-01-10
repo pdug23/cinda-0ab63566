@@ -38,7 +38,14 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
     const style = document.createElement("style");
     style.id = "swiper-custom-styles";
     style.textContent = `
+      .shoe-carousel .swiper {
+        overflow: visible !important;
+      }
+      .shoe-carousel .swiper-wrapper {
+        overflow: visible !important;
+      }
       .shoe-carousel .swiper-slide {
+        overflow: visible !important;
         transition: transform 250ms ease-out, opacity 250ms ease-out;
         opacity: 0.6;
         transform: scale(0.95);
