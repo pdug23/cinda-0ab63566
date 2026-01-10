@@ -298,7 +298,11 @@ const ProfileBuilderStep4b = () => {
           experience: step1.experience!,
           primaryGoal: step2.primaryGoal!,
           runningPattern: step2.runningPattern ?? undefined,
-          weeklyVolume: step2.weeklyVolume ?? undefined,
+          doesTrail: (step2 as any).doesTrail ?? false,
+          weeklyVolume: step2.weeklyVolume ? {
+            value: step2.weeklyVolume.value,
+            unit: step2.weeklyVolume.unit
+          } : undefined,
           pbs: {
             mile: step2.personalBests.mile ?? undefined,
             fiveK: step2.personalBests["5k"] ?? undefined,
@@ -311,7 +315,7 @@ const ProfileBuilderStep4b = () => {
 
         // Save current shoes
         const currentShoes = step3.currentShoes.map((shoe) => ({
-          shoeId: shoe.shoe.shoe_id,
+          shoe: shoe.shoe,  // Save full shoe object, not just ID
           roles: shoe.roles,
           sentiment: shoe.sentiment ?? "neutral",
         }));
