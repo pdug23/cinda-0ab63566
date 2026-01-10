@@ -103,7 +103,7 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
   }
 
   return (
-    <div className="shoe-carousel w-full py-2">
+    <div className="shoe-carousel w-full py-6">
       <Swiper
         modules={[Keyboard]}
         spaceBetween={16}
