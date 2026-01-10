@@ -138,7 +138,7 @@ const Landing = () => {
                 </h1>
                 <p 
                   className="text-card-foreground leading-tight italic mt-4"
-                  style={{ fontVariantLigatures: "none", fontSize: "24px", fontWeight: 900 }}
+                  style={{ fontVariantLigatures: "none", fontSize: "20px", fontWeight: 900 }}
                 >
                   buying running shoes has never felt more overwhelming.
                 </p>
