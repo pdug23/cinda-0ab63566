@@ -85,8 +85,8 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
     <div className="shoe-carousel w-full py-6">
       <Swiper
         modules={[Keyboard]}
-        spaceBetween={16}
-        slidesPerView={1.3}
+        spaceBetween={32}
+        slidesPerView={1.2}
         centeredSlides={true}
         loop={false}
         watchSlidesProgress={true}
@@ -94,20 +94,20 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
         grabCursor={true}
         breakpoints={{
           320: {
-            slidesPerView: 1.15,
-            spaceBetween: 12,
+            slidesPerView: 1.1,
+            spaceBetween: 24,
           },
           375: {
-            slidesPerView: 1.2,
-            spaceBetween: 16,
+            slidesPerView: 1.15,
+            spaceBetween: 32,
           },
           640: {
-            slidesPerView: 1.4,
-            spaceBetween: 20,
+            slidesPerView: 1.25,
+            spaceBetween: 40,
           },
           1024: {
-            slidesPerView: 1.5,
-            spaceBetween: 24,
+            slidesPerView: 1.35,
+            spaceBetween: 48,
           },
         }}
         onSwiper={(swiper) => {
