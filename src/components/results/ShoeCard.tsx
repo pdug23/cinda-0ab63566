@@ -174,27 +174,28 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
       <div className="h-px bg-card-foreground/10 mb-4" />
 
         {/* Action Buttons */}
-        <div className="flex flex-col gap-3">
+        <div className="flex gap-2">
           <Button
-            className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 h-auto"
+            variant="outline"
+            className="flex-1 gap-2 bg-card/50 border-card-foreground/20 text-card-foreground/80 hover:bg-card-foreground/10 hover:text-card-foreground py-3 h-auto text-sm font-medium lowercase"
             onClick={() => {
               // TODO: Implement shortlist functionality
               console.log("Added to shortlist:", shoe.fullName);
             }}
           >
             <Heart className="w-4 h-4" />
-            Add to Shortlist
+            add to shortlist
           </Button>
           <Button
             variant="outline"
-            className="w-full gap-2 border-card-foreground/20 text-card-foreground/80 hover:bg-card-foreground/10 hover:text-card-foreground py-3 h-auto"
+            className="flex-1 gap-2 bg-card/50 border-card-foreground/20 text-card-foreground/80 hover:bg-card-foreground/10 hover:text-card-foreground py-3 h-auto text-sm font-medium lowercase"
             onClick={() => {
               // TODO: Implement retailer links modal
               console.log("Where to buy:", shoe.fullName);
             }}
           >
             <ExternalLink className="w-4 h-4" />
-            Where to Buy
+            where to buy
           </Button>
         </div>
       </article>
