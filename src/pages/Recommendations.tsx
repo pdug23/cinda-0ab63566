@@ -181,7 +181,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
 
 function PageHeader() {
   return (
-    <div className="text-center pt-3 pb-6 px-5">
+    <div className="text-center py-2 px-5">
       <h1 className="text-xl font-bold text-card-foreground/90 lowercase">
         cinda's recommendations
       </h1>
@@ -399,12 +399,12 @@ export default function RecommendationsPage() {
       <AnimatedBackground />
       <OnboardingLayout scrollable>
         {/* Back button */}
-        <div className="px-5 pt-4">
+        <div className="px-5 pt-2">
           <BackButton onClick={goBack} />
         </div>
 
         {/* Content */}
-        <>
+        <div className="flex-1 flex flex-col min-h-0">
           {loading && <LoadingState />}
 
           {!loading && error && (
@@ -420,22 +420,23 @@ export default function RecommendationsPage() {
           )}
 
           {!loading && !error && !isEmpty && mode === "analysis" && analysisResult && gap && (
-            <>
+            <div className="flex-1 flex flex-col min-h-0">
               <PageHeader />
-              <AnalysisModeResults result={analysisResult} gap={gap} />
-            </>
+              <div className="flex-1 flex items-center min-h-0">
+                <AnalysisModeResults result={analysisResult} gap={gap} />
+              </div>
+            </div>
           )}
 
           {!loading && !error && !isEmpty && mode === "shopping" && shoppingResult && (
-            <>
+            <div className="flex-1 flex flex-col min-h-0">
               <PageHeader />
-              <ShoppingModeResults result={shoppingResult} />
-            </>
+              <div className="flex-1 flex items-center min-h-0">
+                <ShoppingModeResults result={shoppingResult} />
+              </div>
+            </div>
           )}
-
-          {/* TODO Task 8: Rotation Panel */}
-          {/* TODO Task 7: CTAs */}
-        </>
+        </div>
       </OnboardingLayout>
     </>
   );
