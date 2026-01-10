@@ -94,12 +94,12 @@ const Landing = () => {
         />
 
         {viewState === "landing" && (
-          <PageTransition className="flex flex-col items-center text-center p-6 md:p-8 flex-1 relative z-10 pt-[160px]">
+          <PageTransition className="absolute inset-0 flex flex-col items-center text-center px-6 z-10">
             {/* Landing content with exit animation */}
             <div
               className={`flex flex-col items-center transition-all ${
                 prefersReducedMotion ? "" : "duration-300"
-              } ${isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
+              } ${isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100"} mt-[170px]`}
             >
               <h1
                 className="text-card-foreground/90 max-w-md leading-tight italic text-center"
@@ -107,11 +107,18 @@ const Landing = () => {
               >
                 every runner deserves to find their perfect fit.
               </h1>
+            </div>
 
+            {/* Button fixed above bottom link */}
+            <div
+              className={`absolute bottom-20 left-1/2 -translate-x-1/2 transition-all ${
+                prefersReducedMotion ? "" : "duration-300"
+              } ${isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
+            >
               <Button
                 onClick={handleStartOrientation}
                 variant="cta"
-                className="px-10 min-h-[44px] text-sm mt-10"
+                className="px-10 min-h-[44px] text-sm"
               >
                 find yours
               </Button>
@@ -120,8 +127,8 @@ const Landing = () => {
         )}
 
         {viewState === "orientation" && (
-          <PageTransition className="flex flex-col items-center text-center p-6 md:p-8 flex-1 relative z-10 pt-[160px]">
-            <div className="flex flex-col items-center max-w-md">
+          <PageTransition className="absolute inset-0 flex flex-col items-center text-center px-6 z-10">
+            <div className="flex flex-col items-center max-w-md mt-[170px]">
               {/* Headline and subheading */}
               <div
                 className={`transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
@@ -170,21 +177,21 @@ const Landing = () => {
                   ))}
                 </div>
               </div>
+            </div>
 
-              {/* CTA */}
-              <div
-                className={`mt-10 transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
-                  showCta ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-                }`}
+            {/* CTA fixed above bottom link */}
+            <div
+              className={`absolute bottom-20 left-1/2 -translate-x-1/2 transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
+                showCta ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+              }`}
+            >
+              <Button
+                onClick={handleStartProfile}
+                variant="cta"
+                className="px-10 min-h-[44px] text-sm"
               >
-                <Button
-                  onClick={handleStartProfile}
-                  variant="cta"
-                  className="px-10 min-h-[44px] text-sm"
-                >
-                  let's get started
-                </Button>
-              </div>
+                let's get started
+              </Button>
             </div>
           </PageTransition>
         )}
