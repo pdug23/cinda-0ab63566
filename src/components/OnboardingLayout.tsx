@@ -8,13 +8,16 @@ interface OnboardingLayoutProps {
   centerContent?: boolean;
   /** Whether the container should be transparent (for landing page) */
   transparent?: boolean;
+  /** Whether to make just the background transparent (allows glow effects to show through) */
+  transparentBackground?: boolean;
 }
 
 const OnboardingLayout = ({ 
   children, 
   scrollable = false,
   centerContent = false,
-  transparent = false
+  transparent = false,
+  transparentBackground = false
 }: OnboardingLayoutProps) => {
   const [showContainer, setShowContainer] = useState(!transparent);
 
@@ -58,7 +61,9 @@ const OnboardingLayout = ({
 
   const containerClasses = transparent && !showContainer
     ? "bg-transparent border-transparent shadow-none"
-    : "bg-card border-border/20 shadow-xl";
+    : transparentBackground
+      ? "bg-transparent border-border/20 shadow-xl"
+      : "bg-card border-border/20 shadow-xl";
 
   return (
     <div
