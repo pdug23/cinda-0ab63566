@@ -207,7 +207,7 @@ const Landing = () => {
             onClick={() => setShowA2HSModal(true)}
             className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors cursor-pointer z-10"
           >
-            add to home screen
+            add cinda to your home screen
           </button>
         )}
 
