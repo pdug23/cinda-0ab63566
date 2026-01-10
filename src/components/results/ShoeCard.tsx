@@ -76,8 +76,8 @@ export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
     <>
       <style>{`
         @keyframes border-glow-${position} {
-          0%, 100% { box-shadow: 0 0 15px ${shimmer}80, 0 0 30px ${shimmer}50, 0 0 45px ${shimmer}30; }
-          50% { box-shadow: 0 0 25px ${shimmer}99, 0 0 50px ${shimmer}66, 0 0 75px ${shimmer}40; }
+          0%, 100% { box-shadow: 0 0 8px ${shimmer}70, 0 0 12px ${shimmer}50, 0 0 16px ${shimmer}30; }
+          50% { box-shadow: 0 0 10px ${shimmer}90, 0 0 16px ${shimmer}60, 0 0 22px ${shimmer}40; }
         }
         @keyframes text-shimmer-${position} {
           0% { background-position: -200% center; }
@@ -102,7 +102,7 @@ export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
           animation: text-shimmer-${position} 4s linear infinite;
         }
         @media (prefers-reduced-motion: reduce) {
-          .card-glow-${position} { animation: none; box-shadow: 0 0 15px ${shimmer}80; }
+          .card-glow-${position} { animation: none; box-shadow: 0 0 10px ${shimmer}70; }
           .text-shimmer-${position} { animation: none; background: none; -webkit-text-fill-color: currentColor; }
         }
       `}</style>
@@ -110,7 +110,7 @@ export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
         className={`relative w-full max-w-[90vw] min-w-[320px] rounded-2xl p-6 card-glow-${position}`}
         style={{
           background: "rgba(26, 26, 30, 0.95)",
-          border: `2px solid ${shimmer}80`,
+          border: "2px solid rgba(255, 255, 255, 0.25)",
         }}
       >
         {/* Shoe Image */}
