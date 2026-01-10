@@ -419,7 +419,7 @@ export interface RecommendedShoe {
 
   // Recommendation context
   recommendationType: RecommendationType;
-  matchReason: string; // Why this shoe fills the gap
+  matchReason: string[]; // Two bullet points: why it's good for role, what's notable
   keyStrengths: string[]; // 2-3 key selling points
   tradeOffs?: string[]; // What runner gives up with this choice (especially for trade_off_option)
 }

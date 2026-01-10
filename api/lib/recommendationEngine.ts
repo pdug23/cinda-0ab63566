@@ -27,46 +27,65 @@ const openaiClient = new OpenAI({
 
 /**
  * Generate a custom match description using gpt-5-mini
- * Explains why this specific shoe is good for the given role
+ * Returns two bullet points: why it's good for role, what's notable
  */
 async function generateMatchDescription(
   role: string,
   whyItFeelsThisWay: string | undefined,
   notableDetail: string | undefined
-): Promise<string> {
+): Promise<string[]> {
   // Fallback if no shoe characteristics provided
   if (!whyItFeelsThisWay && !notableDetail) {
-    return `Well-suited for ${role} runs based on your preferences.`;
+    return [
+      `Well-suited for ${role} runs based on your preferences.`,
+      `A solid option for this role.`
+    ];
   }
 
   const prompt = `You're recommending a ${role} shoe to a runner.
 
-Write 1-2 sentences explaining why this shoe is good for ${role} runs.
+Write exactly TWO bullet points:
+1. Why this shoe is good for ${role} runs (connect the feel to the role)
+2. What's notable or unique about this shoe compared to other shoes
 
 Shoe characteristics: ${whyItFeelsThisWay || 'Not specified'}
 What makes it special: ${notableDetail || 'Not specified'}
 
-Connect the feel to why it works for ${role}. Be conversational and confident.
-Return only the description, no preamble.`;
+Be conversational and confident. Return only the two bullet points, no numbering or formatting.`;
 
   try {
     const response = await openaiClient.chat.completions.create({
       model: 'gpt-5-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
-      max_tokens: 100,
+      max_tokens: 150,
     });
 
     const content = response.choices[0]?.message?.content?.trim();
     if (content) {
-      return content;
+      // Split by newlines and filter out empty lines
+      const lines = content
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+
+      // Return first two non-empty lines
+      if (lines.length >= 2) {
+        return [lines[0], lines[1]];
+      } else if (lines.length === 1) {
+        // If only one line, use it and add a fallback
+        return [lines[0], notableDetail || `A solid option for ${role} runs.`];
+      }
     }
   } catch (error) {
     console.error('[generateMatchDescription] OpenAI API error:', error);
   }
 
-  // Fallback to notable_detail or generic message
-  return notableDetail || `Well-suited for ${role} runs based on your preferences.`;
+  // Fallback to two bullet points
+  return [
+    notableDetail || `Well-suited for ${role} runs based on your preferences.`,
+    `A solid option for this role.`
+  ];
 }
 
 // ============================================================================
