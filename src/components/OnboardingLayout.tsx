@@ -12,6 +12,8 @@ interface OnboardingLayoutProps {
   transparentBackground?: boolean;
   /** Whether to allow content to overflow (for glow effects) */
   allowOverflow?: boolean;
+  /** Text to display below the container */
+  bottomText?: string | null;
 }
 
 const OnboardingLayout = ({
@@ -20,7 +22,8 @@ const OnboardingLayout = ({
   centerContent = false,
   transparent = false,
   transparentBackground = false,
-  allowOverflow = false
+  allowOverflow = false,
+  bottomText = null
 }: OnboardingLayoutProps) => {
   const [showContainer, setShowContainer] = useState(!transparent);
 
@@ -76,7 +79,7 @@ const OnboardingLayout = ({
         paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
       }}
     >
-      <main className="h-full flex items-center justify-center px-4 md:px-6">
+      <main className="h-full flex flex-col items-center justify-center px-4 md:px-6">
         <div
           className={`w-full max-w-lg flex flex-col rounded-2xl border ${allowOverflow ? 'overflow-x-hidden overflow-y-visible' : 'overflow-hidden'} relative z-10 transition-all duration-300 ease-out ${containerClasses} ${centerContent ? 'justify-center' : ''
             }`}
@@ -88,6 +91,13 @@ const OnboardingLayout = ({
         >
           {children}
         </div>
+        
+        {/* Text below container */}
+        {bottomText && (
+          <p className="mt-4 text-xs italic text-orange-400/50 text-center max-w-md px-4 transition-opacity duration-200">
+            {bottomText}
+          </p>
+        )}
       </main>
     </div>
   );
