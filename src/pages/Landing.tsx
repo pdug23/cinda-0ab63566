@@ -71,10 +71,9 @@ const Landing = () => {
   }, [viewState, prefersReducedMotion]);
 
   const steps = [
-    { text: "(optional) add this app to your home screen", clickable: true },
-    { text: "tell us about you and how you run", clickable: false },
-    { text: "share your current shoes (or don't!)", clickable: false },
-    { text: "get recommendations that actually fit your needs", clickable: false },
+    "tell us about you and how you run",
+    "share your current shoes (or don't!)",
+    "get recommendations that actually fit your needs",
   ];
 
   return (
@@ -158,10 +157,7 @@ const Landing = () => {
                   {steps.map((step, index) => (
                     <div
                       key={index}
-                      className={`flex items-start gap-3 text-left ${
-                        step.clickable ? "cursor-pointer group" : ""
-                      }`}
-                      onClick={step.clickable ? () => setShowA2HSModal(true) : undefined}
+                      className="flex items-start gap-3 text-left"
                       style={{
                         transitionDelay: prefersReducedMotion ? "0ms" : `${index * 100}ms`,
                       }}
@@ -169,12 +165,8 @@ const Landing = () => {
                       <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-medium flex items-center justify-center">
                         {index + 1}
                       </span>
-                      <span className={`text-sm pt-0.5 text-card-foreground ${
-                        step.clickable
-                          ? "underline decoration-dotted underline-offset-2 group-hover:text-card-foreground/80 transition-colors"
-                          : ""
-                      }`}>
-                        {step.text}
+                      <span className="text-sm pt-0.5 text-card-foreground">
+                        {step}
                       </span>
                     </div>
                   ))}
@@ -206,6 +198,16 @@ const Landing = () => {
             className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors cursor-pointer z-10"
           >
             how does cinda work?
+          </button>
+        )}
+
+        {/* Add to home screen link - only on orientation */}
+        {viewState === "orientation" && !isExiting && (
+          <button
+            onClick={() => setShowA2HSModal(true)}
+            className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors cursor-pointer z-10"
+          >
+            add to home screen
           </button>
         )}
 
