@@ -13,6 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { saveProfile, saveShoes } from "@/utils/storage";
 
 // Role display names
 const ROLE_LABELS: Record<DiscoveryShoeRole, string> = {
@@ -311,7 +312,7 @@ const ProfileBuilderStep4b = () => {
             marathon: step2.personalBests.marathon ?? undefined,
           },
         };
-        localStorage.setItem("cindaProfile", JSON.stringify(profile));
+        saveProfile(profile as any);  // Uses storage utility with proper format
 
         // Save current shoes
         const currentShoes = step3.currentShoes.map((shoe) => ({
@@ -319,7 +320,7 @@ const ProfileBuilderStep4b = () => {
           roles: shoe.roles,
           sentiment: shoe.sentiment ?? "neutral",
         }));
-        localStorage.setItem("cindaShoes", JSON.stringify(currentShoes));
+        saveShoes(currentShoes as any);  // Uses storage utility with proper format
 
         // Save shoe requests for shopping mode
         localStorage.setItem("cindaShoeRequests", JSON.stringify(updatedRequests));
