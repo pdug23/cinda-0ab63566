@@ -193,6 +193,7 @@ const ProfileBuilderStep4b = () => {
   const navigate = useNavigate();
   const { profileData, updateStep4 } = useProfile();
 
+  const { step1, step2, step3 } = profileData;
   const { selectedRoles, currentRoleIndex, shoeRequests } = profileData.step4;
   const totalRoles = selectedRoles.length;
   const currentRole = selectedRoles[currentRoleIndex];
