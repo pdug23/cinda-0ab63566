@@ -41,12 +41,16 @@ const getWeightLabel = (weight: 1 | 2 | 3 | 4 | 5): string => {
   return labels[weight];
 };
 
-const getPlateLabel = (
+const getPlateDisplay = (
   hasPlate: boolean,
   material: "Nylon" | "Plastic" | "Carbon" | null
-): string => {
-  if (!hasPlate) return "None";
-  return material || "Standard";
+): { icon: string; label: string } => {
+  if (!hasPlate) return { icon: "—", label: "Standard" };
+  return { icon: "⚡", label: material || "Plate" };
+};
+
+const getBadgeText = (type: ShoeCardProps["shoe"]["recommendationType"]): string => {
+  return type === "trade_off_option" ? "TRADE-OFF" : "CLOSE MATCH";
 };
 
 const formatBrand = (brand: string): string => {
@@ -80,34 +84,19 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
 
   const roleColor = ROLE_COLORS[role] || ROLE_COLORS.daily;
   const weightLabel = getWeightLabel(shoe.weight_feel_1to5);
-  const plateLabel = getPlateLabel(shoe.has_plate, shoe.plate_material);
-  const isTradeOff = shoe.recommendationType === "trade_off_option";
+  const plateDisplay = getPlateDisplay(shoe.has_plate, shoe.plate_material);
+  const badgeText = getBadgeText(shoe.recommendationType);
 
   return (
-    <>
-      <style>{`
-        @keyframes border-glow {
-          0%, 100% { 
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), 0 0 20px ${roleColor}33;
-          }
-          50% { 
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), 0 0 30px ${roleColor}55;
-          }
-        }
-        @keyframes text-shimmer {
-          0%, 100% { opacity: 0.9; }
-          50% { opacity: 1; }
-        }
-      `}</style>
-      <article
-        className="relative w-full max-w-[90vw] min-w-[320px] rounded-2xl p-6"
-        style={{
-          background: "rgba(26, 26, 30, 0.95)",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          borderLeft: `2px solid ${roleColor}`,
-          animation: "border-glow 2s ease-in-out infinite",
-        }}
-      >
+    <article
+      className="relative w-full max-w-[90vw] min-w-[320px] rounded-2xl p-6"
+      style={{
+        background: "rgba(26, 26, 30, 0.95)",
+        border: "1px solid rgba(255, 255, 255, 0.1)",
+        borderLeft: `2px solid ${roleColor}`,
+        boxShadow: "0 4px 24px rgba(0, 0, 0, 0.15)",
+      }}
+    >
       {/* Shoe Image */}
       <div className="flex justify-center mb-5">
         <img
@@ -128,24 +117,23 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
       </div>
 
       {/* Shoe Model (bigger than brand) */}
-      <h2 
-        className="text-[28px] font-bold text-foreground text-center mb-4"
-        style={{ animation: "text-shimmer 3s ease-in-out infinite" }}
-      >
+      <h2 className="text-[28px] font-bold text-foreground text-center mb-4">
         {formatModel(shoe.model, shoe.version)}
       </h2>
 
       {/* Badge */}
       <div className="flex justify-center mb-6">
         <span
-          className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium text-white"
+          className="text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium"
           style={{
-            backgroundColor: isTradeOff ? "#10B981" : "#64748b",
+            backgroundColor: `${roleColor}26`,
+            border: `1px solid ${roleColor}66`,
+            color: roleColor,
+            boxShadow: `0 0 12px ${roleColor}33`,
             letterSpacing: "0.5px",
           }}
         >
-          <Check size={14} aria-hidden="true" />
-          {isTradeOff ? "TRADE-OFF" : "CLOSE MATCH"}
+          {badgeText}
         </span>
       </div>
 
@@ -153,8 +141,8 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
       <div className="h-px bg-foreground/10 mb-4" />
 
       {/* Match Reason */}
-      <p className="text-base text-foreground/70 leading-relaxed mb-4 line-clamp-3 text-center italic">
-        {shoe.matchReason}
+      <p className="text-base text-foreground/80 leading-relaxed mb-4 line-clamp-3 text-center italic">
+        "{shoe.matchReason}"
       </p>
 
       {/* Divider */}
@@ -180,32 +168,15 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
       {/* Divider */}
       <div className="h-px bg-foreground/10 mb-4" />
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-4 mb-4">
-        <div className="text-center">
-          <div className="text-xs uppercase tracking-wider text-foreground/60 mb-1">
-            Weight
-          </div>
-          <div className="text-base font-semibold text-foreground">
-            {weightLabel}
-          </div>
-        </div>
-        <div className="text-center">
-          <div className="text-xs uppercase tracking-wider text-foreground/60 mb-1">
-            Heel Drop
-          </div>
-          <div className="text-base font-semibold text-foreground">
-            {shoe.heel_drop_mm}mm
-          </div>
-        </div>
-        <div className="text-center">
-          <div className="text-xs uppercase tracking-wider text-foreground/60 mb-1">
-            Plate
-          </div>
-          <div className="text-base font-semibold text-foreground">
-            {plateLabel}
-          </div>
-        </div>
+      {/* Specs Row */}
+      <div className="flex justify-center items-center gap-3 text-sm text-foreground/60 mb-4 flex-wrap">
+        <span>⚖️ {weightLabel}</span>
+        <span className="text-foreground/30">•</span>
+        <span>📏 {shoe.heel_drop_mm}mm</span>
+        <span className="text-foreground/30">•</span>
+        <span>
+          {plateDisplay.icon} {plateDisplay.label}
+        </span>
       </div>
 
       {/* Divider */}
@@ -274,7 +245,6 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
         </div>
       </div>
     </article>
-    </>
   );
 }
 
