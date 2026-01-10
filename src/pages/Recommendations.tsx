@@ -214,23 +214,15 @@ function AnalysisModeResults({
 
 function ShoppingModeResults({ result }: { result: ShoppingResult }) {
   return (
-    <div className="w-full space-y-12">
+    <div className="w-full space-y-8">
       {result.shoppingResults.map((item, index) => {
         const carouselRole = mapRoleToCarouselRole(item.role);
 
         return (
           <div key={item.role} className="w-full">
             {index > 0 && (
-              <div className="h-px bg-card-foreground/10 mx-6 mb-8" />
+              <div className="h-px bg-card-foreground/10 mx-6 mb-4" />
             )}
-            <div className="px-5 mb-4">
-              <h3 className="text-xl font-semibold text-card-foreground capitalize mb-2">
-                {item.role} shoes
-              </h3>
-              <p className="text-[15px] text-card-foreground/60">
-                {item.reasoning}
-              </p>
-            </div>
             <ShoeCarousel recommendations={item.recommendations} role={carouselRole} />
           </div>
         );
