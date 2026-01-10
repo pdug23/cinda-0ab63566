@@ -181,42 +181,22 @@ function BackButton({ onClick }: { onClick: () => void }) {
 
 function AnalysisHeader({ gap }: { gap: Gap }) {
   return (
-    <div className="text-center max-w-[600px] mx-auto py-10 px-5">
-      <div className="text-5xl mb-4">📊</div>
-      <h2 className="text-2xl font-bold text-foreground mb-4 lowercase">
-        based on your rotation analysis
+    <div className="text-center py-6 px-5">
+      <h2 className="text-xl font-bold text-foreground lowercase">
+        recommendations for your{" "}
+        <span className="text-primary">{gap.missingCapability}</span> shoe
       </h2>
-      <p className="text-xl text-foreground/80 mb-3">
-        You'd benefit from a{" "}
-        <strong className="text-primary uppercase">{gap.missingCapability} shoe</strong>
-      </p>
-      <p className="text-base text-foreground/60 leading-relaxed">
-        {gap.reasoning}
-      </p>
     </div>
   );
 }
 
 function ShoppingHeader({ results }: { results: ShoppingResultItem[] }) {
+  const roles = results.map(r => r.role).join(", ");
   return (
-    <div className="text-center max-w-[600px] mx-auto py-10 px-5">
-      <div className="text-5xl mb-4">🛍️</div>
-      <h2 className="text-2xl font-bold text-foreground mb-4 lowercase">
-        recommendations for your selections
+    <div className="text-center py-6 px-5">
+      <h2 className="text-xl font-bold text-foreground lowercase">
+        recommendations for {roles} {results.length === 1 ? 'shoe' : 'shoes'}
       </h2>
-      <p className="text-base text-foreground/60">
-        Showing matches for:
-      </p>
-      <div className="flex flex-wrap justify-center gap-2 mt-3">
-        {results.map((result) => (
-          <span
-            key={result.role}
-            className="px-3 py-1 text-sm bg-foreground/10 rounded-full text-foreground/80"
-          >
-            • {result.role} shoe
-          </span>
-        ))}
-      </div>
     </div>
   );
 }
