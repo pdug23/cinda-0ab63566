@@ -7,7 +7,7 @@ interface ShoeCardProps {
     fullName: string;
     model: string;
     version: string;
-    matchReason: string;
+    matchReason: string[];
     keyStrengths: string[];
     recommendationType: "close_match" | "close_match_2" | "trade_off_option";
     weight_feel_1to5: 1 | 2 | 3 | 4 | 5;
@@ -139,9 +139,9 @@ export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
         </h2>
 
         {/* Badge */}
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-3">
           <span
-            className="flex items-center gap-1.5 text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium"
+            className="text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium"
             style={{
               backgroundColor: `${badgeConfig.color}26`,
               border: `1px solid ${badgeConfig.color}66`,
@@ -150,24 +150,34 @@ export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
               letterSpacing: "0.5px",
             }}
           >
-            <Check className="w-3.5 h-3.5" aria-hidden="true" />
             {badgeConfig.text}
           </span>
         </div>
 
         {/* Divider */}
-        <div className="h-px mb-4" style={{ backgroundColor: dividerColor }} />
+        <div className="h-px mb-3" style={{ backgroundColor: dividerColor }} />
 
-      {/* Match Description */}
-      <p 
-        className="text-sm italic leading-relaxed mb-4 line-clamp-3"
-        style={{ color: textColorMuted }}
-      >
-        {shoe.matchReason}
-      </p>
+        {/* Match Reasons - Two Bullet Points */}
+        <div className="space-y-2 mb-3">
+          {shoe.matchReason.slice(0, 2).map((reason, idx) => (
+            <div key={idx} className="flex items-start gap-2">
+              <Check 
+                className="w-4 h-4 shrink-0 mt-0.5" 
+                style={{ color: "#10B981" }} 
+                aria-hidden="true" 
+              />
+              <span 
+                className="text-sm leading-snug"
+                style={{ color: textColorMuted }}
+              >
+                {reason}
+              </span>
+            </div>
+          ))}
+        </div>
 
-      {/* Divider */}
-      <div className="h-px mb-4" style={{ backgroundColor: dividerColor }} />
+        {/* Divider */}
+        <div className="h-px mb-3" style={{ backgroundColor: dividerColor }} />
 
         {/* Specs Grid */}
         <div className="grid grid-cols-3 gap-4 mb-4">
