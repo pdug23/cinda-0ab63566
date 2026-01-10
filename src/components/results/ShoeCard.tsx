@@ -174,28 +174,28 @@ export function ShoeCard({ shoe, role }: ShoeCardProps) {
       <div className="h-px bg-card-foreground/10 mb-4" />
 
         {/* Action Buttons */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full">
           <Button
             variant="outline"
-            className="flex-1 gap-2 bg-card/50 border-card-foreground/20 text-card-foreground/80 hover:bg-card-foreground/10 hover:text-card-foreground py-3 h-auto text-sm font-medium lowercase"
+            className="flex-1 min-w-0 gap-1.5 bg-card/50 border-card-foreground/20 text-card-foreground/80 hover:bg-card-foreground/10 hover:text-card-foreground py-2.5 px-3 h-auto text-xs font-medium lowercase"
             onClick={() => {
               // TODO: Implement shortlist functionality
               console.log("Added to shortlist:", shoe.fullName);
             }}
           >
-            <Heart className="w-4 h-4" />
-            add to shortlist
+            <Heart className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">add to shortlist</span>
           </Button>
           <Button
             variant="outline"
-            className="flex-1 gap-2 bg-card/50 border-card-foreground/20 text-card-foreground/80 hover:bg-card-foreground/10 hover:text-card-foreground py-3 h-auto text-sm font-medium lowercase"
+            className="flex-1 min-w-0 gap-1.5 bg-card/50 border-card-foreground/20 text-card-foreground/80 hover:bg-card-foreground/10 hover:text-card-foreground py-2.5 px-3 h-auto text-xs font-medium lowercase"
             onClick={() => {
               // TODO: Implement retailer links modal
-              console.log("Where to buy:", shoe.fullName);
+              console.log("Buy now:", shoe.fullName);
             }}
           >
-            <ExternalLink className="w-4 h-4" />
-            where to buy
+            <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">buy now</span>
           </Button>
         </div>
       </article>
