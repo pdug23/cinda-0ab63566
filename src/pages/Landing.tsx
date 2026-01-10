@@ -7,7 +7,6 @@ import AnimatedBackground from "@/components/AnimatedBackground";
 import FloatingJargon from "@/components/FloatingJargon";
 import { usePageNavigation } from "@/hooks/usePageNavigation";
 import { AddToHomeScreenModal } from "@/components/AddToHomeScreenModal";
-import { Smartphone } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -136,20 +135,23 @@ const Landing = () => {
                   className="text-card-foreground leading-tight italic"
                   style={{ fontVariantLigatures: "none", fontSize: "24px", fontWeight: 900 }}
                 >
-                  buying running shoes is more complex than it should be.
+                  buying running shoes has never been more overwhelming.
                 </h1>
+                <p className="text-card-foreground/60 text-sm mt-3 leading-relaxed">
+                  endless marketing. infinite options. zero clarity.
+                </p>
                 <p className="text-card-foreground/80 text-base mt-4">
-                  cinda helps you cut through the noise.
+                  but cinda helps you cut through the noise.
                 </p>
               </div>
 
               {/* Steps */}
               <div
-                className={`mt-10 w-full transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
+                className={`mt-10 w-full max-w-xs mx-auto transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
                   showSteps ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                 }`}
               >
-                <div className="space-y-4">
+                <div className="space-y-4 pl-4">
                   {steps.map((step, index) => (
                     <div
                       key={index}
@@ -161,21 +163,13 @@ const Landing = () => {
                         transitionDelay: prefersReducedMotion ? "0ms" : `${index * 100}ms`,
                       }}
                     >
-                      <span className={`flex-shrink-0 w-6 h-6 rounded-full text-sm font-medium flex items-center justify-center ${
-                        step.clickable 
-                          ? "bg-primary/10 text-primary/70 group-hover:bg-primary/20 group-hover:text-primary transition-colors" 
-                          : "bg-primary/20 text-primary"
-                      }`}>
-                        {step.clickable ? (
-                          <Smartphone className="h-3.5 w-3.5" />
-                        ) : (
-                          index
-                        )}
+                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-medium flex items-center justify-center">
+                        {index + 1}
                       </span>
-                      <span className={`text-sm pt-0.5 ${
+                      <span className={`text-sm pt-0.5 text-card-foreground ${
                         step.clickable
-                          ? "text-primary/60 underline decoration-dotted underline-offset-2 group-hover:text-primary/80 transition-colors"
-                          : "text-card-foreground/80"
+                          ? "underline decoration-dotted underline-offset-2 group-hover:text-card-foreground/80 transition-colors"
+                          : ""
                       }`}>
                         {step.text}
                       </span>
