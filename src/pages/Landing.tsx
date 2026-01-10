@@ -6,6 +6,8 @@ import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import FloatingJargon from "@/components/FloatingJargon";
 import { usePageNavigation } from "@/hooks/usePageNavigation";
+import { AddToHomeScreenModal } from "@/components/AddToHomeScreenModal";
+import { Smartphone } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +21,7 @@ type ViewState = "landing" | "orientation";
 const Landing = () => {
   const { navigateWithTransition } = usePageNavigation();
   const [showModal, setShowModal] = useState(false);
+  const [showA2HSModal, setShowA2HSModal] = useState(false);
   const [viewState, setViewState] = useState<ViewState>("landing");
   const [isExiting, setIsExiting] = useState(false);
   
@@ -69,9 +72,10 @@ const Landing = () => {
   }, [viewState, prefersReducedMotion]);
 
   const steps = [
-    "tell us about you and how you run",
-    "share your current shoes (or don't!)",
-    "get recommendations that actually fit your needs",
+    { text: "(optional) add this app to your home screen", clickable: true },
+    { text: "tell us about you and how you run", clickable: false },
+    { text: "share your current shoes (or don't!)", clickable: false },
+    { text: "get recommendations that actually fit your needs", clickable: false },
   ];
 
   return (
@@ -149,16 +153,31 @@ const Landing = () => {
                   {steps.map((step, index) => (
                     <div
                       key={index}
-                      className="flex items-start gap-3 text-left"
+                      className={`flex items-start gap-3 text-left ${
+                        step.clickable ? "cursor-pointer group" : ""
+                      }`}
+                      onClick={step.clickable ? () => setShowA2HSModal(true) : undefined}
                       style={{
                         transitionDelay: prefersReducedMotion ? "0ms" : `${index * 100}ms`,
                       }}
                     >
-                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-medium flex items-center justify-center">
-                        {index + 1}
+                      <span className={`flex-shrink-0 w-6 h-6 rounded-full text-sm font-medium flex items-center justify-center ${
+                        step.clickable 
+                          ? "bg-primary/10 text-primary/70 group-hover:bg-primary/20 group-hover:text-primary transition-colors" 
+                          : "bg-primary/20 text-primary"
+                      }`}>
+                        {step.clickable ? (
+                          <Smartphone className="h-3.5 w-3.5" />
+                        ) : (
+                          index
+                        )}
                       </span>
-                      <span className="text-card-foreground/80 text-sm pt-0.5">
-                        {step}
+                      <span className={`text-sm pt-0.5 ${
+                        step.clickable
+                          ? "text-primary/60 underline decoration-dotted underline-offset-2 group-hover:text-primary/80 transition-colors"
+                          : "text-card-foreground/80"
+                      }`}>
+                        {step.text}
                       </span>
                     </div>
                   ))}
@@ -215,6 +234,11 @@ const Landing = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        <AddToHomeScreenModal 
+          open={showA2HSModal} 
+          onOpenChange={setShowA2HSModal} 
+        />
       </OnboardingLayout>
     </>
   );

@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,99 +6,88 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Share, MoreVertical, Plus, Download } from "lucide-react";
+import { Share, MoreVertical, Plus, Download, Bookmark, Monitor } from "lucide-react";
 
-const STORAGE_KEY = "cinda_a2hs_shown";
+type Platform = "ios" | "android" | "macos" | "windows" | "desktop";
 
-function detectPlatform(): "ios" | "android" {
+function detectPlatform(): Platform {
   const ua = navigator.userAgent || navigator.vendor || "";
-  if (/iPad|iPhone|iPod/.test(ua)) {
-    return "ios";
-  }
-  if (/android/i.test(ua)) {
-    return "android";
-  }
-  return "android"; // Default to Android for other mobile
+  
+  // Mobile first
+  if (/iPad|iPhone|iPod/.test(ua)) return "ios";
+  if (/android/i.test(ua)) return "android";
+  
+  // Desktop detection
+  if (/Macintosh|Mac OS X/i.test(ua)) return "macos";
+  if (/Windows/i.test(ua)) return "windows";
+  
+  return "desktop"; // Fallback for Linux, etc.
 }
 
-function isMobileDevice(): boolean {
-  const ua = navigator.userAgent || navigator.vendor || "";
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-}
-
-function isStandalone(): boolean {
-  // Check if already running as installed PWA
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as { standalone?: boolean }).standalone === true
-  );
+function getDefaultTab(platform: Platform): "ios" | "android" | "desktop" {
+  if (platform === "ios") return "ios";
+  if (platform === "android") return "android";
+  return "desktop";
 }
 
 interface AddToHomeScreenModalProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   onClose?: () => void;
 }
 
-export function AddToHomeScreenModal({ onClose }: AddToHomeScreenModalProps) {
-  const [open, setOpen] = useState(false);
-  const [platform, setPlatform] = useState<"ios" | "android">("ios");
+export function AddToHomeScreenModal({ 
+  open = false, 
+  onOpenChange, 
+  onClose 
+}: AddToHomeScreenModalProps) {
+  const platform = detectPlatform();
+  const defaultTab = getDefaultTab(platform);
 
-  useEffect(() => {
-    // Don't show if:
-    // 1. Not on mobile
-    // 2. Already shown before
-    // 3. Already installed as PWA
-    if (!isMobileDevice() || isStandalone()) {
-      return;
+  const handleOpenChange = (isOpen: boolean) => {
+    onOpenChange?.(isOpen);
+    if (!isOpen) {
+      onClose?.();
     }
-
-    const hasShown = localStorage.getItem(STORAGE_KEY);
-    if (hasShown) {
-      return;
-    }
-
-    // Detect platform and show modal
-    setPlatform(detectPlatform());
-    setOpen(true);
-
-    // Mark as shown immediately
-    localStorage.setItem(STORAGE_KEY, "true");
-  }, []);
-
-  const handleClose = () => {
-    setOpen(false);
-    onClose?.();
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         className="max-w-[340px] rounded-2xl border-border/30 bg-card p-0 shadow-xl"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className="px-5 pt-5 pb-2">
           <DialogTitle className="text-lg font-semibold text-card-foreground">
-            Add Cinda to Home Screen
+            add cinda to your home screen
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Install Cinda for quick access — just like a real app.
+            install cinda for quick access — just like a real app.
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue={platform} className="w-full">
-          <TabsList className="mx-5 grid w-[calc(100%-40px)] grid-cols-2 bg-secondary/50">
+        <Tabs defaultValue={defaultTab} className="w-full">
+          <TabsList className="mx-5 grid w-[calc(100%-40px)] grid-cols-3 bg-secondary/50">
             <TabsTrigger
               value="ios"
-              className="data-[state=active]:bg-card data-[state=active]:text-card-foreground"
+              className="data-[state=active]:bg-card data-[state=active]:text-card-foreground text-xs"
             >
-              <AppleIcon className="mr-1.5 h-4 w-4" />
+              <AppleIcon className="mr-1 h-3.5 w-3.5" />
               iPhone
             </TabsTrigger>
             <TabsTrigger
               value="android"
-              className="data-[state=active]:bg-card data-[state=active]:text-card-foreground"
+              className="data-[state=active]:bg-card data-[state=active]:text-card-foreground text-xs"
             >
-              <AndroidIcon className="mr-1.5 h-4 w-4" />
+              <AndroidIcon className="mr-1 h-3.5 w-3.5" />
               Android
+            </TabsTrigger>
+            <TabsTrigger
+              value="desktop"
+              className="data-[state=active]:bg-card data-[state=active]:text-card-foreground text-xs"
+            >
+              <Monitor className="mr-1 h-3.5 w-3.5" />
+              Desktop
             </TabsTrigger>
           </TabsList>
 
@@ -110,7 +98,7 @@ export function AddToHomeScreenModal({ onClose }: AddToHomeScreenModalProps) {
                 icon={<Share className="h-4 w-4 text-primary" />}
                 text={
                   <>
-                    Tap the <span className="font-medium text-card-foreground">Share</span> button in Safari
+                    tap the <span className="font-medium text-card-foreground">share</span> button in safari
                   </>
                 }
               />
@@ -119,7 +107,7 @@ export function AddToHomeScreenModal({ onClose }: AddToHomeScreenModalProps) {
                 icon={<Plus className="h-4 w-4 text-primary" />}
                 text={
                   <>
-                    Scroll and tap <span className="font-medium text-card-foreground">"Add to Home Screen"</span>
+                    scroll and tap <span className="font-medium text-card-foreground">"add to home screen"</span>
                   </>
                 }
               />
@@ -128,7 +116,7 @@ export function AddToHomeScreenModal({ onClose }: AddToHomeScreenModalProps) {
                 icon={<CheckIcon className="h-4 w-4 text-primary" />}
                 text={
                   <>
-                    Tap <span className="font-medium text-card-foreground">"Add"</span> to confirm
+                    tap <span className="font-medium text-card-foreground">"add"</span> to confirm
                   </>
                 }
               />
@@ -142,7 +130,7 @@ export function AddToHomeScreenModal({ onClose }: AddToHomeScreenModalProps) {
                 icon={<MoreVertical className="h-4 w-4 text-primary" />}
                 text={
                   <>
-                    Tap the <span className="font-medium text-card-foreground">menu</span> (⋮) in Chrome
+                    tap the <span className="font-medium text-card-foreground">menu</span> (⋮) in chrome
                   </>
                 }
               />
@@ -151,7 +139,7 @@ export function AddToHomeScreenModal({ onClose }: AddToHomeScreenModalProps) {
                 icon={<Download className="h-4 w-4 text-primary" />}
                 text={
                   <>
-                    Tap <span className="font-medium text-card-foreground">"Install app"</span> or <span className="font-medium text-card-foreground">"Add to Home screen"</span>
+                    tap <span className="font-medium text-card-foreground">"install app"</span> or <span className="font-medium text-card-foreground">"add to home screen"</span>
                   </>
                 }
               />
@@ -160,7 +148,39 @@ export function AddToHomeScreenModal({ onClose }: AddToHomeScreenModalProps) {
                 icon={<CheckIcon className="h-4 w-4 text-primary" />}
                 text={
                   <>
-                    Tap <span className="font-medium text-card-foreground">"Install"</span> to confirm
+                    tap <span className="font-medium text-card-foreground">"install"</span> to confirm
+                  </>
+                }
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="desktop" className="px-5 pb-5 pt-4">
+            <div className="space-y-4">
+              <Step
+                number={1}
+                icon={<Download className="h-4 w-4 text-primary" />}
+                text={
+                  <>
+                    look for an <span className="font-medium text-card-foreground">install</span> icon in your browser's address bar
+                  </>
+                }
+              />
+              <Step
+                number={2}
+                icon={<Plus className="h-4 w-4 text-primary" />}
+                text={
+                  <>
+                    or use the browser menu and select <span className="font-medium text-card-foreground">"install cinda"</span>
+                  </>
+                }
+              />
+              <Step
+                number={3}
+                icon={<Bookmark className="h-4 w-4 text-primary" />}
+                text={
+                  <>
+                    alternatively, <span className="font-medium text-card-foreground">bookmark</span> this page for easy access
                   </>
                 }
               />
