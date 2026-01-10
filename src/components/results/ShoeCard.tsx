@@ -76,8 +76,8 @@ export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
     <>
       <style>{`
         @keyframes border-glow-${position} {
-          0%, 100% { box-shadow: 0 0 8px ${shimmer}70, 0 0 12px ${shimmer}50, 0 0 16px ${shimmer}30; }
-          50% { box-shadow: 0 0 10px ${shimmer}90, 0 0 16px ${shimmer}60, 0 0 22px ${shimmer}40; }
+          0%, 100% { box-shadow: 0 0 15px ${shimmer}90, 0 0 25px ${shimmer}60, 0 0 35px ${shimmer}40; }
+          50% { box-shadow: 0 0 20px ${shimmer}99, 0 0 35px ${shimmer}70, 0 0 50px ${shimmer}50; }
         }
         @keyframes text-shimmer-${position} {
           0% { background-position: -200% center; }
@@ -110,7 +110,7 @@ export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
         className={`relative w-full max-w-[90vw] min-w-[320px] rounded-2xl p-6 card-glow-${position}`}
         style={{
           background: "rgba(26, 26, 30, 0.95)",
-          border: "2px solid rgba(255, 255, 255, 0.85)",
+          border: "2px solid rgba(255, 255, 255, 0.5)",
         }}
       >
         {/* Shoe Image */}
