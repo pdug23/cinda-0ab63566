@@ -214,7 +214,7 @@ export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
             }}
           >
             <Heart className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">add to shortlist</span>
+            <span className="truncate">shortlist</span>
           </Button>
           <Button
             variant="outline"
