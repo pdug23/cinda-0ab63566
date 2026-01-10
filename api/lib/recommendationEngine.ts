@@ -361,52 +361,116 @@ function generateMatchReason(shoe: Shoe, gap: Gap): string {
 }
 
 /**
- * Extract key strengths from shoe (2-3 bullet points)
+ * Extract differentiated key strengths for a shoe compared to other recommendations
+ * Highlights what makes THIS specific shoe unique
  */
-function extractKeyStrengths(shoe: Shoe, gap: Gap): string[] {
+function extractDifferentiatedStrengths(
+  shoe: Shoe,
+  gap: Gap,
+  allThreeShoes: Shoe[]
+): string[] {
   const strengths: string[] = [];
+  const otherShoes = allThreeShoes.filter(s => s.shoe_id !== shoe.shoe_id);
 
-  // Cushioning
-  if (shoe.cushion_softness_1to5 >= 4) {
-    strengths.push(`Soft, protective ${shoe.cushion_softness_1to5 === 5 ? 'max-' : ''}cushion ride`);
-  } else if (shoe.cushion_softness_1to5 <= 2) {
-    strengths.push(`Firm, responsive platform for efficiency`);
+  // 1. WEIGHT COMPARISON - Find if this is the lightest/heaviest
+  const weights = allThreeShoes.map(s => s.weight_g);
+  const isLightest = shoe.weight_g === Math.min(...weights);
+  const isHeaviest = shoe.weight_g === Math.max(...weights);
+
+  if (isLightest && shoe.weight_g < 240) {
+    strengths.push(`Lightest option at ${shoe.weight_g}g for nimble feel`);
+  } else if (isHeaviest && weights.some(w => shoe.weight_g - w >= 30)) {
+    // Only mention if significantly heavier (30g+)
+    strengths.push(`Most protective build at ${shoe.weight_g}g`);
   }
 
-  // Plate tech
-  if (shoe.has_plate && shoe.plate_tech_name) {
-    strengths.push(`${shoe.plate_tech_name} adds snap and propulsion`);
-  } else if (shoe.has_plate) {
-    strengths.push(`${shoe.plate_material || 'Plate'} adds snap for faster paces`);
+  // 2. CUSHIONING COMPARISON - Softest/firmest
+  const cushionValues = allThreeShoes.map(s => s.cushion_softness_1to5);
+  const isSoftest = shoe.cushion_softness_1to5 === Math.max(...cushionValues);
+  const isFirmest = shoe.cushion_softness_1to5 === Math.min(...cushionValues);
+
+  if (isSoftest && shoe.cushion_softness_1to5 >= 4) {
+    strengths.push(`Softest ride with ${shoe.cushion_softness_1to5 === 5 ? 'max' : 'plush'} cushioning`);
+  } else if (isFirmest && shoe.cushion_softness_1to5 <= 2) {
+    strengths.push(`Firmest platform for responsive efficiency`);
   }
 
-  // Weight
-  if (shoe.weight_g < 240) {
-    strengths.push(`Lightweight (${shoe.weight_g}g) for nimble feel`);
+  // 3. BOUNCE/ENERGY RETURN COMPARISON
+  const bounceValues = allThreeShoes.map(s => s.bounce_1to5);
+  const isBounciest = shoe.bounce_1to5 === Math.max(...bounceValues);
+
+  if (isBounciest && shoe.bounce_1to5 >= 4 && strengths.length < 3) {
+    strengths.push(`Most energetic foam returns power with each step`);
   }
 
-  // Stability
-  if (shoe.stability_1to5 >= 4) {
-    strengths.push(`Stable platform prevents excessive motion`);
+  // 4. PLATE TECHNOLOGY - Unique selling point
+  if (shoe.has_plate && shoe.plate_tech_name && strengths.length < 3) {
+    const othersHavePlate = otherShoes.some(s => s.has_plate);
+    if (!othersHavePlate) {
+      strengths.push(`Only plated option with ${shoe.plate_tech_name}`);
+    } else if (shoe.plate_tech_name) {
+      strengths.push(`${shoe.plate_tech_name} for snappy propulsion`);
+    }
   }
 
-  // Bounce
-  if (shoe.bounce_1to5 >= 4) {
-    strengths.push(`Energetic, bouncy foam returns energy`);
+  // 5. STABILITY COMPARISON
+  const stabilityValues = allThreeShoes.map(s => s.stability_1to5);
+  const isMostStable = shoe.stability_1to5 === Math.max(...stabilityValues);
+
+  if (isMostStable && shoe.stability_1to5 >= 4 && strengths.length < 3) {
+    strengths.push(`Most stable platform controls excessive motion`);
   }
 
-  // Versatility
+  // 6. ROCKER GEOMETRY
+  const rockerValues = allThreeShoes.map(s => s.rocker_1to5);
+  const hasMostRocker = shoe.rocker_1to5 === Math.max(...rockerValues);
+
+  if (hasMostRocker && shoe.rocker_1to5 >= 4 && strengths.length < 3) {
+    strengths.push(`Aggressive rocker for smooth, efficient transitions`);
+  }
+
+  // 7. VERSATILITY - Only if truly versatile
   const useCases = [
     shoe.use_daily && 'daily',
     shoe.use_easy_recovery && 'easy',
     shoe.use_long_run && 'long',
     shoe.use_tempo_workout && 'tempo',
   ].filter(Boolean);
-  if (useCases.length >= 3) {
-    strengths.push(`Versatile across ${useCases.length}+ run types`);
+
+  if (useCases.length >= 3 && strengths.length < 3) {
+    const otherVersatility = otherShoes.map(s =>
+      [s.use_daily, s.use_easy_recovery, s.use_long_run, s.use_tempo_workout].filter(Boolean).length
+    );
+    const isMostVersatile = useCases.length > Math.max(...otherVersatility);
+
+    if (isMostVersatile) {
+      strengths.push(`Most versatile across ${useCases.length} run types`);
+    }
   }
 
-  // Take first 3 strengths
+  // 8. NOTABLE DETAILS - Use shoe-specific features if we need more
+  if (strengths.length < 2 && shoe.notable_detail) {
+    strengths.push(shoe.notable_detail);
+  }
+
+  // 9. WHY IT FEELS THIS WAY - Technical explanation
+  if (strengths.length < 2 && shoe.why_it_feels_this_way) {
+    strengths.push(shoe.why_it_feels_this_way);
+  }
+
+  // 10. FALLBACK - Generic but specific attributes
+  if (strengths.length === 0) {
+    // At least mention something specific about the shoe
+    if (shoe.cushion_softness_1to5 >= 4) {
+      strengths.push(`Soft, protective cushion for comfort`);
+    } else if (shoe.bounce_1to5 >= 4) {
+      strengths.push(`Bouncy, responsive foam`);
+    } else {
+      strengths.push(`Balanced ride for ${gap.missingCapability || 'your needs'}`);
+    }
+  }
+
+  // Return top 3 strengths
   return strengths.slice(0, 3);
 }
 
@@ -451,6 +515,86 @@ function identifyTradeoffs(
   }
 
   return tradeoffs.length > 0 ? tradeoffs.join('; ') : undefined;
+}
+
+/**
+ * Identify trade-offs by comparing against other recommendations
+ * Shows what this shoe gives up compared to the alternatives
+ */
+function identifyTradeoffsComparative(
+  shoe: Shoe,
+  currentShoes: CurrentShoe[],
+  catalogue: Shoe[],
+  isTradeOffOption: boolean,
+  allThreeShoes: Shoe[]
+): string | undefined {
+  if (!isTradeOffOption) return undefined;
+
+  const tradeoffs: string[] = [];
+  const otherShoes = allThreeShoes.filter(s => s.shoe_id !== shoe.shoe_id);
+
+  // 1. WEIGHT COMPARISON - Heavier than alternatives
+  const weights = allThreeShoes.map(s => s.weight_g);
+  const isHeaviest = shoe.weight_g === Math.max(...weights);
+  const weightDiff = shoe.weight_g - Math.min(...weights);
+
+  if (isHeaviest && weightDiff >= 30) {
+    tradeoffs.push(`Heavier than alternatives (${shoe.weight_g}g vs ${Math.min(...weights)}g)`);
+  }
+
+  // 2. CUSHIONING COMPARISON - Firmer than alternatives
+  const cushionValues = allThreeShoes.map(s => s.cushion_softness_1to5);
+  const isFirmest = shoe.cushion_softness_1to5 === Math.min(...cushionValues);
+  const cushionDiff = Math.max(...cushionValues) - shoe.cushion_softness_1to5;
+
+  if (isFirmest && cushionDiff >= 2) {
+    tradeoffs.push(`Firmer ride than softer alternatives`);
+  }
+
+  // 3. STABILITY - Less stable if others are more stable
+  const stabilityValues = allThreeShoes.map(s => s.stability_1to5);
+  const isLeastStable = shoe.stability_1to5 === Math.min(...stabilityValues);
+  const stabilityDiff = Math.max(...stabilityValues) - shoe.stability_1to5;
+
+  if (isLeastStable && stabilityDiff >= 2) {
+    tradeoffs.push(`Less stability than structured alternatives`);
+  }
+
+  // 4. BOUNCE - Less energetic if others are bouncier
+  const bounceValues = allThreeShoes.map(s => s.bounce_1to5);
+  const isLeastBouncy = shoe.bounce_1to5 === Math.min(...bounceValues);
+  const bounceDiff = Math.max(...bounceValues) - shoe.bounce_1to5;
+
+  if (isLeastBouncy && bounceDiff >= 2) {
+    tradeoffs.push(`Less energetic than bouncier options`);
+  }
+
+  // 5. PRICE - More expensive than alternatives
+  if (shoe.retail_price_category === "Premium" || shoe.retail_price_category === "Race_Day") {
+    const otherPrices = otherShoes.map(s => s.retail_price_category);
+    const hasAffordableAlternative = otherPrices.some(p => p === "Budget" || p === "Core");
+
+    if (hasAffordableAlternative) {
+      tradeoffs.push(`Premium price vs more affordable alternatives`);
+    }
+  }
+
+  // 6. NARROWER FIT - If this has narrow fit and others don't
+  if (shoe.notable_detail?.toLowerCase().includes('narrow') && tradeoffs.length < 2) {
+    tradeoffs.push(`Narrower fit than alternatives`);
+  }
+
+  // 7. FALLBACK - Generic tradeoffs if we don't have specific ones
+  if (tradeoffs.length === 0) {
+    // Use original generic tradeoffs as fallback
+    if (shoe.cushion_softness_1to5 <= 2) {
+      tradeoffs.push(`Firmer ride may take adjustment`);
+    } else if (shoe.retail_price_category === "Premium" || shoe.retail_price_category === "Race_Day") {
+      tradeoffs.push(`Premium price point`);
+    }
+  }
+
+  return tradeoffs.length > 0 ? tradeoffs.slice(0, 2).join('; ') : undefined;
 }
 
 // ============================================================================
@@ -526,12 +670,13 @@ export function generateRecommendations(
   }
 
   const [closeMatch1, closeMatch2, tradeOff] = selectedThree;
+  const allThreeShoes = [closeMatch1, closeMatch2, tradeOff];
 
-  // Step 6: Build RecommendedShoe objects
+  // Step 6: Build RecommendedShoe objects with differentiated strengths
   const recommendations: RecommendedShoe[] = [
-    buildRecommendedShoe(closeMatch1, gap, "close_match", currentShoes, catalogue, false),
-    buildRecommendedShoe(closeMatch2, gap, "close_match_2", currentShoes, catalogue, false),
-    buildRecommendedShoe(tradeOff, gap, "trade_off_option", currentShoes, catalogue, true),
+    buildRecommendedShoe(closeMatch1, gap, "close_match", currentShoes, catalogue, false, allThreeShoes),
+    buildRecommendedShoe(closeMatch2, gap, "close_match_2", currentShoes, catalogue, false, allThreeShoes),
+    buildRecommendedShoe(tradeOff, gap, "trade_off_option", currentShoes, catalogue, true, allThreeShoes),
   ];
 
   // Final validation: ensure all shoes exist in catalogue
@@ -554,7 +699,8 @@ function buildRecommendedShoe(
   type: RecommendationType,
   currentShoes: CurrentShoe[],
   catalogue: Shoe[],
-  isTradeOff: boolean
+  isTradeOff: boolean,
+  allThreeShoes: Shoe[]
 ): RecommendedShoe {
   return {
     shoeId: shoe.shoe_id,
@@ -572,8 +718,8 @@ function buildRecommendedShoe(
     stability_1to5: shoe.stability_1to5,
     recommendationType: type,
     matchReason: generateMatchReason(shoe, gap),
-    keyStrengths: extractKeyStrengths(shoe, gap),
-    tradeOffs: identifyTradeoffs(shoe, currentShoes, catalogue, isTradeOff),
+    keyStrengths: extractDifferentiatedStrengths(shoe, gap, allThreeShoes),
+    tradeOffs: identifyTradeoffsComparative(shoe, currentShoes, catalogue, isTradeOff, allThreeShoes),
   };
 }
 
