@@ -408,7 +408,7 @@ export interface RecommendedShoe {
   weight_feel_1to5: 1 | 2 | 3 | 4 | 5;
   heel_drop_mm: number;
   has_plate: boolean;
-  plate_material?: string;
+  plate_material: PlateMaterial;
   retail_price_category: RetailPriceCategory;
   release_status: ReleaseStatus;
 
