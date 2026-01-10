@@ -229,10 +229,19 @@ const ProfileBuilder = () => {
   // Can proceed if name is filled and experience is selected
   const canProceed = firstName.trim() !== "" && experience !== null;
 
+  // Calculate if all optional fields are filled
+  const hasAge = age.trim() !== "";
+  const hasHeight = heightCm !== null;
+  const hasWeight = weightKg !== null;
+  const allOptionalsFilled = hasAge && hasHeight && hasWeight;
+
   return (
     <>
       <AnimatedBackground />
-      <OnboardingLayout scrollable>
+      <OnboardingLayout 
+        scrollable 
+        bottomText={allOptionalsFilled ? null : "completing optional fields will help cinda better recommend shoes for how you run."}
+      >
         <PageTransition className="flex flex-col flex-1 min-h-0">
         {/* Card header (fixed) */}
         <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-start flex-shrink-0">
@@ -409,34 +418,16 @@ const ProfileBuilder = () => {
           </div>
 
           {/* Card footer (fixed) */}
-          {(() => {
-            const hasAge = age.trim() !== "";
-            const hasHeight = heightCm !== null;
-            const hasWeight = weightKg !== null;
-            const allOptionalsFilled = hasAge && hasHeight && hasWeight;
-
-            return (
-              <footer className="flex flex-col items-center px-6 md:px-8 pt-4 pb-4 flex-shrink-0">
-                <div className="h-5 flex items-center justify-center w-3/4 mb-1">
-                  <p
-                    className={`text-xs italic text-orange-400/50 text-center transition-opacity duration-200 ${
-                      allOptionalsFilled ? "opacity-0" : "opacity-100"
-                    }`}
-                  >
-                    completing optional fields will help cinda better recommend shoes for how you run.
-                  </p>
-                </div>
-                <Button
-                  onClick={handleNext}
-                  variant="cta"
-                  className="w-full min-h-[44px] text-sm mt-4"
-                  disabled={!canProceed}
-                >
-                  next
-                </Button>
-              </footer>
-            );
-          })()}
+          <footer className="flex flex-col items-center px-6 md:px-8 pt-3 pb-4 flex-shrink-0">
+            <Button
+              onClick={handleNext}
+              variant="cta"
+              className="w-full min-h-[44px] text-sm"
+              disabled={!canProceed}
+            >
+              next
+            </Button>
+          </footer>
       </PageTransition>
     </OnboardingLayout>
     </>
