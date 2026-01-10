@@ -397,7 +397,7 @@ export default function RecommendationsPage() {
   return (
     <>
       <AnimatedBackground />
-      <OnboardingLayout scrollable>
+      <OnboardingLayout scrollable transparentBackground>
         {/* Header - transparent */}
         <header className="w-full px-6 md:px-8 pt-4 pb-2 flex items-center justify-start flex-shrink-0">
           <BackButton onClick={goBack} />
