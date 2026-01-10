@@ -181,7 +181,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
 
 function PageHeader() {
   return (
-    <div className="text-center py-3 px-5">
+    <div className="text-center pt-3 pb-6 px-5">
       <h1 className="text-xl font-bold text-card-foreground/90 lowercase">
         cinda's recommendations
       </h1>
@@ -404,7 +404,7 @@ export default function RecommendationsPage() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto">
+        <>
           {loading && <LoadingState />}
 
           {!loading && error && (
@@ -435,7 +435,7 @@ export default function RecommendationsPage() {
 
           {/* TODO Task 8: Rotation Panel */}
           {/* TODO Task 7: CTAs */}
-        </div>
+        </>
       </OnboardingLayout>
     </>
   );
