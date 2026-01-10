@@ -70,7 +70,7 @@ const OnboardingLayout = ({
 
   return (
     <div
-      className="fixed inset-0 overflow-hidden"
+      className={`fixed inset-0 ${allowOverflow ? '' : 'overflow-hidden'}`}
       style={{
         paddingTop: "calc(env(safe-area-inset-top) + 16px)",
         paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
