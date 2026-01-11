@@ -9,7 +9,7 @@ interface ShoeCardProps {
     version: string;
     matchReason: string[];
     keyStrengths: string[];
-    recommendationType: "close_match" | "close_match_2" | "trade_off_option";
+    recommendationType: "closest_match" | "close_match" | "close_match_2" | "trade_off_option";
     weight_feel_1to5: 1 | 2 | 3 | 4 | 5;
     heel_drop_mm: number;
     has_plate: boolean;
@@ -54,10 +54,13 @@ const getPlateLabel = (
 };
 
 const getBadgeConfig = (type: ShoeCardProps["shoe"]["recommendationType"]): { text: string; color: string } => {
-  if (type === "trade_off_option") {
-    return { text: "TRADE-OFF", color: "#F97316" }; // orange
+  if (type === "closest_match") {
+    return { text: "CLOSEST MATCH", color: "#059669" };
   }
-  return { text: "CLOSE MATCH", color: "#10B981" }; // green
+  if (type === "trade_off_option") {
+    return { text: "TRADE-OFF", color: "#F97316" };
+  }
+  return { text: "CLOSE MATCH", color: "#10B981" };
 };
 
 export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
