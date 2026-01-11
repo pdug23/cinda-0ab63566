@@ -67,7 +67,7 @@ Keep each under 15 words. Be confident, not salesy. No em dashes.`;
       text: {
         verbosity: 'low'  // Keep it concise (2 bullet points)
       },
-      max_output_tokens: 600
+      max_output_tokens: 1000
     });
 
     console.log('=== GPT-5-mini RESPONSE ===');
