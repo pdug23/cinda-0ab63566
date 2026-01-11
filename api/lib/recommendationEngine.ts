@@ -1017,10 +1017,15 @@ function scoreShoeForRole(
       targetValue = pref.value; // DO NOT INVERT
     } else {
       // cinda_decides - use role-based defaults
+      // Normalize frontend role names (recovery→easy, daily_trainer→daily, etc.)
+      const roleMap: Record<string, string> = {
+        'recovery': 'easy', 'daily_trainer': 'daily', 'race_day': 'race', 'not_sure': 'daily'
+      };
+      const normalizedRole = roleMap[role.toLowerCase()] || role;
       const defaults: Record<string, number> = {
         daily: 3, easy: 4, long: 4, tempo: 2, intervals: 2, race: 2, trail: 3
       };
-      targetValue = defaults[role] ?? 3;
+      targetValue = defaults[normalizedRole] ?? 3;
     }
     const distance = Math.abs(shoeValue - targetValue);
     return Math.max(0, 10 - distance * 2);

@@ -35,9 +35,11 @@ interface ScoredShoe {
 
 /**
  * Maps ShoeRole to the corresponding use_* boolean field in shoebase.json
+ * Includes frontend role aliases (recovery, daily_trainer, race_day, etc.)
  */
-function getRoleField(role: ShoeRole): keyof Shoe {
-  const roleMap: Record<ShoeRole, keyof Shoe> = {
+function getRoleField(role: ShoeRole | string): keyof Shoe | undefined {
+  const roleMap: Record<string, keyof Shoe> = {
+    // Standard backend roles
     'daily': 'use_daily',
     'easy': 'use_easy_recovery',
     'long': 'use_long_run',
@@ -45,8 +47,18 @@ function getRoleField(role: ShoeRole): keyof Shoe {
     'intervals': 'use_speed_intervals',
     'race': 'use_race',
     'trail': 'use_trail',
+    // Frontend role aliases (CRITICAL - frontend sends these strings)
+    'recovery': 'use_easy_recovery',       // Frontend uses "recovery" 
+    'daily_trainer': 'use_daily',          // Frontend uses "daily_trainer"
+    'race_day': 'use_race',                // Frontend uses "race_day"
+    'not_sure': 'use_daily',               // Default to daily
   };
-  return roleMap[role];
+  const result = roleMap[role.toLowerCase()];
+  if (!result) {
+    console.warn('[getRoleField] Unknown role:', role, '- defaulting to use_daily');
+    return 'use_daily'; // Fallback instead of undefined
+  }
+  return result;
 }
 
 /**
@@ -117,10 +129,14 @@ function passesHardFilters(
 
     // Filter 5: HARD FILTER by role flags (Bug 2 fix - CRITICAL)
     // Shoe must match at least ONE of the requested roles
-    const roleField = getRoleField;
     const matchesAnyRole = roles.some(role => {
-      const field = roleField(role);
-      return shoe[field] === true;
+      const field = getRoleField(role);
+      if (!field) {
+        console.warn('[passesHardFilters] No field for role:', role);
+        return false;
+      }
+      const matches = shoe[field] === true;
+      return matches;
     });
 
     if (!matchesAnyRole) {
@@ -171,7 +187,22 @@ function scoreRoleMatch(shoe: Shoe, roles: ShoeRole[] = []): number {
  * Get role-based default preference values for cinda_decides mode
  * Returns the target value that Cinda would pick for each role
  */
-function getRoleDefault(dimension: 'cushion' | 'stability' | 'bounce' | 'rocker' | 'groundFeel', role?: ShoeRole): number {
+function getRoleDefault(dimension: 'cushion' | 'stability' | 'bounce' | 'rocker' | 'groundFeel', role?: ShoeRole | string): number {
+  // Normalize frontend role names to backend role names
+  const normalizeRole = (r: string | undefined): ShoeRole => {
+    if (!r) return 'daily';
+    const normalized = r.toLowerCase();
+    const roleMap: Record<string, ShoeRole> = {
+      'recovery': 'easy',
+      'daily_trainer': 'daily',
+      'race_day': 'race',
+      'not_sure': 'daily',
+    };
+    return (roleMap[normalized] || normalized) as ShoeRole;
+  };
+
+  const normalizedRole = normalizeRole(role);
+
   const defaults: Record<string, Record<ShoeRole, number>> = {
     cushion: {
       daily: 3, easy: 4, long: 4, tempo: 2, intervals: 2, race: 2, trail: 3
@@ -190,7 +221,7 @@ function getRoleDefault(dimension: 'cushion' | 'stability' | 'bounce' | 'rocker'
     }
   };
 
-  return defaults[dimension]?.[role || 'daily'] ?? 3;
+  return defaults[dimension]?.[normalizedRole] ?? 3;
 }
 
 /**
@@ -430,8 +461,12 @@ export function getCandidates(
   constraints: RetrievalConstraints,
   catalogue: Shoe[]
 ): Shoe[] {
+  console.log('[getCandidates] Called with roles:', constraints.roles);
+  console.log('[getCandidates] Catalogue size:', catalogue?.length);
+
   // Edge case: empty catalogue
   if (!catalogue || catalogue.length === 0) {
+    console.warn('[getCandidates] Empty catalogue!');
     return [];
   }
 
@@ -442,26 +477,34 @@ export function getCandidates(
       ? constraints.roles
       : ['daily' as ShoeRole],
   };
+  console.log('[getCandidates] Effective roles:', effectiveConstraints.roles);
 
   // Apply hard filters
   const filtered = catalogue.filter(shoe =>
     passesHardFilters(shoe, effectiveConstraints)
   );
+  console.log('[getCandidates] After hard filters:', filtered.length, 'candidates');
 
-  // If we have too few candidates, try relaxing constraints
-  if (filtered.length < 15) {
+  // If we have too few candidates after hard filtering, try relaxing
+  if (filtered.length < 10) {
     const relaxed = relaxConstraints(effectiveConstraints);
     const relaxedFiltered = catalogue.filter(shoe =>
       passesHardFilters(shoe, relaxed)
     );
 
-    // If relaxing helped, use relaxed results
-    if (relaxedFiltered.length >= filtered.length * 1.5) {
-      return getCandidates(relaxed, catalogue);
+    // EMERGENCY FIX: No recursive call - just use relaxed results directly
+    // Previous recursive call caused infinite stack overflow
+    if (relaxedFiltered.length > filtered.length) {
+      // Score the relaxed filtered candidates and return them
+      const scored = relaxedFiltered.map(shoe =>
+        scoreShoe(shoe, relaxed)
+      );
+      scored.sort((a, b) => b.score - a.score);
+      return scored.slice(0, 30).map(s => s.shoe);
     }
 
     // If still too few, return fallback
-    if (filtered.length < 5) {
+    if (filtered.length < 3) {
       return getFallbackCandidates(catalogue, 10);
     }
   }
