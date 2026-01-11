@@ -30,8 +30,10 @@ interface ShoeCarouselProps {
 
 export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
   const swiperRef = useRef<SwiperType | null>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
   const totalSlides = recommendations.length;
+  // Start on center card (index 1) which is the CLOSEST MATCH
+  const initialSlideIndex = totalSlides >= 3 ? 1 : 0;
+  const [activeIndex, setActiveIndex] = useState(initialSlideIndex);
 
   useEffect(() => {
     // Inject custom styles for slides
@@ -95,6 +97,7 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
         spaceBetween={32}
         slidesPerView={1.2}
         centeredSlides={true}
+        initialSlide={initialSlideIndex}
         loop={false}
         watchSlidesProgress={true}
         keyboard={{ enabled: true }}
