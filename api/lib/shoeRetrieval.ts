@@ -329,20 +329,24 @@ export function scoreFeelMatch(
       return 0; // Skip - no score contribution
     }
 
-    let targetValue: number;
-    if (pref.mode === 'user_set' && pref.value !== undefined) {
-      // Bug 1 fix: User slider uses SAME scale as shoebase (1=minimal, 5=max)
-      // DO NOT INVERT - user value maps directly to shoebase value
-      targetValue = pref.value;
-    } else {
-      // cinda_decides - use role-based default (already in shoebase scale)
-      targetValue = getRoleDefault(dimension, roleContext);
-    }
-
     dimensionsScored++;
-    const distance = Math.abs(shoeValue - targetValue);
-    // 10 points for perfect match, -2 per distance
-    return Math.max(0, 10 - distance * 2);
+
+    if (pref.mode === 'user_set' && pref.value !== undefined) {
+      // USER SET: Strict penalties - user knows what they want
+      const targetValue = pref.value;
+      const distance = Math.abs(shoeValue - targetValue);
+
+      if (distance === 0) return 10;      // Perfect match
+      if (distance === 1) return 3;       // -7 penalty (off by 1)
+      if (distance === 2) return -5;      // -15 penalty (off by 2)
+      return -15;                         // -25 penalty (off by 3+)
+
+    } else {
+      // CINDA DECIDES: Softer penalties - we're optimizing holistically
+      const targetValue = getRoleDefault(dimension, roleContext);
+      const distance = Math.abs(shoeValue - targetValue);
+      return Math.max(0, 10 - distance * 2);  // 10, 8, 6, 4, 2, 0
+    }
   };
 
   // Score each dimension
