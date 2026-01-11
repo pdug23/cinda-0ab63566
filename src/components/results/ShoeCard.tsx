@@ -10,6 +10,7 @@ interface ShoeCardProps {
     matchReason: string[];
     keyStrengths: string[];
     recommendationType: "closest_match" | "close_match" | "close_match_2" | "trade_off_option";
+    badge?: "closest_match" | "close_match" | "trade_off";
     weight_feel_1to5: 1 | 2 | 3 | 4 | 5;
     heel_drop_mm: number;
     has_plate: boolean;
@@ -53,14 +54,19 @@ const getPlateLabel = (
   return material ? material.toLowerCase() : "none";
 };
 
-const getBadgeConfig = (type: ShoeCardProps["shoe"]["recommendationType"]): { text: string; color: string } => {
-  if (type === "closest_match") {
-    return { text: "CLOSEST MATCH", color: "#059669" };
+const getBadgeConfig = (
+  type: ShoeCardProps["shoe"]["recommendationType"],
+  badge?: ShoeCardProps["shoe"]["badge"]
+): { text: string; color: string } => {
+  const effectiveType = badge || type;
+  
+  if (effectiveType === "closest_match") {
+    return { text: "CLOSEST MATCH", color: "#047857" }; // Darker emerald
   }
-  if (type === "trade_off_option") {
+  if (effectiveType === "trade_off_option" || effectiveType === "trade_off") {
     return { text: "TRADE-OFF", color: "#F97316" };
   }
-  return { text: "CLOSE MATCH", color: "#10B981" };
+  return { text: "CLOSE MATCH", color: "#34D399" }; // Lighter lime-ish
 };
 
 export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
@@ -68,7 +74,7 @@ export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
   const shimmer = positionConfig.shimmer;
   const weightLabel = getWeightLabel(shoe.weight_feel_1to5);
   const plateLabel = getPlateLabel(shoe.has_plate, shoe.plate_material);
-  const badgeConfig = getBadgeConfig(shoe.recommendationType);
+  const badgeConfig = getBadgeConfig(shoe.recommendationType, shoe.badge);
 
   // Always dark background - light text
   const textColor = "rgba(255, 255, 255, 0.9)";
