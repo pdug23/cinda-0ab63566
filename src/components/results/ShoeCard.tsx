@@ -61,7 +61,7 @@ const getBadgeConfig = (
   const effectiveType = badge || type;
   
   if (effectiveType === "closest_match") {
-    return { text: "CLOSEST MATCH", color: "#047857" }; // Darker emerald
+    return { text: "CLOSEST MATCH", color: "#FBBF24" }; // Vibrant gold
   }
   if (effectiveType === "trade_off_option" || effectiveType === "trade_off") {
     return { text: "TRADE-OFF", color: "#F97316" };
