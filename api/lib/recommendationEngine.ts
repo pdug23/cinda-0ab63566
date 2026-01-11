@@ -950,12 +950,15 @@ export async function generateShoppingRecommendations(
   const selectedShoes = selectShoppingShoes(scoredCandidates);
 
   // Step 6: Build RecommendedShoe objects (async with LLM match descriptions)
+  // Bug 5 fix: With proper role filtering, all 3 shoes are CLOSE MATCHES
+  // Only mark as trade_off if we had to relax constraints significantly
   const recommendationPromises = selectedShoes.map((shoe, index) => {
+    // All shoes are close matches when filtering works correctly
     const recType: RecommendationType = index === 0
       ? "close_match"
       : index === 1
         ? "close_match_2"
-        : "trade_off_option";
+        : "close_match"; // Was trade_off_option, but with proper filtering all 3 are good
 
     return buildShoppingRecommendedShoe(
       shoe,
@@ -963,7 +966,7 @@ export async function generateShoppingRecommendations(
       recType,
       currentShoes,
       catalogue,
-      index === selectedShoes.length - 1 // isTradeOff for last shoe
+      false // No trade-offs needed with proper filtering
     );
   });
 
@@ -1010,7 +1013,8 @@ function scoreShoeForRole(
     if (pref.mode === 'wildcard') return 5; // Neutral score
     let targetValue: number;
     if (pref.mode === 'user_set' && pref.value !== undefined) {
-      targetValue = 6 - pref.value; // Invert for shoebase scale
+      // Bug 1 fix: User slider uses SAME scale as shoebase (1=minimal, 5=max)
+      targetValue = pref.value; // DO NOT INVERT
     } else {
       // cinda_decides - use role-based defaults
       const defaults: Record<string, number> = {
@@ -1037,47 +1041,55 @@ function scoreShoeForRole(
 }
 
 /**
+ * Check if two shoes are model variants (same brand + similar model name)
+ * Bug 3 fix: Exclude model variants like "Cloudmonster" and "Cloudmonster 2"
+ */
+function isModelVariant(shoe1: Shoe, shoe2: Shoe): boolean {
+  // Must be same brand
+  if (shoe1.brand !== shoe2.brand) return false;
+
+  // Extract base model name (strip version numbers, suffixes)
+  const getBaseModel = (model: string): string => {
+    return model
+      .toLowerCase()
+      .replace(/\s+\d+(\.\d+)?$/g, '')  // Remove trailing version numbers (e.g., "6", "10.5")
+      .replace(/\s+v\d+$/gi, '')        // Remove "v2", "V3", etc.
+      .replace(/\s+(x|plus|pro|max)$/gi, '')  // Remove X, Plus, Pro, Max suffixes
+      .trim();
+  };
+
+  const base1 = getBaseModel(shoe1.model);
+  const base2 = getBaseModel(shoe2.model);
+
+  // Check if base models match or if one contains the other
+  return base1 === base2 || base1.includes(base2) || base2.includes(base1);
+}
+
+/**
  * Select 2-3 shoes from scored candidates for shopping mode
+ * Bug 3 fix: Excludes model variants after each selection
  */
 function selectShoppingShoes(scoredCandidates: ScoredShoe[]): Shoe[] {
   if (scoredCandidates.length === 0) return [];
   if (scoredCandidates.length === 1) return [scoredCandidates[0].shoe];
-  if (scoredCandidates.length === 2) return [scoredCandidates[0].shoe, scoredCandidates[1].shoe];
 
   // Sort by score descending
   const sorted = [...scoredCandidates].sort((a, b) => b.totalScore - a.totalScore);
 
-  // Take top 3, prioritizing diversity
-  const selected: Shoe[] = [sorted[0].shoe];
+  const selected: Shoe[] = [];
+  let remaining = [...sorted];
 
-  // Find second shoe (prefer similar to first)
-  for (let i = 1; i < sorted.length; i++) {
-    if (selected.length < 2) {
-      selected.push(sorted[i].shoe);
-      break;
-    }
-  }
+  // Select up to 3 shoes, excluding model variants after each selection
+  while (selected.length < 3 && remaining.length > 0) {
+    // Take the best remaining shoe
+    const best = remaining[0];
+    selected.push(best.shoe);
 
-  // Find third shoe (prefer different from first two)
-  for (const candidate of sorted) {
-    if (selected.length >= 3) break;
-    if (selected.some(s => s.shoe_id === candidate.shoe.shoe_id)) continue;
-
-    // Prefer a different option
-    if (areDifferent(candidate.shoe, selected[0])) {
-      selected.push(candidate.shoe);
-      break;
-    }
-  }
-
-  // If we still don't have 3, just take the next best
-  if (selected.length < 3) {
-    for (const candidate of sorted) {
-      if (selected.length >= 3) break;
-      if (!selected.some(s => s.shoe_id === candidate.shoe.shoe_id)) {
-        selected.push(candidate.shoe);
-      }
-    }
+    // Remove the selected shoe AND all its model variants
+    remaining = remaining.filter(candidate =>
+      candidate.shoe.shoe_id !== best.shoe.shoe_id &&
+      !isModelVariant(candidate.shoe, best.shoe)
+    );
   }
 
   return selected;

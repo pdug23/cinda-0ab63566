@@ -97,7 +97,12 @@ function passesHardFilters(
     return false;
   }
 
-  // Filter 3: Trail vs Road separation (CRITICAL - never mix)
+  // Filter 3: Exclude budget-tier shoes by default (Bug 4 fix)
+  if (shoe.retail_price_category === 'Budget') {
+    return false;
+  }
+
+  // Filter 4: Trail vs Road separation (CRITICAL - never mix)
   if (roles && roles.length > 0) {
     const requestingTrail = roles.includes('trail');
     const requestingRoad = roles.some(isRoadRole);
@@ -108,6 +113,18 @@ function passesHardFilters(
 
     if (requestingRoad && shoe.use_trail && !requestingTrail) {
       return false; // Need road shoe but this is trail-only
+    }
+
+    // Filter 5: HARD FILTER by role flags (Bug 2 fix - CRITICAL)
+    // Shoe must match at least ONE of the requested roles
+    const roleField = getRoleField;
+    const matchesAnyRole = roles.some(role => {
+      const field = roleField(role);
+      return shoe[field] === true;
+    });
+
+    if (!matchesAnyRole) {
+      return false; // Shoe doesn't match any requested role
     }
   }
 
@@ -224,8 +241,9 @@ function scoreFeelMatch(
 
     let targetValue: number;
     if (pref.mode === 'user_set' && pref.value !== undefined) {
-      // Invert user preference to match shoebase scale
-      targetValue = 6 - pref.value;
+      // Bug 1 fix: User slider uses SAME scale as shoebase (1=minimal, 5=max)
+      // DO NOT INVERT - user value maps directly to shoebase value
+      targetValue = pref.value;
     } else {
       // cinda_decides - use role-based default (already in shoebase scale)
       targetValue = getRoleDefault(dimension, roleContext);
