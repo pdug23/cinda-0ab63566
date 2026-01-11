@@ -16,7 +16,13 @@ import type {
   PreferenceValue,
   ShoeRequest,
 } from '../types.js';
-import { getCandidates } from './shoeRetrieval.js';
+import {
+  getCandidates,
+  scoreShoe,
+  normalizeRole,
+  type RetrievalConstraints,
+  type ScoredShoe
+} from './shoeRetrieval.js';
 
 // ============================================================================
 // LLM-BASED MATCH DESCRIPTION GENERATOR
@@ -340,10 +346,7 @@ function getRoleFieldFromCapability(capability: string): keyof Shoe | null {
 // SHOE SELECTION
 // ============================================================================
 
-interface ScoredShoe {
-  shoe: Shoe;
-  totalScore: number;
-}
+// ScoredShoe is now imported from shoeRetrieval.ts
 
 /**
  * Check if two shoes are similar in feel and performance
@@ -418,7 +421,7 @@ function selectDiverseThree(scoredCandidates: ScoredShoe[]): [Shoe, Shoe, Shoe] 
   if (scoredCandidates.length < 3) return null;
 
   // Sort by score descending
-  const sorted = [...scoredCandidates].sort((a, b) => b.totalScore - a.totalScore);
+  const sorted = [...scoredCandidates].sort((a, b) => b.score - a.score);
 
   // Close Match 1: Highest scored
   const closeMatch1 = sorted[0].shoe;
@@ -809,7 +812,7 @@ export async function generateRecommendations(
   // Step 4: Score candidates for gap fit
   const scoredCandidates: ScoredShoe[] = candidates.map(shoe => ({
     shoe,
-    totalScore: 50 + scoreForGapFit(shoe, gap, profile), // Base score + gap bonus
+    score: 50 + scoreForGapFit(shoe, gap, profile), // Base score + gap bonus
   }));
 
   // Step 5: Select 3 diverse shoes
@@ -940,11 +943,16 @@ export async function generateShoppingRecommendations(
     throw new Error(`Unable to find any shoes for ${request.role} role with the specified preferences.`);
   }
 
-  // Step 4: Score candidates based on how well they match the request
-  const scoredCandidates = candidates.map(shoe => ({
-    shoe,
-    totalScore: scoreShoeForRole(shoe, request.role, request.feelPreferences),
-  }));
+  // Step 4: Score candidates using unified scoreShoe from shoeRetrieval.ts
+  const normalizedRole = normalizeRole(request.role);
+  const scoredCandidates: ScoredShoe[] = candidates.map(shoe => {
+    const constraints: RetrievalConstraints = {
+      roles: [normalizedRole],
+      roleContext: normalizedRole,
+      feelPreferences: request.feelPreferences,
+    };
+    return scoreShoe(shoe, constraints);
+  });
 
   // Step 5: Select top 2-3 shoes with diversity
   const selectedShoes = selectShoppingShoes(scoredCandidates);
@@ -991,59 +999,7 @@ function getRelatedRolesForShopping(role: ShoeRole): ShoeRole[] {
   return relatedMap[role] || [];
 }
 
-/**
- * Score a shoe for how well it matches a specific role and feel preferences
- */
-function scoreShoeForRole(
-  shoe: Shoe,
-  role: ShoeRole,
-  feelPreferences: FeelPreferences
-): number {
-  let score = 0;
-
-  // Role match (0-40 points)
-  const roleField = getRoleFieldFromCapability(role);
-  if (roleField && shoe[roleField] === true) {
-    score += 40;
-  }
-
-  // Feel match (0-30 points) - using PreferenceValue mode-aware scoring
-  // Helper to score a single PreferenceValue dimension
-  const scorePrefDimension = (shoeValue: number, pref: PreferenceValue): number => {
-    if (pref.mode === 'wildcard') return 5; // Neutral score
-    let targetValue: number;
-    if (pref.mode === 'user_set' && pref.value !== undefined) {
-      // Bug 1 fix: User slider uses SAME scale as shoebase (1=minimal, 5=max)
-      targetValue = pref.value; // DO NOT INVERT
-    } else {
-      // cinda_decides - use role-based defaults
-      // Normalize frontend role names (recovery→easy, daily_trainer→daily, etc.)
-      const roleMap: Record<string, string> = {
-        'recovery': 'easy', 'daily_trainer': 'daily', 'race_day': 'race', 'not_sure': 'daily'
-      };
-      const normalizedRole = roleMap[role.toLowerCase()] || role;
-      const defaults: Record<string, number> = {
-        daily: 3, easy: 4, long: 4, tempo: 2, intervals: 2, race: 2, trail: 3
-      };
-      targetValue = defaults[normalizedRole] ?? 3;
-    }
-    const distance = Math.abs(shoeValue - targetValue);
-    return Math.max(0, 10 - distance * 2);
-  };
-
-  score += scorePrefDimension(shoe.cushion_softness_1to5, feelPreferences.cushionAmount);
-  score += scorePrefDimension(shoe.stability_1to5, feelPreferences.stabilityAmount);
-  score += scorePrefDimension(shoe.bounce_1to5, feelPreferences.energyReturn);
-
-  // Availability bonus (0-15 points)
-  if (shoe.release_status === "available") {
-    score += 15;
-  } else if (shoe.release_status === "coming_soon") {
-    score += 10;
-  }
-
-  return score;
-}
+// scoreShoeForRole has been DELETED - now using scoreShoe from shoeRetrieval.ts
 
 /**
  * Check if two shoes are model variants (same brand + similar model name)
@@ -1078,8 +1034,11 @@ function selectShoppingShoes(scoredCandidates: ScoredShoe[]): Shoe[] {
   if (scoredCandidates.length === 0) return [];
   if (scoredCandidates.length === 1) return [scoredCandidates[0].shoe];
 
-  // Sort by score descending
-  const sorted = [...scoredCandidates].sort((a, b) => b.totalScore - a.totalScore);
+  // Fix #5: Deterministic sorting - score descending, then shoe_id ascending as tiebreaker
+  const sorted = [...scoredCandidates].sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return a.shoe.shoe_id.localeCompare(b.shoe.shoe_id); // Tiebreaker for reproducibility
+  });
 
   const selected: Shoe[] = [];
   let remaining = [...sorted];

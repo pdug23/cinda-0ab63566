@@ -9,16 +9,16 @@ import type { Shoe, ShoeRole, FeelPreferences, PreferenceValue, HeelDropPreferen
 // TYPES
 // ============================================================================
 
-interface RetrievalConstraints {
+export interface RetrievalConstraints {
   roles?: ShoeRole[];
-  roleContext?: ShoeRole; // Current role context for cinda_decides mode
+  roleContext?: ShoeRole | string; // Current role context for cinda_decides mode
   stabilityNeed?: "neutral" | "stability" | "stable_feel";
   feelPreferences?: FeelPreferences;
   excludeShoeIds?: string[];
   brandOnly?: string;
 }
 
-interface ScoredShoe {
+export interface ScoredShoe {
   shoe: Shoe;
   score: number;
   breakdown?: {
@@ -27,6 +27,36 @@ interface ScoredShoe {
     stabilityBonus: number;
     availabilityBonus: number;
   };
+}
+
+// ============================================================================
+// CENTRALIZED ROLE NORMALIZATION (Fix #4)
+// Single source of truth for frontend→backend role mapping
+// ============================================================================
+
+/**
+ * Normalize frontend role names to backend role names
+ * Frontend uses: recovery, daily_trainer, race_day, not_sure
+ * Backend uses: easy, daily, race, daily
+ */
+export function normalizeRole(role: string | undefined): ShoeRole {
+  if (!role) return 'daily';
+  const normalized = role.toLowerCase();
+  const roleMap: Record<string, ShoeRole> = {
+    'recovery': 'easy',
+    'daily_trainer': 'daily',
+    'race_day': 'race',
+    'not_sure': 'daily',
+    // Standard backend roles (pass through)
+    'daily': 'daily',
+    'easy': 'easy',
+    'long': 'long',
+    'tempo': 'tempo',
+    'intervals': 'intervals',
+    'race': 'race',
+    'trail': 'trail',
+  };
+  return roleMap[normalized] || 'daily';
 }
 
 // ============================================================================
@@ -153,8 +183,9 @@ function passesHardFilters(
 
 /**
  * Score how well shoe matches requested roles (0-40 points)
+ * EXPORTED for unified scoring across recommendationEngine.ts
  */
-function scoreRoleMatch(shoe: Shoe, roles: ShoeRole[] = []): number {
+export function scoreRoleMatch(shoe: Shoe, roles: ShoeRole[] = []): number {
   if (roles.length === 0) {
     // No roles specified - treat as daily trainer search
     return shoe.use_daily ? 25 : 0;
@@ -186,21 +217,9 @@ function scoreRoleMatch(shoe: Shoe, roles: ShoeRole[] = []): number {
 /**
  * Get role-based default preference values for cinda_decides mode
  * Returns the target value that Cinda would pick for each role
+ * Fix #6: Tempo bounce defaults to 4-5 (high bounce for performance)
  */
 function getRoleDefault(dimension: 'cushion' | 'stability' | 'bounce' | 'rocker' | 'groundFeel', role?: ShoeRole | string): number {
-  // Normalize frontend role names to backend role names
-  const normalizeRole = (r: string | undefined): ShoeRole => {
-    if (!r) return 'daily';
-    const normalized = r.toLowerCase();
-    const roleMap: Record<string, ShoeRole> = {
-      'recovery': 'easy',
-      'daily_trainer': 'daily',
-      'race_day': 'race',
-      'not_sure': 'daily',
-    };
-    return (roleMap[normalized] || normalized) as ShoeRole;
-  };
-
   const normalizedRole = normalizeRole(role);
 
   const defaults: Record<string, Record<ShoeRole, number>> = {
@@ -211,7 +230,8 @@ function getRoleDefault(dimension: 'cushion' | 'stability' | 'bounce' | 'rocker'
       daily: 3, easy: 3, long: 3, tempo: 2, intervals: 2, race: 2, trail: 4
     },
     bounce: {
-      daily: 3, easy: 2, long: 3, tempo: 4, intervals: 4, race: 5, trail: 2
+      // Fix #6: Tempo/intervals/race require high bounce (4-5)
+      daily: 3, easy: 2, long: 3, tempo: 5, intervals: 5, race: 5, trail: 2
     },
     rocker: {
       daily: 3, easy: 2, long: 3, tempo: 4, intervals: 4, race: 5, trail: 2
@@ -222,6 +242,43 @@ function getRoleDefault(dimension: 'cushion' | 'stability' | 'bounce' | 'rocker'
   };
 
   return defaults[dimension]?.[normalizedRole] ?? 3;
+}
+
+/**
+ * Ordered list of heel drop ranges for distance calculation
+ */
+const HEEL_DROP_RANGES: Array<"0mm" | "1-4mm" | "5-8mm" | "9-12mm" | "12mm+"> =
+  ["0mm", "1-4mm", "5-8mm", "9-12mm", "12mm+"];
+
+/**
+ * Calculate distance from shoe's heel drop to user's selected ranges
+ * Returns 0 for perfect match, 1 for adjacent range, 2+ for further
+ */
+function getHeelDropRangeDistance(
+  shoeDropMm: number,
+  selectedRanges: Array<"0mm" | "1-4mm" | "5-8mm" | "9-12mm" | "12mm+">
+): number {
+  // Determine which range the shoe falls into
+  let shoeRange: "0mm" | "1-4mm" | "5-8mm" | "9-12mm" | "12mm+";
+  if (shoeDropMm === 0) shoeRange = "0mm";
+  else if (shoeDropMm >= 1 && shoeDropMm <= 4) shoeRange = "1-4mm";
+  else if (shoeDropMm >= 5 && shoeDropMm <= 8) shoeRange = "5-8mm";
+  else if (shoeDropMm >= 9 && shoeDropMm <= 12) shoeRange = "9-12mm";
+  else shoeRange = "12mm+";
+
+  // Perfect match?
+  if (selectedRanges.includes(shoeRange)) return 0;
+
+  // Calculate minimum distance to any selected range
+  const shoeIndex = HEEL_DROP_RANGES.indexOf(shoeRange);
+  const minDistance = Math.min(
+    ...selectedRanges.map(range => {
+      const rangeIndex = HEEL_DROP_RANGES.indexOf(range);
+      return Math.abs(rangeIndex - shoeIndex);
+    })
+  );
+
+  return minDistance; // 0, 1, 2, 3, or 4
 }
 
 /**
@@ -247,11 +304,13 @@ function matchesHeelDropRange(heelDropMm: number, ranges: string[]): boolean {
  * - cinda_decides: Use role-based intelligent defaults
  * - user_set: Match strictly to user's value
  * - wildcard: Skip this dimension entirely
+ * 
+ * EXPORTED for unified scoring across recommendationEngine.ts
  */
-function scoreFeelMatch(
+export function scoreFeelMatch(
   shoe: Shoe,
   prefs?: FeelPreferences,
-  roleContext?: ShoeRole
+  roleContext?: ShoeRole | string
 ): number {
   if (!prefs) {
     return 30; // Neutral score if no preferences
@@ -293,24 +352,8 @@ function scoreFeelMatch(
   totalScore += scoreDimension(shoe.rocker_1to5, prefs.rocker, 'rocker');
   totalScore += scoreDimension(shoe.ground_feel_1to5, prefs.groundFeel, 'groundFeel');
 
-  // Score heel drop preference
-  const heelPref = prefs.heelDropPreference;
-  if (heelPref.mode === 'user_set' && heelPref.values && heelPref.values.length > 0) {
-    dimensionsScored++;
-    if (matchesHeelDropRange(shoe.heel_drop_mm, heelPref.values)) {
-      totalScore += 10; // Bonus for matching heel drop
-    }
-  } else if (heelPref.mode === 'cinda_decides') {
-    // Role-based heel drop preferences (don't penalize, just bonus)
-    dimensionsScored++;
-    // Most roles are fine with any drop, tempo/race prefer lower
-    if (roleContext === 'tempo' || roleContext === 'intervals' || roleContext === 'race') {
-      if (shoe.heel_drop_mm <= 8) totalScore += 5;
-    } else {
-      totalScore += 5; // Neutral bonus for other roles
-    }
-  }
-  // wildcard mode: no heel drop scoring
+  // NOTE: Heel drop is NOT scored here - it's applied AFTER normalization below
+  // This ensures heel drop preference has proper weight
 
   // Normalize to 60 point scale if dimensions were scored
   if (dimensionsScored === 0) {
@@ -319,7 +362,25 @@ function scoreFeelMatch(
 
   // Scale score: max possible is dimensionsScored * 10
   const maxPossible = dimensionsScored * 10;
-  return Math.round((totalScore / maxPossible) * 60);
+  let feelScore = Math.round((totalScore / maxPossible) * 60);
+
+  // Apply heel drop bucketing AFTER normalization (user_set mode only)
+  // This ensures shoes with preferred heel drop rank first
+  const heelPref = prefs.heelDropPreference;
+  if (heelPref.mode === 'user_set' && heelPref.values && heelPref.values.length > 0) {
+    const distance = getHeelDropRangeDistance(shoe.heel_drop_mm, heelPref.values);
+
+    if (distance === 0) {
+      feelScore += 100; // Perfect match - huge bonus ensures these rank first
+    } else if (distance === 1) {
+      feelScore += 25; // Adjacent range - small bonus (trade-off candidates)
+    } else {
+      feelScore -= 50; // 2+ steps away - penalize (rarely recommended)
+    }
+  }
+  // cinda_decides/wildcard modes: no heel drop adjustment needed
+
+  return feelScore;
 }
 
 /**
@@ -367,9 +428,11 @@ function scoreAvailability(shoe: Shoe): number {
 }
 
 /**
- * Calculate total score for a shoe (0-100)
+ * Calculate total score for a shoe (0-130 max)
+ * EXPORTED as single source of truth for all scoring
+ * Components: roleScore (0-40) + feelScore (0-60) + stabilityBonus (0-15) + availabilityBonus (0-15)
  */
-function scoreShoe(
+export function scoreShoe(
   shoe: Shoe,
   constraints: RetrievalConstraints
 ): ScoredShoe {
@@ -499,7 +562,8 @@ export function getCandidates(
       const scored = relaxedFiltered.map(shoe =>
         scoreShoe(shoe, relaxed)
       );
-      scored.sort((a, b) => b.score - a.score);
+      // Fix #5: Deterministic sorting - score descending, shoe_id ascending as tiebreaker
+      scored.sort((a, b) => b.score !== a.score ? b.score - a.score : a.shoe.shoe_id.localeCompare(b.shoe.shoe_id));
       return scored.slice(0, 30).map(s => s.shoe);
     }
 
@@ -514,8 +578,8 @@ export function getCandidates(
     scoreShoe(shoe, effectiveConstraints)
   );
 
-  // Sort by score descending (best matches first)
-  scored.sort((a, b) => b.score - a.score);
+  // Fix #5: Deterministic sorting - score descending, shoe_id ascending as tiebreaker
+  scored.sort((a, b) => b.score !== a.score ? b.score - a.score : a.shoe.shoe_id.localeCompare(b.shoe.shoe_id));
 
   // Return top 30 candidates (or fewer if we don't have 30)
   const topCandidates = scored.slice(0, 30);
