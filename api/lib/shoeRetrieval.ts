@@ -205,7 +205,7 @@ export function scoreRoleMatch(shoe: Shoe, roles: ShoeRole[] = []): number {
   let score = 0;
   for (const role of roles) {
     const field = getRoleField(role);
-    if (shoe[field] === true) {
+    if (field && shoe[field] === true) {
       score += rolePoints[role];
     }
   }
