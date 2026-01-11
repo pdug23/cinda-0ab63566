@@ -53,11 +53,31 @@ const getPlateLabel = (
   return material ? material.toLowerCase() : "none";
 };
 
-const getBadgeConfig = (type: ShoeCardProps["shoe"]["recommendationType"]): { text: string; color: string } => {
-  if (type === "trade_off_option") {
-    return { text: "TRADE-OFF", color: "#F97316" }; // orange
+const getBadgeConfig = (type: ShoeCardProps["shoe"]["recommendationType"]): { text: string; bgColor: string; textColor: string; fontWeight: string } => {
+  switch (type) {
+    case "trade_off_option":
+      return { 
+        text: "TRADE-OFF", 
+        bgColor: "#F59E0B", // amber-500
+        textColor: "#FFFFFF",
+        fontWeight: "500" // medium
+      };
+    case "close_match":
+      return { 
+        text: "CLOSEST MATCH", 
+        bgColor: "#15803D", // green-700 (darker)
+        textColor: "#FFFFFF",
+        fontWeight: "600" // semibold
+      };
+    case "close_match_2":
+    default:
+      return { 
+        text: "CLOSE MATCH", 
+        bgColor: "#16A34A", // green-600 (medium)
+        textColor: "#FFFFFF",
+        fontWeight: "500" // medium
+      };
   }
-  return { text: "CLOSE MATCH", color: "#10B981" }; // green
 };
 
 export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
@@ -141,12 +161,12 @@ export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
         {/* Badge */}
         <div className="flex justify-center mb-3">
           <span
-            className="text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium"
+            className="text-xs uppercase tracking-wide px-3 py-1.5 rounded-md"
             style={{
-              backgroundColor: `${badgeConfig.color}26`,
-              border: `1px solid ${badgeConfig.color}66`,
-              color: badgeConfig.color,
-              boxShadow: `0 0 12px ${badgeConfig.color}33`,
+              backgroundColor: badgeConfig.bgColor,
+              color: badgeConfig.textColor,
+              fontWeight: badgeConfig.fontWeight,
+              boxShadow: `0 0 12px ${badgeConfig.bgColor}66`,
               letterSpacing: "0.5px",
             }}
           >
