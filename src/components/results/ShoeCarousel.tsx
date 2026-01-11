@@ -33,20 +33,6 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const totalSlides = recommendations.length;
 
-  // Reorder cards: [2nd best, 1st best (center), 3rd best]
-  // This puts the best match in the center position for visual emphasis
-  const reorderedRecommendations = (() => {
-    if (recommendations.length <= 1) return recommendations;
-    if (recommendations.length === 2) return recommendations; // Keep as-is for 2 cards
-    
-    // For 3+ cards: [1st, 2nd, 3rd] → [2nd, 1st, 3rd]
-    const [first, second, ...rest] = recommendations;
-    return [second, first, ...rest];
-  })();
-
-  // Track which card is the "best match" (original position 0, now at index 1)
-  const bestMatchIndex = recommendations.length >= 3 ? 1 : 0;
-
   useEffect(() => {
     // Inject custom styles for slides
     const style = document.createElement("style");
@@ -62,20 +48,11 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
         overflow: visible !important;
         transition: transform 250ms ease-out, opacity 250ms ease-out;
         opacity: 0.6;
-        transform: scale(0.92);
+        transform: scale(0.95);
       }
       .shoe-carousel .swiper-slide-active {
         opacity: 1;
         transform: scale(1);
-      }
-      /* Center emphasis for best match card on desktop */
-      @media (min-width: 1024px) {
-        .shoe-carousel .swiper-slide.best-match-slide {
-          transform: scale(0.98);
-        }
-        .shoe-carousel .swiper-slide-active.best-match-slide {
-          transform: scale(1.05);
-        }
       }
     `;
 
@@ -111,15 +88,6 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
     );
   }
 
-  // Map reordered index to position for styling (1=best, 2=second, 3=third)
-  const getPosition = (reorderedIndex: number): 1 | 2 | 3 => {
-    if (recommendations.length < 3) return (reorderedIndex + 1) as 1 | 2 | 3;
-    // After reorder: [2nd, 1st, 3rd] - so index 1 is best (position 1)
-    if (reorderedIndex === 1) return 1; // Best match (center)
-    if (reorderedIndex === 0) return 2; // Second best (left)
-    return 3; // Third best or trade-off (right)
-  };
-
   return (
     <div className="shoe-carousel w-full py-6">
       <Swiper
@@ -127,7 +95,6 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
         spaceBetween={32}
         slidesPerView={1.2}
         centeredSlides={true}
-        initialSlide={bestMatchIndex} // Start centered on best match
         loop={false}
         watchSlidesProgress={true}
         keyboard={{ enabled: true }}
@@ -160,22 +127,16 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
         }}
         aria-label="Shoe recommendations carousel"
       >
-        {reorderedRecommendations.map((shoe, index) => {
-          const isBestMatch = index === bestMatchIndex;
-          const position = getPosition(index);
-          
-          return (
-            <SwiperSlide
-              key={`${shoe.shoeId || shoe.fullName}-${index}`}
-              className={isBestMatch ? "best-match-slide" : ""}
-              aria-label={`Shoe ${position} of ${totalSlides}: ${shoe.fullName}${isBestMatch ? " - Best Match" : ""}`}
-            >
-              <div className="flex justify-center">
-                <ShoeCard shoe={shoe} role={role} position={position} />
-              </div>
-            </SwiperSlide>
-          );
-        })}
+        {recommendations.map((shoe, index) => (
+          <SwiperSlide
+            key={`${shoe.shoeId || shoe.fullName}-${index}`}
+            aria-label={`Shoe ${index + 1} of ${totalSlides}: ${shoe.fullName}`}
+          >
+            <div className="flex justify-center">
+              <ShoeCard shoe={shoe} role={role} position={((index % 3) + 1) as 1 | 2 | 3} />
+            </div>
+          </SwiperSlide>
+        ))}
       </Swiper>
     </div>
   );

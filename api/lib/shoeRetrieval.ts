@@ -205,7 +205,7 @@ export function scoreRoleMatch(shoe: Shoe, roles: ShoeRole[] = []): number {
   let score = 0;
   for (const role of roles) {
     const field = getRoleField(role);
-    if (field && shoe[field] === true) {
+    if (shoe[field] === true) {
       score += rolePoints[role];
     }
   }
@@ -253,9 +253,8 @@ const HEEL_DROP_RANGES: Array<"0mm" | "1-4mm" | "5-8mm" | "9-12mm" | "12mm+"> =
 /**
  * Calculate distance from shoe's heel drop to user's selected ranges
  * Returns 0 for perfect match, 1 for adjacent range, 2+ for further
- * EXPORTED for badge assignment in recommendationEngine.ts
  */
-export function getHeelDropRangeDistance(
+function getHeelDropRangeDistance(
   shoeDropMm: number,
   selectedRanges: Array<"0mm" | "1-4mm" | "5-8mm" | "9-12mm" | "12mm+">
 ): number {
