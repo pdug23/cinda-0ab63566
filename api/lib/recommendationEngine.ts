@@ -13,6 +13,7 @@ import type {
   CurrentShoe,
   ShoeRole,
   FeelPreferences,
+  PreferenceValue,
   ShoeRequest,
 } from '../types.js';
 import { getCandidates } from './shoeRetrieval.js';
@@ -182,10 +183,12 @@ function buildConstraintsFromGap(
     excludeShoeIds: currentShoes.map(s => s.shoeId),
   };
 
-  // Determine stability need from feel preferences
-  const stableArr = Array.isArray(feelPreferences.stabilityAmount) ? feelPreferences.stabilityAmount : [feelPreferences.stabilityAmount];
-  if (stableArr.includes(4) || stableArr.includes(5)) {
-    constraints.stabilityNeed = "stable_feel";
+  // Determine stability need from feel preferences (only if user_set mode)
+  const stabPref = feelPreferences.stabilityAmount;
+  if (stabPref.mode === 'user_set' && stabPref.value !== undefined) {
+    if (stabPref.value >= 4) {
+      constraints.stabilityNeed = "stable_feel";
+    }
   }
 
   switch (gap.type) {
@@ -202,11 +205,11 @@ function buildConstraintsFromGap(
     case "performance":
       // Need faster shoes
       constraints.roles = ["tempo", "intervals"];
-      // Prefer responsive feel
-      if (constraints.feelPreferences) {
+      // Prefer responsive feel if user hasn't explicitly set it
+      if (constraints.feelPreferences && constraints.feelPreferences.energyReturn.mode === 'cinda_decides') {
         constraints.feelPreferences = {
           ...constraints.feelPreferences,
-          energyReturn: 4, // More bouncy for performance
+          energyReturn: { mode: 'user_set', value: 4 }, // More bouncy for performance
         };
       }
       break;
@@ -214,13 +217,18 @@ function buildConstraintsFromGap(
     case "recovery":
       // Need cushioned/protective shoes
       constraints.roles = ["easy", "daily"];
-      // Prefer soft, stable feel
+      // Prefer soft, stable feel if user hasn't explicitly set it
       if (constraints.feelPreferences) {
-        constraints.feelPreferences = {
-          ...constraints.feelPreferences,
-          cushionAmount: 5, // Max cushion
-          stabilityAmount: 4, // Stable
-        };
+        const updates: Partial<FeelPreferences> = {};
+        if (constraints.feelPreferences.cushionAmount.mode === 'cinda_decides') {
+          updates.cushionAmount = { mode: 'user_set', value: 5 }; // Max cushion
+        }
+        if (constraints.feelPreferences.stabilityAmount.mode === 'cinda_decides') {
+          updates.stabilityAmount = { mode: 'user_set', value: 4 }; // Stable
+        }
+        if (Object.keys(updates).length > 0) {
+          constraints.feelPreferences = { ...constraints.feelPreferences, ...updates };
+        }
       }
       break;
 
@@ -900,12 +908,16 @@ export async function generateShoppingRecommendations(
   // Step 1: Build constraints for this specific role and feel preferences
   const constraints = {
     roles: [request.role],
+    roleContext: request.role, // Pass role context for cinda_decides mode
     feelPreferences: request.feelPreferences,
     excludeShoeIds: currentShoes.map(s => s.shoeId),
-    // Determine stability need from request preferences
+    // Determine stability need from request preferences (only if user_set)
     stabilityNeed: (() => {
-      const stableArr = Array.isArray(request.feelPreferences.stabilityAmount) ? request.feelPreferences.stabilityAmount : [request.feelPreferences.stabilityAmount];
-      return (stableArr.includes(4) || stableArr.includes(5)) ? ("stable_feel" as const) : undefined;
+      const stabPref = request.feelPreferences.stabilityAmount;
+      if (stabPref.mode === 'user_set' && stabPref.value !== undefined && stabPref.value >= 4) {
+        return "stable_feel" as const;
+      }
+      return undefined;
     })(),
   };
 
@@ -992,21 +1004,27 @@ function scoreShoeForRole(
     score += 40;
   }
 
-  // Feel match (0-30 points) - using same logic as shoeRetrieval
-  // Normalize preferences to arrays
-  const normalizePref = (pref: number | number[]): number[] => Array.isArray(pref) ? pref : [pref];
-  const cushionArr = normalizePref(feelPreferences.cushionAmount);
-  const stabilityArr = normalizePref(feelPreferences.stabilityAmount);
-  const bounceArr = normalizePref(feelPreferences.energyReturn);
-
-  const minDistance = (shoeValue: number, prefArr: number[]): number => {
-    return Math.min(...prefArr.map(p => Math.abs(shoeValue - p)));
+  // Feel match (0-30 points) - using PreferenceValue mode-aware scoring
+  // Helper to score a single PreferenceValue dimension
+  const scorePrefDimension = (shoeValue: number, pref: PreferenceValue): number => {
+    if (pref.mode === 'wildcard') return 5; // Neutral score
+    let targetValue: number;
+    if (pref.mode === 'user_set' && pref.value !== undefined) {
+      targetValue = 6 - pref.value; // Invert for shoebase scale
+    } else {
+      // cinda_decides - use role-based defaults
+      const defaults: Record<string, number> = {
+        daily: 3, easy: 4, long: 4, tempo: 2, intervals: 2, race: 2, trail: 3
+      };
+      targetValue = defaults[role] ?? 3;
+    }
+    const distance = Math.abs(shoeValue - targetValue);
+    return Math.max(0, 10 - distance * 2);
   };
 
-  const cushionScore = Math.max(0, 10 - minDistance(shoe.cushion_softness_1to5, cushionArr) * 2);
-  const stabilityScore = Math.max(0, 10 - minDistance(shoe.stability_1to5, stabilityArr) * 2);
-  const bounceScore = Math.max(0, 10 - minDistance(shoe.bounce_1to5, bounceArr) * 2);
-  score += cushionScore + stabilityScore + bounceScore;
+  score += scorePrefDimension(shoe.cushion_softness_1to5, feelPreferences.cushionAmount);
+  score += scorePrefDimension(shoe.stability_1to5, feelPreferences.stabilityAmount);
+  score += scorePrefDimension(shoe.bounce_1to5, feelPreferences.energyReturn);
 
   // Availability bonus (0-15 points)
   if (shoe.release_status === "available") {

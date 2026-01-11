@@ -3,7 +3,7 @@
 // Filters and scores the 72-shoe catalogue to return 20-30 candidates
 // ============================================================================
 
-import type { Shoe, ShoeRole, FeelPreference } from '../types.js';
+import type { Shoe, ShoeRole, FeelPreferences, PreferenceValue, HeelDropPreference } from '../types.js';
 
 // ============================================================================
 // TYPES
@@ -11,12 +11,9 @@ import type { Shoe, ShoeRole, FeelPreference } from '../types.js';
 
 interface RetrievalConstraints {
   roles?: ShoeRole[];
+  roleContext?: ShoeRole; // Current role context for cinda_decides mode
   stabilityNeed?: "neutral" | "stability" | "stable_feel";
-  feelPreferences?: {
-    cushionAmount: FeelPreference;
-    stabilityAmount: FeelPreference;
-    energyReturn: FeelPreference;
-  };
+  feelPreferences?: FeelPreferences;
   excludeShoeIds?: string[];
   brandOnly?: string;
 }
@@ -154,57 +151,126 @@ function scoreRoleMatch(shoe: Shoe, roles: ShoeRole[] = []): number {
 }
 
 /**
- * Score how well shoe's feel matches preferences (0-30 points)
- * Closer match = higher score
+ * Get role-based default preference values for cinda_decides mode
+ * Returns the target value that Cinda would pick for each role
+ */
+function getRoleDefault(dimension: 'cushion' | 'stability' | 'bounce' | 'rocker' | 'groundFeel', role?: ShoeRole): number {
+  const defaults: Record<string, Record<ShoeRole, number>> = {
+    cushion: {
+      daily: 3, easy: 4, long: 4, tempo: 2, intervals: 2, race: 2, trail: 3
+    },
+    stability: {
+      daily: 3, easy: 3, long: 3, tempo: 2, intervals: 2, race: 2, trail: 4
+    },
+    bounce: {
+      daily: 3, easy: 2, long: 3, tempo: 4, intervals: 4, race: 5, trail: 2
+    },
+    rocker: {
+      daily: 3, easy: 2, long: 3, tempo: 4, intervals: 4, race: 5, trail: 2
+    },
+    groundFeel: {
+      daily: 3, easy: 2, long: 2, tempo: 3, intervals: 4, race: 4, trail: 4
+    }
+  };
+
+  return defaults[dimension]?.[role || 'daily'] ?? 3;
+}
+
+/**
+ * Check if shoe heel drop falls within selected ranges
+ */
+function matchesHeelDropRange(heelDropMm: number, ranges: string[]): boolean {
+  for (const range of ranges) {
+    switch (range) {
+      case '0mm': if (heelDropMm === 0) return true; break;
+      case '1-4mm': if (heelDropMm >= 1 && heelDropMm <= 4) return true; break;
+      case '5-8mm': if (heelDropMm >= 5 && heelDropMm <= 8) return true; break;
+      case '9-12mm': if (heelDropMm >= 9 && heelDropMm <= 12) return true; break;
+      case '12mm+': if (heelDropMm > 12) return true; break;
+    }
+  }
+  return false;
+}
+
+/**
+ * Score how well shoe's feel matches preferences (0-60 points)
+ * Handles 3 modes: cinda_decides, user_set, wildcard
+ * 
+ * - cinda_decides: Use role-based intelligent defaults
+ * - user_set: Match strictly to user's value
+ * - wildcard: Skip this dimension entirely
  */
 function scoreFeelMatch(
   shoe: Shoe,
-  prefs?: {
-    cushionAmount: FeelPreference;
-    stabilityAmount: FeelPreference;
-    energyReturn: FeelPreference;
-  }
+  prefs?: FeelPreferences,
+  roleContext?: ShoeRole
 ): number {
   if (!prefs) {
-    return 15; // Neutral score if no preferences
+    return 30; // Neutral score if no preferences
   }
 
-  // Normalize preferences to arrays
-  const normalizePref = (pref: FeelPreference): number[] => {
-    return Array.isArray(pref) ? pref : [pref];
+  let totalScore = 0;
+  let dimensionsScored = 0;
+
+  // Helper to score a single dimension
+  const scoreDimension = (
+    shoeValue: number,
+    pref: PreferenceValue,
+    dimension: 'cushion' | 'stability' | 'bounce' | 'rocker' | 'groundFeel'
+  ): number => {
+    if (pref.mode === 'wildcard') {
+      return 0; // Skip - no score contribution
+    }
+
+    let targetValue: number;
+    if (pref.mode === 'user_set' && pref.value !== undefined) {
+      // Invert user preference to match shoebase scale
+      targetValue = 6 - pref.value;
+    } else {
+      // cinda_decides - use role-based default (already in shoebase scale)
+      targetValue = getRoleDefault(dimension, roleContext);
+    }
+
+    dimensionsScored++;
+    const distance = Math.abs(shoeValue - targetValue);
+    // 10 points for perfect match, -2 per distance
+    return Math.max(0, 10 - distance * 2);
   };
 
-  const cushionArr = normalizePref(prefs.cushionAmount);
-  const stabilityArr = normalizePref(prefs.stabilityAmount);
-  const bounceArr = normalizePref(prefs.energyReturn);
+  // Score each dimension
+  totalScore += scoreDimension(shoe.cushion_softness_1to5, prefs.cushionAmount, 'cushion');
+  totalScore += scoreDimension(shoe.stability_1to5, prefs.stabilityAmount, 'stability');
+  totalScore += scoreDimension(shoe.bounce_1to5, prefs.energyReturn, 'bounce');
+  totalScore += scoreDimension(shoe.rocker_1to5, prefs.rocker, 'rocker');
+  totalScore += scoreDimension(shoe.ground_feel_1to5, prefs.groundFeel, 'groundFeel');
 
-  // CRITICAL: User preferences are inverted from shoebase scale
-  // User slider: 1=soft, 5=firm
-  // Shoebase: 1=firm, 5=soft
-  // We must invert user preferences before comparing
-  const invertPrefArray = (arr: number[]): number[] => arr.map(v => 6 - v);
+  // Score heel drop preference
+  const heelPref = prefs.heelDropPreference;
+  if (heelPref.mode === 'user_set' && heelPref.values && heelPref.values.length > 0) {
+    dimensionsScored++;
+    if (matchesHeelDropRange(shoe.heel_drop_mm, heelPref.values)) {
+      totalScore += 10; // Bonus for matching heel drop
+    }
+  } else if (heelPref.mode === 'cinda_decides') {
+    // Role-based heel drop preferences (don't penalize, just bonus)
+    dimensionsScored++;
+    // Most roles are fine with any drop, tempo/race prefer lower
+    if (roleContext === 'tempo' || roleContext === 'intervals' || roleContext === 'race') {
+      if (shoe.heel_drop_mm <= 8) totalScore += 5;
+    } else {
+      totalScore += 5; // Neutral bonus for other roles
+    }
+  }
+  // wildcard mode: no heel drop scoring
 
-  const invertedCushionArr = invertPrefArray(cushionArr);
-  const invertedStabilityArr = invertPrefArray(stabilityArr);
-  const invertedBounceArr = invertPrefArray(bounceArr);
+  // Normalize to 60 point scale if dimensions were scored
+  if (dimensionsScored === 0) {
+    return 30; // No preferences set, neutral score
+  }
 
-  // For each feel dimension, calculate minimum distance from preference array
-  // Formula: 10 - min_distance * 2
-  // Perfect match (distance 0) = 10 points
-  // Distance 1 = 8 points
-  // Distance 2 = 6 points
-  // Distance 3 = 4 points
-  // Distance 4 = 2 points
-
-  const minDistance = (shoeValue: number, prefArr: number[]): number => {
-    return Math.min(...prefArr.map(p => Math.abs(shoeValue - p)));
-  };
-
-  const cushionScore = Math.max(0, 10 - minDistance(shoe.cushion_softness_1to5, invertedCushionArr) * 2);
-  const stabilityScore = Math.max(0, 10 - minDistance(shoe.stability_1to5, invertedStabilityArr) * 2);
-  const bounceScore = Math.max(0, 10 - minDistance(shoe.bounce_1to5, invertedBounceArr) * 2);
-
-  return cushionScore + stabilityScore + bounceScore;
+  // Scale score: max possible is dimensionsScored * 10
+  const maxPossible = dimensionsScored * 10;
+  return Math.round((totalScore / maxPossible) * 60);
 }
 
 /**
@@ -259,7 +325,7 @@ function scoreShoe(
   constraints: RetrievalConstraints
 ): ScoredShoe {
   const roleScore = scoreRoleMatch(shoe, constraints.roles);
-  const feelScore = scoreFeelMatch(shoe, constraints.feelPreferences);
+  const feelScore = scoreFeelMatch(shoe, constraints.feelPreferences, constraints.roleContext);
   const stabilityBonus = scoreStabilityBonus(shoe, constraints.stabilityNeed);
   const availabilityBonus = scoreAvailability(shoe);
 

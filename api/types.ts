@@ -95,6 +95,9 @@ export interface RunnerProfile {
 
   // Optional niggles (non-medical context only)
   currentNiggles?: string[];
+
+  // Foot strike pattern (for data collection)
+  footStrike?: "forefoot" | "midfoot" | "heel" | "unsure";
 }
 
 // ============================================================================
@@ -438,13 +441,36 @@ export interface RecommendationResult {
 // ============================================================================
 
 /**
- * Feel preferences for shoe recommendations (1-5 scale)
- * Extracted from RunnerProfile to allow per-request/per-gap customization
+ * Preference value with 3-mode system:
+ * - cinda_decides: Cinda uses role-based intelligent defaults
+ * - user_set: User explicitly sets their preference (1-5 scale)
+ * - wildcard: Skip this dimension in scoring entirely
+ */
+export interface PreferenceValue {
+  mode: "cinda_decides" | "user_set" | "wildcard";
+  value?: 1 | 2 | 3 | 4 | 5;  // Only present if mode === "user_set"
+}
+
+/**
+ * Heel drop preference with multi-select option
+ */
+export interface HeelDropPreference {
+  mode: "cinda_decides" | "user_set" | "wildcard";
+  values?: ("0mm" | "1-4mm" | "5-8mm" | "9-12mm" | "12mm+")[];  // Only present if mode === "user_set"
+}
+
+/**
+ * Feel preferences for shoe recommendations with 3-mode system
+ * All fields are REQUIRED but each has a mode to control behavior
+ * Default mode for all is "cinda_decides"
  */
 export interface FeelPreferences {
-  cushionAmount: FeelPreference;    // 1 = minimal stack, 5 = max cushion
-  stabilityAmount: FeelPreference;  // 1 = neutral, 5 = stable
-  energyReturn: FeelPreference;     // 1 = damped, 5 = bouncy
+  cushionAmount: PreferenceValue;    // 1 = minimal stack, 5 = max cushion
+  stabilityAmount: PreferenceValue;  // 1 = neutral, 5 = stable
+  energyReturn: PreferenceValue;     // 1 = damped, 5 = bouncy
+  rocker: PreferenceValue;           // 1 = flat/minimal, 5 = aggressive rocker
+  groundFeel: PreferenceValue;       // 1 = isolated/cushioned, 5 = high ground feel
+  heelDropPreference: HeelDropPreference;
 }
 
 /**

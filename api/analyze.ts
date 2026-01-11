@@ -170,18 +170,21 @@ export default async function handler(
             catalogue
           );
 
-          // Helper to describe array preference
-          const describeRange = (pref: number | number[], labels: [string, string, string]): string => {
-            const arr = Array.isArray(pref) ? pref : [pref];
+          // Helper to describe preference value for reasoning text
+          const describePref = (pref: { mode: string; value?: number }, labels: [string, string, string]): string => {
             const [low, mid, high] = labels;
-            if (arr.includes(1) || arr.includes(2)) return arr.includes(4) || arr.includes(5) ? mid : low;
-            if (arr.includes(4) || arr.includes(5)) return high;
+            if (pref.mode === 'wildcard') return 'flexible';
+            if (pref.mode === 'cinda_decides') return 'balanced';
+            // user_set mode
+            const val = pref.value ?? 3;
+            if (val <= 2) return low;
+            if (val >= 4) return high;
             return mid;
           };
 
-          const cushion = describeRange(request.feelPreferences.cushionAmount, ['minimal', 'balanced', 'max']);
-          const bounce = describeRange(request.feelPreferences.energyReturn, ['damped', 'moderate', 'bouncy']);
-          const stability = describeRange(request.feelPreferences.stabilityAmount, ['neutral', 'balanced', 'stable']);
+          const cushion = describePref(request.feelPreferences.cushionAmount, ['minimal', 'balanced', 'max']);
+          const bounce = describePref(request.feelPreferences.energyReturn, ['damped', 'moderate', 'bouncy']);
+          const stability = describePref(request.feelPreferences.stabilityAmount, ['neutral', 'balanced', 'stable']);
 
           const reasoning = `Based on your preference for ${request.role} shoes with ${cushion} cushion, ${bounce} response, and ${stability} platform.`;
 
