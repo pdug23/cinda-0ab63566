@@ -391,7 +391,7 @@ function buildSummaryReasoning(
   }
 
   // Add trade-off note
-  const tradeOff = recommendations.find((r: RecommendedShoe) => r.recommendationType === 'trade_off_option');
+  const tradeOff = recommendations.find((r: RecommendedShoe) => r.recommendationType === 'trade_off');
   if (tradeOff && tradeOff.tradeOffs && tradeOff.tradeOffs.length > 0) {
     const tradeOffText = tradeOff.tradeOffs.join(', ').toLowerCase();
     summary += ` Note: ${tradeOff.fullName} offers a different approach but ${tradeOffText}.`;
