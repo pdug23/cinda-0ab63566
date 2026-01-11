@@ -367,19 +367,17 @@ export function scoreFeelMatch(
   // Apply heel drop bucketing AFTER normalization (user_set mode only)
   // This ensures shoes with preferred heel drop rank first
   const heelPref = prefs.heelDropPreference;
+  console.log('[Heel Drop Debug] Shoe:', shoe.full_name, 'Drop:', shoe.heel_drop_mm, 'Mode:', heelPref?.mode);
+
   if (heelPref.mode === 'user_set' && heelPref.values && heelPref.values.length > 0) {
     const distance = getHeelDropRangeDistance(shoe.heel_drop_mm, heelPref.values);
-
-    if (distance === 0) {
-      feelScore += 100; // Perfect match - huge bonus ensures these rank first
-    } else if (distance === 1) {
-      feelScore += 25; // Adjacent range - small bonus (trade-off candidates)
-    } else {
-      feelScore -= 50; // 2+ steps away - penalize (rarely recommended)
-    }
+    const bonus = distance === 0 ? 100 : distance === 1 ? 25 : -50;
+    console.log('[Heel Drop] Selected ranges:', heelPref.values, 'Distance:', distance, 'Bonus applied:', bonus);
+    feelScore += bonus;
   }
   // cinda_decides/wildcard modes: no heel drop adjustment needed
 
+  console.log('[Final Score] Shoe:', shoe.full_name, 'Feel score after heel drop:', feelScore);
   return feelScore;
 }
 

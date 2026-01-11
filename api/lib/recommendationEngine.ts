@@ -955,6 +955,11 @@ export async function generateShoppingRecommendations(
   });
 
   // Step 5: Select top 2-3 shoes with diversity
+  console.log('[All Scores]', scoredCandidates.slice(0, 10).map(c => ({
+    name: c.shoe.full_name,
+    score: c.score,
+    heelDrop: c.shoe.heel_drop_mm
+  })));
   const selectedShoes = selectShoppingShoes(scoredCandidates);
 
   // Step 6: Build RecommendedShoe objects (async with LLM match descriptions)
