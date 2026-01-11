@@ -172,37 +172,45 @@ const SliderPreferenceCard = ({
       {/* Slider (only shown when "i have a preference") */}
       {showSlider && (
         <div className="mt-4">
-          {/* Value display above slider */}
-          <div className="flex justify-center mb-2">
-            <span className="text-lg font-medium text-orange-400">{sliderValue}</span>
-          </div>
-          
           <Slider
             value={[sliderValue]}
             onValueChange={(vals) => handleSliderChange(vals[0] as FeelValue)}
             min={1}
             max={5}
             step={1}
-            className="w-full [&_[role=slider]]:h-5 [&_[role=slider]]:w-5"
+            className={cn(
+              "w-full",
+              // Track styling - thinner, softer colors
+              "[&_[data-slot=track]]:h-1 [&_[data-slot=track]]:bg-[#374151]",
+              // Filled range - softer amber
+              "[&_[data-slot=range]]:bg-[#d97706]",
+              // Handle styling - dark with amber border
+              "[&_[role=slider]]:h-5 [&_[role=slider]]:w-5",
+              "[&_[role=slider]]:bg-[#1f2937] [&_[role=slider]]:border-2 [&_[role=slider]]:border-[#d97706]",
+              "[&_[role=slider]]:shadow-[0_2px_8px_rgba(0,0,0,0.3)]",
+              // Active/focus state - brighter glow
+              "[&_[role=slider]:focus-visible]:ring-[#d97706]/30 [&_[role=slider]:focus-visible]:ring-offset-0",
+              "[&_[role=slider]:active]:border-[#f59e0b] [&_[role=slider]:active]:shadow-[0_0_12px_rgba(217,119,6,0.4)]"
+            )}
           />
 
           {/* Labels */}
           <div className="relative w-full mt-2 text-xs text-card-foreground/50">
             <span className={cn(
               "absolute left-0",
-              sliderValue === 1 && "text-orange-400"
+              sliderValue === 1 && "text-amber-500"
             )}>
               {config.leftLabel}
             </span>
             <span className={cn(
               "absolute left-1/2 -translate-x-1/2",
-              sliderValue === 3 && "text-orange-400"
+              sliderValue === 3 && "text-amber-500"
             )}>
               {config.middleLabel}
             </span>
             <span className={cn(
               "absolute right-0",
-              sliderValue === 5 && "text-orange-400"
+              sliderValue === 5 && "text-amber-500"
             )}>
               {config.rightLabel}
             </span>
