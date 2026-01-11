@@ -480,7 +480,7 @@ const ProfileBuilderStep4b = () => {
                   <ul className="space-y-1.5 text-card-foreground/80">
                     <li><span className="text-orange-400">let cinda decide</span> – we'll choose based on your shoe type and running style</li>
                     <li><span className="text-orange-400">i have a preference</span> – you tell us exactly what you want</li>
-                    <li><span className="text-orange-400">i don't mind</span> – this dimension doesn't matter to you</li>
+                    <li><span className="text-orange-400">i don't mind</span> – this won't factor into your recommendations</li>
                   </ul>
                   <p className="mt-2 text-card-foreground/60">most runners leave preferences on 'let cinda decide' and only set specific preferences where they have strong feelings.</p>
                 </TooltipContent>
