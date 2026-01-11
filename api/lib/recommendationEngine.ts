@@ -7,7 +7,6 @@ import OpenAI from 'openai';
 import type {
   Gap,
   RecommendedShoe,
-  RecommendationType,
   RecommendationBadge,
   RecommendationPosition,
   Shoe,
@@ -864,34 +863,31 @@ export async function generateRecommendations(
     buildRecommendedShoe(
       second,
       gap,
-      "close_match_2",
+      getBadge(second, false, true),
       currentShoes,
       catalogue,
       false,
       allThreeShoes,
-      getBadge(second, false, true),
       "left"
     ),
     buildRecommendedShoe(
       first,
       gap,
-      "close_match",
+      getBadge(first, true, false),
       currentShoes,
       catalogue,
       false,
       allThreeShoes,
-      getBadge(first, true, false),
       "center"
     ),
     buildRecommendedShoe(
       third,
       gap,
-      "trade_off_option",
+      getBadge(third, false, false),
       currentShoes,
       catalogue,
       true,
       allThreeShoes,
-      getBadge(third, false, false),
       "right"
     ),
   ]);
@@ -921,12 +917,11 @@ export async function generateRecommendations(
 async function buildRecommendedShoe(
   shoe: Shoe,
   gap: Gap,
-  type: RecommendationType,
+  badge: RecommendationBadge,
   currentShoes: CurrentShoe[],
   catalogue: Shoe[],
   isTradeOff: boolean,
   allThreeShoes: Shoe[],
-  badge: RecommendationBadge,
   position: RecommendationPosition
 ): Promise<RecommendedShoe> {
   // Get role from gap for LLM description
@@ -955,7 +950,7 @@ async function buildRecommendedShoe(
     cushion_softness_1to5: shoe.cushion_softness_1to5,
     bounce_1to5: shoe.bounce_1to5,
     stability_1to5: shoe.stability_1to5,
-    recommendationType: type,
+    recommendationType: badge,
     matchReason,
     keyStrengths: extractDifferentiatedStrengths(shoe, gap, allThreeShoes),
     tradeOffs: identifyTradeoffsComparative(shoe, currentShoes, catalogue, isTradeOff, allThreeShoes),
@@ -1079,11 +1074,10 @@ export async function generateShoppingRecommendations(
       buildShoppingRecommendedShoe(
         selectedShoes[0],
         request.role,
-        "close_match",
+        getBadge(selectedShoes[0], true, false),
         currentShoes,
         catalogue,
         false,
-        getBadge(selectedShoes[0], true, false),
         "center"
       ),
     ]);
@@ -1101,21 +1095,19 @@ export async function generateShoppingRecommendations(
       buildShoppingRecommendedShoe(
         selectedShoes[1],
         request.role,
-        "close_match_2",
+        getBadge(selectedShoes[1], false, true),
         currentShoes,
         catalogue,
         false,
-        getBadge(selectedShoes[1], false, true),
         "left"
       ),
       buildShoppingRecommendedShoe(
         selectedShoes[0],
         request.role,
-        "close_match",
+        getBadge(selectedShoes[0], true, false),
         currentShoes,
         catalogue,
         false,
-        getBadge(selectedShoes[0], true, false),
         "center"
       ),
     ]);
@@ -1133,31 +1125,28 @@ export async function generateShoppingRecommendations(
     buildShoppingRecommendedShoe(
       selectedShoes[1],
       request.role,
-      "close_match_2",
+      getBadge(selectedShoes[1], false, true),
       currentShoes,
       catalogue,
       false,
-      getBadge(selectedShoes[1], false, true),
       "left"
     ),
     buildShoppingRecommendedShoe(
       selectedShoes[0],
       request.role,
-      "close_match",
+      getBadge(selectedShoes[0], true, false),
       currentShoes,
       catalogue,
       false,
-      getBadge(selectedShoes[0], true, false),
       "center"
     ),
     buildShoppingRecommendedShoe(
       selectedShoes[2],
       request.role,
-      "close_match",
+      getBadge(selectedShoes[2], false, false),
       currentShoes,
       catalogue,
       false,
-      getBadge(selectedShoes[2], false, false),
       "right"
     ),
   ]);
@@ -1254,11 +1243,10 @@ function selectShoppingShoes(scoredCandidates: ScoredShoe[]): Shoe[] {
 async function buildShoppingRecommendedShoe(
   shoe: Shoe,
   role: ShoeRole,
-  type: RecommendationType,
+  badge: RecommendationBadge,
   currentShoes: CurrentShoe[],
   catalogue: Shoe[],
   isTradeOff: boolean,
-  badge: RecommendationBadge,
   position: RecommendationPosition
 ): Promise<RecommendedShoe> {
   // Generate match description using LLM (with fallback)
@@ -1284,7 +1272,7 @@ async function buildShoppingRecommendedShoe(
     cushion_softness_1to5: shoe.cushion_softness_1to5,
     bounce_1to5: shoe.bounce_1to5,
     stability_1to5: shoe.stability_1to5,
-    recommendationType: type,
+    recommendationType: badge,
     matchReason,
     keyStrengths: extractKeyStrengthsForRole(shoe, role),
     tradeOffs: identifyTradeoffs(shoe, currentShoes, catalogue, isTradeOff),

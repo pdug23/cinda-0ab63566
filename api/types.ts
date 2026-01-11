@@ -384,17 +384,6 @@ export interface Shoe {
 // ============================================================================
 
 /**
- * Type of recommendation in the 3-shoe pattern
- * - close_match: Primary recommendation (position 1)
- * - close_match_2: Secondary close match (position 2)
- * - trade_off_option: Alternative with different trade-offs (position 3)
- */
-export type RecommendationType =
-  | "close_match"
-  | "close_match_2"
-  | "trade_off_option";
-
-/**
  * Badge type for visual display (center-emphasis layout)
  * - closest_match: Best match (always center position, only one)
  * - close_match: Good alternative
@@ -434,10 +423,10 @@ export interface RecommendedShoe {
   stability_1to5: 1 | 2 | 3 | 4 | 5;
 
   // Recommendation context
-  recommendationType: RecommendationType;
+  recommendationType: RecommendationBadge; // Now uses same values as badge
   matchReason: string[]; // Two bullet points: why it's good for role, what's notable
   keyStrengths: string[]; // 2-3 key selling points
-  tradeOffs?: string[]; // What runner gives up with this choice (especially for trade_off_option)
+  tradeOffs?: string[]; // What runner gives up with this choice
 
   // Badge system (center-emphasis layout)
   badge: RecommendationBadge;
