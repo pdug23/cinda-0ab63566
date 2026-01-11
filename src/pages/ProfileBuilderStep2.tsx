@@ -7,8 +7,8 @@ import { UnsavedChangesModal } from "@/components/UnsavedChangesModal";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
-import { useProfile, PrimaryGoal, RunningPattern, TrailRunning, WeeklyVolume } from "@/contexts/ProfileContext";
-import { PBPickerModal, PersonalBests, PBKey, formatPBTime } from "@/components/PBPickerModal";
+import { useProfile, PrimaryGoal, RunningPattern, TrailRunning, WeeklyVolume, FootStrike, RaceTime } from "@/contexts/ProfileContext";
+import { RaceTimePickerModal, formatRaceTime } from "@/components/RaceTimePickerModal";
 import { Input } from "@/components/ui/input";
 
 // Optional badge component
@@ -40,6 +40,13 @@ const TRAIL_OPTIONS: { value: TrailRunning; label: string; description: string }
   { value: "no_trails", label: "no trails for me", description: "road or treadmill only" },
 ];
 
+const FOOT_STRIKE_OPTIONS: { value: FootStrike; label: string; description: string }[] = [
+  { value: "forefoot", label: "forefoot", description: "land on the ball of my foot" },
+  { value: "midfoot", label: "midfoot", description: "land evenly across my foot" },
+  { value: "heel", label: "heel", description: "land on my heel first" },
+  { value: "unsure", label: "unsure", description: "i don't know my strike pattern" },
+];
+
 // Unit toggle component (matches Step 1 styling)
 const UnitToggle = ({ 
   options, 
@@ -68,26 +75,19 @@ const UnitToggle = ({
   </div>
 );
 
-// Personal bests distance config
-const PB_DISTANCES: { key: PBKey; label: string; placeholder: string }[] = [
-  { key: "5k", label: "5k", placeholder: "mm:ss" },
-  { key: "10k", label: "10k", placeholder: "mm:ss" },
-  { key: "half", label: "13.1mi", placeholder: "h:mm:ss" },
-  { key: "marathon", label: "26.2mi", placeholder: "h:mm:ss" },
-];
-
 const ProfileBuilderStep2 = () => {
   const navigate = useNavigate();
   const { profileData, updateStep2, clearAll } = useProfile();
   
-  // Check if user is a beginner (hide race times for beginners)
+  // Check if user is a beginner (hide optional fields for beginners)
   const isBeginner = profileData.step1.experience === "beginner";
 
   // Local state initialized from context
   const [primaryGoal, setPrimaryGoal] = useState<PrimaryGoal | null>(profileData.step2.primaryGoal);
-  const [personalBests, setPersonalBests] = useState<PersonalBests>(profileData.step2.personalBests);
+  const [raceTime, setRaceTime] = useState<RaceTime | null>(profileData.step2.raceTime);
   const [runningPattern, setRunningPattern] = useState<RunningPattern | null>(profileData.step2.runningPattern);
   const [trailRunning, setTrailRunning] = useState<TrailRunning | null>(profileData.step2.trailRunning);
+  const [footStrike, setFootStrike] = useState<FootStrike | null>(profileData.step2.footStrike);
   const [weeklyVolume, setWeeklyVolume] = useState<WeeklyVolume | null>(profileData.step2.weeklyVolume);
   const [volumeInput, setVolumeInput] = useState<string>(
     profileData.step2.weeklyVolume?.value?.toString() || ""
@@ -97,18 +97,18 @@ const ProfileBuilderStep2 = () => {
   );
   const [volumeError, setVolumeError] = useState<string | null>(null);
   const [unsavedModalOpen, setUnsavedModalOpen] = useState(false);
-  const [pbModalOpen, setPbModalOpen] = useState(false);
-  const [pbModalInitialDistance, setPbModalInitialDistance] = useState<PBKey>("5k");
+  const [raceTimeModalOpen, setRaceTimeModalOpen] = useState(false);
 
   // Check if this step has any data
   const isDirty = useCallback(() => {
     const hasGoal = primaryGoal !== null;
     const hasPattern = runningPattern !== null;
-    const hasAnyPB = Object.values(personalBests).some((pb) => pb !== null);
+    const hasRaceTime = raceTime !== null;
     const hasTrail = trailRunning !== null;
+    const hasFootStrike = footStrike !== null;
     const hasVolume = volumeInput.trim() !== "";
-    return hasGoal || hasPattern || hasAnyPB || hasTrail || hasVolume;
-  }, [primaryGoal, runningPattern, personalBests, trailRunning, volumeInput]);
+    return hasGoal || hasPattern || hasRaceTime || hasTrail || hasFootStrike || hasVolume;
+  }, [primaryGoal, runningPattern, raceTime, trailRunning, footStrike, volumeInput]);
 
   // Validate and parse weekly volume
   const validateAndParseVolume = (): WeeklyVolume | null => {
@@ -161,7 +161,14 @@ const ProfileBuilderStep2 = () => {
     const parsedVolume = volumeInput.trim() ? validateAndParseVolume() : null;
     const finalVolume = parsedVolume === undefined ? null : parsedVolume;
     // Save current state before navigating back (preserves data)
-    updateStep2({ primaryGoal, personalBests, runningPattern, trailRunning, weeklyVolume: finalVolume });
+    updateStep2({ 
+      primaryGoal, 
+      raceTime, 
+      runningPattern, 
+      trailRunning, 
+      footStrike,
+      weeklyVolume: finalVolume 
+    });
     navigate("/profile");
   };
 
@@ -186,9 +193,23 @@ const ProfileBuilderStep2 = () => {
       const parsedVolume = validateAndParseVolume();
       if (parsedVolume === undefined) return; // Has error
       setWeeklyVolume(parsedVolume);
-      updateStep2({ primaryGoal, personalBests, runningPattern, trailRunning, weeklyVolume: parsedVolume });
+      updateStep2({ 
+        primaryGoal, 
+        raceTime, 
+        runningPattern, 
+        trailRunning, 
+        footStrike,
+        weeklyVolume: parsedVolume 
+      });
     } else {
-      updateStep2({ primaryGoal, personalBests, runningPattern, trailRunning, weeklyVolume: null });
+      updateStep2({ 
+        primaryGoal, 
+        raceTime, 
+        runningPattern, 
+        trailRunning, 
+        footStrike,
+        weeklyVolume: null 
+      });
     }
     navigate("/profile/step3");
   };
@@ -198,18 +219,17 @@ const ProfileBuilderStep2 = () => {
     setTrailRunning((prev) => (prev === value ? null : value));
   };
 
-  // Open PB modal for a specific distance
-  const openPbModal = (distance: PBKey) => {
-    setPbModalInitialDistance(distance);
-    setPbModalOpen(true);
+  const handleFootStrikeToggle = (value: FootStrike) => {
+    // Toggle behavior - clicking selected button deselects it
+    setFootStrike((prev) => (prev === value ? null : value));
   };
 
   const canProceed = primaryGoal !== null && runningPattern !== null && trailRunning !== null;
 
   // Calculate if all optional fields are filled
   const hasVolume = volumeInput.trim() !== "";
-  const hasAnyPB = Object.values(personalBests).some((pb) => pb !== null);
-  const allOptionalsFilled = isBeginner || (hasVolume && hasAnyPB);
+  const hasRaceTime = raceTime !== null;
+  const allOptionalsFilled = isBeginner || (hasVolume && hasRaceTime);
 
   return (
     <>
@@ -290,6 +310,27 @@ const ProfileBuilderStep2 = () => {
             </div>
           </div>
 
+          {/* Foot Strike - Optional (hidden for beginners) */}
+          {!isBeginner && (
+            <div>
+              <label className="block text-sm text-card-foreground/90 mb-3">
+                how does your foot land when you run?
+                <OptionalBadge />
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {FOOT_STRIKE_OPTIONS.map((option) => (
+                  <SelectionButton
+                    key={option.value}
+                    label={option.label}
+                    description={option.description}
+                    selected={footStrike === option.value}
+                    onClick={() => handleFootStrikeToggle(option.value)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Weekly Volume - Optional (hidden for beginners) */}
           {!isBeginner && (
             <div>
@@ -336,31 +377,20 @@ const ProfileBuilderStep2 = () => {
                 estimated race times
                 <OptionalBadge />
               </label>
-              <div className="overflow-x-auto -mx-1 px-1">
-                <div className="grid grid-cols-4 gap-3 min-w-[280px]">
-                  {PB_DISTANCES.map(({ key, label, placeholder }) => (
-                    <div key={key} className="text-center">
-                      <span className="text-xs text-card-foreground/60 block mb-1.5">
-                        {label}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => openPbModal(key)}
-                        className="w-full h-10 px-1 text-sm rounded-md bg-card-foreground/5 border border-card-foreground/20 text-card-foreground hover:bg-card-foreground/10 transition-colors"
-                      >
-                        {personalBests[key] ? (
-                          formatPBTime(personalBests[key])
-                        ) : (
-                          <span className="text-card-foreground/30">{placeholder}</span>
-                        )}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <p className="mt-3 text-sm">
-                <span className="italic text-orange-500">what about pbs?</span>{" "}
-                <span className="text-muted-foreground">estimated race times may or may not be your pb, but should reflect your current race pace for each distance.</span>
+              <button
+                type="button"
+                onClick={() => setRaceTimeModalOpen(true)}
+                className="w-full h-10 px-3 text-sm rounded-md bg-card-foreground/5 border border-card-foreground/20 text-card-foreground hover:bg-card-foreground/10 transition-colors flex items-center justify-between"
+              >
+                <span className={raceTime ? "text-card-foreground" : "text-card-foreground/40"}>
+                  {raceTime ? formatRaceTime(raceTime) : "tap to enter time"}
+                </span>
+                <span className={raceTime ? "text-orange-400" : "text-card-foreground/40"}>
+                  {raceTime ? raceTime.distance : "select distance"}
+                </span>
+              </button>
+              <p className="mt-2 text-xs text-card-foreground/50">
+                populate your most accurate race time
               </p>
             </div>
           )}
@@ -378,12 +408,11 @@ const ProfileBuilderStep2 = () => {
           </Button>
         </footer>
 
-        <PBPickerModal
-          open={pbModalOpen}
-          onOpenChange={setPbModalOpen}
-          personalBests={personalBests}
-          onSave={setPersonalBests}
-          initialDistance={pbModalInitialDistance}
+        <RaceTimePickerModal
+          open={raceTimeModalOpen}
+          onOpenChange={setRaceTimeModalOpen}
+          raceTime={raceTime}
+          onSave={setRaceTime}
         />
 
         <UnsavedChangesModal

@@ -6,6 +6,15 @@ export type ExperienceLevel = "beginner" | "intermediate" | "advanced" | "racing
 export type PrimaryGoal = "general_fitness" | "improve_pace" | "train_for_race" | "comfort_recovery" | "just_for_fun";
 export type RunningPattern = "infrequent" | "mostly_easy" | "structured_training" | "workouts" | "long_run_focus";
 export type TrailRunning = "most_runs" | "infrequent" | "want_to_start" | "no_trails";
+export type FootStrike = "forefoot" | "midfoot" | "heel" | "unsure";
+
+// Single race time (user picks one distance)
+export interface RaceTime {
+  distance: "5k" | "10k" | "13.1mi" | "26.2mi";
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
 
 // Step 1 data - basics + experience
 export interface Step1Data {
@@ -26,8 +35,10 @@ export interface WeeklyVolume {
 export interface Step2Data {
   primaryGoal: PrimaryGoal | null;
   personalBests: PersonalBests;
+  raceTime: RaceTime | null;
   runningPattern: RunningPattern | null;
   trailRunning: TrailRunning | null;
+  footStrike: FootStrike | null;
   doesTrail?: boolean;
   weeklyVolume: WeeklyVolume | null;
 }
@@ -111,8 +122,10 @@ const defaultStep2: Step2Data = {
     half: null,
     marathon: null,
   },
+  raceTime: null,
   runningPattern: null,
   trailRunning: null,
+  footStrike: null,
   doesTrail: false,
   weeklyVolume: null,
 };
