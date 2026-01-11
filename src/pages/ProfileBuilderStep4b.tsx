@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, HelpCircle } from "lucide-react";
+import { ArrowLeft, HelpCircle, Check } from "lucide-react";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
@@ -184,9 +184,9 @@ const SliderPreferenceCard = ({
               "[&_[data-slot=track]]:h-1 [&_[data-slot=track]]:bg-[#374151]",
               // Filled range - softer amber
               "[&_[data-slot=range]]:bg-[#d97706]",
-              // Handle styling - dark with amber border
+              // Handle styling - match button fill color (orange-500/20 equivalent)
               "[&_[role=slider]]:h-5 [&_[role=slider]]:w-5",
-              "[&_[role=slider]]:bg-[#1f2937] [&_[role=slider]]:border-2 [&_[role=slider]]:border-[#d97706]",
+              "[&_[role=slider]]:bg-orange-500/20 [&_[role=slider]]:border-2 [&_[role=slider]]:border-[#d97706]",
               "[&_[role=slider]]:shadow-[0_2px_8px_rgba(0,0,0,0.3)]",
               // Active/focus state - brighter glow
               "[&_[role=slider]:focus-visible]:ring-[#d97706]/30 [&_[role=slider]:focus-visible]:ring-offset-0",
@@ -270,25 +270,29 @@ const HeelDropPreferenceCard = ({
 
       {/* Checkboxes (only shown when "i have a preference") */}
       {showCheckboxes && (
-        <div className="mt-4 flex flex-wrap gap-2">
-          {HEEL_DROP_OPTIONS.map((option) => {
-            const isSelected = selectedValues.includes(option);
-            return (
-              <button
-                key={option}
-                type="button"
-                onClick={() => handleCheckboxChange(option)}
-                className={cn(
-                  "px-3 py-2 text-sm rounded-md border transition-all",
-                  isSelected
-                    ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
-                    : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
-                )}
-              >
-                {option}
-              </button>
-            );
-          })}
+        <div className="mt-3">
+          <p className="text-xs text-card-foreground/40 mb-2">select all that apply</p>
+          <div className="flex flex-wrap gap-2">
+            {HEEL_DROP_OPTIONS.map((option) => {
+              const isSelected = selectedValues.includes(option);
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => handleCheckboxChange(option)}
+                  className={cn(
+                    "px-3 py-1.5 text-xs rounded-md border transition-all flex items-center gap-1.5",
+                    isSelected
+                      ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                      : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
+                  )}
+                >
+                  {isSelected && <Check className="w-3 h-3" />}
+                  {option}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
