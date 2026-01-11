@@ -465,9 +465,27 @@ const ProfileBuilderStep4b = () => {
             style={{ WebkitOverflowScrolling: "touch" }}
           >
             {/* Heading */}
-            <p className="text-sm text-card-foreground/90 mb-2">
-              how do you want your <span className="text-orange-400 font-semibold">{ROLE_LABELS[currentRole]}</span> to feel?
-            </p>
+            <div className="flex items-center gap-1.5 mb-2">
+              <p className="text-sm text-card-foreground/90">
+                how do you want your <span className="text-orange-400 font-semibold">{ROLE_LABELS[currentRole]}</span> to feel?
+              </p>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button type="button" className="text-card-foreground/40 hover:text-card-foreground/60 transition-colors">
+                    <HelpCircle className="w-3.5 h-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[280px] text-xs p-3">
+                  <p className="font-medium mb-2">understanding your preferences:</p>
+                  <ul className="space-y-1.5 text-card-foreground/80">
+                    <li><span className="text-orange-400">let cinda decide</span> – we'll choose based on your shoe type and running style</li>
+                    <li><span className="text-orange-400">i have a preference</span> – you tell us exactly what you want</li>
+                    <li><span className="text-orange-400">i don't mind</span> – this dimension doesn't matter to you</li>
+                  </ul>
+                  <p className="mt-2 text-card-foreground/60">most runners leave preferences on 'let cinda decide' and only set specific preferences where they have strong feelings.</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
 
             {/* Progress indicator for multiple roles */}
             {totalRoles > 1 && (
