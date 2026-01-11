@@ -8,6 +8,8 @@ import type {
   Gap,
   RecommendedShoe,
   RecommendationType,
+  RecommendationBadge,
+  RecommendationPosition,
   Shoe,
   RunnerProfile,
   CurrentShoe,
@@ -20,6 +22,7 @@ import {
   getCandidates,
   scoreShoe,
   normalizeRole,
+  getHeelDropRangeDistance,
   type RetrievalConstraints,
   type ScoredShoe
 } from './shoeRetrieval.js';
@@ -825,11 +828,37 @@ export async function generateRecommendations(
   const [closeMatch1, closeMatch2, tradeOff] = selectedThree;
   const allThreeShoes = [closeMatch1, closeMatch2, tradeOff];
 
-  // Step 6: Build RecommendedShoe objects with differentiated strengths (async)
+  // Step 6: Calculate heel drop distances for badge assignment
+  const getHeelDropDistance = (shoe: Shoe): number => {
+    const heelPref = feelPreferences.heelDropPreference;
+    if (!heelPref || heelPref.mode !== 'user_set' || !heelPref.values) {
+      return 0;
+    }
+    return getHeelDropRangeDistance(shoe.heel_drop_mm, heelPref.values);
+  };
+
+  // Assign badges based on position + heel drop distance
+  const assignBadge = (shoe: Shoe, position: number): RecommendationBadge => {
+    const heelDistance = getHeelDropDistance(shoe);
+
+    // 2+ steps away from preferred heel drop = always trade-off
+    if (heelDistance > 1) {
+      return "trade_off";
+    }
+
+    if (position === 0) return "closest_match"; // Best match
+    if (position === 1) return "close_match";   // Second best
+
+    // Third position: trade-off if heel distance > 0, else close match
+    return heelDistance > 0 ? "trade_off" : "close_match";
+  };
+
+  // Step 7: Build RecommendedShoe objects with differentiated strengths (async)
+  // Reorder for center-emphasis: [2nd best (left), 1st best (center), 3rd best (right)]
   const recommendations: RecommendedShoe[] = await Promise.all([
-    buildRecommendedShoe(closeMatch1, gap, "close_match", currentShoes, catalogue, false, allThreeShoes),
-    buildRecommendedShoe(closeMatch2, gap, "close_match_2", currentShoes, catalogue, false, allThreeShoes),
-    buildRecommendedShoe(tradeOff, gap, "trade_off_option", currentShoes, catalogue, true, allThreeShoes),
+    buildRecommendedShoe(closeMatch2, gap, "close_match_2", currentShoes, catalogue, false, allThreeShoes, assignBadge(closeMatch2, 1), "left"),
+    buildRecommendedShoe(closeMatch1, gap, "close_match", currentShoes, catalogue, false, allThreeShoes, assignBadge(closeMatch1, 0), "center"),
+    buildRecommendedShoe(tradeOff, gap, "trade_off_option", currentShoes, catalogue, true, allThreeShoes, assignBadge(tradeOff, 2), "right"),
   ]);
 
   // Final validation: ensure all shoes exist in catalogue
@@ -853,7 +882,9 @@ async function buildRecommendedShoe(
   currentShoes: CurrentShoe[],
   catalogue: Shoe[],
   isTradeOff: boolean,
-  allThreeShoes: Shoe[]
+  allThreeShoes: Shoe[],
+  badge: RecommendationBadge,
+  position: RecommendationPosition
 ): Promise<RecommendedShoe> {
   // Get role from gap for LLM description
   const role = gap.missingCapability || gap.type || 'daily';
@@ -885,6 +916,8 @@ async function buildRecommendedShoe(
     matchReason,
     keyStrengths: extractDifferentiatedStrengths(shoe, gap, allThreeShoes),
     tradeOffs: identifyTradeoffsComparative(shoe, currentShoes, catalogue, isTradeOff, allThreeShoes),
+    badge,
+    position,
   };
 }
 
@@ -962,28 +995,59 @@ export async function generateShoppingRecommendations(
   })));
   const selectedShoes = selectShoppingShoes(scoredCandidates);
 
-  // Step 6: Build RecommendedShoe objects (async with LLM match descriptions)
-  // Bug 5 fix: With proper role filtering, all 3 shoes are CLOSE MATCHES
-  // Only mark as trade_off if we had to relax constraints significantly
-  const recommendationPromises = selectedShoes.map((shoe, index) => {
-    // All shoes are close matches when filtering works correctly
-    const recType: RecommendationType = index === 0
-      ? "close_match"
-      : index === 1
-        ? "close_match_2"
-        : "close_match"; // Was trade_off_option, but with proper filtering all 3 are good
+  // Step 6: Calculate heel drop distances for badge assignment
+  const getHeelDropDistance = (shoe: Shoe): number => {
+    const heelPref = request.feelPreferences.heelDropPreference;
+    if (!heelPref || heelPref.mode !== 'user_set' || !heelPref.values) {
+      return 0;
+    }
+    return getHeelDropRangeDistance(shoe.heel_drop_mm, heelPref.values);
+  };
 
-    return buildShoppingRecommendedShoe(
-      shoe,
-      request.role,
-      recType,
-      currentShoes,
-      catalogue,
-      false // No trade-offs needed with proper filtering
-    );
-  });
+  // Assign badges based on position + heel drop distance
+  const assignBadge = (shoe: Shoe, position: number): RecommendationBadge => {
+    const heelDistance = getHeelDropDistance(shoe);
 
-  const recommendations: RecommendedShoe[] = await Promise.all(recommendationPromises);
+    // 2+ steps away from preferred heel drop = always trade-off
+    if (heelDistance > 1) {
+      return "trade_off";
+    }
+
+    if (position === 0) return "closest_match"; // Best match
+    if (position === 1) return "close_match";   // Second best
+
+    // Third position: trade-off if heel distance > 0, else close match
+    return heelDistance > 0 ? "trade_off" : "close_match";
+  };
+
+  // Step 7: Build RecommendedShoe objects (async with LLM match descriptions)
+  // Reorder for center-emphasis: [2nd best (left), 1st best (center), 3rd best (right)]
+  // Handle cases with fewer than 3 shoes
+  if (selectedShoes.length === 0) {
+    return [];
+  }
+
+  if (selectedShoes.length === 1) {
+    const recommendations: RecommendedShoe[] = await Promise.all([
+      buildShoppingRecommendedShoe(selectedShoes[0], request.role, "close_match", currentShoes, catalogue, false, assignBadge(selectedShoes[0], 0), "center"),
+    ]);
+    return recommendations;
+  }
+
+  if (selectedShoes.length === 2) {
+    const recommendations: RecommendedShoe[] = await Promise.all([
+      buildShoppingRecommendedShoe(selectedShoes[1], request.role, "close_match_2", currentShoes, catalogue, false, assignBadge(selectedShoes[1], 1), "left"),
+      buildShoppingRecommendedShoe(selectedShoes[0], request.role, "close_match", currentShoes, catalogue, false, assignBadge(selectedShoes[0], 0), "center"),
+    ]);
+    return recommendations;
+  }
+
+  // 3 shoes: reorder for center-emphasis [2nd, 1st, 3rd]
+  const recommendations: RecommendedShoe[] = await Promise.all([
+    buildShoppingRecommendedShoe(selectedShoes[1], request.role, "close_match_2", currentShoes, catalogue, false, assignBadge(selectedShoes[1], 1), "left"),
+    buildShoppingRecommendedShoe(selectedShoes[0], request.role, "close_match", currentShoes, catalogue, false, assignBadge(selectedShoes[0], 0), "center"),
+    buildShoppingRecommendedShoe(selectedShoes[2], request.role, "close_match", currentShoes, catalogue, false, assignBadge(selectedShoes[2], 2), "right"),
+  ]);
 
   return recommendations;
 }
@@ -1073,7 +1137,9 @@ async function buildShoppingRecommendedShoe(
   type: RecommendationType,
   currentShoes: CurrentShoe[],
   catalogue: Shoe[],
-  isTradeOff: boolean
+  isTradeOff: boolean,
+  badge: RecommendationBadge,
+  position: RecommendationPosition
 ): Promise<RecommendedShoe> {
   // Generate match description using LLM (with fallback)
   const matchReason = await generateMatchDescription(
@@ -1102,6 +1168,8 @@ async function buildShoppingRecommendedShoe(
     matchReason,
     keyStrengths: extractKeyStrengthsForRole(shoe, role),
     tradeOffs: identifyTradeoffs(shoe, currentShoes, catalogue, isTradeOff),
+    badge,
+    position,
   };
 }
 
