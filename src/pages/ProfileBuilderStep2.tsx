@@ -389,8 +389,9 @@ const ProfileBuilderStep2 = () => {
                   {raceTime ? raceTime.distance : "select distance"}
                 </span>
               </button>
-              <p className="mt-2 text-xs text-card-foreground/50">
-                populate your most accurate race time
+              <p className="mt-3 text-sm">
+                <span className="italic text-orange-500">what about pbs?</span>{" "}
+                <span className="text-muted-foreground">estimated race times may or may not be your pb, but should reflect your current race pace for each distance.</span>
               </p>
             </div>
           )}
