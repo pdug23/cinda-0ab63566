@@ -19,7 +19,7 @@ const OptionalBadge = () => (
 
 // Field explanation component
 const FieldExplanation = ({ question, answer }: { question: string; answer: string }) => (
-  <p className="mt-2 text-sm">
+  <p className="mt-2 text-[13px]">
     <span className="italic text-orange-500">{question}</span>{" "}
     <span className="text-muted-foreground">{answer}</span>
   </p>
