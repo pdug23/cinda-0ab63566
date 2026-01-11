@@ -395,6 +395,19 @@ export type RecommendationType =
   | "trade_off_option";
 
 /**
+ * Badge type for visual display (center-emphasis layout)
+ * - closest_match: Best match (always center position, only one)
+ * - close_match: Good alternative
+ * - trade_off: Different approach with trade-offs
+ */
+export type RecommendationBadge = "closest_match" | "close_match" | "trade_off";
+
+/**
+ * Position in 3-card layout (center-emphasis)
+ */
+export type RecommendationPosition = "left" | "center" | "right";
+
+/**
  * A recommended shoe with reasoning
  * Combines shoe data from catalogue with recommendation context
  */
@@ -425,6 +438,10 @@ export interface RecommendedShoe {
   matchReason: string[]; // Two bullet points: why it's good for role, what's notable
   keyStrengths: string[]; // 2-3 key selling points
   tradeOffs?: string[]; // What runner gives up with this choice (especially for trade_off_option)
+
+  // Badge system (center-emphasis layout)
+  badge: RecommendationBadge;
+  position: RecommendationPosition;
 }
 
 /**

@@ -8,7 +8,9 @@
       "Bash(npx ts-node:*)",
       "Bash(test:*)",
       "Bash(cat:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: correct badge assignment and center reordering logic\n\n- Add RecommendationBadge and RecommendationPosition types\n- Export getHeelDropRangeDistance from shoeRetrieval.ts\n- Fix badge assignment: only ONE \"closest_match\" \\(center card\\)\n- Badge logic:\n  - First place \\(highest score\\) = \"closest_match\" \\(always center\\)\n  - Second place = \"close_match\"\n  - Third place = \"trade_off\" if heel distance > 0, else \"close_match\"\n  - Force \"trade_off\" if heel drop 2+ steps from preference\n- Reorder for center-emphasis: [2nd, 1st, 3rd]\n- Add debug logging to verify badge assignment\n- Apply same logic to both generateRecommendations and generateShoppingRecommendations\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ],
     "deny": [
       "Read(./.env)",
