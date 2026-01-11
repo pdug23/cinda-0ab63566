@@ -314,7 +314,7 @@ const ProfileBuilderStep2 = () => {
           {!isBeginner && (
             <div>
               <label className="block text-sm text-card-foreground/90 mb-3">
-                how does your foot land when you run?
+                what's your foot strike pattern?
                 <OptionalBadge />
               </label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
