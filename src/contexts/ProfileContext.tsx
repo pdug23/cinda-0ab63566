@@ -50,14 +50,28 @@ export type ShoeSentiment = "love" | "like" | "neutral" | "dislike";
 // Step 4 shoe role selection for discovery mode
 export type DiscoveryShoeRole = "daily_trainer" | "recovery" | "tempo" | "race_day" | "trail" | "not_sure";
 
-// Feel preferences for each shoe request
-// Can be single value (auto-converts to range) or explicit range array
+// Feel preferences for each shoe request - new 3-mode system
 export type FeelValue = 1 | 2 | 3 | 4 | 5;
+export type PreferenceMode = "cinda_decides" | "user_set" | "wildcard";
+export type HeelDropOption = "0mm" | "1-4mm" | "5-8mm" | "9-12mm" | "12mm+";
+
+export interface SliderPreference {
+  mode: PreferenceMode;
+  value?: FeelValue;  // Only set when mode === "user_set"
+}
+
+export interface HeelDropPreference {
+  mode: PreferenceMode;
+  values?: HeelDropOption[];  // Only set when mode === "user_set"
+}
 
 export interface FeelPreferences {
-  cushionAmount: number[] | null;      // Range for flexible matching (1=minimal, 5=max stack)
-  stabilityAmount: number[] | null;    // Range for flexible matching (1=neutral, 5=stable)
-  energyReturn: number[] | null;       // Range for flexible matching (1=damped, 5=bouncy)
+  cushionAmount: SliderPreference;
+  stabilityAmount: SliderPreference;
+  energyReturn: SliderPreference;
+  rocker: SliderPreference;
+  groundFeel: SliderPreference;
+  heelDropPreference: HeelDropPreference;
 }
 
 export interface ShoeRequest {

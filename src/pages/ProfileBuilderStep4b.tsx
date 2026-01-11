@@ -4,7 +4,16 @@ import { ArrowLeft, HelpCircle } from "lucide-react";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
-import { useProfile, DiscoveryShoeRole, FeelValue, FeelPreferences } from "@/contexts/ProfileContext";
+import { 
+  useProfile, 
+  DiscoveryShoeRole, 
+  FeelValue, 
+  FeelPreferences,
+  PreferenceMode,
+  SliderPreference,
+  HeelDropPreference,
+  HeelDropOption
+} from "@/contexts/ProfileContext";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -27,7 +36,7 @@ const ROLE_LABELS: Record<DiscoveryShoeRole, string> = {
 
 // Slider configuration
 interface SliderConfig {
-  key: keyof FeelPreferences;
+  key: "cushionAmount" | "stabilityAmount" | "energyReturn" | "rocker" | "groundFeel";
   label: string;
   tooltip: string;
   leftLabel: string;
@@ -38,15 +47,15 @@ interface SliderConfig {
 const SLIDERS: SliderConfig[] = [
   {
     key: "cushionAmount",
-    label: "cushioning",
-    tooltip: "how much cushioning the shoe provides. minimal offers ground feel and responsiveness. max stack provides maximum protection.",
+    label: "cushion amount",
+    tooltip: "how much cushioning the shoe provides. minimal offers ground feel and responsiveness. protective provides maximum cushioning.",
     leftLabel: "minimal",
     middleLabel: "balanced",
-    rightLabel: "max stack",
+    rightLabel: "protective",
   },
   {
     key: "stabilityAmount",
-    label: "stability",
+    label: "stability amount",
     tooltip: "how much guidance the shoe provides. neutral shoes allow natural movement. stable shoes help control motion.",
     leftLabel: "neutral",
     middleLabel: "balanced",
@@ -60,53 +69,91 @@ const SLIDERS: SliderConfig[] = [
     middleLabel: "balanced",
     rightLabel: "bouncy",
   },
+  {
+    key: "rocker",
+    label: "rocker",
+    tooltip: "the curved geometry of the sole. flat shoes allow natural foot motion. max rocker propels you forward through your stride.",
+    leftLabel: "flat",
+    middleLabel: "balanced",
+    rightLabel: "max rocker",
+  },
+  {
+    key: "groundFeel",
+    label: "ground feel",
+    tooltip: "how connected you feel to the surface. isolated shoes buffer sensation. connected shoes let you feel the terrain.",
+    leftLabel: "isolated",
+    middleLabel: "balanced",
+    rightLabel: "connected",
+  },
 ];
 
-/**
- * Convert slider value to range for flexible backend matching
- * Range logic:
- * - 1 → [1, 2] (extreme: very soft/stable/bouncy - narrow range)
- * - 2 → [1, 2, 3] (soft/stable/bouncy side - wider range)
- * - 3 → [2, 3, 4] (balanced - exclude extremes)
- * - 4 → [3, 4, 5] (firm/neutral/damped side - wider range)
- * - 5 → [4, 5] (extreme: very firm/neutral/damped - narrow range)
- * - null (not sure) → [2, 3, 4] (exclude extremes)
- */
-function convertToRange(value: FeelValue | null): number[] {
-  if (value === null) {
-    return [2, 3, 4]; // "Not sure" - exclude extremes
-  }
+const HEEL_DROP_OPTIONS: HeelDropOption[] = ["0mm", "1-4mm", "5-8mm", "9-12mm", "12mm+"];
 
-  switch (value) {
-    case 1: return [1, 2];       // Very soft/stable/bouncy
-    case 2: return [1, 2, 3];    // Soft/stable/bouncy side
-    case 3: return [2, 3, 4];    // Balanced (exclude extremes)
-    case 4: return [3, 4, 5];    // Firm/neutral/damped side
-    case 5: return [4, 5];       // Very firm/neutral/damped
-    default: return [2, 3, 4];   // Fallback: exclude extremes
-  }
-}
-
-// Custom slider component with "not sure" toggle
-const FeelSlider = ({
-  config,
-  value,
+// Mode button component
+const ModeSelector = ({
+  mode,
   onChange,
-  onToggleNotSure,
 }: {
-  config: SliderConfig;
-  value: FeelValue | null;
-  onChange: (value: FeelValue) => void;
-  onToggleNotSure: () => void;
+  mode: PreferenceMode;
+  onChange: (mode: PreferenceMode) => void;
 }) => {
-  const isDisabled = value === null;
-  const displayValue = value ?? 3;
+  const modes: { value: PreferenceMode; label: string }[] = [
+    { value: "cinda_decides", label: "let cinda decide" },
+    { value: "user_set", label: "i have a preference" },
+    { value: "wildcard", label: "i don't mind" },
+  ];
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-wrap gap-2">
+      {modes.map((m) => (
+        <button
+          key={m.value}
+          type="button"
+          onClick={() => onChange(m.value)}
+          className={cn(
+            "px-3 py-1.5 text-xs rounded-md border transition-all",
+            mode === m.value
+              ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+              : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
+          )}
+        >
+          {m.label}
+        </button>
+      ))}
+    </div>
+  );
+};
+
+// Preference card for sliders
+const SliderPreferenceCard = ({
+  config,
+  preference,
+  onChange,
+}: {
+  config: SliderConfig;
+  preference: SliderPreference;
+  onChange: (pref: SliderPreference) => void;
+}) => {
+  const showSlider = preference.mode === "user_set";
+  const sliderValue = preference.value ?? 3;
+
+  const handleModeChange = (mode: PreferenceMode) => {
+    if (mode === "user_set") {
+      onChange({ mode, value: preference.value ?? 3 });
+    } else {
+      onChange({ mode });
+    }
+  };
+
+  const handleSliderChange = (value: FeelValue) => {
+    onChange({ mode: "user_set", value });
+  };
+
+  return (
+    <div className="p-4 rounded-lg bg-card-foreground/[0.02] border border-card-foreground/10">
       {/* Label with tooltip */}
-      <div className="flex items-center gap-1.5">
-        <label className="text-sm text-card-foreground/90">{config.label}</label>
+      <div className="flex items-center gap-1.5 mb-3">
+        <span className="text-sm text-card-foreground/90">{config.label}</span>
         <Tooltip>
           <TooltipTrigger asChild>
             <button type="button" className="text-card-foreground/40 hover:text-card-foreground/60 transition-colors">
@@ -119,76 +166,136 @@ const FeelSlider = ({
         </Tooltip>
       </div>
 
-      {/* Slider row with "not sure" button */}
-      <div className="flex items-center gap-4">
-        {/* Slider container with labels */}
-        <div
-          className={cn("relative flex-1", isDisabled && "opacity-30 cursor-pointer")}
-          onClick={() => {
-            // Re-enable slider by clicking the track area
-            if (isDisabled) onToggleNotSure();
-          }}
-        >
+      {/* Mode selector */}
+      <ModeSelector mode={preference.mode} onChange={handleModeChange} />
+
+      {/* Slider (only shown when "i have a preference") */}
+      {showSlider && (
+        <div className="mt-4">
+          {/* Value display above slider */}
+          <div className="flex justify-center mb-2">
+            <span className="text-lg font-medium text-orange-400">{sliderValue}</span>
+          </div>
+          
           <Slider
-            value={[displayValue]}
-            onValueChange={(vals) => {
-              if (!isDisabled) onChange(vals[0] as FeelValue);
-            }}
+            value={[sliderValue]}
+            onValueChange={(vals) => handleSliderChange(vals[0] as FeelValue)}
             min={1}
             max={5}
             step={1}
-            disabled={isDisabled}
-            className={cn("w-full", isDisabled && "pointer-events-none")}
+            className="w-full [&_[role=slider]]:h-5 [&_[role=slider]]:w-5"
           />
 
-          {/* Labels positioned below slider - aligned to slider positions */}
-          <div className={cn(
-            "relative w-full mt-2 text-xs",
-            isDisabled ? "text-card-foreground/20" : "text-card-foreground/50"
-          )}>
-            {/* Left label - position 1 (0%) */}
+          {/* Labels */}
+          <div className="relative w-full mt-2 text-xs text-card-foreground/50">
             <span className={cn(
-              "absolute left-0 -translate-x-0",
-              !isDisabled && value === 1 && "text-orange-400"
+              "absolute left-0",
+              sliderValue === 1 && "text-orange-400"
             )}>
               {config.leftLabel}
             </span>
-            {/* Middle label - position 3 (50%) */}
             <span className={cn(
               "absolute left-1/2 -translate-x-1/2",
-              !isDisabled && value === 3 && "text-orange-400"
+              sliderValue === 3 && "text-orange-400"
             )}>
               {config.middleLabel}
             </span>
-            {/* Right label - position 5 (100%) */}
             <span className={cn(
-              "absolute right-0 translate-x-0",
-              !isDisabled && value === 5 && "text-orange-400"
+              "absolute right-0",
+              sliderValue === 5 && "text-orange-400"
             )}>
               {config.rightLabel}
             </span>
-            {/* Spacer for height */}
             <span className="invisible">{config.middleLabel}</span>
           </div>
         </div>
-
-        {/* Not sure button - more prominent */}
-        <button
-          type="button"
-          onClick={onToggleNotSure}
-          className={cn(
-            "text-xs transition-all italic whitespace-nowrap px-3 py-1.5 rounded-md border self-start mt-0",
-            isDisabled
-              ? "text-slate-300 bg-slate-500/20 border-slate-400/40"
-              : "text-slate-500 border-slate-500/30 hover:text-slate-400 hover:border-slate-400/50 hover:bg-slate-500/10"
-          )}
-        >
-          not sure
-        </button>
-      </div>
+      )}
     </div>
   );
 };
+
+// Heel drop preference card
+const HeelDropPreferenceCard = ({
+  preference,
+  onChange,
+}: {
+  preference: HeelDropPreference;
+  onChange: (pref: HeelDropPreference) => void;
+}) => {
+  const showCheckboxes = preference.mode === "user_set";
+  const selectedValues = preference.values ?? [];
+
+  const handleModeChange = (mode: PreferenceMode) => {
+    if (mode === "user_set") {
+      onChange({ mode, values: preference.values ?? [] });
+    } else {
+      onChange({ mode });
+    }
+  };
+
+  const handleCheckboxChange = (option: HeelDropOption) => {
+    const newValues = selectedValues.includes(option)
+      ? selectedValues.filter((v) => v !== option)
+      : [...selectedValues, option];
+    onChange({ mode: "user_set", values: newValues });
+  };
+
+  return (
+    <div className="p-4 rounded-lg bg-card-foreground/[0.02] border border-card-foreground/10">
+      {/* Label with tooltip */}
+      <div className="flex items-center gap-1.5 mb-3">
+        <span className="text-sm text-card-foreground/90">heel drop</span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button type="button" className="text-card-foreground/40 hover:text-card-foreground/60 transition-colors">
+              <HelpCircle className="w-3.5 h-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-[260px] text-xs">
+            the height difference between heel and forefoot. lower drops encourage midfoot striking. higher drops suit heel strikers.
+          </TooltipContent>
+        </Tooltip>
+      </div>
+
+      {/* Mode selector */}
+      <ModeSelector mode={preference.mode} onChange={handleModeChange} />
+
+      {/* Checkboxes (only shown when "i have a preference") */}
+      {showCheckboxes && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {HEEL_DROP_OPTIONS.map((option) => {
+            const isSelected = selectedValues.includes(option);
+            return (
+              <button
+                key={option}
+                type="button"
+                onClick={() => handleCheckboxChange(option)}
+                className={cn(
+                  "px-3 py-2 text-sm rounded-md border transition-all",
+                  isSelected
+                    ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                    : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
+                )}
+              >
+                {option}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Default preferences
+const getDefaultPreferences = (): FeelPreferences => ({
+  cushionAmount: { mode: "cinda_decides" },
+  stabilityAmount: { mode: "cinda_decides" },
+  energyReturn: { mode: "cinda_decides" },
+  rocker: { mode: "cinda_decides" },
+  groundFeel: { mode: "cinda_decides" },
+  heelDropPreference: { mode: "cinda_decides" },
+});
 
 const ProfileBuilderStep4b = () => {
   const navigate = useNavigate();
@@ -199,28 +306,12 @@ const ProfileBuilderStep4b = () => {
   const totalRoles = selectedRoles.length;
   const currentRole = selectedRoles[currentRoleIndex];
 
-  // Initialize local state for current slider values (before conversion to ranges)
-  const [sliderValues, setSliderValues] = useState<{
-    cushionAmount: FeelValue | null;
-    stabilityAmount: FeelValue | null;
-    energyReturn: FeelValue | null;
-  }>(() => {
-    // Default to middle values
-    return {
-      cushionAmount: 3,
-      stabilityAmount: 3,
-      energyReturn: 3,
-    };
-  });
+  // Initialize local state for preferences
+  const [preferences, setPreferences] = useState<FeelPreferences>(getDefaultPreferences);
 
-  // Reset slider values when role changes
+  // Reset preferences when role changes
   useEffect(() => {
-    // Reset to defaults when switching roles
-    setSliderValues({
-      cushionAmount: 3,
-      stabilityAmount: 3,
-      energyReturn: 3,
-    });
+    setPreferences(getDefaultPreferences());
   }, [currentRole]);
 
   // Redirect if no roles selected
@@ -232,42 +323,46 @@ const ProfileBuilderStep4b = () => {
 
   const handleBack = () => {
     if (currentRoleIndex > 0) {
-      // Go to previous role
       updateStep4({ currentRoleIndex: currentRoleIndex - 1 });
     } else {
-      // First role - check mode to determine where to go
       const mode = profileData.step4.mode;
       if (mode === "analysis") {
-        // Analysis mode: go back to mode selection (skip gap detection page)
         navigate("/profile/step4");
       } else {
-        // Shopping/discovery mode: go back to role selection
         navigate("/profile/step4a");
       }
     }
   };
 
-  const handleSliderChange = (key: "cushionAmount" | "stabilityAmount" | "energyReturn", value: FeelValue) => {
-    setSliderValues((prev) => ({ ...prev, [key]: value }));
+  const updateSliderPreference = (key: SliderConfig["key"], pref: SliderPreference) => {
+    setPreferences((prev) => ({ ...prev, [key]: pref }));
   };
 
-  const handleToggleNotSure = (key: "cushionAmount" | "stabilityAmount" | "energyReturn") => {
-    setSliderValues((prev) => ({
-      ...prev,
-      [key]: prev[key] === null ? 3 : null,
-    }));
+  const updateHeelDropPreference = (pref: HeelDropPreference) => {
+    setPreferences((prev) => ({ ...prev, heelDropPreference: pref }));
+  };
+
+  // Validation
+  const isValid = () => {
+    // Check slider preferences
+    for (const slider of SLIDERS) {
+      const pref = preferences[slider.key];
+      if (pref.mode === "user_set" && pref.value === undefined) {
+        return false;
+      }
+    }
+    // Check heel drop
+    const heelDrop = preferences.heelDropPreference;
+    if (heelDrop.mode === "user_set" && (!heelDrop.values || heelDrop.values.length === 0)) {
+      return false;
+    }
+    return true;
   };
 
   const handleNext = () => {
-    // Convert slider values to ranges for backend
-    const feelPreferences: FeelPreferences = {
-      cushionAmount: convertToRange(sliderValues.cushionAmount),
-      stabilityAmount: convertToRange(sliderValues.stabilityAmount),
-      energyReturn: convertToRange(sliderValues.energyReturn),
-    };
+    if (!isValid()) return;
 
-    // Save current preferences as range-based request
-    const newRequest = { role: currentRole, feelPreferences };
+    const newRequest = { role: currentRole, feelPreferences: preferences };
     const existingIndex = shoeRequests.findIndex((r) => r.role === currentRole);
 
     let updatedRequests: typeof shoeRequests;
@@ -279,18 +374,14 @@ const ProfileBuilderStep4b = () => {
     }
 
     if (currentRoleIndex < totalRoles - 1) {
-      // More roles to go - save and move to next
       updateStep4({
         shoeRequests: updatedRequests,
         currentRoleIndex: currentRoleIndex + 1,
       });
     } else {
-      // All roles complete - save to context and localStorage, then navigate to recommendations
       updateStep4({ shoeRequests: updatedRequests });
 
-      // Save to localStorage for recommendations page
       try {
-        // Save profile data
         const profile = {
           firstName: step1.firstName,
           age: step1.age ? parseInt(step1.age) : undefined,
@@ -312,29 +403,24 @@ const ProfileBuilderStep4b = () => {
             marathon: step2.personalBests.marathon ?? undefined,
           },
         };
-        saveProfile(profile as any);  // Uses storage utility with proper format
+        saveProfile(profile as any);
 
-        // Save current shoes
         const currentShoes = step3.currentShoes.map((shoe) => ({
-          shoe: shoe.shoe,  // Save full shoe object, not just ID
+          shoe: shoe.shoe,
           roles: shoe.roles,
           sentiment: shoe.sentiment ?? "neutral",
         }));
-        saveShoes(currentShoes as any);  // Uses storage utility with proper format
+        saveShoes(currentShoes as any);
 
-        // Save shoe requests for shopping mode
         saveShoeRequests(updatedRequests);
 
-        // Save gap if in analysis mode
         if (profileData.step4.gap) {
           saveGap(profileData.step4.gap);
         }
 
-        console.log("All preferences complete. Navigating to recommendations...");
         navigate("/recommendations");
       } catch (error) {
         console.error("Error saving to localStorage:", error);
-        // Navigate anyway - recommendations page will handle missing data
         navigate("/recommendations");
       }
     }
@@ -363,7 +449,7 @@ const ProfileBuilderStep4b = () => {
 
           {/* Scrollable content */}
           <div
-            className="flex-1 min-h-0 overflow-y-auto scrollbar-styled touch-pan-y px-6 md:px-8 pb-4"
+            className="flex-1 min-h-0 overflow-y-auto scrollbar-styled touch-pan-y px-6 md:px-8 pb-6"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
             {/* Heading */}
@@ -373,22 +459,26 @@ const ProfileBuilderStep4b = () => {
 
             {/* Progress indicator for multiple roles */}
             {totalRoles > 1 && (
-              <p className="text-xs text-card-foreground/40 mb-6">
+              <p className="text-xs text-card-foreground/40 mb-4">
                 shoe {currentRoleIndex + 1} of {totalRoles}
               </p>
             )}
 
-            {/* Sliders - increased spacing */}
-            <div className="flex flex-col gap-10 mt-6">
+            {/* Preference cards */}
+            <div className="flex flex-col gap-4 mt-4">
               {SLIDERS.map((config) => (
-                <FeelSlider
+                <SliderPreferenceCard
                   key={config.key}
                   config={config}
-                  value={sliderValues[config.key]}
-                  onChange={(val) => handleSliderChange(config.key, val)}
-                  onToggleNotSure={() => handleToggleNotSure(config.key)}
+                  preference={preferences[config.key]}
+                  onChange={(pref) => updateSliderPreference(config.key, pref)}
                 />
               ))}
+              
+              <HeelDropPreferenceCard
+                preference={preferences.heelDropPreference}
+                onChange={updateHeelDropPreference}
+              />
             </div>
           </div>
 
@@ -398,6 +488,7 @@ const ProfileBuilderStep4b = () => {
               onClick={handleNext}
               variant="cta"
               className="w-full min-h-[44px] text-sm"
+              disabled={!isValid()}
             >
               next
             </Button>
