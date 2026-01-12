@@ -22,18 +22,7 @@ interface ShoeCardProps {
   position?: 1 | 2 | 3;
 }
 
-// Position-based color configurations (shimmer/glow only, background stays dark)
-const POSITION_COLORS = {
-  1: {
-    shimmer: "#60a5fa",    // soft blue
-  },
-  2: {
-    shimmer: "#3b82f6",    // slate blue
-  },
-  3: {
-    shimmer: "#06b6d4",    // cyan-blue
-  },
-};
+// Glow colors are now derived from badge type (see getBadgeConfig)
 
 const getWeightLabel = (weight: 1 | 2 | 3 | 4 | 5): string => {
   const labels: Record<number, string> = {
@@ -70,11 +59,11 @@ const getBadgeConfig = (
 };
 
 export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
-  const positionConfig = POSITION_COLORS[position] || POSITION_COLORS[1];
-  const shimmer = positionConfig.shimmer;
+  const badgeConfig = getBadgeConfig(shoe.recommendationType, shoe.badge);
+  // Use badge color for glow/shimmer to create visual coherence
+  const shimmer = badgeConfig.color;
   const weightLabel = getWeightLabel(shoe.weight_feel_1to5);
   const plateLabel = getPlateLabel(shoe.has_plate, shoe.plate_material);
-  const badgeConfig = getBadgeConfig(shoe.recommendationType, shoe.badge);
 
   // Always dark background - light text
   const textColor = "rgba(255, 255, 255, 0.9)";
