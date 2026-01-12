@@ -186,7 +186,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
             <img
               src={getBrandLogoPath(shoe.brand)}
               alt={shoe.brand}
-              className="h-10 w-auto object-contain"
+              className="h-14 w-auto object-contain"
               style={{ filter: "brightness(0) invert(1)" }}
             />
           ) : (
