@@ -6,6 +6,7 @@ import AnimatedBackground from "@/components/AnimatedBackground";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import { ShoeCarousel } from "@/components/results/ShoeCarousel";
 import { Button } from "@/components/ui/button";
+import { LeaveRecommendationsModal } from "@/components/LeaveRecommendationsModal";
 import { loadProfile, loadShoes, loadShoeRequests, loadGap } from "@/utils/storage";
 import type { FeelPreferences as APIFeelPreferences, CurrentShoe as APICurrentShoe } from "../../api/types";
 
@@ -267,10 +268,21 @@ export default function RecommendationsPage() {
   const [shoppingResult, setShoppingResult] = useState<ShoppingResult | null>(null);
   const [gap, setGap] = useState<Gap | null>(null);
   const [shortlistedShoes, setShortlistedShoes] = useState<string[]>([]);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+
+  const handleNavigationAttempt = useCallback((destination: string) => {
+    if (shortlistedShoes.length === 0) {
+      setPendingNavigation(destination);
+      setShowLeaveModal(true);
+    } else {
+      navigate(destination);
+    }
+  }, [navigate, shortlistedShoes.length]);
 
   const goBack = useCallback(() => {
-    navigate("/profile/step4");
-  }, [navigate]);
+    handleNavigationAttempt("/profile/step4");
+  }, [handleNavigationAttempt]);
 
   const handleShortlist = useCallback((shoeId: string) => {
     setShortlistedShoes(prev => {
@@ -285,12 +297,15 @@ export default function RecommendationsPage() {
   }, []);
 
   const handleGoToProfile = useCallback(() => {
-    if (shortlistedShoes.length === 0) {
-      toast.warning("you haven't shortlisted any shoes yet");
+    handleNavigationAttempt("/");
+  }, [handleNavigationAttempt]);
+
+  const handleConfirmLeave = useCallback(() => {
+    setShowLeaveModal(false);
+    if (pendingNavigation) {
+      navigate(pendingNavigation);
     }
-    // TODO: Navigate to profile/shortlist page when implemented
-    navigate("/");
-  }, [navigate, shortlistedShoes.length]);
+  }, [navigate, pendingNavigation]);
 
   const goToLanding = useCallback(() => {
     navigate("/");
@@ -496,14 +511,22 @@ export default function RecommendationsPage() {
           <footer className="px-6 md:px-8 pb-4 pt-2 flex-shrink-0">
             <Button
               onClick={handleGoToProfile}
-              variant="default"
-              className="w-full min-h-[44px] text-sm lowercase"
+              variant="cta"
+              className="w-full min-h-[44px] text-sm"
             >
               go to my profile
             </Button>
           </footer>
         )}
       </OnboardingLayout>
+
+      {/* Leave confirmation modal */}
+      <LeaveRecommendationsModal
+        open={showLeaveModal}
+        onOpenChange={setShowLeaveModal}
+        onStay={() => setShowLeaveModal(false)}
+        onLeave={handleConfirmLeave}
+      />
     </>
   );
 }
