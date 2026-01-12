@@ -105,6 +105,26 @@ const getOtherApplicableRoles = (shoe: ShoeCardProps["shoe"], currentRole?: stri
     .map(([role]) => role);
 };
 
+const getBrandLogoPath = (brand: string): string => {
+  const brandMap: Record<string, string> = {
+    "Adidas": "/logos/adidas-logo.png",
+    "Altra": "/logos/altra-logo.png",
+    "ASICS": "/logos/asics-logo.png",
+    "Brooks": "/logos/brooks-logo.png",
+    "HOKA": "/logos/hoka-logo.png",
+    "Mizuno": "/logos/mizuno-logo.png",
+    "New Balance": "/logos/newbalance-logo.png",
+    "Nike": "/logos/nike-logo.png",
+    "On": "/logos/on-logo.png",
+    "Puma": "/logos/puma-logo.png",
+    "Salomon": "/logos/salomon-logo.png",
+    "Saucony": "/logos/saucony-logo.png",
+    "Skechers": "/logos/skechers-logo.png",
+    "Topo Athletic": "/logos/topo-logo.png",
+  };
+  return brandMap[brand] || "";
+};
+
 export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onShortlist, showRoleBadge = false }: ShoeCardProps) {
   const badgeConfig = getBadgeConfig(shoe.recommendationType, shoe.badge);
   // Use badge color for glow/shimmer to create visual coherence
@@ -160,24 +180,23 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
           height: "480px",
         }}
       >
-        {/* Shoe Image */}
-        <div className="flex justify-center mb-0">
-          <img
-            src="/shoes/shoe-placeholder.png"
-            alt={`${shoe.brand} ${shoe.model} ${shoe.version}`}
-            className="w-24 h-auto object-contain"
-            style={{ imageRendering: "pixelated" }}
-          />
-        </div>
-
-        {/* Brand Name */}
-        <div className="text-center">
-          <span 
-            className="text-sm font-medium uppercase tracking-wider"
-            style={{ color: textColorMuted }}
-          >
-            {shoe.brand}
-          </span>
+        {/* Brand Logo */}
+        <div className="flex justify-center mb-2 pt-1">
+          {getBrandLogoPath(shoe.brand) ? (
+            <img
+              src={getBrandLogoPath(shoe.brand)}
+              alt={shoe.brand}
+              className="h-10 w-auto object-contain"
+              style={{ filter: "brightness(0) invert(1)" }}
+            />
+          ) : (
+            <span 
+              className="text-sm font-medium uppercase tracking-wider"
+              style={{ color: textColorMuted }}
+            >
+              {shoe.brand}
+            </span>
+          )}
         </div>
 
         {/* Model Name */}
