@@ -91,7 +91,7 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
   }
 
   return (
-    <div className="shoe-carousel w-full h-full flex items-center py-2">
+    <div className="shoe-carousel w-full py-6">
       <Swiper
         modules={[Keyboard]}
         spaceBetween={32}
@@ -102,23 +102,22 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
         watchSlidesProgress={true}
         keyboard={{ enabled: true }}
         grabCursor={true}
-        className="w-full h-full"
         breakpoints={{
           320: {
-            slidesPerView: 1.05,
-            spaceBetween: 16,
-          },
-          375: {
             slidesPerView: 1.1,
             spaceBetween: 24,
           },
-          640: {
-            slidesPerView: 1.2,
+          375: {
+            slidesPerView: 1.15,
             spaceBetween: 32,
           },
-          1024: {
-            slidesPerView: 1.3,
+          640: {
+            slidesPerView: 1.25,
             spaceBetween: 40,
+          },
+          1024: {
+            slidesPerView: 1.35,
+            spaceBetween: 48,
           },
         }}
         onSwiper={(swiper) => {
@@ -135,9 +134,8 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
           <SwiperSlide
             key={`${shoe.shoeId || shoe.fullName}-${index}`}
             aria-label={`Shoe ${index + 1} of ${totalSlides}: ${shoe.fullName}`}
-            className="!h-auto flex items-center"
           >
-            <div className="flex justify-center w-full">
+            <div className="flex justify-center">
               <ShoeCard shoe={shoe} role={role} position={((index % 3) + 1) as 1 | 2 | 3} />
             </div>
           </SwiperSlide>

@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import AnimatedBackground from "@/components/AnimatedBackground";
+import OnboardingLayout from "@/components/OnboardingLayout";
 import { ShoeCarousel } from "@/components/results/ShoeCarousel";
-import { Button } from "@/components/ui/button";
 import { loadProfile, loadShoes, loadShoeRequests, loadGap } from "@/utils/storage";
 import type { FeelPreferences as APIFeelPreferences, CurrentShoe as APICurrentShoe } from "../../api/types";
 
@@ -63,6 +63,8 @@ interface ShoppingResult {
 
 type Mode = "analysis" | "shopping";
 
+// STORAGE_KEYS constant removed - using storage utilities instead
+
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
@@ -92,22 +94,13 @@ function mapRoleToCarouselRole(role: string): "daily" | "tempo" | "race" | "easy
   return roleMap[role.toLowerCase()] || "daily";
 }
 
-function getShortlist(): string[] {
-  try {
-    const stored = localStorage.getItem("cindaShortlist");
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-}
-
 // ============================================================================
 // SUB-COMPONENTS
 // ============================================================================
 
 function LoadingState() {
   return (
-    <div className="flex flex-col items-center justify-center flex-1 gap-6 px-4">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 px-4">
       <div className="relative w-full max-w-[320px] aspect-[3/4] rounded-2xl overflow-hidden">
         <div className="absolute inset-0 bg-card-foreground/5 animate-pulse" />
         <div
@@ -143,7 +136,7 @@ function ErrorState({
   const isInvalidRequest = error.includes("Invalid");
 
   return (
-    <div className="flex flex-col items-center justify-center flex-1 gap-6 px-4 text-center">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 px-4 text-center">
       <p className="text-card-foreground/70 text-lg">
         {error}
       </p>
@@ -159,7 +152,7 @@ function ErrorState({
 
 function EmptyState({ onBack }: { onBack: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center flex-1 gap-6 px-4 text-center">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 px-4 text-center">
       <p className="text-card-foreground/70 text-lg">
         No shoes match your criteria
       </p>
@@ -173,28 +166,29 @@ function EmptyState({ onBack }: { onBack: () => void }) {
   );
 }
 
-function TryAgainButton({ onClick }: { onClick: () => void }) {
+function BackButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-primary bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
-      aria-label="Try again"
+      className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
+      aria-label="Go back"
     >
       <ArrowLeft className="w-3.5 h-3.5" />
-      try again
+      back
     </button>
   );
 }
 
 function PageHeader() {
   return (
-    <div className="text-center py-2 px-5 flex-shrink-0">
+    <div className="text-center py-1 px-5">
       <h1 className="text-xl font-bold text-card-foreground/90 lowercase">
         cinda's recommendations
       </h1>
     </div>
   );
 }
+
 
 function AnalysisModeResults({
   result,
@@ -205,13 +199,14 @@ function AnalysisModeResults({
 }) {
   const carouselRole = mapRoleToCarouselRole(gap.missingCapability || 'daily');
 
+  // Transform recommendations for ShoeCarousel
   const carouselShoes = result.recommendations.map((shoe) => ({
     ...shoe,
     tradeOffs: shoe.tradeOffs,
   }));
 
   return (
-    <div className="w-full h-full flex items-center overflow-visible">
+    <div className="w-full overflow-visible">
       <ShoeCarousel recommendations={carouselShoes} role={carouselRole} />
     </div>
   );
@@ -219,36 +214,20 @@ function AnalysisModeResults({
 
 function ShoppingModeResults({ result }: { result: ShoppingResult }) {
   return (
-    <div className="w-full h-full flex items-center overflow-visible">
-      {result.shoppingResults.length > 0 && (
-        <ShoeCarousel 
-          recommendations={result.shoppingResults[0].recommendations} 
-          role={mapRoleToCarouselRole(result.shoppingResults[0].role)} 
-        />
-      )}
+    <div className="w-full space-y-8 overflow-visible">
+      {result.shoppingResults.map((item, index) => {
+        const carouselRole = mapRoleToCarouselRole(item.role);
+
+        return (
+          <div key={item.role} className="w-full overflow-visible">
+            {index > 0 && (
+              <div className="h-px bg-card-foreground/10 mx-6 mb-4" />
+            )}
+            <ShoeCarousel recommendations={item.recommendations} role={carouselRole} />
+          </div>
+        );
+      })}
     </div>
-  );
-}
-
-function Footer({ onGoToProfile }: { onGoToProfile: () => void }) {
-  const handleClick = () => {
-    const shortlist = getShortlist();
-    if (shortlist.length === 0) {
-      toast.error("shortlist at least one shoe to build your profile");
-      return;
-    }
-    onGoToProfile();
-  };
-
-  return (
-    <footer className="flex-shrink-0 w-full px-6 py-4 border-t border-card-foreground/10 bg-background/80 backdrop-blur-sm">
-      <Button
-        onClick={handleClick}
-        className="w-full h-12 text-sm font-medium lowercase"
-      >
-        go to my profile
-      </Button>
-    </footer>
   );
 }
 
@@ -265,12 +244,12 @@ export default function RecommendationsPage() {
   const [shoppingResult, setShoppingResult] = useState<ShoppingResult | null>(null);
   const [gap, setGap] = useState<Gap | null>(null);
 
-  const goToModeSelection = useCallback(() => {
-    navigate("/profile/step4");
+  const goBack = useCallback(() => {
+    navigate("/profile/step4b");
   }, [navigate]);
 
-  const goToProfile = useCallback(() => {
-    navigate("/profile");
+  const goToLanding = useCallback(() => {
+    navigate("/");
   }, [navigate]);
 
   const loadDataAndFetch = useCallback(async () => {
@@ -278,18 +257,23 @@ export default function RecommendationsPage() {
     setError(null);
 
     try {
+      // 1. Load data from localStorage
       const profile = loadProfile();
       const shoes = loadShoes();
       const storedGap = loadGap();
       const shoeRequests = loadShoeRequests();
-      const feelPreferences = loadFromStorage<APIFeelPreferences>('cindaFeelPreferences');
+      const feelPreferences = loadFromStorage<APIFeelPreferences>('cindaFeelPreferences');  // Keep this one for now
 
+      // 2. Validate required data
       if (!profile) {
         toast.error("Please complete the profile first");
         navigate("/");
         return;
       }
 
+      // 3. Determine mode based on stored data
+      // Analysis mode: has gap + feelPreferences
+      // Shopping mode: has shoeRequests
       let detectedMode: Mode;
 
       if (storedGap && feelPreferences) {
@@ -298,6 +282,7 @@ export default function RecommendationsPage() {
       } else if (shoeRequests && shoeRequests.length > 0) {
         detectedMode = "shopping";
       } else {
+        // Default to analysis if we have gap, otherwise redirect
         if (storedGap) {
           detectedMode = "analysis";
           setGap(storedGap);
@@ -310,7 +295,10 @@ export default function RecommendationsPage() {
 
       setMode(detectedMode);
 
+      // 4. Build API payload based on mode
+      // Transform shoes to API format - handle both context format and API format
       const currentShoesForAPI = shoes.map((s) => {
+        // Check if it's in context format (with nested shoe object)
         const shoeData = (s as { shoe?: { shoe_id: string } }).shoe;
         const shoeId = shoeData ? shoeData.shoe_id : (s as APICurrentShoe).shoeId;
         return {
@@ -351,6 +339,7 @@ export default function RecommendationsPage() {
         };
       }
 
+      // 5. Call the API
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: {
@@ -372,12 +361,14 @@ export default function RecommendationsPage() {
         throw new Error(data.error || "Failed to get recommendations");
       }
 
+      // 6. Set results based on mode
       if (detectedMode === "analysis") {
         setAnalysisResult({
           gap: data.result.gap,
           recommendations: data.result.recommendations,
           summaryReasoning: data.result.summaryReasoning,
         });
+        // Update gap from response if available
         if (data.result.gap) {
           setGap(data.result.gap);
         }
@@ -398,47 +389,40 @@ export default function RecommendationsPage() {
     loadDataAndFetch();
   }, [loadDataAndFetch]);
 
+  // Check for empty results
   const isEmpty =
     (mode === "analysis" && analysisResult?.recommendations.length === 0) ||
     (mode === "shopping" && shoppingResult?.shoppingResults.length === 0);
 
-  const showFooter = !loading && !error && !isEmpty;
-
   return (
     <>
       <AnimatedBackground />
-      <div
-        className="fixed inset-0 flex flex-col overflow-hidden"
-        style={{
-          paddingTop: "env(safe-area-inset-top)",
-          paddingBottom: "env(safe-area-inset-bottom)",
-        }}
-      >
-        {/* Header - Back/Try Again button */}
-        <header className="flex-shrink-0 w-full px-6 pt-4 pb-2 flex items-center justify-start">
-          <TryAgainButton onClick={goToModeSelection} />
+      <OnboardingLayout scrollable allowOverflow>
+        {/* Header - transparent */}
+        <header className="w-full px-6 md:px-8 pt-4 pb-2 flex items-center justify-start flex-shrink-0">
+          <BackButton onClick={goBack} />
         </header>
 
-        {/* Main Content Area */}
-        <main className="flex-1 flex flex-col min-h-0 overflow-visible">
+        {/* Content */}
+        <div className="flex-1 flex flex-col min-h-0 overflow-visible">
           {loading && <LoadingState />}
 
           {!loading && error && (
             <ErrorState
               error={error}
               onRetry={loadDataAndFetch}
-              onBack={goToModeSelection}
+              onBack={goBack}
             />
           )}
 
           {!loading && !error && isEmpty && (
-            <EmptyState onBack={goToModeSelection} />
+            <EmptyState onBack={goBack} />
           )}
 
           {!loading && !error && !isEmpty && mode === "analysis" && analysisResult && gap && (
             <div className="flex-1 flex flex-col min-h-0 overflow-visible">
               <PageHeader />
-              <div className="flex-1 min-h-0 overflow-visible">
+              <div className="flex-1 flex items-center min-h-0 overflow-visible">
                 <AnalysisModeResults result={analysisResult} gap={gap} />
               </div>
             </div>
@@ -447,16 +431,13 @@ export default function RecommendationsPage() {
           {!loading && !error && !isEmpty && mode === "shopping" && shoppingResult && (
             <div className="flex-1 flex flex-col min-h-0 overflow-visible">
               <PageHeader />
-              <div className="flex-1 min-h-0 overflow-visible">
+              <div className="flex-1 flex items-center min-h-0 overflow-visible">
                 <ShoppingModeResults result={shoppingResult} />
               </div>
             </div>
           )}
-        </main>
-
-        {/* Footer */}
-        {showFooter && <Footer onGoToProfile={goToProfile} />}
-      </div>
+        </div>
+      </OnboardingLayout>
     </>
   );
 }
