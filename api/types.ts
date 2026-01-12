@@ -428,6 +428,14 @@ export interface RecommendedShoe {
   keyStrengths: string[]; // 2-3 key selling points
   tradeOffs?: string[]; // What runner gives up with this choice
 
+  // Use case booleans (for "also works for" popover)
+  use_daily: boolean;
+  use_easy_recovery: boolean;
+  use_tempo_workout: boolean;
+  use_speed_intervals: boolean;
+  use_race: boolean;
+  use_trail: boolean;
+
   // Badge system (center-emphasis layout)
   badge: RecommendationBadge;
   position: RecommendationPosition;
