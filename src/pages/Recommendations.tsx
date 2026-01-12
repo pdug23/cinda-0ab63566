@@ -232,25 +232,24 @@ function ShoppingModeResults({
   shortlistedShoes: string[];
   onShortlist: (shoeId: string) => void;
 }) {
-  return (
-    <div className="w-full space-y-8 overflow-visible">
-      {result.shoppingResults.map((item, index) => {
-        const carouselRole = mapRoleToCarouselRole(item.role);
+  // Flatten all shopping results into a single array with role attached to each shoe
+  const flattenedRecommendations = result.shoppingResults.flatMap((item) => 
+    item.recommendations.map((shoe) => ({
+      ...shoe,
+      role: item.role, // Attach the role to each shoe
+    }))
+  );
 
-        return (
-          <div key={item.role} className="w-full overflow-visible">
-            {index > 0 && (
-              <div className="h-px bg-card-foreground/10 mx-6 mb-4" />
-            )}
-            <ShoeCarousel 
-              recommendations={item.recommendations} 
-              role={carouselRole}
-              shortlistedShoes={shortlistedShoes}
-              onShortlist={onShortlist}
-            />
-          </div>
-        );
-      })}
+  // Use "daily" as a default role since we're showing mixed roles with badges
+  return (
+    <div className="w-full overflow-visible">
+      <ShoeCarousel 
+        recommendations={flattenedRecommendations} 
+        role="daily"
+        shortlistedShoes={shortlistedShoes}
+        onShortlist={onShortlist}
+        showRoleBadges={true}
+      />
     </div>
   );
 }

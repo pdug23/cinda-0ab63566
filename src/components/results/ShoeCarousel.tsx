@@ -21,6 +21,7 @@ interface RecommendedShoe {
   tradeOffs?: string[];
   similar_to?: string;
   shoeId?: string;
+  role?: string; // For Shopping Mode - attached role
 }
 
 interface ShoeCarouselProps {
@@ -28,13 +29,14 @@ interface ShoeCarouselProps {
   role: "daily" | "tempo" | "race" | "easy" | "long" | "trail";
   shortlistedShoes?: string[];
   onShortlist?: (shoeId: string) => void;
+  showRoleBadges?: boolean; // Whether to show role badges on cards (Shopping Mode)
 }
 
-export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onShortlist }: ShoeCarouselProps) {
+export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onShortlist, showRoleBadges = false }: ShoeCarouselProps) {
   const swiperRef = useRef<SwiperType | null>(null);
   const totalSlides = recommendations.length;
-  // Start on center card (index 1) which is the CLOSEST MATCH
-  const initialSlideIndex = totalSlides >= 3 ? 1 : 0;
+  // Start on first card (index 0) for Shopping Mode with many cards, or center for 3-card Analysis Mode
+  const initialSlideIndex = showRoleBadges ? 0 : (totalSlides >= 3 ? 1 : 0);
   const [activeIndex, setActiveIndex] = useState(initialSlideIndex);
 
   useEffect(() => {
@@ -95,6 +97,7 @@ export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onS
           position={1}
           isShortlisted={shortlistedShoes.includes(shoeId)}
           onShortlist={() => onShortlist?.(shoeId)}
+          showRoleBadge={showRoleBadges}
         />
       </div>
     );
@@ -154,6 +157,7 @@ export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onS
                   position={((index % 3) + 1) as 1 | 2 | 3}
                   isShortlisted={shortlistedShoes.includes(shoeId)}
                   onShortlist={() => onShortlist?.(shoeId)}
+                  showRoleBadge={showRoleBadges}
                 />
               </div>
             </SwiperSlide>
