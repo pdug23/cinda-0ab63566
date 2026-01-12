@@ -1,11 +1,5 @@
 import { ExternalLink } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface BuyNowModalProps {
   open: boolean;
@@ -17,15 +11,14 @@ interface BuyNowModalProps {
 }
 
 const buildRunRepeatUrl = (brand: string, fullName: string): string => {
-  // Combine brand and full name
   const combined = `${brand} ${fullName}`;
   
   const slug = combined
     .toLowerCase()
-    .replace(/[%&'"/\\()]/g, '') // Remove special characters
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Replace multiple hyphens with single
-    .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+    .replace(/[%&'"/\\()]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
   
   return `https://runrepeat.com/${slug}`;
 };
@@ -43,31 +36,30 @@ export function BuyNowModal({ open, onOpenChange, shoe }: BuyNowModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-sm border-border/20"
+        className="max-w-xs border-border/30 p-6"
         style={{
           backgroundColor: "rgba(26, 26, 30, 0.98)",
         }}
       >
-        <DialogHeader>
-          <DialogTitle className="text-base font-medium lowercase text-white">
-            buy: <span className="text-primary">{shoe.fullName}</span>
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="py-4">
-          <Button
+        <div className="flex flex-col items-center gap-4">
+          <button
             onClick={handleClick}
-            variant="cta"
-            className="w-full h-auto py-4 flex flex-col items-center gap-2"
+            className="relative w-full overflow-hidden rounded-lg border border-border/40 bg-background/50 px-6 py-4 transition-all hover:border-primary/50 hover:bg-background/70 group"
           >
-            <div className="flex items-center gap-1 text-lg">
-              <span className="font-bold">Run</span>
-              <span className="font-normal">Repeat</span>
-              <ExternalLink className="h-4 w-4 ml-1" />
+            {/* Shimmer effect */}
+            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            
+            <div className="relative flex flex-col items-center gap-1">
+              <div className="flex items-center gap-0.5 text-lg text-white">
+                <span className="font-bold">Run</span>
+                <span className="font-normal">Repeat</span>
+                <ExternalLink className="h-4 w-4 ml-1.5 opacity-70" />
+              </div>
+              <span className="text-sm text-primary font-medium">Compare Prices & Buy</span>
             </div>
-            <span className="text-sm font-medium">Compare Prices & Buy</span>
-          </Button>
-          <p className="text-center text-muted-foreground text-sm mt-3">
+          </button>
+          
+          <p className="text-center text-muted-foreground text-xs">
             See pricing from 10+ retailers
           </p>
         </div>
