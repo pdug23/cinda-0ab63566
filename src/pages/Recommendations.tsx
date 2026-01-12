@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { LeaveRecommendationsModal } from "@/components/LeaveRecommendationsModal";
 import { loadProfile, loadShoes, loadShoeRequests, loadGap } from "@/utils/storage";
 import type { FeelPreferences as APIFeelPreferences, CurrentShoe as APICurrentShoe } from "../../api/types";
+import cindaLogo from "@/assets/cinda-logo.png";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -108,21 +109,64 @@ function mapRoleToCarouselRole(role: string): "daily" | "tempo" | "race" | "easy
 // ============================================================================
 
 function LoadingState() {
+  const [spinKey, setSpinKey] = useState(0);
+  const prefersReducedMotion = typeof window !== 'undefined' 
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Trigger spin every 3 seconds
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    const interval = setInterval(() => {
+      setSpinKey(prev => prev + 1);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [prefersReducedMotion]);
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 px-4">
-      <div className="relative w-full max-w-[320px] aspect-[3/4] rounded-2xl overflow-hidden">
-        <div className="absolute inset-0 bg-card-foreground/5 animate-pulse" />
+    <div className="flex-1 flex flex-col items-center justify-center gap-8 px-4">
+      {/* Spinning Logo */}
+      <img
+        key={spinKey}
+        src={cindaLogo}
+        alt="cinda"
+        className="w-20 h-20"
+        style={{
+          animation: prefersReducedMotion ? 'none' : 'spin-settle 0.6s ease-out',
+        }}
+      />
+
+      {/* Glowing card placeholder */}
+      <div 
+        className="relative w-full max-w-[280px] aspect-square rounded-2xl overflow-hidden"
+        style={{
+          animation: 'border-glisten 3s ease-in-out infinite',
+        }}
+      >
+        <div className="absolute inset-0 bg-card-foreground/5" />
         <div
           className="absolute inset-0"
           style={{
-            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)",
-            animation: "shimmer 1.5s infinite",
+            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)",
+            animation: "shimmer 2s infinite",
           }}
         />
+        {/* Shoe silhouette placeholder */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div 
+            className="w-32 h-20 rounded-full bg-card-foreground/10"
+            style={{ animation: 'pulse 2s ease-in-out infinite' }}
+          />
+        </div>
       </div>
-      <p className="text-card-foreground/60 text-base animate-pulse">
-        Finding your perfect matches...
+
+      {/* Styled loading text */}
+      <p 
+        className="text-card-foreground/70 text-base italic"
+        style={{ fontWeight: 700 }}
+      >
+        finding your perfect matches...
       </p>
+
       <style>{`
         @keyframes shimmer {
           0% { transform: translateX(-100%); }
@@ -462,7 +506,7 @@ export default function RecommendationsPage() {
   return (
     <>
       <AnimatedBackground />
-      <OnboardingLayout scrollable allowOverflow>
+      <OnboardingLayout scrollable={!loading} allowOverflow={!loading}>
         {/* Header - transparent */}
         <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-start flex-shrink-0">
           <BackButton onClick={goBack} />
