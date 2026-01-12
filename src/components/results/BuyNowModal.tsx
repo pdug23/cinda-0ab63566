@@ -11,9 +11,8 @@ interface BuyNowModalProps {
 }
 
 const buildRunRepeatUrl = (brand: string, fullName: string): string => {
-  const combined = `${brand} ${fullName}`;
-  
-  const slug = combined
+  // fullName already includes the brand, so just use it directly
+  const slug = fullName
     .toLowerCase()
     .replace(/[%&'"/\\()]/g, '')
     .replace(/\s+/g, '-')
