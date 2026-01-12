@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { LeaveRecommendationsModal } from "@/components/LeaveRecommendationsModal";
 import { loadProfile, loadShoes, loadShoeRequests, loadGap } from "@/utils/storage";
 import type { FeelPreferences as APIFeelPreferences, CurrentShoe as APICurrentShoe } from "../../api/types";
-import cindaLogo from "@/assets/cinda-logo.png";
+import cindaLogo from "@/assets/cinda-logo-white-v2.png";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -108,8 +108,18 @@ function mapRoleToCarouselRole(role: string): "daily" | "tempo" | "race" | "easy
 // SUB-COMPONENTS
 // ============================================================================
 
+const loadingMessages = [
+  "bypassing the paid reviews...",
+  "decoding the jargon...",
+  "skipping the sponsored posts...",
+  "cross-referencing the lab data...",
+  "checking actual runner feedback...",
+  "filtering out the hype...",
+];
+
 function LoadingState() {
   const [spinKey, setSpinKey] = useState(0);
+  const [messageIndex, setMessageIndex] = useState(0);
   const prefersReducedMotion = typeof window !== 'undefined' 
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -121,6 +131,14 @@ function LoadingState() {
     }, 3000);
     return () => clearInterval(interval);
   }, [prefersReducedMotion]);
+
+  // Cycle through loading messages every 2.5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMessageIndex(prev => (prev + 1) % loadingMessages.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center gap-8 px-4">
@@ -159,12 +177,13 @@ function LoadingState() {
         </div>
       </div>
 
-      {/* Styled loading text */}
+      {/* Rotating loading messages with fade */}
       <p 
-        className="text-card-foreground/70 text-base italic"
+        key={messageIndex}
+        className="text-card-foreground/70 text-base italic animate-fade-in"
         style={{ fontWeight: 700 }}
       >
-        finding your perfect matches...
+        {loadingMessages[messageIndex]}
       </p>
 
       <style>{`
