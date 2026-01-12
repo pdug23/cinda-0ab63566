@@ -153,10 +153,11 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         }
       `}</style>
       <article
-        className={`relative w-full max-w-[90vw] min-w-[320px] rounded-2xl pt-3 px-5 pb-5 card-glow-${position}`}
+        className={`relative w-full max-w-[90vw] min-w-[320px] rounded-2xl pt-3 px-5 pb-5 flex flex-col card-glow-${position}`}
         style={{
           background: "rgba(26, 26, 30, 0.95)",
           border: "2px solid rgba(255, 255, 255, 0.5)",
+          height: "480px",
         }}
       >
         {/* Shoe Image */}
@@ -275,27 +276,29 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
           ))}
         </div>
 
-        {/* Divider */}
-        <div className="h-px mb-2" style={{ backgroundColor: dividerColor }} />
+        {/* Bottom Section - Anchored */}
+        <div className="mt-auto">
+          {/* Divider */}
+          <div className="h-px mb-2" style={{ backgroundColor: dividerColor }} />
 
-        {/* Specs Grid */}
-        <div className="grid grid-cols-3 gap-4 mb-3">
-          <div className="text-center">
-            <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Weight</span>
-            <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{weightLabel}</span>
+          {/* Specs Grid */}
+          <div className="grid grid-cols-3 gap-4 mb-3">
+            <div className="text-center">
+              <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Weight</span>
+              <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{weightLabel}</span>
+            </div>
+            <div className="text-center">
+              <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Drop</span>
+              <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{shoe.heel_drop_mm}mm</span>
+            </div>
+            <div className="text-center">
+              <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Plate</span>
+              <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{plateLabel}</span>
+            </div>
           </div>
-          <div className="text-center">
-            <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Drop</span>
-            <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{shoe.heel_drop_mm}mm</span>
-          </div>
-          <div className="text-center">
-            <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Plate</span>
-            <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{plateLabel}</span>
-          </div>
-        </div>
 
-      {/* Divider */}
-      <div className="h-px mb-3" style={{ backgroundColor: dividerColor }} />
+          {/* Divider */}
+          <div className="h-px mb-3" style={{ backgroundColor: dividerColor }} />
 
         {/* Action Buttons */}
         <div className="flex gap-2 w-full">
@@ -344,6 +347,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
             <ExternalLink className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate">buy now</span>
           </Button>
+          </div>
         </div>
       </article>
     </>
