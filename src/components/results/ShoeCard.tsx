@@ -116,7 +116,7 @@ const getBrandLogoPath = (brand: string): string => {
     "New Balance": "/logos/newbalance-logo.png",
     "Nike": "/logos/nike-logo.png",
     "On": "/logos/on-logo.png",
-    "Puma": "/logos/puma-logo.png",
+    "PUMA": "/logos/puma-logo.png",
     "Salomon": "/logos/salomon-logo.png",
     "Saucony": "/logos/saucony-logo.png",
     "Skechers": "/logos/skechers-logo.png",
