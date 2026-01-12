@@ -153,18 +153,18 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         }
       `}</style>
       <article
-        className={`relative w-full max-w-[90vw] min-w-[320px] rounded-2xl pt-4 px-6 pb-6 card-glow-${position}`}
+        className={`relative w-full max-w-[90vw] min-w-[320px] rounded-2xl pt-3 px-5 pb-5 card-glow-${position}`}
         style={{
           background: "rgba(26, 26, 30, 0.95)",
           border: "2px solid rgba(255, 255, 255, 0.5)",
         }}
       >
         {/* Shoe Image */}
-        <div className="flex justify-center mb-1">
+        <div className="flex justify-center mb-0">
           <img
             src="/shoes/shoe-placeholder.png"
             alt={`${shoe.brand} ${shoe.model} ${shoe.version}`}
-            className="w-32 h-auto object-contain"
+            className="w-24 h-auto object-contain"
             style={{ imageRendering: "pixelated" }}
           />
         </div>
@@ -180,12 +180,12 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </div>
 
         {/* Model Name */}
-        <h2 className={`text-2xl font-bold text-center mb-3 text-shimmer-${position}`}>
+        <h2 className={`text-2xl font-bold text-center mb-2 text-shimmer-${position}`}>
           {shoe.model} {shoe.version}
         </h2>
 
         {/* Badge(s) */}
-        <div className="flex justify-center gap-2 mb-3">
+        <div className="flex justify-center gap-2 mb-2">
           {showRoleBadge && roleBadgeLabel && (
             <Popover>
               <PopoverTrigger asChild>
@@ -254,10 +254,10 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </div>
 
         {/* Divider */}
-        <div className="h-px mb-3" style={{ backgroundColor: dividerColor }} />
+        <div className="h-px mb-2" style={{ backgroundColor: dividerColor }} />
 
         {/* Match Reasons - Two Bullet Points */}
-        <div className="space-y-2 mb-3">
+        <div className="space-y-1.5 mb-2">
           {shoe.matchReason.slice(0, 2).map((reason, idx) => (
             <div key={idx} className="flex items-start gap-2">
               <Check 
@@ -276,10 +276,10 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </div>
 
         {/* Divider */}
-        <div className="h-px mb-3" style={{ backgroundColor: dividerColor }} />
+        <div className="h-px mb-2" style={{ backgroundColor: dividerColor }} />
 
         {/* Specs Grid */}
-        <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-3 gap-4 mb-3">
           <div className="text-center">
             <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Weight</span>
             <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{weightLabel}</span>
@@ -295,7 +295,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </div>
 
       {/* Divider */}
-      <div className="h-px mb-4" style={{ backgroundColor: dividerColor }} />
+      <div className="h-px mb-3" style={{ backgroundColor: dividerColor }} />
 
         {/* Action Buttons */}
         <div className="flex gap-2 w-full">
