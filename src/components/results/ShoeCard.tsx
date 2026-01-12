@@ -1,5 +1,6 @@
 import { Check, Heart, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface ShoeCardProps {
   shoe: {
@@ -20,6 +21,8 @@ interface ShoeCardProps {
   };
   role: "daily" | "tempo" | "race" | "easy" | "long" | "trail";
   position?: 1 | 2 | 3;
+  isShortlisted?: boolean;
+  onShortlist?: () => void;
 }
 
 // Glow colors are now derived from badge type (see getBadgeConfig)
@@ -58,7 +61,7 @@ const getBadgeConfig = (
   return { text: "CLOSE MATCH", color: "#34D399" }; // Lighter lime-ish
 };
 
-export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
+export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onShortlist }: ShoeCardProps) {
   const badgeConfig = getBadgeConfig(shoe.recommendationType, shoe.badge);
   // Use badge color for glow/shimmer to create visual coherence
   const shimmer = badgeConfig.color;
@@ -200,19 +203,32 @@ export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
         <div className="flex gap-2 w-full">
           <Button
             variant="outline"
-            className="flex-1 min-w-0 gap-1.5 py-2.5 px-3 h-auto text-xs font-medium lowercase"
-            style={{
+            className={cn(
+              "flex-1 min-w-0 gap-1.5 py-2.5 px-3 h-auto text-xs font-medium lowercase transition-all",
+              isShortlisted && "bg-primary/20 border-primary/30"
+            )}
+            style={isShortlisted ? {
+              backgroundColor: "hsl(var(--primary) / 0.2)",
+              borderColor: "hsl(var(--primary) / 0.4)",
+            } : {
               backgroundColor: "rgba(0, 0, 0, 0.3)",
               borderColor: "rgba(255, 255, 255, 0.2)",
               color: textColorMuted,
             }}
-            onClick={() => {
-              // TODO: Implement shortlist functionality
-              console.log("Added to shortlist:", shoe.fullName);
-            }}
+            onClick={onShortlist}
           >
-            <Heart className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">shortlist</span>
+            <Heart 
+              className={cn(
+                "w-3.5 h-3.5 shrink-0 transition-all",
+                isShortlisted && "fill-primary text-primary"
+              )} 
+            />
+            <span className={cn(
+              "truncate",
+              isShortlisted ? "text-primary" : ""
+            )}>
+              {isShortlisted ? "shortlisted" : "shortlist"}
+            </span>
           </Button>
           <Button
             variant="outline"
