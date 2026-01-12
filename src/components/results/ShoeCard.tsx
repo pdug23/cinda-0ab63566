@@ -18,11 +18,13 @@ interface ShoeCardProps {
     plate_material: "Nylon" | "Plastic" | "Carbon" | null;
     tradeOffs?: string[];
     similar_to?: string;
+    role?: string; // For Shopping Mode - shows which role this shoe is for
   };
   role: "daily" | "tempo" | "race" | "easy" | "long" | "trail";
   position?: 1 | 2 | 3;
   isShortlisted?: boolean;
   onShortlist?: () => void;
+  showRoleBadge?: boolean; // Whether to show the role badge (Shopping Mode)
 }
 
 // Glow colors are now derived from badge type (see getBadgeConfig)
@@ -61,12 +63,29 @@ const getBadgeConfig = (
   return { text: "CLOSE MATCH", color: "#34D399" }; // Lighter lime-ish
 };
 
-export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onShortlist }: ShoeCardProps) {
+const getRoleBadgeLabel = (role: string): string => {
+  const roleLabels: Record<string, string> = {
+    daily_trainer: "DAILY",
+    daily: "DAILY",
+    tempo: "TEMPO",
+    race_day: "RACE",
+    race: "RACE",
+    recovery: "RECOVERY",
+    easy: "RECOVERY",
+    long: "LONG",
+    trail: "TRAIL",
+    intervals: "INTERVALS",
+  };
+  return roleLabels[role.toLowerCase()] || role.toUpperCase();
+};
+
+export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onShortlist, showRoleBadge = false }: ShoeCardProps) {
   const badgeConfig = getBadgeConfig(shoe.recommendationType, shoe.badge);
   // Use badge color for glow/shimmer to create visual coherence
   const shimmer = badgeConfig.color;
   const weightLabel = getWeightLabel(shoe.weight_feel_1to5);
   const plateLabel = getPlateLabel(shoe.has_plate, shoe.plate_material);
+  const roleBadgeLabel = shoe.role ? getRoleBadgeLabel(shoe.role) : "";
 
   // Always dark background - light text
   const textColor = "rgba(255, 255, 255, 0.9)";
@@ -139,8 +158,21 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
           {shoe.model} {shoe.version}
         </h2>
 
-        {/* Badge */}
-        <div className="flex justify-center mb-3">
+        {/* Badge(s) */}
+        <div className="flex justify-center gap-2 mb-3">
+          {showRoleBadge && roleBadgeLabel && (
+            <span
+              className="text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium"
+              style={{
+                backgroundColor: "hsl(var(--primary) / 0.15)",
+                border: "1px solid hsl(var(--primary) / 0.4)",
+                color: "hsl(var(--primary))",
+                letterSpacing: "0.5px",
+              }}
+            >
+              {roleBadgeLabel}
+            </span>
+          )}
           <span
             className="text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium"
             style={{
