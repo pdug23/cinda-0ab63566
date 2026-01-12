@@ -21,17 +21,30 @@ interface RecommendedShoe {
   tradeOffs?: string[];
   similar_to?: string;
   shoeId?: string;
+  role?: string; // For Shopping Mode - attached role
+  // Use case booleans for "also works for" popover
+  use_daily?: boolean;
+  use_easy_recovery?: boolean;
+  use_tempo_workout?: boolean;
+  use_speed_intervals?: boolean;
+  use_race?: boolean;
+  use_trail?: boolean;
 }
 
 interface ShoeCarouselProps {
   recommendations: RecommendedShoe[];
   role: "daily" | "tempo" | "race" | "easy" | "long" | "trail";
+  shortlistedShoes?: string[];
+  onShortlist?: (shoeId: string) => void;
+  showRoleBadges?: boolean; // Whether to show role badges on cards (Shopping Mode)
 }
 
-export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
+export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onShortlist, showRoleBadges = false }: ShoeCarouselProps) {
   const swiperRef = useRef<SwiperType | null>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
   const totalSlides = recommendations.length;
+  // Start on first card (index 0) for Shopping Mode with many cards, or center for 3-card Analysis Mode
+  const initialSlideIndex = showRoleBadges ? 0 : (totalSlides >= 3 ? 1 : 0);
+  const [activeIndex, setActiveIndex] = useState(initialSlideIndex);
 
   useEffect(() => {
     // Inject custom styles for slides
@@ -81,9 +94,18 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
 
   // Single card - no carousel needed
   if (totalSlides === 1) {
+    const shoe = recommendations[0];
+    const shoeId = shoe.shoeId || shoe.fullName;
     return (
       <div className="flex flex-col items-center py-2 px-4">
-        <ShoeCard shoe={recommendations[0]} role={role} position={1} />
+        <ShoeCard 
+          shoe={shoe} 
+          role={role} 
+          position={1}
+          isShortlisted={shortlistedShoes.includes(shoeId)}
+          onShortlist={() => onShortlist?.(shoeId)}
+          showRoleBadge={showRoleBadges}
+        />
       </div>
     );
   }
@@ -95,6 +117,7 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
         spaceBetween={32}
         slidesPerView={1.2}
         centeredSlides={true}
+        initialSlide={initialSlideIndex}
         loop={false}
         watchSlidesProgress={true}
         keyboard={{ enabled: true }}
@@ -127,16 +150,26 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
         }}
         aria-label="Shoe recommendations carousel"
       >
-        {recommendations.map((shoe, index) => (
-          <SwiperSlide
-            key={`${shoe.shoeId || shoe.fullName}-${index}`}
-            aria-label={`Shoe ${index + 1} of ${totalSlides}: ${shoe.fullName}`}
-          >
-            <div className="flex justify-center">
-              <ShoeCard shoe={shoe} role={role} position={((index % 3) + 1) as 1 | 2 | 3} />
-            </div>
-          </SwiperSlide>
-        ))}
+        {recommendations.map((shoe, index) => {
+          const shoeId = shoe.shoeId || shoe.fullName;
+          return (
+            <SwiperSlide
+              key={`${shoeId}-${index}`}
+              aria-label={`Shoe ${index + 1} of ${totalSlides}: ${shoe.fullName}`}
+            >
+              <div className="flex justify-center">
+                <ShoeCard 
+                  shoe={shoe} 
+                  role={role} 
+                  position={((index % 3) + 1) as 1 | 2 | 3}
+                  isShortlisted={shortlistedShoes.includes(shoeId)}
+                  onShortlist={() => onShortlist?.(shoeId)}
+                  showRoleBadge={showRoleBadges}
+                />
+              </div>
+            </SwiperSlide>
+          );
+        })}
       </Swiper>
     </div>
   );
