@@ -105,24 +105,24 @@ export function ShoeCard({ shoe, role, position = 1 }: ShoeCardProps) {
         }
       `}</style>
       <article
-        className={`relative w-full max-w-[90vw] min-w-[320px] rounded-2xl p-6 card-glow-${position}`}
+        className={`relative w-full max-w-[90vw] min-w-[320px] rounded-2xl pt-4 px-6 pb-6 card-glow-${position}`}
         style={{
           background: "rgba(26, 26, 30, 0.95)",
           border: "2px solid rgba(255, 255, 255, 0.5)",
         }}
       >
         {/* Shoe Image */}
-        <div className="flex justify-center mb-2">
+        <div className="flex justify-center mb-1">
           <img
             src="/shoes/shoe-placeholder.png"
             alt={`${shoe.brand} ${shoe.model} ${shoe.version}`}
-            className="w-40 h-auto object-contain"
+            className="w-32 h-auto object-contain"
             style={{ imageRendering: "pixelated" }}
           />
         </div>
 
         {/* Brand Name */}
-        <div className="text-center mb-1">
+        <div className="text-center">
           <span 
             className="text-sm font-medium uppercase tracking-wider"
             style={{ color: textColorMuted }}
