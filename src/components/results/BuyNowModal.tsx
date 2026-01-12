@@ -36,7 +36,7 @@ export function BuyNowModal({ open, onOpenChange, shoe }: BuyNowModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-xs border-border/30 p-6"
+        className="max-w-xs border-card-foreground/30 p-6"
         style={{
           backgroundColor: "rgba(26, 26, 30, 0.98)",
         }}
@@ -44,7 +44,10 @@ export function BuyNowModal({ open, onOpenChange, shoe }: BuyNowModalProps) {
         <div className="flex flex-col items-center gap-4">
           <button
             onClick={handleClick}
-            className="relative w-full overflow-hidden rounded-lg border border-border/40 bg-background/50 px-6 py-4 transition-all hover:border-primary/50 hover:bg-background/70 group"
+            className="relative w-full overflow-hidden rounded-lg border border-card-foreground/40 px-6 py-4 transition-all hover:border-card-foreground/70 group"
+            style={{
+              backgroundColor: "rgba(26, 26, 30, 0.95)",
+            }}
           >
             {/* Shimmer effect */}
             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-white/10 to-transparent" />
@@ -55,11 +58,11 @@ export function BuyNowModal({ open, onOpenChange, shoe }: BuyNowModalProps) {
                 <span className="font-normal">Repeat</span>
                 <ExternalLink className="h-4 w-4 ml-1.5 opacity-70" />
               </div>
-              <span className="text-sm text-primary font-medium">Compare Prices & Buy</span>
+              <span className="text-sm text-white/80 font-medium">Compare Prices & Buy</span>
             </div>
           </button>
           
-          <p className="text-center text-muted-foreground text-xs">
+          <p className="text-center text-white/50 text-xs">
             See pricing from 10+ retailers
           </p>
         </div>
