@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import { ShoeCarousel } from "@/components/results/ShoeCarousel";
+import { Button } from "@/components/ui/button";
 import { loadProfile, loadShoes, loadShoeRequests, loadGap } from "@/utils/storage";
 import type { FeelPreferences as APIFeelPreferences, CurrentShoe as APICurrentShoe } from "../../api/types";
 
@@ -171,10 +172,10 @@ function BackButton({ onClick }: { onClick: () => void }) {
     <button
       onClick={onClick}
       className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
-      aria-label="Go back"
+      aria-label="Try again"
     >
       <ArrowLeft className="w-3.5 h-3.5" />
-      back
+      try again
     </button>
   );
 }
@@ -192,10 +193,14 @@ function PageHeader() {
 
 function AnalysisModeResults({
   result,
-  gap
+  gap,
+  shortlistedShoes,
+  onShortlist,
 }: {
   result: AnalysisResult;
   gap: Gap;
+  shortlistedShoes: string[];
+  onShortlist: (shoeId: string) => void;
 }) {
   const carouselRole = mapRoleToCarouselRole(gap.missingCapability || 'daily');
 
@@ -207,12 +212,25 @@ function AnalysisModeResults({
 
   return (
     <div className="w-full overflow-visible">
-      <ShoeCarousel recommendations={carouselShoes} role={carouselRole} />
+      <ShoeCarousel 
+        recommendations={carouselShoes} 
+        role={carouselRole} 
+        shortlistedShoes={shortlistedShoes}
+        onShortlist={onShortlist}
+      />
     </div>
   );
 }
 
-function ShoppingModeResults({ result }: { result: ShoppingResult }) {
+function ShoppingModeResults({ 
+  result,
+  shortlistedShoes,
+  onShortlist,
+}: { 
+  result: ShoppingResult;
+  shortlistedShoes: string[];
+  onShortlist: (shoeId: string) => void;
+}) {
   return (
     <div className="w-full space-y-8 overflow-visible">
       {result.shoppingResults.map((item, index) => {
@@ -223,7 +241,12 @@ function ShoppingModeResults({ result }: { result: ShoppingResult }) {
             {index > 0 && (
               <div className="h-px bg-card-foreground/10 mx-6 mb-4" />
             )}
-            <ShoeCarousel recommendations={item.recommendations} role={carouselRole} />
+            <ShoeCarousel 
+              recommendations={item.recommendations} 
+              role={carouselRole}
+              shortlistedShoes={shortlistedShoes}
+              onShortlist={onShortlist}
+            />
           </div>
         );
       })}
@@ -243,10 +266,31 @@ export default function RecommendationsPage() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [shoppingResult, setShoppingResult] = useState<ShoppingResult | null>(null);
   const [gap, setGap] = useState<Gap | null>(null);
+  const [shortlistedShoes, setShortlistedShoes] = useState<string[]>([]);
 
   const goBack = useCallback(() => {
-    navigate("/profile/step4b");
+    navigate("/profile/step4");
   }, [navigate]);
+
+  const handleShortlist = useCallback((shoeId: string) => {
+    setShortlistedShoes(prev => {
+      if (prev.includes(shoeId)) {
+        toast.success("removed from shortlist");
+        return prev.filter(id => id !== shoeId);
+      } else {
+        toast.success("added to shortlist");
+        return [...prev, shoeId];
+      }
+    });
+  }, []);
+
+  const handleGoToProfile = useCallback(() => {
+    if (shortlistedShoes.length === 0) {
+      toast.warning("you haven't shortlisted any shoes yet");
+    }
+    // TODO: Navigate to profile/shortlist page when implemented
+    navigate("/");
+  }, [navigate, shortlistedShoes.length]);
 
   const goToLanding = useCallback(() => {
     navigate("/");
@@ -399,7 +443,7 @@ export default function RecommendationsPage() {
       <AnimatedBackground />
       <OnboardingLayout scrollable allowOverflow>
         {/* Header - transparent */}
-        <header className="w-full px-6 md:px-8 pt-4 pb-2 flex items-center justify-start flex-shrink-0">
+        <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-start flex-shrink-0">
           <BackButton onClick={goBack} />
         </header>
 
@@ -423,7 +467,12 @@ export default function RecommendationsPage() {
             <div className="flex-1 flex flex-col min-h-0 overflow-visible">
               <PageHeader />
               <div className="flex-1 flex items-center min-h-0 overflow-visible">
-                <AnalysisModeResults result={analysisResult} gap={gap} />
+                <AnalysisModeResults 
+                  result={analysisResult} 
+                  gap={gap} 
+                  shortlistedShoes={shortlistedShoes}
+                  onShortlist={handleShortlist}
+                />
               </div>
             </div>
           )}
@@ -432,11 +481,28 @@ export default function RecommendationsPage() {
             <div className="flex-1 flex flex-col min-h-0 overflow-visible">
               <PageHeader />
               <div className="flex-1 flex items-center min-h-0 overflow-visible">
-                <ShoppingModeResults result={shoppingResult} />
+                <ShoppingModeResults 
+                  result={shoppingResult}
+                  shortlistedShoes={shortlistedShoes}
+                  onShortlist={handleShortlist}
+                />
               </div>
             </div>
           )}
         </div>
+
+        {/* Footer */}
+        {!loading && !error && !isEmpty && (
+          <footer className="px-6 md:px-8 pb-4 pt-2 flex-shrink-0">
+            <Button
+              onClick={handleGoToProfile}
+              variant="default"
+              className="w-full min-h-[44px] text-sm lowercase"
+            >
+              go to my profile
+            </Button>
+          </footer>
+        )}
       </OnboardingLayout>
     </>
   );

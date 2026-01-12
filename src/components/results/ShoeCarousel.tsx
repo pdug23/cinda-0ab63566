@@ -26,9 +26,11 @@ interface RecommendedShoe {
 interface ShoeCarouselProps {
   recommendations: RecommendedShoe[];
   role: "daily" | "tempo" | "race" | "easy" | "long" | "trail";
+  shortlistedShoes?: string[];
+  onShortlist?: (shoeId: string) => void;
 }
 
-export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
+export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onShortlist }: ShoeCarouselProps) {
   const swiperRef = useRef<SwiperType | null>(null);
   const totalSlides = recommendations.length;
   // Start on center card (index 1) which is the CLOSEST MATCH
@@ -83,9 +85,17 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
 
   // Single card - no carousel needed
   if (totalSlides === 1) {
+    const shoe = recommendations[0];
+    const shoeId = shoe.shoeId || shoe.fullName;
     return (
       <div className="flex flex-col items-center py-2 px-4">
-        <ShoeCard shoe={recommendations[0]} role={role} position={1} />
+        <ShoeCard 
+          shoe={shoe} 
+          role={role} 
+          position={1}
+          isShortlisted={shortlistedShoes.includes(shoeId)}
+          onShortlist={() => onShortlist?.(shoeId)}
+        />
       </div>
     );
   }
@@ -130,16 +140,25 @@ export function ShoeCarousel({ recommendations, role }: ShoeCarouselProps) {
         }}
         aria-label="Shoe recommendations carousel"
       >
-        {recommendations.map((shoe, index) => (
-          <SwiperSlide
-            key={`${shoe.shoeId || shoe.fullName}-${index}`}
-            aria-label={`Shoe ${index + 1} of ${totalSlides}: ${shoe.fullName}`}
-          >
-            <div className="flex justify-center">
-              <ShoeCard shoe={shoe} role={role} position={((index % 3) + 1) as 1 | 2 | 3} />
-            </div>
-          </SwiperSlide>
-        ))}
+        {recommendations.map((shoe, index) => {
+          const shoeId = shoe.shoeId || shoe.fullName;
+          return (
+            <SwiperSlide
+              key={`${shoeId}-${index}`}
+              aria-label={`Shoe ${index + 1} of ${totalSlides}: ${shoe.fullName}`}
+            >
+              <div className="flex justify-center">
+                <ShoeCard 
+                  shoe={shoe} 
+                  role={role} 
+                  position={((index % 3) + 1) as 1 | 2 | 3}
+                  isShortlisted={shortlistedShoes.includes(shoeId)}
+                  onShortlist={() => onShortlist?.(shoeId)}
+                />
+              </div>
+            </SwiperSlide>
+          );
+        })}
       </Swiper>
     </div>
   );
