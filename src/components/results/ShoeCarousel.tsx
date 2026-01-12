@@ -22,6 +22,13 @@ interface RecommendedShoe {
   similar_to?: string;
   shoeId?: string;
   role?: string; // For Shopping Mode - attached role
+  // Use case booleans for "also works for" popover
+  use_daily?: boolean;
+  use_easy_recovery?: boolean;
+  use_tempo_workout?: boolean;
+  use_speed_intervals?: boolean;
+  use_race?: boolean;
+  use_trail?: boolean;
 }
 
 interface ShoeCarouselProps {

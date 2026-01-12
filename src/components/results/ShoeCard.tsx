@@ -1,5 +1,6 @@
-import { Check, Heart, ExternalLink } from "lucide-react";
+import { Check, Heart, ExternalLink, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 interface ShoeCardProps {
@@ -19,6 +20,13 @@ interface ShoeCardProps {
     tradeOffs?: string[];
     similar_to?: string;
     role?: string; // For Shopping Mode - shows which role this shoe is for
+    // Use case booleans for "also works for" popover
+    use_daily?: boolean;
+    use_easy_recovery?: boolean;
+    use_tempo_workout?: boolean;
+    use_speed_intervals?: boolean;
+    use_race?: boolean;
+    use_trail?: boolean;
   };
   role: "daily" | "tempo" | "race" | "easy" | "long" | "trail";
   position?: 1 | 2 | 3;
@@ -77,6 +85,24 @@ const getRoleBadgeLabel = (role: string): string => {
     intervals: "INTERVALS",
   };
   return roleLabels[role.toLowerCase()] || role.toUpperCase();
+};
+
+const getOtherApplicableRoles = (shoe: ShoeCardProps["shoe"], currentRole?: string): string[] => {
+  const roleMap: Record<string, boolean | undefined> = {
+    daily: shoe.use_daily,
+    recovery: shoe.use_easy_recovery,
+    tempo: shoe.use_tempo_workout,
+    intervals: shoe.use_speed_intervals,
+    race: shoe.use_race,
+    trail: shoe.use_trail,
+  };
+  
+  // Normalize current role to match our keys
+  const normalizedCurrentRole = currentRole?.toLowerCase().replace('_trainer', '').replace('_day', '').replace('easy', 'recovery');
+  
+  return Object.entries(roleMap)
+    .filter(([role, isApplicable]) => isApplicable && role !== normalizedCurrentRole)
+    .map(([role]) => role);
 };
 
 export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onShortlist, showRoleBadge = false }: ShoeCardProps) {
@@ -161,18 +187,57 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         {/* Badge(s) */}
         <div className="flex justify-center gap-2 mb-3">
           {showRoleBadge && roleBadgeLabel && (
-              <span
-                className="text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium"
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  className="text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
+                  style={{
+                    backgroundColor: "rgba(148, 163, 184, 0.15)",
+                    border: "1px solid rgba(148, 163, 184, 0.4)",
+                    color: "#94a3b8",
+                    letterSpacing: "0.5px",
+                    boxShadow: "0 0 8px rgba(148, 163, 184, 0.2)",
+                  }}
+                >
+                  {roleBadgeLabel}
+                  <Info className="w-3 h-3 opacity-70" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent 
+                className="w-64 p-4 z-50"
                 style={{
-                  backgroundColor: "rgba(148, 163, 184, 0.15)",
-                  border: "1px solid rgba(148, 163, 184, 0.4)",
-                  color: "#94a3b8",
-                  letterSpacing: "0.5px",
-                  boxShadow: "0 0 8px rgba(148, 163, 184, 0.2)",
+                  backgroundColor: "rgba(26, 26, 30, 0.98)",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
                 }}
               >
-              {roleBadgeLabel}
-            </span>
+                <p className="text-sm text-white/80 mb-3">
+                  cinda recommends this shoe for your <span className="text-primary font-medium">{roleBadgeLabel.toLowerCase()}</span> runs
+                </p>
+                {(() => {
+                  const otherRoles = getOtherApplicableRoles(shoe, shoe.role);
+                  return otherRoles.length > 0 ? (
+                    <>
+                      <p className="text-xs text-white/50 mb-2">this shoe also works well for:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {otherRoles.map((role) => (
+                          <span
+                            key={role}
+                            className="text-xs uppercase tracking-wide px-2 py-1 rounded font-medium"
+                            style={{
+                              backgroundColor: "rgba(148, 163, 184, 0.15)",
+                              border: "1px solid rgba(148, 163, 184, 0.3)",
+                              color: "#94a3b8",
+                            }}
+                          >
+                            {getRoleBadgeLabel(role)}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  ) : null;
+                })()}
+              </PopoverContent>
+            </Popover>
           )}
           <span
             className="text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium"

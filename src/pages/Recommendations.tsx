@@ -29,6 +29,13 @@ interface RecommendedShoe {
   tradeOffs?: string[];
   similar_to?: string;
   recommendationType: "close_match" | "close_match_2" | "trade_off_option";
+  // Use case booleans for "also works for" popover
+  use_daily?: boolean;
+  use_easy_recovery?: boolean;
+  use_tempo_workout?: boolean;
+  use_speed_intervals?: boolean;
+  use_race?: boolean;
+  use_trail?: boolean;
 }
 
 interface Gap {
