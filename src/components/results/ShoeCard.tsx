@@ -274,7 +274,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </div>
 
         {/* Divider */}
-        <div className="h-px mb-2" style={{ backgroundColor: dividerColor }} />
+        <div className="h-px my-3" style={{ backgroundColor: dividerColor }} />
 
         {/* Match Reasons - Two Bullet Points */}
         <div className="space-y-1.5 mb-2">
@@ -298,7 +298,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         {/* Bottom Section - Anchored */}
         <div className="mt-auto">
           {/* Divider */}
-          <div className="h-px mb-2" style={{ backgroundColor: dividerColor }} />
+          <div className="h-px my-3" style={{ backgroundColor: dividerColor }} />
 
           {/* Specs Grid */}
           <div className="grid grid-cols-3 gap-4 mb-3">
@@ -317,7 +317,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
           </div>
 
           {/* Divider */}
-          <div className="h-px mb-3" style={{ backgroundColor: dividerColor }} />
+          <div className="h-px my-3" style={{ backgroundColor: dividerColor }} />
 
         {/* Action Buttons */}
         <div className="flex gap-2 w-full">
