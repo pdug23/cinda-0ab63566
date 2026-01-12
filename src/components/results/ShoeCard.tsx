@@ -161,15 +161,16 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         {/* Badge(s) */}
         <div className="flex justify-center gap-2 mb-3">
           {showRoleBadge && roleBadgeLabel && (
-            <span
-              className="text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium"
-              style={{
-                backgroundColor: "hsl(var(--primary) / 0.15)",
-                border: "1px solid hsl(var(--primary) / 0.4)",
-                color: "hsl(var(--primary))",
-                letterSpacing: "0.5px",
-              }}
-            >
+              <span
+                className="text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium"
+                style={{
+                  backgroundColor: "rgba(148, 163, 184, 0.15)",
+                  border: "1px solid rgba(148, 163, 184, 0.4)",
+                  color: "#94a3b8",
+                  letterSpacing: "0.5px",
+                  boxShadow: "0 0 8px rgba(148, 163, 184, 0.2)",
+                }}
+              >
               {roleBadgeLabel}
             </span>
           )}
