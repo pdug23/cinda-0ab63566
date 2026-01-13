@@ -139,16 +139,16 @@ const Landing = () => {
                   className="text-card-foreground leading-tight italic"
                   style={{ fontVariantLigatures: "none", fontSize: "24px", fontWeight: 900 }}
                 >
-                  endless marketing. infinite options. zero clarity.
+                  buying running shoes has never felt more overwhelming.
                 </h1>
                 <p 
                   className="text-card-foreground leading-tight italic mt-4"
                   style={{ fontVariantLigatures: "none", fontSize: "20px", fontWeight: 900 }}
                 >
-                  buying running shoes has never felt more overwhelming.
+                  endless marketing. infinite options. zero clarity.
                 </p>
                 <p className="text-card-foreground/80 text-base mt-4">
-                  but cinda helps you cut through the noise.
+                  cinda helps you cut through the noise.
                 </p>
               </div>
 

@@ -75,13 +75,13 @@ const SLIDERS: SliderConfig[] = [
     tooltip: "the curved geometry of the sole. flat shoes allow natural foot motion. max rocker propels you forward through your stride.",
     leftLabel: "flat",
     middleLabel: "balanced",
-    rightLabel: "max rocker",
+    rightLabel: "max",
   },
   {
     key: "groundFeel",
     label: "ground feel",
     tooltip: "how connected you feel to the surface. isolated shoes buffer sensation. connected shoes let you feel the terrain.",
-    leftLabel: "isolated",
+    leftLabel: "none",
     middleLabel: "balanced",
     rightLabel: "connected",
   },
@@ -183,14 +183,15 @@ const SliderPreferenceCard = ({
               // Track styling - thinner, softer colors
               "[&_[data-slot=track]]:h-1 [&_[data-slot=track]]:bg-[#374151]",
               // Filled range - softer amber
-              "[&_[data-slot=range]]:bg-[#d97706]",
-              // Handle styling - match button fill color (orange-500/20 equivalent)
-              "[&_[role=slider]]:h-5 [&_[role=slider]]:w-5",
-              "[&_[role=slider]]:bg-orange-500/20 [&_[role=slider]]:border-2 [&_[role=slider]]:border-[#d97706]",
-              "[&_[role=slider]]:shadow-[0_2px_8px_rgba(0,0,0,0.3)]",
-              // Active/focus state - brighter glow
-              "[&_[role=slider]:focus-visible]:ring-[#d97706]/30 [&_[role=slider]:focus-visible]:ring-offset-0",
-              "[&_[role=slider]:active]:border-[#f59e0b] [&_[role=slider]:active]:shadow-[0_0_12px_rgba(217,119,6,0.4)]"
+              "[&_[data-slot=range]]:bg-amber-600/70",
+              // Handle styling - solid filled circle, fully opaque, on top
+              // Visual size stays small but touch target is 44x44px for mobile UX
+              "[&_[role=slider]]:h-2.5 [&_[role=slider]]:w-2.5",
+              "[&_[role=slider]]:bg-[#FF6B35] [&_[role=slider]]:border-0 [&_[role=slider]]:z-10",
+              "[&_[role=slider]]:relative [&_[role=slider]]:before:absolute [&_[role=slider]]:before:inset-0",
+              "[&_[role=slider]]:before:-m-5 [&_[role=slider]]:before:rounded-full",
+              // Active/focus state
+              "[&_[role=slider]:focus-visible]:ring-[#FF6B35]/30 [&_[role=slider]:focus-visible]:ring-offset-0"
             )}
           />
 

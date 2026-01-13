@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { Check, Heart, ExternalLink, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-
+import { BuyNowModal } from "./BuyNowModal";
 interface ShoeCardProps {
   shoe: {
     brand: string;
@@ -126,6 +127,7 @@ const getBrandLogoPath = (brand: string): string => {
 };
 
 export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onShortlist, showRoleBadge = false }: ShoeCardProps) {
+  const [buyModalOpen, setBuyModalOpen] = useState(false);
   const badgeConfig = getBadgeConfig(shoe.recommendationType, shoe.badge);
   // Use badge color for glow/shimmer to create visual coherence
   const shimmer = badgeConfig.color;
@@ -274,7 +276,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </div>
 
         {/* Divider */}
-        <div className="h-px mb-2" style={{ backgroundColor: dividerColor }} />
+        <div className="h-px my-3" style={{ backgroundColor: dividerColor }} />
 
         {/* Match Reasons - Two Bullet Points */}
         <div className="space-y-1.5 mb-2">
@@ -298,7 +300,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         {/* Bottom Section - Anchored */}
         <div className="mt-auto">
           {/* Divider */}
-          <div className="h-px mb-2" style={{ backgroundColor: dividerColor }} />
+          <div className="h-px my-3" style={{ backgroundColor: dividerColor }} />
 
           {/* Specs Grid */}
           <div className="grid grid-cols-3 gap-4 mb-3">
@@ -317,7 +319,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
           </div>
 
           {/* Divider */}
-          <div className="h-px mb-3" style={{ backgroundColor: dividerColor }} />
+          <div className="h-px my-3" style={{ backgroundColor: dividerColor }} />
 
         {/* Action Buttons */}
         <div className="flex gap-2 w-full">
@@ -358,16 +360,22 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
               borderColor: "rgba(255, 255, 255, 0.2)",
               color: textColorMuted,
             }}
-            onClick={() => {
-              // TODO: Implement retailer links modal
-              console.log("Buy now:", shoe.fullName);
-            }}
+            onClick={() => setBuyModalOpen(true)}
           >
             <ExternalLink className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate">buy now</span>
           </Button>
           </div>
         </div>
+
+        <BuyNowModal
+          open={buyModalOpen}
+          onOpenChange={setBuyModalOpen}
+          shoe={{
+            fullName: shoe.fullName,
+            brand: shoe.brand,
+          }}
+        />
       </article>
     </>
   );
