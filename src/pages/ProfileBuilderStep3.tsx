@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, X, Heart, ThumbsUp, Meh, ThumbsDown, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, ArrowRight, X, Heart, ThumbsUp, Meh, ThumbsDown, Check, ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
 import { UnsavedChangesModal } from "@/components/UnsavedChangesModal";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
@@ -17,6 +17,12 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Shoe type from shoebase.json
 interface Shoe {
@@ -72,6 +78,28 @@ const SENTIMENT_OPTIONS: { value: ShoeSentiment; label: string; icon: React.Reac
   { value: "dislike", label: "not for me", icon: <ThumbsDown className="w-4 h-4" /> },
 ];
 
+// Run type explanations for tooltip
+const RUN_TYPE_EXPLANATIONS: Record<string, string> = {
+  "daily training": "all/most of your mileage across a range of paces",
+  "easy pace": "slow recovery runs, conversational pace",
+  "tempo": "comfortably hard efforts, threshold runs",
+  "interval": "fast repeats with recovery between",
+  "races": "race day or time trials",
+  "trail": "off-road, dirt, technical terrain",
+};
+
+// Love tags
+const LOVE_TAGS = [
+  "bouncy", "soft cushion", "lightweight", "stable", "smooth rocker",
+  "long run comfort", "fast feeling", "comfortable fit", "good grip"
+];
+
+// Dislike tags
+const DISLIKE_TAGS = [
+  "too heavy", "too soft", "too firm", "unstable", "blisters",
+  "too narrow", "too wide", "wears fast", "causes pain", "slow at speed"
+];
+
 // Role selection button component (no disabling - all buttons always enabled)
 const RoleButton = ({
   label,
@@ -125,6 +153,31 @@ const SentimentButton = ({
   </button>
 );
 
+// Tag chip component for love/dislike tags
+const TagChip = ({
+  label,
+  selected,
+  onClick,
+}: {
+  label: string;
+  selected: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={cn(
+      "px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
+      "border",
+      selected
+        ? "bg-orange-500/20 border-orange-500/50 text-orange-400"
+        : "bg-card-foreground/5 border-card-foreground/20 text-card-foreground/70 hover:border-card-foreground/30"
+    )}
+  >
+    {label}
+  </button>
+);
+
 // Check if shoe card is complete
 const isShoeComplete = (roles: ShoeRole[], sentiment: ShoeSentiment | null): boolean => {
   return roles.length > 0 && sentiment !== null;
@@ -135,8 +188,12 @@ const ShoeCard = ({
   shoe,
   roles,
   sentiment,
+  loveTags,
+  dislikeTags,
   onRoleToggle,
   onSentimentChange,
+  onLoveTagToggle,
+  onDislikeTagToggle,
   onRemove,
   isCollapsed,
   onToggleCollapse,
@@ -144,8 +201,12 @@ const ShoeCard = ({
   shoe: Shoe;
   roles: ShoeRole[];
   sentiment: ShoeSentiment | null;
+  loveTags: string[];
+  dislikeTags: string[];
   onRoleToggle: (role: ShoeRole) => void;
   onSentimentChange: (sentiment: ShoeSentiment) => void;
+  onLoveTagToggle: (tag: string) => void;
+  onDislikeTagToggle: (tag: string) => void;
   onRemove: () => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
@@ -200,9 +261,30 @@ const ShoeCard = ({
         <div className="mt-4">
           {/* Run type selection */}
           <div className="mb-4">
-            <label className="block text-xs text-card-foreground/60 mb-2">
-              what do you use this shoe for?
-            </label>
+            <div className="flex items-center gap-1.5 mb-2">
+              <label className="text-xs text-card-foreground/60">
+                what do you use this shoe for?
+              </label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button type="button" className="text-card-foreground/40 hover:text-card-foreground/60 transition-colors">
+                      <HelpCircle className="w-3.5 h-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[280px] p-3 bg-card border-border/40">
+                    <ul className="space-y-1.5 text-xs">
+                      {Object.entries(RUN_TYPE_EXPLANATIONS).map(([type, explanation]) => (
+                        <li key={type}>
+                          <span className="font-medium text-orange-400">{type}:</span>{" "}
+                          <span className="text-card-foreground/70">{explanation}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <div className="grid grid-cols-3 gap-2">
               {RUN_TYPE_OPTIONS.map((option) => (
                 <RoleButton
@@ -232,6 +314,44 @@ const ShoeCard = ({
               ))}
             </div>
           </div>
+
+          {/* Love tags - show only when sentiment is "love" */}
+          {sentiment === "love" && (
+            <div className="mt-4">
+              <label className="block text-xs text-card-foreground/60 mb-2">
+                what do you love about it? <span className="text-card-foreground/40">(optional)</span>
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {LOVE_TAGS.map((tag) => (
+                  <TagChip
+                    key={tag}
+                    label={tag}
+                    selected={loveTags.includes(tag)}
+                    onClick={() => onLoveTagToggle(tag)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Dislike tags - show only when sentiment is "dislike" */}
+          {sentiment === "dislike" && (
+            <div className="mt-4">
+              <label className="block text-xs text-card-foreground/60 mb-2">
+                what's the issue? <span className="text-card-foreground/40">(optional)</span>
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {DISLIKE_TAGS.map((tag) => (
+                  <TagChip
+                    key={tag}
+                    label={tag}
+                    selected={dislikeTags.includes(tag)}
+                    onClick={() => onDislikeTagToggle(tag)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -297,7 +417,7 @@ const ProfileBuilderStep3 = () => {
   // Add shoe (newest at top)
   const handleAddShoe = (shoe: Shoe) => {
     setCurrentShoes((prev) => [
-      { shoe, roles: [], sentiment: null },
+      { shoe, roles: [], sentiment: null, loveTags: [], dislikeTags: [] },
       ...prev,
     ]);
     setSearchQuery("");
@@ -316,7 +436,7 @@ const ProfileBuilderStep3 = () => {
       version: "",
     };
     setCurrentShoes((prev) => [
-      { shoe: customShoe, roles: [], sentiment: null },
+      { shoe: customShoe, roles: [], sentiment: null, loveTags: [], dislikeTags: [] },
       ...prev,
     ]);
     setCustomShoeName("");
@@ -357,12 +477,42 @@ const ProfileBuilderStep3 = () => {
     );
   };
 
-  // Set sentiment for a shoe
+  // Set sentiment for a shoe (clear tags when sentiment changes)
   const handleSentimentChange = (shoeId: string, sentiment: ShoeSentiment) => {
     setCurrentShoes((prev) =>
       prev.map((s) =>
-        s.shoe.shoe_id === shoeId ? { ...s, sentiment } : s
+        s.shoe.shoe_id === shoeId ? { ...s, sentiment, loveTags: [], dislikeTags: [] } : s
       )
+    );
+  };
+
+  // Toggle love tag for a shoe
+  const handleLoveTagToggle = (shoeId: string, tag: string) => {
+    setCurrentShoes((prev) =>
+      prev.map((s) => {
+        if (s.shoe.shoe_id !== shoeId) return s;
+        const tags = s.loveTags || [];
+        if (tags.includes(tag)) {
+          return { ...s, loveTags: tags.filter((t) => t !== tag) };
+        } else {
+          return { ...s, loveTags: [...tags, tag] };
+        }
+      })
+    );
+  };
+
+  // Toggle dislike tag for a shoe
+  const handleDislikeTagToggle = (shoeId: string, tag: string) => {
+    setCurrentShoes((prev) =>
+      prev.map((s) => {
+        if (s.shoe.shoe_id !== shoeId) return s;
+        const tags = s.dislikeTags || [];
+        if (tags.includes(tag)) {
+          return { ...s, dislikeTags: tags.filter((t) => t !== tag) };
+        } else {
+          return { ...s, dislikeTags: [...tags, tag] };
+        }
+      })
     );
   };
 
@@ -456,7 +606,7 @@ const ProfileBuilderStep3 = () => {
       <OnboardingLayout scrollable>
         <PageTransition className="flex flex-col flex-1 min-h-0">
           {/* Card header */}
-          <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-start flex-shrink-0">
+          <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between flex-shrink-0">
             <button
               type="button"
               onClick={handleBack}
@@ -464,6 +614,14 @@ const ProfileBuilderStep3 = () => {
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               back
+            </button>
+            <button
+              type="button"
+              onClick={handleSkipClick}
+              className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
+            >
+              skip
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </header>
 
@@ -535,8 +693,12 @@ const ProfileBuilderStep3 = () => {
                     shoe={item.shoe}
                     roles={item.roles}
                     sentiment={item.sentiment}
+                    loveTags={item.loveTags || []}
+                    dislikeTags={item.dislikeTags || []}
                     onRoleToggle={(role) => handleRoleToggle(item.shoe.shoe_id, role)}
                     onSentimentChange={(sentiment) => handleSentimentChange(item.shoe.shoe_id, sentiment)}
+                    onLoveTagToggle={(tag) => handleLoveTagToggle(item.shoe.shoe_id, tag)}
+                    onDislikeTagToggle={(tag) => handleDislikeTagToggle(item.shoe.shoe_id, tag)}
                     onRemove={() => handleRemoveShoe(item.shoe.shoe_id)}
                     isCollapsed={collapsedShoes.has(item.shoe.shoe_id)}
                     onToggleCollapse={() => toggleCollapse(item.shoe.shoe_id)}
@@ -548,13 +710,6 @@ const ProfileBuilderStep3 = () => {
 
           {/* Card footer */}
           <footer className="flex flex-col items-center px-6 md:px-8 pt-4 pb-4 flex-shrink-0 gap-3">
-            <Button
-              onClick={handleSkipClick}
-              variant="ghost"
-              className="text-card-foreground/50 hover:text-card-foreground/70 text-sm"
-            >
-              skip this step
-            </Button>
             <Button
               onClick={handleNextClick}
               variant="cta"

@@ -97,6 +97,8 @@ export interface CurrentShoe {
   };
   roles: ShoeRole[];
   sentiment: ShoeSentiment | null;
+  loveTags?: string[];
+  dislikeTags?: string[];
 }
 
 export interface Step3Data {
