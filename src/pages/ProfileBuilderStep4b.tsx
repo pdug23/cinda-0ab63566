@@ -185,8 +185,11 @@ const SliderPreferenceCard = ({
               // Filled range - softer amber
               "[&_[data-slot=range]]:bg-amber-600/70",
               // Handle styling - solid filled circle, fully opaque, on top
+              // Visual size stays small but touch target is 44x44px for mobile UX
               "[&_[role=slider]]:h-2.5 [&_[role=slider]]:w-2.5",
               "[&_[role=slider]]:bg-[#FF6B35] [&_[role=slider]]:border-0 [&_[role=slider]]:z-10",
+              "[&_[role=slider]]:relative [&_[role=slider]]:before:absolute [&_[role=slider]]:before:inset-0",
+              "[&_[role=slider]]:before:-m-5 [&_[role=slider]]:before:rounded-full",
               // Active/focus state
               "[&_[role=slider]:focus-visible]:ring-[#FF6B35]/30 [&_[role=slider]:focus-visible]:ring-offset-0"
             )}
