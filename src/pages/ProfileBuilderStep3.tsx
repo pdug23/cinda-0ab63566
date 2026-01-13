@@ -73,7 +73,6 @@ const mapShoesFromBackend = (shoes: CurrentShoe[]): CurrentShoe[] => {
 // Sentiment options
 const SENTIMENT_OPTIONS: { value: ShoeSentiment; label: string; icon: React.ReactNode }[] = [
   { value: "love", label: "love it", icon: <Heart className="w-4 h-4" /> },
-  { value: "like", label: "it's good", icon: <ThumbsUp className="w-4 h-4" /> },
   { value: "neutral", label: "it's okay", icon: <Meh className="w-4 h-4" /> },
   { value: "dislike", label: "not for me", icon: <ThumbsDown className="w-4 h-4" /> },
 ];
@@ -302,7 +301,7 @@ const ShoeCard = ({
             <label className="block text-xs text-card-foreground/60 mb-2">
               how do you feel about this shoe?
             </label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {SENTIMENT_OPTIONS.map((option) => (
                 <SentimentButton
                   key={option.value}
