@@ -184,11 +184,11 @@ const SliderPreferenceCard = ({
               "[&_[data-slot=track]]:h-1 [&_[data-slot=track]]:bg-[#374151]",
               // Filled range - softer amber
               "[&_[data-slot=range]]:bg-amber-600/70",
-              // Handle styling - solid filled circle, proportional to track
+              // Handle styling - solid filled circle, fully opaque, on top
               "[&_[role=slider]]:h-2.5 [&_[role=slider]]:w-2.5",
-              "[&_[role=slider]]:bg-amber-600/70 [&_[role=slider]]:border-0",
+              "[&_[role=slider]]:bg-[#FF6B35] [&_[role=slider]]:border-0 [&_[role=slider]]:z-10",
               // Active/focus state
-              "[&_[role=slider]:focus-visible]:ring-amber-600/30 [&_[role=slider]:focus-visible]:ring-offset-0"
+              "[&_[role=slider]:focus-visible]:ring-[#FF6B35]/30 [&_[role=slider]:focus-visible]:ring-offset-0"
             )}
           />
 
