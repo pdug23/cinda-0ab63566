@@ -70,7 +70,6 @@ export interface FeelPreferences {
   stabilityAmount: SliderPreference;
   energyReturn: SliderPreference;
   rocker: SliderPreference;
-  groundFeel: SliderPreference;
   heelDropPreference: HeelDropPreference;
 }
 

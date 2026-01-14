@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, HelpCircle, Check } from "lucide-react";
+import { ArrowLeft, HelpCircle, Check, X } from "lucide-react";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
@@ -23,6 +23,103 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { saveProfile, saveShoes, saveShoeRequests, saveGap } from "@/utils/storage";
+import { useIsMobile } from "@/hooks/use-mobile";
+
+// Mobile tooltip modal component
+const TooltipModal = ({
+  isOpen,
+  onClose,
+  content,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  content: React.ReactNode;
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
+      onClick={onClose}
+    >
+      <div 
+        className="w-full max-w-md mx-4 mb-4 p-4 rounded-xl bg-card border border-card-foreground/20 shadow-xl animate-in slide-in-from-bottom-4 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="text-sm text-card-foreground/80 flex-1">
+            {content}
+          </div>
+          <button
+            onClick={onClose}
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2 -mt-2 text-card-foreground/50 hover:text-card-foreground"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <button
+          onClick={onClose}
+          className="mt-4 w-full py-2.5 text-sm font-medium rounded-lg bg-orange-500/20 text-orange-400 border border-orange-500/30 hover:bg-orange-500/30 transition-colors"
+        >
+          got it
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Adaptive tooltip button - modal on mobile, tooltip on desktop
+const AdaptiveTooltip = ({
+  content,
+  children,
+}: {
+  content: React.ReactNode;
+  children?: React.ReactNode;
+}) => {
+  const isMobile = useIsMobile();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+
+  const triggerButton = (
+    <button
+      type="button"
+      onClick={() => {
+        if (isMobile) {
+          setIsModalOpen(true);
+        } else {
+          setIsTooltipOpen(!isTooltipOpen);
+        }
+      }}
+      className="min-w-[44px] min-h-[44px] flex items-center justify-center -m-3 text-card-foreground/40 hover:text-card-foreground/60 transition-colors"
+    >
+      <HelpCircle className="w-3.5 h-3.5" />
+    </button>
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        {triggerButton}
+        <TooltipModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          content={content}
+        />
+      </>
+    );
+  }
+
+  return (
+    <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
+      <TooltipTrigger asChild>
+        {triggerButton}
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[260px] text-xs">
+        {content}
+      </TooltipContent>
+    </Tooltip>
+  );
+};
 
 // Role display names
 const ROLE_LABELS: Record<DiscoveryShoeRole, string> = {
@@ -36,7 +133,7 @@ const ROLE_LABELS: Record<DiscoveryShoeRole, string> = {
 
 // Slider configuration
 interface SliderConfig {
-  key: "cushionAmount" | "stabilityAmount" | "energyReturn" | "rocker" | "groundFeel";
+  key: "cushionAmount" | "stabilityAmount" | "energyReturn" | "rocker";
   label: string;
   tooltip: string;
   leftLabel: string;
@@ -76,14 +173,6 @@ const SLIDERS: SliderConfig[] = [
     leftLabel: "flat",
     middleLabel: "balanced",
     rightLabel: "max",
-  },
-  {
-    key: "groundFeel",
-    label: "ground feel",
-    tooltip: "how connected you feel to the surface. isolated shoes buffer sensation. connected shoes let you feel the terrain.",
-    leftLabel: "none",
-    middleLabel: "balanced",
-    rightLabel: "connected",
   },
 ];
 
@@ -154,16 +243,7 @@ const SliderPreferenceCard = ({
       {/* Label with tooltip */}
       <div className="flex items-center gap-1.5 mb-3">
         <span className="text-sm text-card-foreground/90">{config.label}</span>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button type="button" className="text-card-foreground/40 hover:text-card-foreground/60 transition-colors">
-              <HelpCircle className="w-3.5 h-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="max-w-[260px] text-xs">
-            {config.tooltip}
-          </TooltipContent>
-        </Tooltip>
+        <AdaptiveTooltip content={config.tooltip} />
       </div>
 
       {/* Mode selector */}
@@ -254,16 +334,7 @@ const HeelDropPreferenceCard = ({
       {/* Label with tooltip */}
       <div className="flex items-center gap-1.5 mb-3">
         <span className="text-sm text-card-foreground/90">heel drop</span>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button type="button" className="text-card-foreground/40 hover:text-card-foreground/60 transition-colors">
-              <HelpCircle className="w-3.5 h-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="max-w-[260px] text-xs">
-            the height difference between heel and forefoot. lower drops encourage midfoot striking. higher drops suit heel strikers.
-          </TooltipContent>
-        </Tooltip>
+        <AdaptiveTooltip content="the height difference between heel and forefoot. lower drops encourage midfoot striking. higher drops suit heel strikers." />
       </div>
 
       {/* Mode selector */}
@@ -306,7 +377,6 @@ const getDefaultPreferences = (): FeelPreferences => ({
   stabilityAmount: { mode: "cinda_decides" },
   energyReturn: { mode: "cinda_decides" },
   rocker: { mode: "cinda_decides" },
-  groundFeel: { mode: "cinda_decides" },
   heelDropPreference: { mode: "cinda_decides" },
 });
 
@@ -470,22 +540,19 @@ const ProfileBuilderStep4b = () => {
               <p className="text-sm text-card-foreground/90">
                 how do you want your <span className="text-orange-400 font-semibold">{ROLE_LABELS[currentRole]}</span> to feel?
               </p>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button type="button" className="text-card-foreground/40 hover:text-card-foreground/60 transition-colors">
-                    <HelpCircle className="w-3.5 h-3.5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-[280px] text-xs p-3">
-                  <p className="font-medium mb-2">understanding your preferences:</p>
-                  <ul className="space-y-1.5 text-card-foreground/80">
-                    <li><span className="text-orange-400">let cinda decide</span> – we'll choose based on your shoe type and running style</li>
-                    <li><span className="text-orange-400">i have a preference</span> – you tell us exactly what you want</li>
-                    <li><span className="text-orange-400">i don't mind</span> – this won't factor into your recommendations</li>
-                  </ul>
-                  <p className="mt-2 text-card-foreground/60">most runners leave preferences on 'let cinda decide' and only set specific preferences where they have strong feelings.</p>
-                </TooltipContent>
-              </Tooltip>
+              <AdaptiveTooltip
+                content={
+                  <>
+                    <p className="font-medium mb-2">understanding your preferences:</p>
+                    <ul className="space-y-1.5 text-card-foreground/80">
+                      <li><span className="text-orange-400">let cinda decide</span> – we'll choose based on your shoe type and running style</li>
+                      <li><span className="text-orange-400">i have a preference</span> – you tell us exactly what you want</li>
+                      <li><span className="text-orange-400">i don't mind</span> – this won't factor into your recommendations</li>
+                    </ul>
+                    <p className="mt-2 text-card-foreground/60">most runners leave preferences on 'let cinda decide' and only set specific preferences where they have strong feelings.</p>
+                  </>
+                }
+              />
             </div>
 
             {/* Progress indicator for multiple roles */}
