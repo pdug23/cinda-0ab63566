@@ -140,8 +140,8 @@ const SentimentButton = ({
     type="button"
     onClick={onClick}
     className={cn(
-      "min-h-[44px] px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200",
-      "border flex items-center gap-2 justify-center",
+      "min-h-[56px] px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200",
+      "border flex flex-col items-center justify-center gap-1",
       selected
         ? "bg-orange-500/20 border-orange-500/50 text-orange-400 shadow-[0_0_12px_rgba(251,146,60,0.15)]"
         : "bg-card-foreground/5 border-card-foreground/20 text-card-foreground/70 hover:border-card-foreground/30 hover:bg-card-foreground/[0.07]"
