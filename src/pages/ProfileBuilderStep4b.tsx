@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { saveProfile, saveShoes, saveShoeRequests, saveGap } from "@/utils/storage";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-// Mobile tooltip modal component
+// Mobile tooltip modal component - proper centered modal with backdrop
 const TooltipModal = ({
   isOpen,
   onClose,
@@ -35,31 +35,48 @@ const TooltipModal = ({
   onClose: () => void;
   content: React.ReactNode;
 }) => {
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-6"
       onClick={onClose}
     >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      
+      {/* Modal content */}
       <div 
-        className="w-full max-w-md mx-4 mb-4 p-4 rounded-xl bg-card border border-card-foreground/20 shadow-xl animate-in slide-in-from-bottom-4 duration-200"
+        className="relative w-full max-w-sm p-5 rounded-2xl bg-card border border-card-foreground/20 shadow-2xl animate-in fade-in-0 zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="text-sm text-card-foreground/80 flex-1">
-            {content}
-          </div>
-          <button
-            onClick={onClose}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2 -mt-2 text-card-foreground/50 hover:text-card-foreground"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        {/* Close button */}
         <button
           onClick={onClose}
-          className="mt-4 w-full py-2.5 text-sm font-medium rounded-lg bg-orange-500/20 text-orange-400 border border-orange-500/30 hover:bg-orange-500/30 transition-colors"
+          className="absolute top-3 right-3 min-w-[44px] min-h-[44px] flex items-center justify-center text-card-foreground/50 hover:text-card-foreground transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+        
+        {/* Content */}
+        <div className="text-sm text-card-foreground/90 leading-relaxed pr-8 pb-2">
+          {content}
+        </div>
+        
+        {/* Got it button */}
+        <button
+          onClick={onClose}
+          className="mt-4 w-full py-3 text-sm font-medium rounded-lg bg-orange-500/20 text-orange-400 border border-orange-500/30 hover:bg-orange-500/30 transition-colors"
         >
           got it
         </button>
