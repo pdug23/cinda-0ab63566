@@ -73,8 +73,8 @@ const mapShoesFromBackend = (shoes: CurrentShoe[]): CurrentShoe[] => {
 // Sentiment options
 const SENTIMENT_OPTIONS: { value: ShoeSentiment; label: string; icon: React.ReactNode }[] = [
   { value: "love", label: "love it", icon: <Heart className="w-4 h-4" /> },
-  { value: "neutral", label: "it's okay", icon: <Meh className="w-4 h-4" /> },
-  { value: "dislike", label: "not for me", icon: <ThumbsDown className="w-4 h-4" /> },
+  { value: "neutral", label: "neutral", icon: <Meh className="w-4 h-4" /> },
+  { value: "dislike", label: "dislike", icon: <ThumbsDown className="w-4 h-4" /> },
 ];
 
 // Run type explanations for tooltip
