@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, HelpCircle, Check } from "lucide-react";
+import { ArrowLeft, HelpCircle, Check, X } from "lucide-react";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
@@ -12,7 +12,9 @@ import {
   PreferenceMode,
   SliderPreference,
   HeelDropPreference,
-  HeelDropOption
+  HeelDropOption,
+  BrandPreference,
+  BrandPreferenceMode
 } from "@/contexts/ProfileContext";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -23,6 +25,120 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { saveProfile, saveShoes, saveShoeRequests, saveGap } from "@/utils/storage";
+import { useIsMobile } from "@/hooks/use-mobile";
+
+// Mobile tooltip modal component - proper centered modal with backdrop
+const TooltipModal = ({
+  isOpen,
+  onClose,
+  content,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  content: React.ReactNode;
+}) => {
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center p-6"
+      onClick={onClose}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      
+      {/* Modal content */}
+      <div 
+        className="relative w-full max-w-sm p-5 rounded-2xl bg-card border border-card-foreground/20 shadow-2xl animate-in fade-in-0 zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 min-w-[44px] min-h-[44px] flex items-center justify-center text-card-foreground/50 hover:text-card-foreground transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+        
+        {/* Content */}
+        <div className="text-sm text-card-foreground/90 leading-relaxed pr-8 pb-2">
+          {content}
+        </div>
+        
+        {/* Got it button */}
+        <button
+          onClick={onClose}
+          className="mt-4 w-full py-3 text-sm font-medium rounded-lg bg-orange-500/20 text-orange-400 border border-orange-500/30 hover:bg-orange-500/30 transition-colors"
+        >
+          got it
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Adaptive tooltip button - modal on mobile, tooltip on desktop
+const AdaptiveTooltip = ({
+  content,
+  children,
+}: {
+  content: React.ReactNode;
+  children?: React.ReactNode;
+}) => {
+  const isMobile = useIsMobile();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+
+  const triggerButton = (
+    <button
+      type="button"
+      onClick={() => {
+        if (isMobile) {
+          setIsModalOpen(true);
+        } else {
+          setIsTooltipOpen(!isTooltipOpen);
+        }
+      }}
+      className="min-w-[44px] min-h-[44px] flex items-center justify-center -m-3 text-card-foreground/40 hover:text-card-foreground/60 transition-colors"
+    >
+      <HelpCircle className="w-3.5 h-3.5" />
+    </button>
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        {triggerButton}
+        <TooltipModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          content={content}
+        />
+      </>
+    );
+  }
+
+  return (
+    <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
+      <TooltipTrigger asChild>
+        {triggerButton}
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[260px] text-xs">
+        {content}
+      </TooltipContent>
+    </Tooltip>
+  );
+};
 
 // Role display names
 const ROLE_LABELS: Record<DiscoveryShoeRole, string> = {
@@ -36,7 +152,7 @@ const ROLE_LABELS: Record<DiscoveryShoeRole, string> = {
 
 // Slider configuration
 interface SliderConfig {
-  key: "cushionAmount" | "stabilityAmount" | "energyReturn" | "rocker" | "groundFeel";
+  key: "cushionAmount" | "stabilityAmount" | "energyReturn" | "rocker";
   label: string;
   tooltip: string;
   leftLabel: string;
@@ -77,17 +193,9 @@ const SLIDERS: SliderConfig[] = [
     middleLabel: "balanced",
     rightLabel: "max",
   },
-  {
-    key: "groundFeel",
-    label: "ground feel",
-    tooltip: "how connected you feel to the surface. isolated shoes buffer sensation. connected shoes let you feel the terrain.",
-    leftLabel: "none",
-    middleLabel: "balanced",
-    rightLabel: "connected",
-  },
 ];
 
-const HEEL_DROP_OPTIONS: HeelDropOption[] = ["0mm", "1-4mm", "5-8mm", "9-12mm", "12mm+"];
+const HEEL_DROP_OPTIONS: HeelDropOption[] = ["0mm", "1-4mm", "5-8mm", "9-12mm", "13mm+"];
 
 // Mode button component
 const ModeSelector = ({
@@ -154,16 +262,7 @@ const SliderPreferenceCard = ({
       {/* Label with tooltip */}
       <div className="flex items-center gap-1.5 mb-3">
         <span className="text-sm text-card-foreground/90">{config.label}</span>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button type="button" className="text-card-foreground/40 hover:text-card-foreground/60 transition-colors">
-              <HelpCircle className="w-3.5 h-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="max-w-[260px] text-xs">
-            {config.tooltip}
-          </TooltipContent>
-        </Tooltip>
+        <AdaptiveTooltip content={config.tooltip} />
       </div>
 
       {/* Mode selector */}
@@ -254,16 +353,7 @@ const HeelDropPreferenceCard = ({
       {/* Label with tooltip */}
       <div className="flex items-center gap-1.5 mb-3">
         <span className="text-sm text-card-foreground/90">heel drop</span>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button type="button" className="text-card-foreground/40 hover:text-card-foreground/60 transition-colors">
-              <HelpCircle className="w-3.5 h-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="max-w-[260px] text-xs">
-            the height difference between heel and forefoot. lower drops encourage midfoot striking. higher drops suit heel strikers.
-          </TooltipContent>
-        </Tooltip>
+        <AdaptiveTooltip content="the height difference between heel and forefoot. lower drops encourage midfoot striking. higher drops suit heel strikers." />
       </div>
 
       {/* Mode selector */}
@@ -300,14 +390,150 @@ const HeelDropPreferenceCard = ({
   );
 };
 
+// Brand list
+const BRAND_OPTIONS = [
+  "Nike", "HOKA", "ASICS", "Brooks", "New Balance", "Saucony",
+  "Adidas", "On", "PUMA", "Altra", "Mizuno", "Salomon"
+];
+
+// Brand preference card
+const BrandPreferenceCard = ({
+  preference,
+  onChange,
+}: {
+  preference: BrandPreference;
+  onChange: (pref: BrandPreference) => void;
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleModeChange = (newMode: BrandPreferenceMode) => {
+    if (newMode === "all") {
+      onChange({ mode: "all", brands: [] });
+      setIsExpanded(false);
+    } else {
+      // When switching modes, clear brands
+      onChange({ mode: newMode, brands: [] });
+    }
+  };
+
+  const handleBrandToggle = (brand: string) => {
+    const newBrands = preference.brands.includes(brand)
+      ? preference.brands.filter((b) => b !== brand)
+      : [...preference.brands, brand];
+    onChange({ mode: preference.mode, brands: newBrands });
+  };
+
+  const handleReset = () => {
+    onChange({ mode: "all", brands: [] });
+    setIsExpanded(false);
+  };
+
+  const getSummaryText = () => {
+    if (preference.mode === "all") return "showing all brands";
+    if (preference.brands.length === 0) {
+      return preference.mode === "include" ? "select brands to show" : "select brands to hide";
+    }
+    const brandList = preference.brands.join(", ");
+    return preference.mode === "include" ? `only: ${brandList}` : `excluding: ${brandList}`;
+  };
+
+  return (
+    <div className="p-4 rounded-lg bg-card-foreground/[0.02] border border-card-foreground/10">
+      {/* Label */}
+      <div className="flex items-center gap-1.5 mb-3">
+        <span className="text-sm text-card-foreground/90">brand preference</span>
+      </div>
+
+      {/* Collapsed view */}
+      {!isExpanded && (
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-card-foreground/50">{getSummaryText()}</span>
+          <button
+            type="button"
+            onClick={() => setIsExpanded(true)}
+            className="text-xs text-orange-400 hover:text-orange-300 transition-colors"
+          >
+            {preference.mode === "all" ? "filter" : "edit"}
+          </button>
+        </div>
+      )}
+
+      {/* Expanded view */}
+      {isExpanded && (
+        <div className="space-y-3">
+          {/* Mode tabs */}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => handleModeChange("include")}
+              className={cn(
+                "flex-1 px-3 py-1.5 text-xs rounded-md border transition-all",
+                preference.mode === "include"
+                  ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                  : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
+              )}
+            >
+              only show
+            </button>
+            <button
+              type="button"
+              onClick={() => handleModeChange("exclude")}
+              className={cn(
+                "flex-1 px-3 py-1.5 text-xs rounded-md border transition-all",
+                preference.mode === "exclude"
+                  ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                  : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
+              )}
+            >
+              exclude
+            </button>
+          </div>
+
+          {/* Brand grid */}
+          <div className="flex flex-wrap gap-2">
+            {BRAND_OPTIONS.map((brand) => {
+              const isSelected = preference.brands.includes(brand);
+              return (
+                <button
+                  key={brand}
+                  type="button"
+                  onClick={() => handleBrandToggle(brand)}
+                  className={cn(
+                    "px-3 py-1.5 text-xs rounded-md border transition-all flex items-center gap-1.5",
+                    isSelected
+                      ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                      : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
+                  )}
+                >
+                  {isSelected && <Check className="w-3 h-3" />}
+                  {brand}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Reset link */}
+          <button
+            type="button"
+            onClick={handleReset}
+            className="text-xs text-card-foreground/40 hover:text-card-foreground/60 transition-colors"
+          >
+            clear / show all brands
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Default preferences
 const getDefaultPreferences = (): FeelPreferences => ({
   cushionAmount: { mode: "cinda_decides" },
   stabilityAmount: { mode: "cinda_decides" },
   energyReturn: { mode: "cinda_decides" },
   rocker: { mode: "cinda_decides" },
-  groundFeel: { mode: "cinda_decides" },
   heelDropPreference: { mode: "cinda_decides" },
+  brandPreference: { mode: "all", brands: [] },
 });
 
 const ProfileBuilderStep4b = () => {
@@ -353,6 +579,10 @@ const ProfileBuilderStep4b = () => {
 
   const updateHeelDropPreference = (pref: HeelDropPreference) => {
     setPreferences((prev) => ({ ...prev, heelDropPreference: pref }));
+  };
+
+  const updateBrandPreference = (pref: BrandPreference) => {
+    setPreferences((prev) => ({ ...prev, brandPreference: pref }));
   };
 
   // Validation
@@ -420,7 +650,7 @@ const ProfileBuilderStep4b = () => {
 
         const currentShoes = step3.currentShoes.map((shoe) => ({
           shoe: shoe.shoe,
-          roles: shoe.roles,
+          runTypes: shoe.runTypes,
           sentiment: shoe.sentiment ?? "neutral",
         }));
         saveShoes(currentShoes as any);
@@ -470,22 +700,19 @@ const ProfileBuilderStep4b = () => {
               <p className="text-sm text-card-foreground/90">
                 how do you want your <span className="text-orange-400 font-semibold">{ROLE_LABELS[currentRole]}</span> to feel?
               </p>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button type="button" className="text-card-foreground/40 hover:text-card-foreground/60 transition-colors">
-                    <HelpCircle className="w-3.5 h-3.5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-[280px] text-xs p-3">
-                  <p className="font-medium mb-2">understanding your preferences:</p>
-                  <ul className="space-y-1.5 text-card-foreground/80">
-                    <li><span className="text-orange-400">let cinda decide</span> – we'll choose based on your shoe type and running style</li>
-                    <li><span className="text-orange-400">i have a preference</span> – you tell us exactly what you want</li>
-                    <li><span className="text-orange-400">i don't mind</span> – this won't factor into your recommendations</li>
-                  </ul>
-                  <p className="mt-2 text-card-foreground/60">most runners leave preferences on 'let cinda decide' and only set specific preferences where they have strong feelings.</p>
-                </TooltipContent>
-              </Tooltip>
+              <AdaptiveTooltip
+                content={
+                  <>
+                    <p className="font-medium mb-2">understanding your preferences:</p>
+                    <ul className="space-y-1.5 text-card-foreground/80">
+                      <li><span className="text-orange-400">let cinda decide</span> – we'll choose based on your shoe type and running style</li>
+                      <li><span className="text-orange-400">i have a preference</span> – you tell us exactly what you want</li>
+                      <li><span className="text-orange-400">i don't mind</span> – this won't factor into your recommendations</li>
+                    </ul>
+                    <p className="mt-2 text-card-foreground/60">most runners leave preferences on 'let cinda decide' and only set specific preferences where they have strong feelings.</p>
+                  </>
+                }
+              />
             </div>
 
             {/* Progress indicator for multiple roles */}
@@ -509,6 +736,11 @@ const ProfileBuilderStep4b = () => {
               <HeelDropPreferenceCard
                 preference={preferences.heelDropPreference}
                 onChange={updateHeelDropPreference}
+              />
+
+              <BrandPreferenceCard
+                preference={preferences.brandPreference}
+                onChange={updateBrandPreference}
               />
             </div>
           </div>
