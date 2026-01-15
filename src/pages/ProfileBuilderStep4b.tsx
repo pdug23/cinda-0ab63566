@@ -12,7 +12,9 @@ import {
   PreferenceMode,
   SliderPreference,
   HeelDropPreference,
-  HeelDropOption
+  HeelDropOption,
+  BrandPreference,
+  BrandPreferenceMode
 } from "@/contexts/ProfileContext";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -193,7 +195,7 @@ const SLIDERS: SliderConfig[] = [
   },
 ];
 
-const HEEL_DROP_OPTIONS: HeelDropOption[] = ["0mm", "1-4mm", "5-8mm", "9-12mm", "12mm+"];
+const HEEL_DROP_OPTIONS: HeelDropOption[] = ["0mm", "1-4mm", "5-8mm", "9-12mm", "13mm+"];
 
 // Mode button component
 const ModeSelector = ({
@@ -388,6 +390,142 @@ const HeelDropPreferenceCard = ({
   );
 };
 
+// Brand list
+const BRAND_OPTIONS = [
+  "Nike", "HOKA", "ASICS", "Brooks", "New Balance", "Saucony",
+  "Adidas", "On", "PUMA", "Altra", "Mizuno", "Salomon"
+];
+
+// Brand preference card
+const BrandPreferenceCard = ({
+  preference,
+  onChange,
+}: {
+  preference: BrandPreference;
+  onChange: (pref: BrandPreference) => void;
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleModeChange = (newMode: BrandPreferenceMode) => {
+    if (newMode === "all") {
+      onChange({ mode: "all", brands: [] });
+      setIsExpanded(false);
+    } else {
+      // When switching modes, clear brands
+      onChange({ mode: newMode, brands: [] });
+    }
+  };
+
+  const handleBrandToggle = (brand: string) => {
+    const newBrands = preference.brands.includes(brand)
+      ? preference.brands.filter((b) => b !== brand)
+      : [...preference.brands, brand];
+    onChange({ mode: preference.mode, brands: newBrands });
+  };
+
+  const handleReset = () => {
+    onChange({ mode: "all", brands: [] });
+    setIsExpanded(false);
+  };
+
+  const getSummaryText = () => {
+    if (preference.mode === "all") return "showing all brands";
+    if (preference.brands.length === 0) {
+      return preference.mode === "include" ? "select brands to show" : "select brands to hide";
+    }
+    const brandList = preference.brands.join(", ");
+    return preference.mode === "include" ? `only: ${brandList}` : `excluding: ${brandList}`;
+  };
+
+  return (
+    <div className="p-4 rounded-lg bg-card-foreground/[0.02] border border-card-foreground/10">
+      {/* Label */}
+      <div className="flex items-center gap-1.5 mb-3">
+        <span className="text-sm text-card-foreground/90">brand preference</span>
+      </div>
+
+      {/* Collapsed view */}
+      {!isExpanded && (
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-card-foreground/50">{getSummaryText()}</span>
+          <button
+            type="button"
+            onClick={() => setIsExpanded(true)}
+            className="text-xs text-orange-400 hover:text-orange-300 transition-colors"
+          >
+            {preference.mode === "all" ? "filter" : "edit"}
+          </button>
+        </div>
+      )}
+
+      {/* Expanded view */}
+      {isExpanded && (
+        <div className="space-y-3">
+          {/* Mode tabs */}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => handleModeChange("include")}
+              className={cn(
+                "flex-1 px-3 py-1.5 text-xs rounded-md border transition-all",
+                preference.mode === "include"
+                  ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                  : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
+              )}
+            >
+              only show
+            </button>
+            <button
+              type="button"
+              onClick={() => handleModeChange("exclude")}
+              className={cn(
+                "flex-1 px-3 py-1.5 text-xs rounded-md border transition-all",
+                preference.mode === "exclude"
+                  ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                  : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
+              )}
+            >
+              exclude
+            </button>
+          </div>
+
+          {/* Brand grid */}
+          <div className="flex flex-wrap gap-2">
+            {BRAND_OPTIONS.map((brand) => {
+              const isSelected = preference.brands.includes(brand);
+              return (
+                <button
+                  key={brand}
+                  type="button"
+                  onClick={() => handleBrandToggle(brand)}
+                  className={cn(
+                    "px-3 py-1.5 text-xs rounded-md border transition-all flex items-center gap-1.5",
+                    isSelected
+                      ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                      : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
+                  )}
+                >
+                  {isSelected && <Check className="w-3 h-3" />}
+                  {brand}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Reset link */}
+          <button
+            type="button"
+            onClick={handleReset}
+            className="text-xs text-card-foreground/40 hover:text-card-foreground/60 transition-colors"
+          >
+            clear / show all brands
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Default preferences
 const getDefaultPreferences = (): FeelPreferences => ({
   cushionAmount: { mode: "cinda_decides" },
@@ -395,6 +533,7 @@ const getDefaultPreferences = (): FeelPreferences => ({
   energyReturn: { mode: "cinda_decides" },
   rocker: { mode: "cinda_decides" },
   heelDropPreference: { mode: "cinda_decides" },
+  brandPreference: { mode: "all", brands: [] },
 });
 
 const ProfileBuilderStep4b = () => {
@@ -440,6 +579,10 @@ const ProfileBuilderStep4b = () => {
 
   const updateHeelDropPreference = (pref: HeelDropPreference) => {
     setPreferences((prev) => ({ ...prev, heelDropPreference: pref }));
+  };
+
+  const updateBrandPreference = (pref: BrandPreference) => {
+    setPreferences((prev) => ({ ...prev, brandPreference: pref }));
   };
 
   // Validation
@@ -593,6 +736,11 @@ const ProfileBuilderStep4b = () => {
               <HeelDropPreferenceCard
                 preference={preferences.heelDropPreference}
                 onChange={updateHeelDropPreference}
+              />
+
+              <BrandPreferenceCard
+                preference={preferences.brandPreference}
+                onChange={updateBrandPreference}
               />
             </div>
           </div>
