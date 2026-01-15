@@ -44,7 +44,7 @@ export interface Step2Data {
 }
 
 // Step 3 data - current shoe rotation
-export type ShoeRole = "all_runs" | "races" | "tempo" | "interval" | "easy_recovery" | "trail";
+export type RunType = "all_my_runs" | "recovery" | "long_runs" | "workouts" | "races" | "trail";
 export type ShoeSentiment = "love" | "like" | "neutral" | "dislike";
 
 // Step 4 shoe role selection for discovery mode
@@ -102,7 +102,7 @@ export interface CurrentShoe {
     full_name: string;
     [key: string]: unknown;
   };
-  roles: ShoeRole[];
+  runTypes: RunType[];
   sentiment: ShoeSentiment | null;
   loveTags?: string[];
   dislikeTags?: string[];

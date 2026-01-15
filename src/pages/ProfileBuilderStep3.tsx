@@ -2,12 +2,12 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, ArrowRight, X, Heart, ThumbsUp, Meh, ThumbsDown, Check, ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, X, Heart, Meh, ThumbsDown, Check, ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
 import { UnsavedChangesModal } from "@/components/UnsavedChangesModal";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
-import { useProfile, CurrentShoe, ShoeRole, ShoeSentiment } from "@/contexts/ProfileContext";
+import { useProfile, CurrentShoe, RunType, ShoeSentiment } from "@/contexts/ProfileContext";
 import { cn } from "@/lib/utils";
 import shoebaseData from "@/data/shoebase.json";
 import {
@@ -23,6 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Shoe type from shoebase.json
 interface Shoe {
@@ -36,37 +37,37 @@ interface Shoe {
 
 const shoes = shoebaseData as Shoe[];
 
-// Run type options - "daily training" replaces "all runs"
-const RUN_TYPE_OPTIONS: { value: ShoeRole; label: string }[] = [
-  { value: "all_runs", label: "daily training" },
+// Run type options
+const RUN_TYPE_OPTIONS: { value: RunType; label: string }[] = [
+  { value: "all_my_runs", label: "all my runs" },
+  { value: "recovery", label: "recovery" },
+  { value: "long_runs", label: "long runs" },
+  { value: "workouts", label: "workouts" },
   { value: "races", label: "races" },
-  { value: "tempo", label: "tempo" },
-  { value: "interval", label: "interval" },
-  { value: "easy_recovery", label: "easy pace" },
   { value: "trail", label: "trail" },
 ];
 
-// Roles that get normalized to daily training
-const NORMALIZABLE_ROLES: ShoeRole[] = ["tempo", "interval", "easy_recovery"];
+// Run types that get auto-selected when "all my runs" is selected (trail excluded)
+const ALL_MY_RUNS_TYPES: RunType[] = ["recovery", "long_runs", "workouts", "races"];
 
-// Map backend role values back to frontend ShoeRole enum values
-const mapRoleFromBackend = (role: string): ShoeRole => {
-  const mapping: Record<string, ShoeRole> = {
-    "daily": "all_runs",
-    "tempo": "tempo",
-    "intervals": "interval",
-    "easy": "easy_recovery",
-    "race": "races",
+// Map backend values back to frontend RunType values
+const mapRunTypeFromBackend = (runType: string): RunType => {
+  const mapping: Record<string, RunType> = {
+    "all_my_runs": "all_my_runs",
+    "recovery": "recovery",
+    "long_runs": "long_runs",
+    "workouts": "workouts",
+    "races": "races",
     "trail": "trail",
   };
-  return (mapping[role] || role) as ShoeRole;
+  return (mapping[runType] || runType) as RunType;
 };
 
 // Convert shoes from backend format to frontend format for display
 const mapShoesFromBackend = (shoes: CurrentShoe[]): CurrentShoe[] => {
   return shoes.map(shoe => ({
     ...shoe,
-    roles: shoe.roles.map(r => mapRoleFromBackend(r as string)),
+    runTypes: shoe.runTypes.map(r => mapRunTypeFromBackend(r as string)),
   }));
 };
 
@@ -79,12 +80,12 @@ const SENTIMENT_OPTIONS: { value: ShoeSentiment; label: string; icon: React.Reac
 
 // Run type explanations for tooltip
 const RUN_TYPE_EXPLANATIONS: Record<string, string> = {
-  "daily training": "all/most of your mileage across a range of paces",
-  "easy pace": "slow recovery runs, conversational pace",
-  "tempo": "comfortably hard efforts, threshold runs",
-  "interval": "fast repeats with recovery between",
-  "races": "race day or time trials",
-  "trail": "off-road, dirt, technical terrain",
+  "all my runs": "I use this shoe for everything (except trail)",
+  "recovery": "easy, slow, recovery days",
+  "long runs": "weekly long run",
+  "workouts": "tempo, intervals, hills, track sessions",
+  "races": "race day",
+  "trail": "off-road running",
 };
 
 // Love tags
@@ -98,6 +99,109 @@ const DISLIKE_TAGS = [
   "too heavy", "too soft", "too firm", "unstable", "blisters",
   "too narrow", "too wide", "wears fast", "causes pain", "slow at speed"
 ];
+
+// Tooltip modal component for mobile
+const TooltipModal = ({
+  open,
+  onClose,
+  title,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}) => {
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
+
+  if (!open) return null;
+
+  return (
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in-0 duration-200"
+      onClick={onClose}
+    >
+      <div 
+        className="relative bg-card border border-border/40 rounded-xl p-5 max-w-[320px] w-full shadow-xl animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-3 right-3 p-1.5 rounded-full bg-card-foreground/10 hover:bg-card-foreground/20 text-card-foreground/50 hover:text-card-foreground/70 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+        <h3 className="text-sm font-semibold text-card-foreground mb-3 pr-8">{title}</h3>
+        <div className="text-xs text-card-foreground/70 space-y-2">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Adaptive tooltip component - modal on mobile, tooltip on desktop
+const AdaptiveTooltip = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) => {
+  const isMobile = useIsMobile();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+
+  if (isMobile) {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => setModalOpen(true)}
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center -m-2 text-card-foreground/40 hover:text-card-foreground/60 transition-colors"
+        >
+          <HelpCircle className="w-3.5 h-3.5" />
+        </button>
+        <TooltipModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          title={title}
+        >
+          {children}
+        </TooltipModal>
+      </>
+    );
+  }
+
+  return (
+    <TooltipProvider>
+      <Tooltip open={tooltipOpen} onOpenChange={setTooltipOpen}>
+        <TooltipTrigger asChild>
+          <button 
+            type="button" 
+            onClick={() => setTooltipOpen(!tooltipOpen)}
+            className="text-card-foreground/40 hover:text-card-foreground/60 transition-colors"
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-[280px] p-3 bg-card border-border/40">
+          {children}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
 
 // Role selection button component (no disabling - all buttons always enabled)
 const RoleButton = ({
@@ -178,18 +282,18 @@ const TagChip = ({
 );
 
 // Check if shoe card is complete
-const isShoeComplete = (roles: ShoeRole[], sentiment: ShoeSentiment | null): boolean => {
-  return roles.length > 0 && sentiment !== null;
+const isShoeComplete = (runTypes: RunType[], sentiment: ShoeSentiment | null): boolean => {
+  return runTypes.length > 0 && sentiment !== null;
 };
 
 // Shoe card component
 const ShoeCard = ({
   shoe,
-  roles,
+  runTypes,
   sentiment,
   loveTags,
   dislikeTags,
-  onRoleToggle,
+  onRunTypeToggle,
   onSentimentChange,
   onLoveTagToggle,
   onDislikeTagToggle,
@@ -198,11 +302,11 @@ const ShoeCard = ({
   onToggleCollapse,
 }: {
   shoe: Shoe;
-  roles: ShoeRole[];
+  runTypes: RunType[];
   sentiment: ShoeSentiment | null;
   loveTags: string[];
   dislikeTags: string[];
-  onRoleToggle: (role: ShoeRole) => void;
+  onRunTypeToggle: (runType: RunType) => void;
   onSentimentChange: (sentiment: ShoeSentiment) => void;
   onLoveTagToggle: (tag: string) => void;
   onDislikeTagToggle: (tag: string) => void;
@@ -210,7 +314,7 @@ const ShoeCard = ({
   isCollapsed: boolean;
   onToggleCollapse: () => void;
 }) => {
-  const complete = isShoeComplete(roles, sentiment);
+  const complete = isShoeComplete(runTypes, sentiment);
 
   return (
     <div 
@@ -219,7 +323,7 @@ const ShoeCard = ({
         "border-2",
         complete 
           ? "border-green-500/50" 
-          : roles.length === 0 || sentiment === null 
+          : runTypes.length === 0 || sentiment === null 
             ? "border-red-500/30" 
             : "border-card-foreground/20"
       )}
@@ -264,33 +368,24 @@ const ShoeCard = ({
               <label className="text-xs text-card-foreground/60">
                 what do you use this shoe for?
               </label>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button type="button" className="text-card-foreground/40 hover:text-card-foreground/60 transition-colors">
-                      <HelpCircle className="w-3.5 h-3.5" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-[280px] p-3 bg-card border-border/40">
-                    <ul className="space-y-1.5 text-xs">
-                      {Object.entries(RUN_TYPE_EXPLANATIONS).map(([type, explanation]) => (
-                        <li key={type}>
-                          <span className="font-medium text-orange-400">{type}:</span>{" "}
-                          <span className="text-card-foreground/70">{explanation}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <AdaptiveTooltip title="run types">
+                <ul className="space-y-1.5">
+                  {Object.entries(RUN_TYPE_EXPLANATIONS).map(([type, explanation]) => (
+                    <li key={type}>
+                      <span className="font-medium text-orange-400">{type}:</span>{" "}
+                      <span className="text-card-foreground/70">{explanation}</span>
+                    </li>
+                  ))}
+                </ul>
+              </AdaptiveTooltip>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {RUN_TYPE_OPTIONS.map((option) => (
                 <RoleButton
                   key={option.value}
                   label={option.label}
-                  selected={roles.includes(option.value)}
-                  onClick={() => onRoleToggle(option.value)}
+                  selected={runTypes.includes(option.value)}
+                  onClick={() => onRunTypeToggle(option.value)}
                 />
               ))}
             </div>
@@ -416,7 +511,7 @@ const ProfileBuilderStep3 = () => {
   // Add shoe (newest at top)
   const handleAddShoe = (shoe: Shoe) => {
     setCurrentShoes((prev) => [
-      { shoe, roles: [], sentiment: null, loveTags: [], dislikeTags: [] },
+      { shoe, runTypes: [], sentiment: null, loveTags: [], dislikeTags: [] },
       ...prev,
     ]);
     setSearchQuery("");
@@ -435,7 +530,7 @@ const ProfileBuilderStep3 = () => {
       version: "",
     };
     setCurrentShoes((prev) => [
-      { shoe: customShoe, roles: [], sentiment: null, loveTags: [], dislikeTags: [] },
+      { shoe: customShoe, runTypes: [], sentiment: null, loveTags: [], dislikeTags: [] },
       ...prev,
     ]);
     setCustomShoeName("");
@@ -460,18 +555,45 @@ const ProfileBuilderStep3 = () => {
     setCurrentShoes((prev) => prev.filter((s) => s.shoe.shoe_id !== shoeId));
   };
 
-  // Toggle role for a shoe (no restrictions - all combinations allowed)
-  const handleRoleToggle = (shoeId: string, role: ShoeRole) => {
+  // Toggle run type for a shoe with "all my runs" special behavior
+  const handleRunTypeToggle = (shoeId: string, runType: RunType) => {
     setCurrentShoes((prev) =>
       prev.map((s) => {
         if (s.shoe.shoe_id !== shoeId) return s;
 
-        // Simple toggle - add if not present, remove if present
-        if (s.roles.includes(role)) {
-          return { ...s, roles: s.roles.filter((r) => r !== role) };
+        let newRunTypes = [...s.runTypes];
+
+        if (runType === "all_my_runs") {
+          // Toggle "all my runs" - auto-select/deselect recovery, long_runs, workouts, races
+          if (newRunTypes.includes("all_my_runs")) {
+            // Deselect all (except trail)
+            newRunTypes = newRunTypes.filter((r) => r === "trail");
+          } else {
+            // Select all my runs + the four types (keep trail if present)
+            const hasTrail = newRunTypes.includes("trail");
+            newRunTypes = ["all_my_runs", ...ALL_MY_RUNS_TYPES];
+            if (hasTrail) newRunTypes.push("trail");
+          }
         } else {
-          return { ...s, roles: [...s.roles, role] };
+          // Toggle individual run type
+          if (newRunTypes.includes(runType)) {
+            newRunTypes = newRunTypes.filter((r) => r !== runType);
+          } else {
+            newRunTypes = [...newRunTypes, runType];
+          }
+
+          // Check if we need to update "all my runs" status
+          if (ALL_MY_RUNS_TYPES.includes(runType)) {
+            const hasAllFour = ALL_MY_RUNS_TYPES.every((t) => newRunTypes.includes(t));
+            if (hasAllFour && !newRunTypes.includes("all_my_runs")) {
+              newRunTypes = ["all_my_runs", ...newRunTypes];
+            } else if (!hasAllFour && newRunTypes.includes("all_my_runs")) {
+              newRunTypes = newRunTypes.filter((r) => r !== "all_my_runs");
+            }
+          }
         }
+
+        return { ...s, runTypes: newRunTypes };
       })
     );
   };
@@ -518,7 +640,7 @@ const ProfileBuilderStep3 = () => {
   // Validation
   const allShoesComplete = useMemo(() => {
     if (currentShoes.length === 0) return true; // No shoes is valid
-    return currentShoes.every((s) => s.roles.length > 0 && s.sentiment !== null);
+    return currentShoes.every((s) => s.runTypes.length > 0 && s.sentiment !== null);
   }, [currentShoes]);
 
   // Navigation
@@ -555,46 +677,39 @@ const ProfileBuilderStep3 = () => {
     setConfirmShoesModalOpen(true);
   };
 
-  // Map frontend role values to backend ShoeRole enum values
-  const mapRoleToBackend = (role: ShoeRole): string => {
-    const mapping: Record<ShoeRole, string> = {
-      "all_runs": "daily",
-      "tempo": "tempo",
-      "interval": "intervals",
-      "easy_recovery": "easy",
-      "races": "race",
+  // Map frontend run type values to backend values
+  const mapRunTypeToBackend = (runType: RunType): string => {
+    const mapping: Record<RunType, string> = {
+      "all_my_runs": "all_my_runs",
+      "recovery": "recovery",
+      "long_runs": "long_runs",
+      "workouts": "workouts",
+      "races": "races",
       "trail": "trail",
     };
-    return mapping[role] || role;
+    return mapping[runType] || runType;
   };
 
-  // Backend normalization: normalize roles when saving
-  // If roles include daily_training + tempo + interval + easy_pace → save as just daily_training
-  // If roles = tempo + interval + easy_pace (no daily_training) → save as daily_training
-  const mapRolesForSave = (shoes: CurrentShoe[]): CurrentShoe[] => {
+  // Backend normalization: if "all my runs" is selected, save as just that + trail if present
+  const mapRunTypesForSave = (shoes: CurrentShoe[]): CurrentShoe[] => {
     return shoes.map(shoe => {
-      const hasAllThreeNormalizable = 
-        shoe.roles.includes("tempo") && 
-        shoe.roles.includes("interval") && 
-        shoe.roles.includes("easy_recovery");
+      let runTypes = shoe.runTypes;
       
-      let roles = shoe.roles;
-      if (hasAllThreeNormalizable) {
-        // Remove tempo, interval, easy_recovery and ensure daily_training is present
-        // Keep races/trail if present
-        const otherRoles = shoe.roles.filter(r => r === "races" || r === "trail");
-        roles = ["all_runs" as ShoeRole, ...otherRoles];
+      // If "all my runs" is selected, simplify to just that + trail if present
+      if (runTypes.includes("all_my_runs")) {
+        const hasTrail = runTypes.includes("trail");
+        runTypes = hasTrail ? ["all_my_runs", "trail"] as RunType[] : ["all_my_runs"] as RunType[];
       }
       
-      // Map all roles to backend values
-      const mappedRoles = roles.map(r => mapRoleToBackend(r)) as ShoeRole[];
-      return { ...shoe, roles: mappedRoles };
+      // Map all run types to backend values
+      const mappedRunTypes = runTypes.map(r => mapRunTypeToBackend(r)) as RunType[];
+      return { ...shoe, runTypes: mappedRunTypes };
     });
   };
 
   const handleConfirmNext = () => {
     setConfirmShoesModalOpen(false);
-    const mappedShoes = mapRolesForSave(currentShoes);
+    const mappedShoes = mapRunTypesForSave(currentShoes);
     updateStep3({ currentShoes: mappedShoes });
     navigate("/profile/step4");
   };
@@ -690,11 +805,11 @@ const ProfileBuilderStep3 = () => {
                   <ShoeCard
                     key={item.shoe.shoe_id}
                     shoe={item.shoe}
-                    roles={item.roles}
+                    runTypes={item.runTypes}
                     sentiment={item.sentiment}
                     loveTags={item.loveTags || []}
                     dislikeTags={item.dislikeTags || []}
-                    onRoleToggle={(role) => handleRoleToggle(item.shoe.shoe_id, role)}
+                    onRunTypeToggle={(runType) => handleRunTypeToggle(item.shoe.shoe_id, runType)}
                     onSentimentChange={(sentiment) => handleSentimentChange(item.shoe.shoe_id, sentiment)}
                     onLoveTagToggle={(tag) => handleLoveTagToggle(item.shoe.shoe_id, tag)}
                     onDislikeTagToggle={(tag) => handleDislikeTagToggle(item.shoe.shoe_id, tag)}
