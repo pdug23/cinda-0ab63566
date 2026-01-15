@@ -1,6 +1,7 @@
 // ============================================================================
 // GAP DETECTION LOGIC
 // Identifies the single most important gap in a runner's shoe rotation
+// Updated for run type -> archetype mapping model
 // ============================================================================
 
 import type {
@@ -11,127 +12,216 @@ import type {
   RunnerProfile,
   CurrentShoe,
   Shoe,
-  ShoeRole
+  RunType,
+  ShoeArchetype
 } from '../types.js';
+import {
+  RUN_TYPE_MAPPING,
+  shoeHasArchetype,
+  shoeIsSuitableFor
+} from '../types.js';
+
+// ============================================================================
+// GAP MESSAGES
+// ============================================================================
+
+const GAP_MESSAGES: Record<RunType, string> = {
+  "all_runs": "You need a versatile daily trainer to handle your regular mileage.",
+  "recovery": "A dedicated recovery shoe could help protect your legs on easy days.",
+  "long_runs": "Your long runs would benefit from a cushioned daily trainer or recovery shoe.",
+  "workouts": "You're doing speed work - a workout shoe would help you get more from those sessions.",
+  "races": "A race shoe could give you an edge on race day.",
+  "trail": "You need trail shoes for off-road running."
+};
 
 // ============================================================================
 // COVERAGE GAP DETECTION
 // ============================================================================
 
 /**
- * Check if there's a coverage gap (missing role for their running pattern)
+ * Detect gaps based on run type -> archetype mapping
+ * For each run type the user does, check if they have a shoe with suitable archetype
+ */
+function detectCoverageGaps(
+  currentShoes: CurrentShoe[],
+  catalogue: Shoe[]
+): Array<{ runType: RunType; recommendedArchetype: ShoeArchetype; priority: number }> {
+  const gaps: Array<{ runType: RunType; recommendedArchetype: ShoeArchetype; priority: number }> = [];
+
+  // Collect all run types user does
+  const allRunTypes = new Set<RunType>();
+  for (const userShoe of currentShoes) {
+    if (userShoe.runTypes) {
+      userShoe.runTypes.forEach(rt => allRunTypes.add(rt));
+    }
+  }
+
+  // Priority order for run types
+  const runTypePriority: Record<RunType, number> = {
+    "all_runs": 1,
+    "workouts": 2,
+    "races": 3,
+    "long_runs": 4,
+    "recovery": 5,
+    "trail": 6
+  };
+
+  // For each run type, check if user has suitable archetype
+  for (const runType of allRunTypes) {
+    const suitableArchetypes = RUN_TYPE_MAPPING[runType];
+
+    const hasSuitable = currentShoes.some(userShoe => {
+      const shoe = catalogue.find(s => s.shoe_id === userShoe.shoeId);
+      if (!shoe) return false;
+      return suitableArchetypes.some(archetype => shoeHasArchetype(shoe, archetype));
+    });
+
+    if (!hasSuitable) {
+      gaps.push({
+        runType,
+        recommendedArchetype: suitableArchetypes[0], // First archetype is preferred
+        priority: runTypePriority[runType] || 10
+      });
+    }
+  }
+
+  // Sort by priority (lower number = higher priority)
+  gaps.sort((a, b) => a.priority - b.priority);
+
+  return gaps;
+}
+
+/**
+ * Check if there's a coverage gap (missing archetype for a run type)
  * Coverage gaps are HIGHEST PRIORITY
  */
 function checkCoverageGap(
   analysis: RotationAnalysis,
   profile: RunnerProfile,
-  currentShoes: CurrentShoe[]
+  currentShoes: CurrentShoe[],
+  catalogue: Shoe[]
 ): Gap | null {
-  if (analysis.missingRoles.length === 0) {
+  const gaps = detectCoverageGaps(currentShoes, catalogue);
+
+  if (gaps.length === 0) {
     return null; // No coverage gaps
   }
 
-  // Determine which missing role is most critical
-  const criticalRoles = getCriticalRoles(profile);
-  const missingCritical = analysis.missingRoles.filter(role =>
-    criticalRoles.includes(role)
-  );
+  // Take the highest priority gap
+  const primaryGap = gaps[0];
 
-  // If missing critical role, that's high severity
-  if (missingCritical.length > 0) {
-    const role = missingCritical[0]; // Take first critical missing role
-    return {
-      type: "coverage",
-      severity: "high",
-      reasoning: getCoverageReasoning(role, profile, "high"),
-      missingCapability: role,
-    };
+  // Determine severity based on profile
+  let severity: GapSeverity = "medium";
+
+  // High severity conditions
+  if (primaryGap.runType === "all_runs" && currentShoes.length === 0) {
+    severity = "high";
+  } else if (primaryGap.runType === "workouts" &&
+    (profile.primaryGoal === "get_faster" || profile.primaryGoal === "race_training")) {
+    severity = "high";
+  } else if (primaryGap.runType === "races" && profile.primaryGoal === "race_training") {
+    severity = "high";
+  } else if (primaryGap.runType === "trail" && profile.trailRunning === "most_or_all") {
+    severity = "high";
   }
 
-  // If missing non-critical but useful role, medium severity
-  const role = analysis.missingRoles[0];
   return {
     type: "coverage",
-    severity: "medium",
-    reasoning: getCoverageReasoning(role, profile, "medium"),
-    missingCapability: role,
+    severity,
+    reasoning: GAP_MESSAGES[primaryGap.runType],
+    runType: primaryGap.runType,
+    recommendedArchetype: primaryGap.recommendedArchetype,
   };
 }
 
-/**
- * Get critical roles based on profile
- */
-function getCriticalRoles(profile: RunnerProfile): ShoeRole[] {
-  const critical: ShoeRole[] = []; // Start empty, add based on context
+// ============================================================================
+// MISUSE DETECTION
+// ============================================================================
 
-  // Only add daily if they truly need it (beginner or no other coverage)
-  if (profile.experience === "beginner") {
-    critical.push("daily");
-  }
-
-  // Add based on running pattern
-  if (profile.runningPattern === "long_run_focus") {
-    critical.push("long");
-  }
-  if (profile.runningPattern === "structured_training" ||
-    profile.runningPattern === "workouts") {
-    critical.push("tempo");
-  }
-
-  // Add based on goals
-  if (profile.primaryGoal === "train_for_race" ||
-    profile.primaryGoal === "improve_pace") {
-    critical.push("tempo");
-  }
-
-  // Racing focused needs race shoes
-  if (profile.experience === "racing_focused") {
-    critical.push("race");
-  }
-
-  return critical;
+interface MisuseInfo {
+  shoeId: string;
+  shoeName: string;
+  runType: RunType;
+  message: string;
 }
 
 /**
- * Generate human-readable reasoning for coverage gap
+ * Detect misuse: using a shoe for runs it's not designed for
  */
-function getCoverageReasoning(
-  role: ShoeRole,
-  profile: RunnerProfile,
-  severity: GapSeverity
-): string {
-  const roleReasoningMap: Record<ShoeRole, Record<string, string>> = {
-    daily: {
-      high: "You'd benefit from a versatile daily trainer to start building your rotation. This will be your go-to shoe for most runs.",
-      medium: "Adding a daily trainer would give you a reliable workhorse for easy and moderate-pace runs.",
-    },
-    easy: {
-      high: "With your training volume, you'd benefit from a comfortable easy/recovery shoe to protect your legs on easy days.",
-      medium: "An easy-day shoe would help you recover better between harder efforts.",
-    },
-    long: {
-      high: "You're focused on long runs but don't have a shoe built for sustained comfort. A long-run shoe will make those miles feel better.",
-      medium: "A dedicated long-run shoe would provide extra cushioning and comfort for your highest-mileage days.",
-    },
-    tempo: {
-      high: `You're ${profile.primaryGoal === "train_for_race" ? "training for a race" : "working on pace"} but don't have a shoe for tempo workouts. A responsive trainer would help you nail those threshold efforts.`,
-      medium: "A tempo shoe would give you a firmer, more responsive option for your faster-paced training runs.",
-    },
-    intervals: {
-      high: "Your workout-focused training could use a lightweight, responsive shoe for interval sessions.",
-      medium: "Adding a speed shoe would give you a snappy option for track workouts and intervals.",
-    },
-    race: {
-      high: "As a racing-focused runner, you'd benefit from a proper race-day shoe with a plate for your goal races.",
-      medium: "A carbon-plated race shoe would give you an extra edge on race day.",
-    },
-    trail: {
-      high: "You'd benefit from a trail shoe with grip and protection for off-road running.",
-      medium: "A trail shoe would let you safely explore off-road routes.",
-    },
-  };
+function detectMisuse(
+  currentShoes: CurrentShoe[],
+  catalogue: Shoe[]
+): MisuseInfo[] {
+  const misuses: MisuseInfo[] = [];
 
-  return roleReasoningMap[role]?.[severity] || `You're missing a ${role} shoe to round out your rotation.`;
+  for (const userShoe of currentShoes) {
+    const shoe = catalogue.find(s => s.shoe_id === userShoe.shoeId);
+    if (!shoe) continue;
+
+    for (const runType of userShoe.runTypes || []) {
+      // Race shoe for recovery or all_runs
+      if (shoeHasArchetype(shoe, 'race_shoe') &&
+        !shoeHasArchetype(shoe, 'daily_trainer') &&
+        (runType === 'recovery' || runType === 'all_runs')) {
+        misuses.push({
+          shoeId: shoe.shoe_id,
+          shoeName: shoe.full_name,
+          runType,
+          message: `Your ${shoe.full_name} is a race weapon - using it for ${runType === 'all_runs' ? 'all your runs' : 'easy runs'} wears it out without benefit.`
+        });
+      }
+
+      // Recovery shoe for workouts or races
+      if (shoeHasArchetype(shoe, 'recovery_shoe') &&
+        !shoeHasArchetype(shoe, 'workout_shoe') &&
+        !shoeHasArchetype(shoe, 'race_shoe') &&
+        (runType === 'workouts' || runType === 'races')) {
+        misuses.push({
+          shoeId: shoe.shoe_id,
+          shoeName: shoe.full_name,
+          runType,
+          message: `Your ${shoe.full_name} is built for easy days. It'll feel ${runType === 'races' ? 'slow on race day' : 'sluggish during speed work'}.`
+        });
+      }
+    }
+  }
+
+  return misuses;
+}
+
+/**
+ * Check if there's a misuse gap (using shoes incorrectly)
+ */
+function checkMisuseGap(
+  currentShoes: CurrentShoe[],
+  catalogue: Shoe[]
+): Gap | null {
+  const misuses = detectMisuse(currentShoes, catalogue);
+
+  if (misuses.length === 0) {
+    return null;
+  }
+
+  // Take the first misuse
+  const primaryMisuse = misuses[0];
+
+  // Determine what archetype they need
+  let recommendedArchetype: ShoeArchetype = 'daily_trainer';
+  if (primaryMisuse.runType === 'workouts') {
+    recommendedArchetype = 'workout_shoe';
+  } else if (primaryMisuse.runType === 'races') {
+    recommendedArchetype = 'race_shoe';
+  } else if (primaryMisuse.runType === 'recovery') {
+    recommendedArchetype = 'daily_trainer';
+  }
+
+  return {
+    type: "misuse",
+    severity: "high",
+    reasoning: primaryMisuse.message,
+    runType: primaryMisuse.runType,
+    recommendedArchetype
+  };
 }
 
 // ============================================================================
@@ -140,7 +230,6 @@ function getCoverageReasoning(
 
 /**
  * Check if there's a performance gap (needs faster shoes)
- * Only relevant if profile indicates pace/racing goals
  */
 function checkPerformanceGap(
   analysis: RotationAnalysis,
@@ -149,55 +238,47 @@ function checkPerformanceGap(
   catalogue: Shoe[]
 ): Gap | null {
   // Only check performance if goal is pace/racing oriented
-  const performanceGoals = ["improve_pace", "train_for_race"];
-  const isPerformanceFocused = performanceGoals.includes(profile.primaryGoal) ||
-    profile.experience === "racing_focused" ||
-    profile.experience === "advanced";
+  const isPerformanceFocused =
+    profile.primaryGoal === "get_faster" ||
+    profile.primaryGoal === "race_training" ||
+    profile.experience === "competitive";
 
   if (!isPerformanceFocused) {
-    return null; // Performance gap not relevant
+    return null;
   }
 
-  // Check if they have fast shoe coverage
-  const hasTempo = analysis.coveredRoles.includes("tempo");
-  const hasIntervals = analysis.coveredRoles.includes("intervals");
-  const hasRace = analysis.coveredRoles.includes("race");
+  // Check if they have workout or race shoe coverage
+  const hasWorkoutShoe = currentShoes.some(us => {
+    const shoe = catalogue.find(s => s.shoe_id === us.shoeId);
+    return shoe && shoeHasArchetype(shoe, 'workout_shoe');
+  });
 
-  // No fast shoes at all = high severity
-  if (!hasTempo && !hasIntervals && !hasRace) {
+  const hasRaceShoe = currentShoes.some(us => {
+    const shoe = catalogue.find(s => s.shoe_id === us.shoeId);
+    return shoe && shoeHasArchetype(shoe, 'race_shoe');
+  });
+
+  // No fast shoes at all
+  if (!hasWorkoutShoe && !hasRaceShoe) {
     return {
       type: "performance",
       severity: "high",
-      reasoning: `You're focused on ${profile.primaryGoal === "train_for_race" ? "racing" : "improving pace"} but your rotation lacks responsive shoes for faster work. A tempo or workout shoe would unlock your speed training.`,
-      missingCapability: "responsive/fast shoe for workouts",
+      reasoning: `You're focused on ${profile.primaryGoal === "race_training" ? "racing" : "improving pace"} but your rotation lacks responsive shoes for faster work. A workout shoe would unlock your speed training.`,
+      recommendedArchetype: "workout_shoe",
     };
   }
 
-  // Has tempo but no race shoes for racing-focused runner = medium severity
-  if (profile.experience === "racing_focused" && !hasRace) {
+  // Has workout but no race shoes for racing-focused runner
+  if (profile.primaryGoal === "race_training" && !hasRaceShoe) {
     return {
       type: "performance",
       severity: "medium",
       reasoning: "You have tempo coverage but could benefit from a carbon-plated race shoe to maximize performance on race day.",
-      missingCapability: "race",
+      recommendedArchetype: "race_shoe",
     };
   }
 
-  // Has some fast shoes but limited variety = low severity
-  const fastShoeCount = currentShoes.filter(s =>
-    s.roles.some(r => ["tempo", "intervals", "race"].includes(r))
-  ).length;
-
-  if (fastShoeCount === 1) {
-    return {
-      type: "performance",
-      severity: "low",
-      reasoning: "You have one fast shoe but adding another would give you options for different workout intensities.",
-      missingCapability: "varied fast shoes",
-    };
-  }
-
-  return null; // Performance adequately covered
+  return null;
 }
 
 // ============================================================================
@@ -206,7 +287,6 @@ function checkPerformanceGap(
 
 /**
  * Check if there's a recovery gap (needs more cushioning/protection)
- * Relevant for high-volume or structured training
  */
 function checkRecoveryGap(
   analysis: RotationAnalysis,
@@ -215,22 +295,26 @@ function checkRecoveryGap(
   catalogue: Shoe[]
 ): Gap | null {
   // Check if recovery is relevant for this runner
-  const needsRecovery = profile.runningPattern === "structured_training" ||
-    profile.runningPattern === "long_run_focus" ||
-    profile.runningPattern === "mostly_easy";
+  const needsRecovery =
+    profile.runningPattern === "structured_training" ||
+    profile.runningPattern === "workout_focused" ||
+    profile.runningPattern === "mostly_easy" ||
+    profile.primaryGoal === "injury_comeback";
 
   if (!needsRecovery) {
-    return null; // Recovery gap not relevant
+    return null;
   }
 
-  // Check if they have easy/recovery coverage
-  const hasEasy = analysis.coveredRoles.includes("easy");
-  const hasLong = analysis.coveredRoles.includes("long");
+  // Check if they have recovery shoe coverage
+  const hasRecoveryShoe = currentShoes.some(us => {
+    const shoe = catalogue.find(s => s.shoe_id === us.shoeId);
+    return shoe && shoeHasArchetype(shoe, 'recovery_shoe');
+  });
 
-  // No recovery shoes at all = high severity for structured/long run folks
-  if (!hasEasy && !hasLong) {
+  // No recovery shoes at all
+  if (!hasRecoveryShoe) {
     const severity = (profile.runningPattern === "structured_training" ||
-      profile.runningPattern === "long_run_focus") ? "high" : "medium";
+      profile.primaryGoal === "injury_comeback") ? "high" : "medium";
 
     return {
       type: "recovery",
@@ -238,28 +322,11 @@ function checkRecoveryGap(
       reasoning: severity === "high"
         ? "Your training volume would benefit from a protective, cushioned shoe for easy days and recovery runs. This will help you absorb the load and stay healthy."
         : "Adding a cushioned recovery shoe would help your legs bounce back between harder efforts.",
-      missingCapability: "cushioned recovery shoe",
+      recommendedArchetype: "recovery_shoe",
     };
   }
 
-  // Check cushioning levels of existing shoes
-  const shoeData = currentShoes
-    .map(cs => catalogue.find(s => s.shoe_id === cs.shoeId))
-    .filter((s): s is Shoe => s !== undefined);
-
-  const hasMaxCushion = shoeData.some(s => s.cushion_softness_1to5 >= 4);
-
-  // Has easy/long role but no max-cushion shoes = low severity
-  if (!hasMaxCushion && (hasEasy || hasLong)) {
-    return {
-      type: "recovery",
-      severity: "low",
-      reasoning: "Your rotation has recovery shoes but they're on the firmer side. A plush, max-cushion option would give you more protection on tired-leg days.",
-      missingCapability: "max-cushion easy shoe",
-    };
-  }
-
-  return null; // Recovery adequately covered
+  return null;
 }
 
 // ============================================================================
@@ -268,33 +335,26 @@ function checkRecoveryGap(
 
 /**
  * Check if there's a redundancy opportunity
- * Only flag if redundancy exists AND missing roles exist
  */
 function checkRedundancyGap(
-  analysis: RotationAnalysis
+  analysis: RotationAnalysis,
+  currentShoes: CurrentShoe[],
+  catalogue: Shoe[]
 ): Gap | null {
-  // Need both redundancy and missing roles for this to be actionable
-  if (analysis.redundancies.length === 0 || analysis.missingRoles.length === 0) {
+  // Need both redundancy and missing archetypes for this to be actionable
+  if (analysis.redundancies.length === 0 || analysis.missingArchetypes.length === 0) {
     return null;
   }
 
-  const redundancy = analysis.redundancies[0]; // Take first redundancy
-  const missingRole = analysis.missingRoles[0];
-
-  // Severity based on size of redundancy
-  let severity: GapSeverity = "low";
-  if (redundancy.shoeIds.length >= 3 && analysis.missingRoles.length >= 2) {
-    severity = "high";
-  } else if (redundancy.shoeIds.length >= 2) {
-    severity = "medium";
-  }
+  const redundancy = analysis.redundancies[0];
+  const missingArchetype = analysis.missingArchetypes[0];
 
   return {
     type: "redundancy",
-    severity,
-    reasoning: `You have ${redundancy.shoeIds.length} similar shoes covering ${redundancy.overlappingRoles.join("/")} but nothing for ${missingRole}. Swapping one of the similar shoes would add versatility to your rotation.`,
+    severity: "low",
+    reasoning: `You have ${redundancy.shoeIds.length} similar shoes but nothing for ${missingArchetype.replace('_', ' ')}. Swapping one of the similar shoes would add versatility to your rotation.`,
     redundantShoes: redundancy.shoeIds,
-    missingCapability: missingRole,
+    recommendedArchetype: missingArchetype,
   };
 }
 
@@ -304,13 +364,7 @@ function checkRedundancyGap(
 
 /**
  * Identify the single most important gap in the rotation
- * Prioritizes: Coverage > Performance > Recovery > Redundancy
- *
- * @param analysis - Rotation analysis from rotationAnalyzer
- * @param profile - Runner profile
- * @param currentShoes - Current shoe rotation
- * @param catalogue - Full shoe catalogue
- * @returns The primary gap to address
+ * Priority: Misuse > Coverage > Performance > Recovery > Redundancy
  */
 export function identifyPrimaryGap(
   analysis: RotationAnalysis,
@@ -324,7 +378,8 @@ export function identifyPrimaryGap(
       type: "coverage",
       severity: "high",
       reasoning: "You'd benefit from a versatile daily trainer to start building your rotation. This will be your go-to shoe for most runs.",
-      missingCapability: "daily",
+      runType: "all_runs",
+      recommendedArchetype: "daily_trainer",
     };
   }
 
@@ -341,16 +396,23 @@ export function identifyPrimaryGap(
 
     if (volumeKm >= 50 && shoeCount < 2) {
       volumeContext = `At ${profile.weeklyVolume.value}${profile.weeklyVolume.unit}/week with just one shoe, adding this would also help spread the load and prevent injury.`;
-      volumeSeverityBoost = true; // Boost severity to high
+      volumeSeverityBoost = true;
     } else if (volumeKm >= 70 && shoeCount < 3) {
       volumeContext = `With ${profile.weeklyVolume.value}${profile.weeklyVolume.unit}/week, a third shoe would help spread the load across your training.`;
-    } else if (volumeKm >= 100 && shoeCount < 4) {
-      volumeContext = `At ${profile.weeklyVolume.value}${profile.weeklyVolume.unit}/week, expanding to four shoes would give you more flexibility.`;
     }
   }
 
-  // Priority 1: Coverage gaps (highest priority)
-  const coverageGap = checkCoverageGap(analysis, profile, currentShoes);
+  // Priority 1: Misuse gaps (highest priority)
+  const misuseGap = checkMisuseGap(currentShoes, catalogue);
+  if (misuseGap) {
+    if (volumeContext) {
+      misuseGap.reasoning = `${misuseGap.reasoning} ${volumeContext}`;
+    }
+    return misuseGap;
+  }
+
+  // Priority 2: Coverage gaps
+  const coverageGap = checkCoverageGap(analysis, profile, currentShoes, catalogue);
   if (coverageGap && coverageGap.severity === "high") {
     if (volumeContext) {
       coverageGap.reasoning = `${coverageGap.reasoning} ${volumeContext}`;
@@ -358,7 +420,7 @@ export function identifyPrimaryGap(
     return coverageGap;
   }
 
-  // Priority 2: Performance gaps (if pace/racing focused)
+  // Priority 3: Performance gaps (if pace/racing focused)
   const performanceGap = checkPerformanceGap(analysis, profile, currentShoes, catalogue);
   if (performanceGap && performanceGap.severity === "high") {
     if (volumeContext) {
@@ -367,7 +429,7 @@ export function identifyPrimaryGap(
     return performanceGap;
   }
 
-  // If we have medium coverage gap, return it now
+  // Return medium coverage gap
   if (coverageGap && coverageGap.severity === "medium") {
     if (volumeContext) {
       coverageGap.reasoning = `${coverageGap.reasoning} ${volumeContext}`;
@@ -378,67 +440,8 @@ export function identifyPrimaryGap(
     return coverageGap;
   }
 
-  // Priority 3: Recovery gaps (if high volume/structured training)
+  // Priority 4: Recovery gaps
   const recoveryGap = checkRecoveryGap(analysis, profile, currentShoes, catalogue);
-  if (recoveryGap && recoveryGap.severity === "high") {
-    if (volumeContext) {
-      recoveryGap.reasoning = `${recoveryGap.reasoning} ${volumeContext}`;
-    }
-    return recoveryGap;
-  }
-
-  // Return any remaining gaps by priority
-  if (performanceGap && performanceGap.severity === "medium") {
-    if (volumeContext) {
-      performanceGap.reasoning = `${performanceGap.reasoning} ${volumeContext}`;
-      if (volumeSeverityBoost) {
-        performanceGap.severity = "high";
-      }
-    }
-    return performanceGap;
-  }
-
-  if (recoveryGap && recoveryGap.severity === "medium") {
-    if (volumeContext) {
-      recoveryGap.reasoning = `${recoveryGap.reasoning} ${volumeContext}`;
-      if (volumeSeverityBoost) {
-        recoveryGap.severity = "high";
-      }
-    }
-    return recoveryGap;
-  }
-
-  // Priority 4: Redundancy opportunities (lowest priority)
-  const redundancyGap = checkRedundancyGap(analysis);
-  if (redundancyGap) {
-    if (volumeContext) {
-      redundancyGap.reasoning = `${redundancyGap.reasoning} ${volumeContext}`;
-      if (volumeSeverityBoost) {
-        redundancyGap.severity = "high";
-      }
-    }
-    return redundancyGap;
-  }
-
-  // Return low-severity gaps with volume context
-  if (coverageGap) {
-    if (volumeContext) {
-      coverageGap.reasoning = `${coverageGap.reasoning} ${volumeContext}`;
-      if (volumeSeverityBoost) {
-        coverageGap.severity = "high";
-      }
-    }
-    return coverageGap;
-  }
-  if (performanceGap) {
-    if (volumeContext) {
-      performanceGap.reasoning = `${performanceGap.reasoning} ${volumeContext}`;
-      if (volumeSeverityBoost) {
-        performanceGap.severity = "high";
-      }
-    }
-    return performanceGap;
-  }
   if (recoveryGap) {
     if (volumeContext) {
       recoveryGap.reasoning = `${recoveryGap.reasoning} ${volumeContext}`;
@@ -449,18 +452,35 @@ export function identifyPrimaryGap(
     return recoveryGap;
   }
 
+  // Priority 5: Performance gap (medium)
+  if (performanceGap) {
+    if (volumeContext) {
+      performanceGap.reasoning = `${performanceGap.reasoning} ${volumeContext}`;
+      if (volumeSeverityBoost) {
+        performanceGap.severity = "high";
+      }
+    }
+    return performanceGap;
+  }
+
+  // Priority 6: Redundancy opportunities (lowest priority)
+  const redundancyGap = checkRedundancyGap(analysis, currentShoes, catalogue);
+  if (redundancyGap) {
+    if (volumeContext) {
+      redundancyGap.reasoning = `${redundancyGap.reasoning} ${volumeContext}`;
+    }
+    return redundancyGap;
+  }
+
   // No gaps found - rotation is well-balanced
-  // Suggest variety as low-severity coverage gap
-  const defaultGap: Gap = {
+  return {
     type: "coverage",
     severity: volumeSeverityBoost ? "high" : "low",
     reasoning: volumeContext
       ? `Your rotation covers the basics well. ${volumeContext}`
       : "Your rotation covers the basics well. Consider adding variety with a different shoe type or feel to expand your options.",
-    missingCapability: "rotation variety",
+    recommendedArchetype: "daily_trainer",
   };
-
-  return defaultGap;
 }
 
 // ============================================================================
@@ -489,6 +509,7 @@ export function getGapSummary(gap: Gap): string {
     performance: "Performance Gap",
     recovery: "Recovery Gap",
     redundancy: "Redundancy Opportunity",
+    misuse: "Shoe Misuse",
   };
 
   return `${severityLabels[gap.severity]} ${typeLabels[gap.type]}`;

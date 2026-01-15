@@ -1,92 +1,140 @@
-import type { Shoe, ShoeRole } from '../types.js';
+// ============================================================================
+// SHOE CAPABILITIES LOGIC
+// Extracts shoe archetypes and detects misuse of shoes
+// Updated for archetype-based model
+// ============================================================================
 
-export function getShoeCapabilities(shoe: Shoe): ShoeRole[] {
-    const capabilities: ShoeRole[] = [];
-    if (shoe.use_daily) capabilities.push("daily");
-    if (shoe.use_easy_recovery) capabilities.push("easy");
-    if (shoe.use_tempo_workout) capabilities.push("tempo");
-    if (shoe.use_speed_intervals) capabilities.push("intervals");
-    if (shoe.use_race) capabilities.push("race");
-    if (shoe.use_trail) capabilities.push("trail");
-    return capabilities;
+import type {
+  Shoe,
+  ShoeArchetype,
+  RunType,
+  MisuseLevel
+} from '../types.js';
+import {
+  shoeHasArchetype,
+  getShoeArchetypes
+} from '../types.js';
+
+/**
+ * Get the archetypes a shoe belongs to
+ * Uses the new is_* columns from shoebase.json
+ */
+export function getShoeCapabilities(shoe: Shoe): ShoeArchetype[] {
+  return getShoeArchetypes(shoe);
 }
 
-export type MisuseLevel = "severe" | "suboptimal" | "good";
-
+/**
+ * Detect misuse: using a shoe for runs it's not designed for
+ * Returns misuse level and message
+ */
 export function detectMisuse(
-    userRoles: ShoeRole[],
-    capabilities: ShoeRole[],
-    shoe: Shoe
+  userRunTypes: RunType[],
+  archetypes: ShoeArchetype[],
+  shoe: Shoe
 ): { level: MisuseLevel; message?: string } {
 
-    // Check 1: Race shoe used for daily/recovery
-    const isRaceShoe = capabilities.includes("race") && !capabilities.includes("daily");
-    const usedForEasy = userRoles.includes("daily") || userRoles.includes("easy");
+  // Check 1: Race shoe used for recovery or all_runs
+  const isRaceShoe = archetypes.includes("race_shoe") && !archetypes.includes("daily_trainer");
+  const usedForEasy = userRunTypes.includes("recovery") || userRunTypes.includes("all_runs");
 
-    if (isRaceShoe && usedForEasy) {
-        return {
-            level: "severe",
-            message: "This is a race-day shoe with a carbon plate. Using it daily will wear it out quickly and you're not getting the benefit it's designed for."
-        };
-    }
+  if (isRaceShoe && usedForEasy) {
+    return {
+      level: "severe",
+      message: "This is a race-day shoe with a carbon plate. Using it daily will wear it out quickly and you're not getting the benefit it's designed for."
+    };
+  }
 
-    // Check 2: Recovery shoe used for races/speed
-    const isRecoveryShoe = !capabilities.includes("race") &&
-        !capabilities.includes("tempo") &&
-        (capabilities.includes("easy") || shoe.cushion_softness_1to5 >= 4);
-    const usedForRace = userRoles.includes("race") || userRoles.includes("intervals");
+  // Check 2: Recovery shoe used for workouts or races
+  const isRecoveryOnly = archetypes.includes("recovery_shoe") &&
+    !archetypes.includes("workout_shoe") &&
+    !archetypes.includes("race_shoe");
+  const usedForSpeed = userRunTypes.includes("workouts") || userRunTypes.includes("races");
 
-    if (isRecoveryShoe && usedForRace) {
-        return {
-            level: "severe",
-            message: "This is a recovery shoe with soft cushioning. It's not designed for the demands of racing or speed work and could slow you down."
-        };
-    }
+  if (isRecoveryOnly && usedForSpeed) {
+    return {
+      level: "severe",
+      message: "This is a recovery shoe with soft cushioning. It's not designed for the demands of racing or speed work and could slow you down."
+    };
+  }
 
-    // Check 3: Trail shoe used for road races
-    const isTrailShoe = shoe.surface === "trail" || shoe.surface === "mixed";
-    const usedForRoadRace = userRoles.includes("race") && !userRoles.includes("trail");
+  // Check 3: Trail shoe used for road races
+  const isTrailShoe = archetypes.includes("trail_shoe");
+  const usedForRoadRace = userRunTypes.includes("races") && !userRunTypes.includes("trail");
 
-    if (isTrailShoe && usedForRoadRace && shoe.surface === "trail") {
-        return {
-            level: "severe",
-            message: "This is a trail shoe with lugs designed for dirt and mud. The aggressive tread will work against you on smooth pavement and feel uncomfortable."
-        };
-    }
+  if (isTrailShoe && usedForRoadRace && shoe.surface === "trail") {
+    return {
+      level: "severe",
+      message: "This is a trail shoe with lugs designed for dirt and mud. The aggressive tread will work against you on smooth pavement and feel uncomfortable."
+    };
+  }
 
-    // Check 4: Road race shoe used for trails
-    const isRoadRaceShoe = shoe.surface === "road" && capabilities.includes("race");
-    const usedForTrail = userRoles.includes("trail");
+  // Check 4: Road race shoe used for trails
+  const isRoadRaceShoe = shoe.surface === "road" && archetypes.includes("race_shoe");
+  const usedForTrail = userRunTypes.includes("trail");
 
-    if (isRoadRaceShoe && usedForTrail) {
-        return {
-            level: "severe",
-            message: "This is a road race shoe with minimal grip and no protection. It's dangerous on trails - you'll slip on loose terrain and risk injury."
-        };
-    }
+  if (isRoadRaceShoe && usedForTrail) {
+    return {
+      level: "severe",
+      message: "This is a road race shoe with minimal grip and no protection. It's dangerous on trails - you'll slip on loose terrain and risk injury."
+    };
+  }
 
-    // Check 5: Heavy shoe (>290g) used for speed intervals
-    const isHeavyShoe = shoe.weight_g > 290;
-    const usedForIntervals = userRoles.includes("intervals");
+  // Check 5: Heavy shoe (>290g) used for workouts
+  const isHeavyShoe = shoe.weight_g > 290;
+  const usedForWorkouts = userRunTypes.includes("workouts");
 
-    if (isHeavyShoe && usedForIntervals && !capabilities.includes("intervals")) {
-        return {
-            level: "severe",
-            message: `This is a heavy, max-cushion shoe (${shoe.weight_g}g). It's not designed for speed work and the extra weight will slow you down on the track.`
-        };
-    }
+  if (isHeavyShoe && usedForWorkouts && !archetypes.includes("workout_shoe")) {
+    return {
+      level: "severe",
+      message: `This is a heavy, max-cushion shoe (${shoe.weight_g}g). It's not designed for speed work and the extra weight will slow you down.`
+    };
+  }
 
-    // Check 6: Carbon-plated tempo shoe used only for easy runs
-    const isPlatedTempoShoe = shoe.has_plate && capabilities.includes("tempo") && !capabilities.includes("race");
-    const usedOnlyForEasy = userRoles.includes("easy") && userRoles.length === 1;
+  // Check 6: Carbon-plated workout shoe used only for recovery
+  const isPlatedWorkoutShoe = shoe.has_plate && archetypes.includes("workout_shoe") && !archetypes.includes("race_shoe");
+  const usedOnlyForRecovery = userRunTypes.includes("recovery") && userRunTypes.length === 1;
 
-    if (isPlatedTempoShoe && usedOnlyForEasy) {
-        return {
-            level: "severe",
-            message: "This is a plated tempo shoe designed for faster efforts. Using it only for easy runs limits your natural movement when you need relaxed running."
-        };
-    }
+  if (isPlatedWorkoutShoe && usedOnlyForRecovery) {
+    return {
+      level: "severe",
+      message: "This is a plated workout shoe designed for faster efforts. Using it only for easy runs limits your natural movement when you need relaxed running."
+    };
+  }
 
-    return { level: "good" };
+  // Check 7: Suboptimal - Daily trainer for workouts when workout shoe exists
+  const isDailyTrainerOnly = archetypes.includes("daily_trainer") && !archetypes.includes("workout_shoe");
+  if (isDailyTrainerOnly && usedForWorkouts) {
+    return {
+      level: "suboptimal",
+      message: "Your daily trainer handles workouts fine, but a workout shoe could make speed sessions feel snappier."
+    };
+  }
+
+  // Check 8: Suboptimal - Daily trainer for races
+  const usedForRaces = userRunTypes.includes("races");
+  if (isDailyTrainerOnly && usedForRaces && !archetypes.includes("race_shoe")) {
+    return {
+      level: "suboptimal",
+      message: "You can race in your daily trainer, but a race shoe could knock time off your finish."
+    };
+  }
+
+  return { level: "good" };
 }
 
+/**
+ * Check if a run type is suitable for the shoe's archetypes
+ */
+export function isRunTypeSuitable(runType: RunType, archetypes: ShoeArchetype[]): boolean {
+  const suitabilityMap: Record<RunType, ShoeArchetype[]> = {
+    "all_runs": ["daily_trainer"],
+    "recovery": ["recovery_shoe", "daily_trainer"],
+    "long_runs": ["daily_trainer", "workout_shoe", "recovery_shoe"],
+    "workouts": ["workout_shoe", "race_shoe"],
+    "races": ["race_shoe", "workout_shoe"],
+    "trail": ["trail_shoe"]
+  };
+
+  const suitableArchetypes = suitabilityMap[runType] || [];
+  return suitableArchetypes.some(a => archetypes.includes(a));
+}

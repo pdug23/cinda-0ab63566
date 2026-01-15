@@ -1,19 +1,27 @@
 // ============================================================================
 // ANALYZE API ENDPOINT
 // Orchestrates rotation analysis → gap detection → recommendations
+// Updated for archetype-based model
 // ============================================================================
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import type { AnalyzeRequest, AnalyzeResponse, Shoe, Gap, RecommendedShoe } from './types.js';
+import type {
+  AnalyzeRequest,
+  AnalyzeResponse,
+  Shoe,
+  Gap,
+  RecommendedShoe,
+  RotationSummary
+} from './types.js';
 import { analyzeRotation } from './lib/rotationAnalyzer.js';
 import { identifyPrimaryGap } from './lib/gapDetector.js';
-import { generateRecommendations, generateShoppingRecommendations } from './lib/recommendationEngine.js';
+import { generateRecommendations, generateDiscoveryRecommendations } from './lib/recommendationEngine.js';
 import { getShoeCapabilities, detectMisuse } from './lib/shoeCapabilities.js';
 import shoebase from '../src/data/shoebase.json' with { type: "json" };
 
 /**
  * Main handler for /api/analyze endpoint
- * Supports three modes: gap_detection, shopping, analysis
+ * Supports three modes: gap_detection, discovery, analysis
  */
 export default async function handler(
   req: VercelRequest,
@@ -97,7 +105,7 @@ export default async function handler(
       console.log('[analyze] Gap identified:', {
         type: gap.type,
         severity: gap.severity,
-        missingCapability: gap.missingCapability,
+        recommendedArchetype: gap.recommendedArchetype,
       });
 
       // Build rotation summary
@@ -105,17 +113,17 @@ export default async function handler(
         const shoe = catalogue.find(s => s.shoe_id === cs.shoeId);
         if (!shoe) return null;
 
-        const capabilities = getShoeCapabilities(shoe);
-        const misuse = detectMisuse(cs.roles, capabilities, shoe);
+        const archetypes = getShoeCapabilities(shoe);
+        const misuse = detectMisuse(cs.runTypes, archetypes, shoe);
 
         return {
-          shoe: { shoe_id: shoe.shoe_id, full_name: shoe.full_name },
-          userRoles: cs.roles,
-          capabilities,
+          shoe: shoe,
+          userRunTypes: cs.runTypes,
+          archetypes,
           misuseLevel: misuse.level,
           misuseMessage: misuse.message
-        };
-      }).filter(Boolean);
+        } as RotationSummary;
+      }).filter((item): item is RotationSummary => item !== null);
 
       const elapsed = Date.now() - startTime;
       console.log('[analyze] Gap detection complete. Elapsed time:', elapsed, 'ms');
@@ -132,38 +140,52 @@ export default async function handler(
     }
 
     // =========================================================================
-    // 4. MODE: SHOPPING
+    // 4. MODE: DISCOVERY (was SHOPPING)
     // =========================================================================
 
-    if (mode === "shopping") {
-      console.log('[analyze] Mode: Shopping');
+    if (mode === "discovery") {
+      console.log('[analyze] Mode: Discovery');
 
-      const { shoeRequests } = body as AnalyzeRequest;
+      const { shoeRequests, requestedArchetypes } = body as AnalyzeRequest;
 
-      if (!shoeRequests || shoeRequests.length === 0) {
+      // Handle either shoeRequests (detailed) or requestedArchetypes (simple)
+      if ((!shoeRequests || shoeRequests.length === 0) && (!requestedArchetypes || requestedArchetypes.length === 0)) {
         res.status(400).json({
           success: false,
-          error: 'Shopping mode requires at least one shoe request',
+          error: 'Discovery mode requires either shoeRequests or requestedArchetypes',
         } as AnalyzeResponse);
         return;
       }
 
-      if (shoeRequests.length > 3) {
+      // Convert simple requestedArchetypes to shoeRequests if needed
+      const effectiveRequests = shoeRequests || requestedArchetypes!.map(archetype => ({
+        archetype,
+        feelPreferences: {
+          cushionAmount: { mode: 'cinda_decides' as const },
+          stabilityAmount: { mode: 'cinda_decides' as const },
+          energyReturn: { mode: 'cinda_decides' as const },
+          rocker: { mode: 'cinda_decides' as const },
+          groundFeel: { mode: 'cinda_decides' as const },
+          heelDropPreference: { mode: 'cinda_decides' as const }
+        }
+      }));
+
+      if (effectiveRequests.length > 3) {
         res.status(400).json({
           success: false,
-          error: 'Shopping mode supports a maximum of 3 shoe requests',
+          error: 'Discovery mode supports a maximum of 3 archetype requests',
         } as AnalyzeResponse);
         return;
       }
 
-      console.log('[analyze] Processing', shoeRequests.length, 'shoe requests');
+      console.log('[analyze] Processing', effectiveRequests.length, 'archetype requests');
 
-      // Use Promise.all since generateShoppingRecommendations is now async
-      const shoppingResults = await Promise.all(shoeRequests.map(async (request, index) => {
-        console.log(`[analyze] Request ${index + 1}: ${request.role} shoes`);
+      // Process each request
+      const discoveryResults = await Promise.all(effectiveRequests.map(async (request, index) => {
+        console.log(`[analyze] Request ${index + 1}: ${request.archetype} shoes`);
 
         try {
-          const recommendations = await generateShoppingRecommendations(
+          const recommendations = await generateDiscoveryRecommendations(
             request,
             profile,
             currentShoes,
@@ -175,7 +197,6 @@ export default async function handler(
             const [low, mid, high] = labels;
             if (pref.mode === 'wildcard') return 'flexible';
             if (pref.mode === 'cinda_decides') return 'balanced';
-            // user_set mode
             const val = pref.value ?? 3;
             if (val <= 2) return low;
             if (val >= 4) return high;
@@ -186,26 +207,27 @@ export default async function handler(
           const bounce = describePref(request.feelPreferences.energyReturn, ['damped', 'moderate', 'bouncy']);
           const stability = describePref(request.feelPreferences.stabilityAmount, ['neutral', 'balanced', 'stable']);
 
-          const reasoning = `Based on your preference for ${request.role} shoes with ${cushion} cushion, ${bounce} response, and ${stability} platform.`;
+          const archetypeLabel = request.archetype.replace('_', ' ');
+          const reasoning = `Based on your preference for a ${archetypeLabel} with ${cushion} cushion, ${bounce} response, and ${stability} platform.`;
 
           return {
-            role: request.role,
+            archetype: request.archetype,
             recommendations,
             reasoning,
           };
         } catch (error: any) {
-          console.error(`[analyze] Shopping request ${index + 1} failed:`, error.message);
-          throw new Error(`Failed to generate recommendations for ${request.role}: ${error.message}`);
+          console.error(`[analyze] Discovery request ${index + 1} failed:`, error.message);
+          throw new Error(`Failed to generate recommendations for ${request.archetype}: ${error.message}`);
         }
       }));
 
       const elapsed = Date.now() - startTime;
-      console.log('[analyze] Shopping mode complete. Elapsed time:', elapsed, 'ms');
+      console.log('[analyze] Discovery mode complete. Elapsed time:', elapsed, 'ms');
 
       res.status(200).json({
         success: true,
-        mode: "shopping",
-        result: { shoppingResults },
+        mode: "discovery",
+        result: { discoveryResults },
       } as AnalyzeResponse);
       return;
     }
@@ -238,7 +260,7 @@ export default async function handler(
       console.log('[analyze] Gap:', {
         type: gap.type,
         severity: gap.severity,
-        missingCapability: gap.missingCapability,
+        recommendedArchetype: gap.recommendedArchetype,
       });
 
       let recommendations;
@@ -280,17 +302,17 @@ export default async function handler(
         const shoe = catalogue.find(s => s.shoe_id === cs.shoeId);
         if (!shoe) return null;
 
-        const capabilities = getShoeCapabilities(shoe);
-        const misuse = detectMisuse(cs.roles, capabilities, shoe);
+        const archetypes = getShoeCapabilities(shoe);
+        const misuse = detectMisuse(cs.runTypes, archetypes, shoe);
 
         return {
           shoe,
-          userRoles: cs.roles,
-          capabilities,
+          userRunTypes: cs.runTypes,
+          archetypes,
           misuseLevel: misuse.level,
           misuseMessage: misuse.message
-        };
-      }).filter(Boolean);
+        } as RotationSummary;
+      }).filter((item): item is RotationSummary => item !== null);
 
       const elapsed = Date.now() - startTime;
       console.log('[analyze] Analysis mode complete. Elapsed time:', elapsed, 'ms');
@@ -314,7 +336,7 @@ export default async function handler(
 
     res.status(400).json({
       success: false,
-      error: `Invalid mode: ${mode}. Supported modes: gap_detection, shopping, analysis`,
+      error: `Invalid mode: ${mode}. Supported modes: gap_detection, discovery, analysis`,
     } as AnalyzeResponse);
 
   } catch (error: any) {
@@ -354,19 +376,17 @@ function buildSummaryReasoning(
 
   // Build summary based on gap type
   let summary = gap.reasoning + ' ';
+  const archetypeLabel = gap.recommendedArchetype?.replace('_', ' ') || 'your needs';
 
   switch (gap.type) {
     case 'coverage':
-      if (gap.missingCapability && gap.missingCapability !== 'rotation variety') {
-        if (allMaxCushion) {
-          summary += `I've recommended ${recCount} cushioned options for ${gap.missingCapability as string} runs from ${brands}.`;
-        } else if (allPlated) {
-          summary += `I've recommended ${recCount} plated shoes perfect for ${gap.missingCapability as string} work from ${brands}.`;
-        } else {
-          summary += `I've recommended ${recCount} shoes to cover ${gap.missingCapability as string} runs from ${brands}.`;
-        }
+    case 'misuse':
+      if (allMaxCushion) {
+        summary += `I've recommended ${recCount} cushioned options for ${archetypeLabel} from ${brands}.`;
+      } else if (allPlated) {
+        summary += `I've recommended ${recCount} plated shoes perfect for ${archetypeLabel} from ${brands}.`;
       } else {
-        summary += `Here are ${recCount} versatile options to expand your rotation: ${brands}.`;
+        summary += `I've recommended ${recCount} shoes to cover ${archetypeLabel} from ${brands}.`;
       }
       break;
 

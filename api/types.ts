@@ -13,18 +13,17 @@
 export type ExperienceLevel =
   | "beginner"
   | "intermediate"
-  | "advanced"
-  | "racing_focused";
+  | "experienced"
+  | "competitive";
 
 /**
  * Primary goal driving the runner's shoe selection
  */
 export type PrimaryGoal =
   | "general_fitness"
-  | "improve_pace"
-  | "train_for_race"
-  | "comfort_recovery"
-  | "just_for_fun";
+  | "get_faster"
+  | "race_training"
+  | "injury_comeback";
 
 /**
  * Typical running pattern and training structure
@@ -33,8 +32,25 @@ export type RunningPattern =
   | "infrequent"
   | "mostly_easy"
   | "structured_training"
-  | "workouts"
-  | "long_run_focus";
+  | "workout_focused";
+
+/**
+ * Trail running preference
+ */
+export type TrailRunningPreference =
+  | "most_or_all"
+  | "infrequently"
+  | "want_to_start"
+  | "no_trails";
+
+/**
+ * Foot strike pattern
+ */
+export type FootStrike =
+  | "forefoot"
+  | "midfoot"
+  | "heel"
+  | "unsure";
 
 /**
  * Slider value for feel preferences (1-5 scale)
@@ -53,6 +69,22 @@ export type FeelPreference = number | number[];
 export type PersonalBest = string;
 
 /**
+ * Race time entry for pace bucket calculation
+ */
+export interface RaceTime {
+  distance: "5k" | "10k" | "half" | "marathon";
+  timeMinutes: number;
+}
+
+/**
+ * Brand preference configuration
+ */
+export interface BrandPreference {
+  mode: "all" | "include" | "exclude";
+  brands: string[];
+}
+
+/**
  * Complete runner profile collected through quiz and profile UI
  * NOTE: Feel preferences are now specified per-request (shopping mode) or per-gap (analysis mode)
  * Global feel preferences removed from profile to support mode-specific preferences
@@ -61,28 +93,27 @@ export interface RunnerProfile {
   // Basic info
   firstName: string;
   age?: number;
-  height?: number; // cm
-  weight?: number; // kg
-
-  // Optional performance context
-  pbs?: {
-    mile?: PersonalBest;
-    fiveK?: PersonalBest;
-    tenK?: PersonalBest;
-    half?: PersonalBest;
-    marathon?: PersonalBest;
-  };
+  height?: { value: number; unit: "cm" | "in" };
+  weight?: { value: number; unit: "kg" | "lb" };
 
   // Core profile
   experience: ExperienceLevel;
   primaryGoal: PrimaryGoal;
   runningPattern?: RunningPattern;
+  trailRunning?: TrailRunningPreference;
 
   // Weekly training volume
   weeklyVolume?: {
     value: number;
     unit: "km" | "mi";
   };
+
+  // Performance context
+  raceTime?: RaceTime;
+  footStrike?: FootStrike;
+
+  // Brand preferences
+  brandPreference?: BrandPreference;
 
   // Optional fit sensitivities
   fitSensitivities?: {
@@ -95,9 +126,6 @@ export interface RunnerProfile {
 
   // Optional niggles (non-medical context only)
   currentNiggles?: string[];
-
-  // Foot strike pattern (for data collection)
-  footStrike?: "forefoot" | "midfoot" | "heel" | "unsure";
 }
 
 // ============================================================================
@@ -105,7 +133,31 @@ export interface RunnerProfile {
 // ============================================================================
 
 /**
- * Role a shoe plays in the runner's rotation
+ * Run type - what the user DOES with this shoe
+ * Maps to shoe archetypes via RUN_TYPE_MAPPING
+ */
+export type RunType =
+  | "all_runs"
+  | "recovery"
+  | "long_runs"
+  | "workouts"
+  | "races"
+  | "trail";
+
+/**
+ * Shoe archetype - what the shoe IS
+ * Stored in shoebase.json as is_* boolean columns
+ */
+export type ShoeArchetype =
+  | "daily_trainer"
+  | "recovery_shoe"
+  | "workout_shoe"
+  | "race_shoe"
+  | "trail_shoe";
+
+/**
+ * Legacy ShoeRole type for backwards compatibility
+ * @deprecated Use RunType for user input, ShoeArchetype for shoe classification
  */
 export type ShoeRole =
   | "easy"
@@ -134,22 +186,53 @@ export type ShoeLifecycle =
   | "near_replacement";
 
 /**
- * Runner's sentiment about this shoe
+ * Runner's sentiment about this shoe (3 values)
  */
 export type ShoeSentiment =
-  | "like"
+  | "love"
   | "neutral"
   | "dislike";
+
+/**
+ * Tags for what runner loves about a shoe
+ */
+export type LoveTag =
+  | "bouncy"
+  | "soft_cushion"
+  | "lightweight"
+  | "stable"
+  | "smooth_rocker"
+  | "long_run_comfort"
+  | "fast_feeling"
+  | "comfortable_fit"
+  | "good_grip";
+
+/**
+ * Tags for what runner dislikes about a shoe
+ */
+export type DislikeTag =
+  | "too_heavy"
+  | "too_soft"
+  | "too_firm"
+  | "unstable"
+  | "blisters"
+  | "too_narrow"
+  | "too_wide"
+  | "wears_fast"
+  | "causes_pain"
+  | "slow_at_speed";
 
 /**
  * A shoe currently in the runner's rotation
  */
 export interface CurrentShoe {
   shoeId: string; // References shoe_id from shoebase.json
-  roles: ShoeRole[]; // Can serve multiple roles
+  runTypes: RunType[]; // What the user uses this shoe for
+  sentiment: ShoeSentiment;
+  loveTags?: LoveTag[]; // What they love (if sentiment = love)
+  dislikeTags?: DislikeTag[]; // What they dislike (if sentiment = dislike)
   usageFrequency?: UsageFrequency;
   lifecycle?: ShoeLifecycle;
-  sentiment: ShoeSentiment;
   note?: string; // Optional runner comment
 }
 
@@ -161,18 +244,22 @@ export interface CurrentShoe {
  * Analysis of the runner's current shoe rotation
  */
 export interface RotationAnalysis {
-  // Coverage analysis
-  coveredRoles: ShoeRole[];
-  missingRoles: ShoeRole[];
+  // Coverage analysis (now uses RunType)
+  coveredRunTypes: RunType[];
+  uncoveredRunTypes: RunType[];
+
+  // Archetype coverage
+  coveredArchetypes: ShoeArchetype[];
+  missingArchetypes: ShoeArchetype[];
 
   // Redundancy detection
   redundancies: Array<{
     shoeIds: string[];
-    overlappingRoles: ShoeRole[];
+    overlappingRunTypes: RunType[];
   }>;
 
   // Quality signals
-  allShoesLiked: boolean;
+  allShoesLoved: boolean;
   hasDislikedShoes: boolean;
   hasNearReplacementShoes: boolean;
 }
@@ -183,16 +270,18 @@ export interface RotationAnalysis {
 
 /**
  * Type of gap identified in the rotation
- * - coverage: Missing a key role (easy, tempo, long, etc.)
+ * - coverage: Missing coverage for a run type (all_runs, workouts, races, etc.)
  * - performance: All shoes are liked but missing speed/efficiency capability
  * - recovery: Missing soft/protective option for easy/long runs
  * - redundancy: Multiple shoes doing the same job, opportunity to diversify
+ * - misuse: Using shoes for runs they're not designed for
  */
 export type GapType =
   | "coverage"
   | "performance"
   | "recovery"
-  | "redundancy";
+  | "redundancy"
+  | "misuse";
 
 /**
  * Severity of the identified gap
@@ -209,7 +298,8 @@ export interface Gap {
   type: GapType;
   severity: GapSeverity;
   reasoning: string; // Human-readable explanation
-  missingCapability?: ShoeRole | string; // What's missing (role or capability description)
+  runType?: RunType; // The run type that's not covered
+  recommendedArchetype?: ShoeArchetype; // The archetype to fill the gap
   redundantShoes?: string[]; // Shoe IDs if gap is redundancy
 }
 
@@ -217,8 +307,8 @@ export type MisuseLevel = "severe" | "suboptimal" | "good";
 
 export interface RotationSummary {
   shoe: Shoe;
-  userRoles: ShoeRole[];
-  capabilities: ShoeRole[];
+  userRunTypes: RunType[];
+  archetypes: ShoeArchetype[];
   misuseLevel: MisuseLevel;
   misuseMessage?: string;
 }
@@ -315,6 +405,11 @@ export type PlateMaterial =
 export type Quarter = "Q1" | "Q2" | "Q3" | "Q4";
 
 /**
+ * Heel geometry type
+ */
+export type HeelGeometry = "standard" | "aggressive_forefoot";
+
+/**
  * Complete shoe record from shoebase.json
  * Field names match the JSON structure exactly
  */
@@ -327,15 +422,13 @@ export interface Shoe {
   full_name: string;
   alias_code: string | null;
 
-  // Use case booleans
-  use_daily: boolean;
-  use_easy_recovery: boolean;
-  use_long_run: boolean;
-  use_tempo_workout: boolean;
-  use_speed_intervals: boolean;
-  use_race: boolean;
-  use_trail: boolean;
-  use_walking_all_day: boolean;
+  // Archetype booleans (stored as "TRUE"/"FALSE" strings in JSON)
+  is_daily_trainer: string;
+  is_recovery_shoe: string;
+  is_workout_shoe: string;
+  is_race_shoe: string;
+  is_trail_shoe: string;
+  is_walking_shoe: string;
 
   // Feel scores (1-5 scale from shoebase.json)
   /** 5 = very soft/plush, 1 = very firm */
@@ -363,6 +456,7 @@ export interface Shoe {
   toe_box: ToeBox;
   width_options: WidthOptions;
   support_type: SupportType;
+  heel_geometry: HeelGeometry;
 
   // Meta
   surface: Surface;
@@ -428,13 +522,8 @@ export interface RecommendedShoe {
   keyStrengths: string[]; // 2-3 key selling points
   tradeOffs?: string[]; // What runner gives up with this choice
 
-  // Use case booleans (for "also works for" popover)
-  use_daily: boolean;
-  use_easy_recovery: boolean;
-  use_tempo_workout: boolean;
-  use_speed_intervals: boolean;
-  use_race: boolean;
-  use_trail: boolean;
+  // Archetype badges (which types this shoe is)
+  archetypes: ShoeArchetype[];
 
   // Badge system (center-emphasis layout)
   badge: RecommendationBadge;
@@ -488,43 +577,42 @@ export interface FeelPreferences {
 }
 
 /**
- * Represents a request for a specific shoe type with preferences (shopping mode)
+ * Represents a request for a specific shoe archetype with preferences (discovery mode)
  */
 export interface ShoeRequest {
-  role: ShoeRole;
+  archetype: ShoeArchetype;
   feelPreferences: FeelPreferences;
 }
 
 /**
- * Result for a single shopping request
+ * Result for a single discovery request
  */
 export interface ShoppingResult {
-  role: ShoeRole;
-  recommendations: RecommendedShoe[]; // 2-3 shoes per role
+  archetype: ShoeArchetype;
+  recommendations: RecommendedShoe[]; // 2-3 shoes per archetype
   reasoning: string;
 }
 
 /**
  * Request to analyze rotation and generate recommendations
- * Supports three modes: gap_detection, shopping, analysis
+ * Supports three modes: gap_detection, discovery, analysis
  */
 export interface AnalyzeRequest {
-  profile: RunnerProfile; // Basic info only (no global feelPreferences)
+  profile: RunnerProfile;
   currentShoes: CurrentShoe[];
-  mode: "gap_detection" | "shopping" | "analysis";
+  mode: "gap_detection" | "discovery" | "analysis";
 
-  // Shopping mode fields (when mode === "shopping")
-  shoeRequests?: ShoeRequest[]; // 1-3 shoe requests with role + preferences each
+  // Discovery mode fields (when mode === "discovery")
+  requestedArchetypes?: ShoeArchetype[]; // Which archetypes to search for
+  shoeRequests?: ShoeRequest[]; // Alternative: 1-3 shoe requests with archetype + preferences each
 
   // Analysis mode fields (when mode === "analysis")
   gap?: Gap; // Pre-identified gap from gap_detection call
   feelPreferences?: FeelPreferences; // Preferences for the identified gap
 
-  // Optional constraints (all modes)
+  // Optional constraints (all modes) - note: brandOnly moved to profile.brandPreference
   constraints?: {
-    brandOnly?: string; // Limit to specific brand
     stabilityPreference?: "neutral_only" | "stability_only" | "no_preference";
-    maxPrice?: RetailPriceCategory;
   };
 }
 
@@ -534,13 +622,13 @@ export interface AnalyzeRequest {
  */
 export interface AnalyzeResponse {
   success: boolean;
-  mode?: "gap_detection" | "shopping" | "analysis";
+  mode?: "gap_detection" | "discovery" | "analysis";
   result?: {
     // Gap detection mode: just return the gap
     gap?: Gap;
 
-    // Shopping mode: recommendations per requested role
-    shoppingResults?: ShoppingResult[];
+    // Discovery mode: recommendations per requested archetype
+    discoveryResults?: ShoppingResult[];
 
     // Analysis mode: gap + recommendations (existing pattern)
     recommendations?: RecommendedShoe[];
@@ -574,4 +662,63 @@ export interface ChatRequest {
  */
 export interface ChatResponse {
   reply: string;
+}
+
+// ============================================================================
+// RUN TYPE TO ARCHETYPE MAPPING
+// ============================================================================
+
+/**
+ * Maps run types (what user does) to suitable shoe archetypes (what shoe is)
+ * Priority order: first archetype in array is preferred
+ */
+export const RUN_TYPE_MAPPING: Record<RunType, ShoeArchetype[]> = {
+  "all_runs": ["daily_trainer"],
+  "recovery": ["recovery_shoe", "daily_trainer"],
+  "long_runs": ["daily_trainer", "workout_shoe", "recovery_shoe"],
+  "workouts": ["workout_shoe", "race_shoe"],
+  "races": ["race_shoe", "workout_shoe"],
+  "trail": ["trail_shoe"]
+};
+
+/**
+ * Maps archetype to the corresponding is_* field in shoebase.json
+ */
+export const ARCHETYPE_FIELD_MAP: Record<ShoeArchetype, keyof Shoe> = {
+  "daily_trainer": "is_daily_trainer",
+  "recovery_shoe": "is_recovery_shoe",
+  "workout_shoe": "is_workout_shoe",
+  "race_shoe": "is_race_shoe",
+  "trail_shoe": "is_trail_shoe"
+};
+
+/**
+ * Helper to check if a shoe has a specific archetype
+ * Handles the string "TRUE"/"FALSE" values in shoebase.json
+ */
+export function shoeHasArchetype(shoe: Shoe, archetype: ShoeArchetype): boolean {
+  const field = ARCHETYPE_FIELD_MAP[archetype];
+  const value = shoe[field];
+  return value === "TRUE" || value === true;
+}
+
+/**
+ * Get all archetypes a shoe belongs to
+ */
+export function getShoeArchetypes(shoe: Shoe): ShoeArchetype[] {
+  const archetypes: ShoeArchetype[] = [];
+  if (shoeHasArchetype(shoe, "daily_trainer")) archetypes.push("daily_trainer");
+  if (shoeHasArchetype(shoe, "recovery_shoe")) archetypes.push("recovery_shoe");
+  if (shoeHasArchetype(shoe, "workout_shoe")) archetypes.push("workout_shoe");
+  if (shoeHasArchetype(shoe, "race_shoe")) archetypes.push("race_shoe");
+  if (shoeHasArchetype(shoe, "trail_shoe")) archetypes.push("trail_shoe");
+  return archetypes;
+}
+
+/**
+ * Check if a shoe is suitable for a specific run type
+ */
+export function shoeIsSuitableFor(shoe: Shoe, runType: RunType): boolean {
+  const suitableArchetypes = RUN_TYPE_MAPPING[runType];
+  return suitableArchetypes.some(archetype => shoeHasArchetype(shoe, archetype));
 }
