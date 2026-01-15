@@ -86,7 +86,7 @@ const ProfileBuilderStep4Analysis = () => {
 
       const currentShoes = step3.currentShoes.map((shoe) => ({
         shoeId: shoe.shoe.shoe_id,
-        roles: shoe.roles,
+        runTypes: shoe.runTypes,
         sentiment: shoe.sentiment ?? "neutral",
       }));
 

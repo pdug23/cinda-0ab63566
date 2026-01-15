@@ -650,7 +650,7 @@ const ProfileBuilderStep4b = () => {
 
         const currentShoes = step3.currentShoes.map((shoe) => ({
           shoe: shoe.shoe,
-          roles: shoe.roles,
+          runTypes: shoe.runTypes,
           sentiment: shoe.sentiment ?? "neutral",
         }));
         saveShoes(currentShoes as any);
