@@ -53,7 +53,7 @@ export type DiscoveryShoeRole = "daily_trainer" | "recovery" | "tempo" | "race_d
 // Feel preferences for each shoe request - new 3-mode system
 export type FeelValue = 1 | 2 | 3 | 4 | 5;
 export type PreferenceMode = "cinda_decides" | "user_set" | "wildcard";
-export type HeelDropOption = "0mm" | "1-4mm" | "5-8mm" | "9-12mm" | "12mm+";
+export type HeelDropOption = "0mm" | "1-4mm" | "5-8mm" | "9-12mm" | "13mm+";
 
 export interface SliderPreference {
   mode: PreferenceMode;
@@ -65,12 +65,20 @@ export interface HeelDropPreference {
   values?: HeelDropOption[];  // Only set when mode === "user_set"
 }
 
+export type BrandPreferenceMode = "all" | "include" | "exclude";
+
+export interface BrandPreference {
+  mode: BrandPreferenceMode;
+  brands: string[];
+}
+
 export interface FeelPreferences {
   cushionAmount: SliderPreference;
   stabilityAmount: SliderPreference;
   energyReturn: SliderPreference;
   rocker: SliderPreference;
   heelDropPreference: HeelDropPreference;
+  brandPreference: BrandPreference;
 }
 
 export interface ShoeRequest {
