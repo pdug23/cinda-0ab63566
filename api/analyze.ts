@@ -62,7 +62,46 @@ export default async function handler(
       return;
     }
 
-    const { profile, currentShoes, mode, constraints } = body as AnalyzeRequest;
+    const { profile, constraints } = body as AnalyzeRequest;
+
+    // =========================================================================
+    // 1b. BACKWARDS COMPATIBILITY NORMALIZATION
+    // =========================================================================
+
+    // Normalize mode: "shopping" → "discovery"
+    let mode = body.mode as string;
+    if (mode === "shopping") {
+      mode = "discovery";
+      console.log('[analyze] Normalized mode: shopping → discovery');
+    }
+
+    // Normalize currentShoes: convert legacy "roles" to "runTypes"
+    const rawShoes = body.currentShoes as any[];
+    const currentShoes = rawShoes.map(shoe => {
+      // If shoe has "roles" but not "runTypes", convert
+      if (shoe.roles && !shoe.runTypes) {
+        // Map legacy role values to new runType values
+        const roleToRunType: Record<string, string> = {
+          "easy": "recovery",
+          "daily": "all_runs",
+          "long": "long_runs",
+          "tempo": "workouts",
+          "intervals": "workouts",
+          "race": "races",
+          "trail": "trail"
+        };
+        const runTypes = shoe.roles.map((role: string) => roleToRunType[role] || role);
+        return { ...shoe, runTypes, roles: undefined };
+      }
+      // Also normalize "all_my_runs" to "all_runs"
+      if (shoe.runTypes) {
+        const normalizedRunTypes = shoe.runTypes.map((rt: string) =>
+          rt === "all_my_runs" ? "all_runs" : rt
+        );
+        return { ...shoe, runTypes: normalizedRunTypes };
+      }
+      return shoe;
+    });
 
     // Log request for debugging
     console.log('[analyze] Request:', {
@@ -146,10 +185,10 @@ export default async function handler(
     if (mode === "discovery") {
       console.log('[analyze] Mode: Discovery');
 
-      const { shoeRequests, requestedArchetypes } = body as AnalyzeRequest;
+      const { shoeRequests: rawShoeRequests, requestedArchetypes } = body as any;
 
       // Handle either shoeRequests (detailed) or requestedArchetypes (simple)
-      if ((!shoeRequests || shoeRequests.length === 0) && (!requestedArchetypes || requestedArchetypes.length === 0)) {
+      if ((!rawShoeRequests || rawShoeRequests.length === 0) && (!requestedArchetypes || requestedArchetypes.length === 0)) {
         res.status(400).json({
           success: false,
           error: 'Discovery mode requires either shoeRequests or requestedArchetypes',
@@ -157,8 +196,29 @@ export default async function handler(
         return;
       }
 
+      // Map legacy role values to archetype values
+      const roleToArchetype: Record<string, string> = {
+        "daily_trainer": "daily_trainer",
+        "recovery": "recovery_shoe",
+        "tempo": "workout_shoe",
+        "race_day": "race_shoe",
+        "trail": "trail_shoe",
+        "not_sure": "daily_trainer"
+      };
+
+      // Normalize shoeRequests: convert "role" to "archetype" if needed
+      const normalizedShoeRequests = rawShoeRequests?.map((req: any) => {
+        // If request has "role" but not "archetype", convert
+        if (req.role && !req.archetype) {
+          const archetype = roleToArchetype[req.role] || "daily_trainer";
+          console.log(`[analyze] Normalized role: ${req.role} → ${archetype}`);
+          return { ...req, archetype, role: undefined };
+        }
+        return req;
+      });
+
       // Convert simple requestedArchetypes to shoeRequests if needed
-      const effectiveRequests = shoeRequests || requestedArchetypes!.map(archetype => ({
+      const effectiveRequests = normalizedShoeRequests || requestedArchetypes!.map((archetype: string) => ({
         archetype,
         feelPreferences: {
           cushionAmount: { mode: 'cinda_decides' as const },
