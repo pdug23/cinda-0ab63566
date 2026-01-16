@@ -9,6 +9,13 @@ import TypewriterText from "@/components/TypewriterText";
 import { useProfile, ChatMessage, ChatContext } from "@/contexts/ProfileContext";
 import { cn } from "@/lib/utils";
 import cindaLogoGrey from "@/assets/cinda-logo-grey.png";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const CINDA_OPENING = "you've told me the basics, but running's personal. past injuries, shoes that didn't work out, weird fit issues... if there's anything else that might help, let me know.";
 
@@ -33,6 +40,7 @@ const ProfileBuilderStep3b = () => {
   const [isTyping, setIsTyping] = useState(showInitialTyping);
   // Track which message index is currently being "typed" (for typewriter effect)
   const [typingMessageIndex, setTypingMessageIndex] = useState<number | null>(null);
+  const [confirmLeaveOpen, setConfirmLeaveOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -163,11 +171,14 @@ const ProfileBuilderStep3b = () => {
   };
 
   const handleSkip = () => {
-    updateChatHistory(messages);
-    navigate("/profile/step4");
+    setConfirmLeaveOpen(true);
   };
 
   const handleContinue = () => {
+    setConfirmLeaveOpen(true);
+  };
+
+  const handleConfirmLeave = () => {
     updateChatHistory(messages);
     navigate("/profile/step4");
   };
@@ -303,6 +314,28 @@ const ProfileBuilderStep3b = () => {
           </footer>
         </PageTransition>
       </OnboardingLayout>
+
+      {/* Confirmation modal */}
+      <Dialog open={confirmLeaveOpen} onOpenChange={setConfirmLeaveOpen}>
+        <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px] p-6">
+          <DialogHeader>
+            <DialogTitle className="text-base font-semibold text-card-foreground">
+              ready to move on?
+            </DialogTitle>
+            <DialogDescription className="text-sm text-card-foreground/60 mt-2">
+              cinda will use what you've shared to personalise your recommendations.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 mt-4">
+            <Button variant="cta" onClick={handleConfirmLeave} className="w-full">
+              yes, find my shoes
+            </Button>
+            <Button variant="outline" onClick={() => setConfirmLeaveOpen(false)} className="w-full">
+              keep chatting
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

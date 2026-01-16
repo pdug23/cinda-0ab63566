@@ -219,7 +219,7 @@ const ProfileBuilderStep4 = () => {
   const hasShoes = profileData.step3.currentShoes.length > 0;
 
   const handleBack = () => {
-    navigate("/profile/step3");
+    navigate("/profile/step3b");
   };
 
   const handleShoppingMode = () => {
@@ -252,8 +252,8 @@ const ProfileBuilderStep4 = () => {
 
           {/* Content */}
           <div className="flex flex-col px-6 md:px-8 pb-6 md:pb-8">
-            {/* Heading - orange, matches question text size */}
-            <p className="italic text-orange-500 mb-6 text-left text-sm">
+            {/* Heading - gray/white to match other steps */}
+            <p className="text-sm text-card-foreground/90 mb-6 text-left">
               profile complete. now, how can cinda help you?
             </p>
 

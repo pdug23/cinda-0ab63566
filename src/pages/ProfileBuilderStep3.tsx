@@ -745,7 +745,7 @@ const ProfileBuilderStep3 = () => {
             style={{ WebkitOverflowScrolling: "touch" }}
           >
             {/* Intro sentence */}
-            <p className="italic text-orange-500 mb-3 text-sm">
+            <p className="text-sm text-card-foreground/90 mb-3">
               add your current shoes (or skip if you don't have any)
             </p>
 
