@@ -95,13 +95,28 @@ when user is done:
 respond with a JSON object containing:
 - "response": your conversational reply (string)
 - "extractedContext": an object with any of these fields if mentioned:
-  - "injuries": array of injury/pain mentions (e.g., ["shin splints", "plantar fasciitis"])
-  - "pastShoes": array of shoe names mentioned (e.g., ["Nike Pegasus 40", "Brooks Ghost"])
-  - "fit": object with width, volume, or issues (e.g., {"width": "wide", "issues": ["heel slippage"]})
-  - "climate": string if mentioned (e.g., "hot and humid")
-  - "requests": array of specific asks (e.g., ["lightweight", "good for long runs"])
+  - "injuries": array of injury objects, each with:
+    - "injury": string (e.g., "shin splints", "plantar fasciitis")
+    - "current": boolean (true if it's a current issue, false if past/recovered)
+    - "trigger": optional string (e.g., "speed work", "long runs")
+    example: [{"injury": "shin splints", "current": true}, {"injury": "plantar fasciitis", "current": false}]
+  - "pastShoes": array of shoe/brand sentiment objects, each with:
+    - "shoe": optional string (specific shoe name if mentioned)
+    - "brand": optional string (brand name if mentioned, e.g., "Nike", "Brooks")
+    - "sentiment": one of "loved", "liked", "neutral", "disliked", "hated"
+    - "reason": optional string (why they felt this way)
+    example: [{"brand": "Nike", "sentiment": "disliked", "reason": "never fits right"}, {"shoe": "Brooks Ghost 15", "sentiment": "loved", "reason": "great cushion"}]
+  - "fit": object with width, volume, or issues:
+    - "width": optional, one of "narrow", "standard", "wide", "extra_wide"
+    - "volume": optional, one of "low", "standard", "high"
+    - "issues": optional array of strings (e.g., ["heel slippage", "toe cramping"])
+    example: {"width": "wide", "issues": ["heel slippage"]}
+  - "climate": string if mentioned (e.g., "hot and humid", "wet", "rainy")
+  - "requests": array of specific asks (e.g., ["lightweight", "good for long runs", "more cushion"])
 
 only include fields in extractedContext if the user actually mentioned them. empty object {} is fine if nothing new was shared.
+
+IMPORTANT for pastShoes: if user says something like "Nike doesn't work for me" or "I hate Nike" — extract as {"brand": "Nike", "sentiment": "disliked" or "hated"}. this is critical for filtering recommendations.
 ${profileContext}`;
 
     // Build messages array

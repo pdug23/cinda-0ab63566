@@ -114,7 +114,9 @@ function passesHardFilters(
   if (chatContext?.pastShoes) {
     for (const pastShoe of chatContext.pastShoes) {
       if (pastShoe.brand && (pastShoe.sentiment === "disliked" || pastShoe.sentiment === "hated")) {
+        console.log(`[passesHardFilters] Checking brand exclusion: pastShoe.brand="${pastShoe.brand}", shoe.brand="${shoe.brand}", sentiment="${pastShoe.sentiment}"`);
         if (pastShoe.brand.toLowerCase() === shoe.brand.toLowerCase()) {
+          console.log(`[passesHardFilters] EXCLUDING ${shoe.full_name} - brand "${shoe.brand}" excluded by chat context`);
           return false;
         }
       }
@@ -1295,6 +1297,38 @@ export function getCandidates(
 ): Shoe[] {
   console.log('[getCandidates] Called with archetypes:', constraints.archetypes);
   console.log('[getCandidates] Catalogue size:', catalogue?.length);
+
+  // DEBUG: Log what data we're receiving for modifiers
+  console.log('[getCandidates] DEBUG - Profile data:', {
+    hasProfile: !!constraints.profile,
+    footStrike: constraints.profile?.footStrike,
+    raceTime: constraints.profile?.raceTime,
+    height: constraints.profile?.height,
+    weight: constraints.profile?.weight,
+    experience: constraints.profile?.experience,
+    primaryGoal: constraints.profile?.primaryGoal,
+    runningPattern: constraints.profile?.runningPattern,
+    trailRunning: constraints.profile?.trailRunning,
+    brandPreference: constraints.profile?.brandPreference,
+  });
+  console.log('[getCandidates] DEBUG - CurrentShoes data:', {
+    hasCurrentShoes: !!constraints.currentShoes,
+    count: constraints.currentShoes?.length || 0,
+    shoes: constraints.currentShoes?.map(s => ({
+      shoeId: s.shoeId,
+      sentiment: s.sentiment,
+      loveTags: s.loveTags,
+      dislikeTags: s.dislikeTags,
+    })),
+  });
+  console.log('[getCandidates] DEBUG - ChatContext data:', {
+    hasChatContext: !!constraints.chatContext,
+    injuries: constraints.chatContext?.injuries,
+    pastShoes: constraints.chatContext?.pastShoes,
+    fit: constraints.chatContext?.fit,
+    climate: constraints.chatContext?.climate,
+    requests: constraints.chatContext?.requests,
+  });
 
   // Edge case: empty catalogue
   if (!catalogue || catalogue.length === 0) {

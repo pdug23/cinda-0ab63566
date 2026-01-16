@@ -112,6 +112,31 @@ export default async function handler(
       hasConstraints: !!constraints,
     });
 
+    // DEBUG: Log full profile data for modifier debugging
+    console.log('[analyze] DEBUG - Full profile:', {
+      experience: profile.experience,
+      primaryGoal: profile.primaryGoal,
+      runningPattern: profile.runningPattern,
+      footStrike: profile.footStrike,
+      raceTime: profile.raceTime,
+      height: profile.height,
+      weight: profile.weight,
+      trailRunning: profile.trailRunning,
+      brandPreference: profile.brandPreference,
+    });
+
+    // DEBUG: Log currentShoes with sentiment/tags
+    console.log('[analyze] DEBUG - CurrentShoes:', currentShoes.map(s => ({
+      shoeId: s.shoeId,
+      sentiment: s.sentiment,
+      loveTags: s.loveTags,
+      dislikeTags: s.dislikeTags,
+      runTypes: s.runTypes,
+    })));
+
+    // DEBUG: Log chatContext
+    console.log('[analyze] DEBUG - ChatContext:', chatContext);
+
     // =========================================================================
     // 2. LOAD CATALOGUE
     // =========================================================================
