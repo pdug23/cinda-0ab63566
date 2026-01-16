@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, Send } from "lucide-react";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
+import TypewriterText from "@/components/TypewriterText";
 import { useProfile, ChatMessage } from "@/contexts/ProfileContext";
 import { cn } from "@/lib/utils";
 import cindaLogoGrey from "@/assets/cinda-logo-grey.png";
@@ -40,10 +41,12 @@ const ProfileBuilderStep3b = () => {
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(showInitialTyping);
   const [exchangeCount, setExchangeCount] = useState(0);
+  // Track which message index is currently being "typed" (for typewriter effect)
+  const [typingMessageIndex, setTypingMessageIndex] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Show initial typing, then Cinda's opening message
+  // Show initial typing, then Cinda's opening message with typewriter effect
   useEffect(() => {
     if (showInitialTyping) {
       const timer = setTimeout(() => {
@@ -55,16 +58,17 @@ const ProfileBuilderStep3b = () => {
           timestamp: new Date(),
         };
         setMessages([openingMessage]);
+        setTypingMessageIndex(0); // Start typewriter for first message
         updateChatHistory([openingMessage]);
       }, 1500);
       return () => clearTimeout(timer);
     }
   }, [showInitialTyping, updateChatHistory]);
 
-  // Scroll to bottom when messages change
+  // Scroll to bottom when messages change or during typewriter
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+  }, [messages, isTyping, typingMessageIndex]);
 
   // Focus input after initial typing completes
   useEffect(() => {
@@ -107,6 +111,7 @@ const ProfileBuilderStep3b = () => {
 
       const updatedMessages = [...newMessages, cindaResponse];
       setMessages(updatedMessages);
+      setTypingMessageIndex(updatedMessages.length - 1); // Start typewriter for new message
       updateChatHistory(updatedMessages);
       setIsTyping(false);
     }, 800 + Math.random() * 400);
@@ -160,7 +165,7 @@ const ProfileBuilderStep3b = () => {
           </header>
 
           {/* Chat messages area - fills middle space */}
-          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-styled touch-pan-y px-6 md:px-8 space-y-6 pb-4">
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-styled touch-pan-y px-6 md:px-8 space-y-6 pb-4">
             {messages.map((message, index) => (
               <div
                 key={index}
@@ -168,17 +173,28 @@ const ProfileBuilderStep3b = () => {
                   "animate-fade-in",
                   message.role === 'assistant'
                     ? "max-w-[90%] mr-auto"
-                    : "max-w-[85%] ml-auto"
+                    : "max-w-[80%] ml-auto"
                 )}
               >
                 {message.role === 'assistant' ? (
-                  // Cinda messages: plain text, no bubble
+                  // Cinda messages: plain text with typewriter effect
                   <p className="text-sm leading-relaxed text-card-foreground/70">
-                    {message.content}
+                    {typingMessageIndex === index ? (
+                      <TypewriterText 
+                        text={message.content} 
+                        speed={40}
+                        onComplete={() => setTypingMessageIndex(null)}
+                      />
+                    ) : (
+                      message.content
+                    )}
                   </p>
                 ) : (
-                  // User messages: subtle muted box
-                  <div className="rounded-2xl px-4 py-3 bg-card-foreground/[0.08] border border-card-foreground/15">
+                  // User messages: subtle muted box with word wrap
+                  <div 
+                    className="rounded-2xl px-4 py-3 bg-card-foreground/[0.08] border border-card-foreground/15"
+                    style={{ wordBreak: "break-word" }}
+                  >
                     <p className="text-sm leading-relaxed text-card-foreground/90">
                       {message.content}
                     </p>
