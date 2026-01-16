@@ -117,10 +117,17 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
+// Past shoe with brand sentiment from chat
+export interface PastShoeContext {
+  brand: string;
+  model?: string;
+  sentiment?: "liked" | "disliked" | "neutral";
+}
+
 // Extracted context from chat - accumulated across messages
 export interface ChatContext {
   injuries: string[];
-  pastShoes: string[];
+  pastShoes: (string | PastShoeContext)[];
   fit: Record<string, string>;
   climate: string | null;
   requests: string[];
