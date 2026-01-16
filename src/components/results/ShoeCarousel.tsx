@@ -13,8 +13,9 @@ interface RecommendedShoe {
   version: string;
   matchReason: string[];
   keyStrengths: string[];
-  recommendationType: "close_match" | "close_match_2" | "trade_off_option";
-  weight_feel_1to5: 1 | 2 | 3 | 4 | 5;
+  recommendationType: "close_match" | "close_match_2" | "trade_off" | "trade_off_option";
+  weight_g?: number;
+  weight_feel_1to5?: 1 | 2 | 3 | 4 | 5;
   heel_drop_mm: number;
   has_plate: boolean;
   plate_material: "Nylon" | "Plastic" | "Carbon" | null;
@@ -22,6 +23,8 @@ interface RecommendedShoe {
   similar_to?: string;
   shoeId?: string;
   role?: string; // For Shopping Mode - attached role
+  archetype?: string; // For Discovery Mode - attached archetype
+  archetypes?: string[]; // Array of archetypes this shoe works for
   // Use case booleans for "also works for" popover
   use_daily?: boolean;
   use_easy_recovery?: boolean;

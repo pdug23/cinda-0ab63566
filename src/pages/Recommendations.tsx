@@ -21,15 +21,22 @@ interface RecommendedShoe {
   brand: string;
   model: string;
   version: string;
-  weight_feel_1to5: 1 | 2 | 3 | 4 | 5;
+  weight_g?: number;
+  weight_feel_1to5?: 1 | 2 | 3 | 4 | 5;
   heel_drop_mm: number;
   has_plate: boolean;
   plate_material: "Nylon" | "Plastic" | "Carbon" | null;
+  cushion_softness_1to5?: number;
+  bounce_1to5?: number;
+  stability_1to5?: number;
   matchReason: string[];
   keyStrengths: string[];
   tradeOffs?: string[];
   similar_to?: string;
-  recommendationType: "close_match" | "close_match_2" | "trade_off_option";
+  recommendationType: "close_match" | "close_match_2" | "trade_off" | "trade_off_option";
+  badge?: string;
+  position?: number;
+  archetypes?: string[]; // e.g. ["daily_trainer", "workout_shoe"]
   // Use case booleans for "also works for" popover
   use_daily?: boolean;
   use_easy_recovery?: boolean;
@@ -46,32 +53,23 @@ interface Gap {
   missingCapability?: string;
 }
 
-interface ShoeRequest {
-  role: string;
-  feelPreferences: {
-    softVsFirm: number;
-    stableVsNeutral: number;
-    bouncyVsDamped: number;
-  };
-}
-
 interface AnalysisResult {
   gap: Gap;
   recommendations: RecommendedShoe[];
   summaryReasoning: string;
 }
 
-interface ShoppingResultItem {
-  role: string;
+interface DiscoveryResultItem {
+  archetype: string;
   recommendations: RecommendedShoe[];
   reasoning: string;
 }
 
-interface ShoppingResult {
-  shoppingResults: ShoppingResultItem[];
+interface DiscoveryResult {
+  discoveryResults: DiscoveryResultItem[];
 }
 
-type Mode = "analysis" | "shopping";
+type Mode = "analysis" | "discovery";
 
 // STORAGE_KEYS constant removed - using storage utilities instead
 
@@ -88,20 +86,23 @@ function loadFromStorage<T>(key: string): T | null {
   }
 }
 
-function mapRoleToCarouselRole(role: string): "daily" | "tempo" | "race" | "easy" | "long" | "trail" {
-  const roleMap: Record<string, "daily" | "tempo" | "race" | "easy" | "long" | "trail"> = {
+function mapArchetypeToCarouselRole(archetype: string): "daily" | "tempo" | "race" | "easy" | "long" | "trail" {
+  const archetypeMap: Record<string, "daily" | "tempo" | "race" | "easy" | "long" | "trail"> = {
     daily_trainer: "daily",
     daily: "daily",
+    workout_shoe: "tempo",
     tempo: "tempo",
-    race_day: "race",
+    race_shoe: "race",
     race: "race",
+    recovery_shoe: "easy",
     recovery: "easy",
     easy: "easy",
     long: "long",
+    trail_shoe: "trail",
     trail: "trail",
     not_sure: "daily",
   };
-  return roleMap[role.toLowerCase()] || "daily";
+  return archetypeMap[archetype.toLowerCase()] || "daily";
 }
 
 // ============================================================================
@@ -273,7 +274,7 @@ function AnalysisModeResults({
   shortlistedShoes: string[];
   onShortlist: (shoeId: string) => void;
 }) {
-  const carouselRole = mapRoleToCarouselRole(gap.missingCapability || 'daily');
+  const carouselRole = mapArchetypeToCarouselRole(gap.missingCapability || 'daily');
 
   // Transform recommendations for ShoeCarousel
   const carouselShoes = result.recommendations.map((shoe) => ({
@@ -293,24 +294,24 @@ function AnalysisModeResults({
   );
 }
 
-function ShoppingModeResults({ 
+function DiscoveryModeResults({ 
   result,
   shortlistedShoes,
   onShortlist,
 }: { 
-  result: ShoppingResult;
+  result: DiscoveryResult;
   shortlistedShoes: string[];
   onShortlist: (shoeId: string) => void;
 }) {
-  // Flatten all shopping results into a single array with role attached to each shoe
-  const flattenedRecommendations = result.shoppingResults.flatMap((item) => 
-    item.recommendations.map((shoe) => ({
+  // Flatten all discovery results into a single array with archetype attached to each shoe
+  const flattenedRecommendations = (result.discoveryResults || []).flatMap((item) => 
+    (item.recommendations || []).map((shoe) => ({
       ...shoe,
-      role: item.role, // Attach the role to each shoe
+      archetype: item.archetype, // Attach the archetype to each shoe
     }))
   );
 
-  // Use "daily" as a default role since we're showing mixed roles with badges
+  // Use "daily" as a default role since we're showing mixed archetypes with badges
   return (
     <div className="w-full overflow-visible">
       <ShoeCarousel 
@@ -334,7 +335,7 @@ export default function RecommendationsPage() {
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
-  const [shoppingResult, setShoppingResult] = useState<ShoppingResult | null>(null);
+  const [discoveryResult, setDiscoveryResult] = useState<DiscoveryResult | null>(null);
   const [gap, setGap] = useState<Gap | null>(null);
   const [shortlistedShoes, setShortlistedShoes] = useState<string[]>([]);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
@@ -408,7 +409,7 @@ export default function RecommendationsPage() {
         detectedMode = "analysis";
         setGap(storedGap);
       } else if (shoeRequests && shoeRequests.length > 0) {
-        detectedMode = "shopping";
+        detectedMode = "discovery";
       } else {
         // Default to analysis if we have gap, otherwise redirect
         if (storedGap) {
@@ -505,8 +506,10 @@ export default function RecommendationsPage() {
           setGap(data.result.gap);
         }
       } else {
-        setShoppingResult({
-          shoppingResults: data.result.shoppingResults,
+        // Discovery mode - handle discoveryResults
+        const discoveryResults = data.result?.discoveryResults || [];
+        setDiscoveryResult({
+          discoveryResults: discoveryResults,
         });
       }
     } catch (err) {
@@ -524,7 +527,8 @@ export default function RecommendationsPage() {
   // Check for empty results
   const isEmpty =
     (mode === "analysis" && analysisResult?.recommendations.length === 0) ||
-    (mode === "shopping" && shoppingResult?.shoppingResults.length === 0);
+    (mode === "discovery" && (discoveryResult?.discoveryResults?.length === 0 || 
+      discoveryResult?.discoveryResults?.every(r => r.recommendations?.length === 0)));
 
   return (
     <>
@@ -565,12 +569,12 @@ export default function RecommendationsPage() {
             </div>
           )}
 
-          {!loading && !error && !isEmpty && mode === "shopping" && shoppingResult && (
+          {!loading && !error && !isEmpty && mode === "discovery" && discoveryResult && (
             <div className="flex-1 flex flex-col min-h-0 overflow-visible">
               <PageHeader />
               <div className="flex-1 flex items-center min-h-0 overflow-visible">
-                <ShoppingModeResults 
-                  result={shoppingResult}
+                <DiscoveryModeResults 
+                  result={discoveryResult}
                   shortlistedShoes={shortlistedShoes}
                   onShortlist={handleShortlist}
                 />
