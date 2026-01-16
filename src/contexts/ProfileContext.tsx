@@ -5,7 +5,7 @@ import { PersonalBests } from "@/components/PBPickerModal";
 export type ExperienceLevel = "beginner" | "intermediate" | "advanced" | "racing_focused";
 export type PrimaryGoal = "general_fitness" | "get_faster" | "race_training" | "injury_comeback";
 export type RunningPattern = "structured_training" | "mostly_easy" | "infrequent";
-export type TrailRunning = "most_runs" | "infrequent" | "want_to_start" | "no_trails";
+export type TrailRunning = "most_or_all" | "infrequently" | "want_to_start" | "no_trails";
 export type FootStrike = "forefoot" | "midfoot" | "heel" | "unsure";
 
 // Single race time (user picks one distance)

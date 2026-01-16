@@ -32,10 +32,10 @@ const PATTERN_OPTIONS: { value: RunningPattern; label: string; description: stri
 ];
 
 const TRAIL_OPTIONS: { value: TrailRunning; label: string; description: string }[] = [
-  { value: "most_runs", label: "i do trails for most or all of my runs", description: "trail shoes are a priority" },
-  { value: "infrequent", label: "i do trails, but infrequently", description: "occasional trail capability" },
-  { value: "want_to_start", label: "i want to start trail running", description: "looking to explore trails" },
-  { value: "no_trails", label: "no trails for me", description: "road or treadmill only" },
+  { value: "most_or_all", label: "mostly trails", description: "trail shoes are a priority" },
+  { value: "infrequently", label: "occasional trails", description: "some off-road capability" },
+  { value: "want_to_start", label: "want to try trails", description: "looking to explore" },
+  { value: "no_trails", label: "road only", description: "no trail running" },
 ];
 
 const FOOT_STRIKE_OPTIONS: { value: FootStrike; label: string; description: string }[] = [
