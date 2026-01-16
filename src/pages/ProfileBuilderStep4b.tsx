@@ -669,33 +669,45 @@ const ProfileBuilderStep4b = () => {
       updateStep4({ shoeRequests: updatedRequests });
 
       try {
+        // Build complete profile with all fields for API
         const profile = {
           firstName: step1.firstName,
           age: step1.age ? parseInt(step1.age) : undefined,
-          height: step1.heightCm ?? undefined,
-          weight: step1.weightKg ?? undefined,
+          height: step1.heightCm ? { value: step1.heightCm, unit: "cm" as const } : undefined,
+          weight: step1.weightKg ? { value: step1.weightKg, unit: "kg" as const } : undefined,
           experience: step1.experience!,
           primaryGoal: step2.primaryGoal!,
           runningPattern: step2.runningPattern ?? undefined,
-          doesTrail: step2.doesTrail ?? false,
+          trailRunning: step2.trailRunning ?? undefined,
+          footStrike: step2.footStrike ?? undefined,
           weeklyVolume: step2.weeklyVolume ? {
             value: step2.weeklyVolume.value,
             unit: step2.weeklyVolume.unit
           } : undefined,
-          pbs: {
-            mile: step2.personalBests.mile ?? undefined,
-            fiveK: step2.personalBests["5k"] ?? undefined,
-            tenK: step2.personalBests["10k"] ?? undefined,
-            half: step2.personalBests.half ?? undefined,
-            marathon: step2.personalBests.marathon ?? undefined,
-          },
+          // Convert raceTime to API format (timeMinutes)
+          raceTime: step2.raceTime ? {
+            distance: step2.raceTime.distance === "13.1mi" ? "half" as const : 
+                      step2.raceTime.distance === "26.2mi" ? "marathon" as const : 
+                      step2.raceTime.distance as "5k" | "10k",
+            timeMinutes: step2.raceTime.hours * 60 + step2.raceTime.minutes + step2.raceTime.seconds / 60
+          } : undefined,
+          // Include brand preference from current feel preferences
+          brandPreference: preferences.brandPreference.mode !== "all" ? {
+            mode: preferences.brandPreference.mode,
+            brands: preferences.brandPreference.brands
+          } : undefined,
+          // Include chat context as currentNiggles
+          currentNiggles: step3.chatContext.injuries.length > 0 ? step3.chatContext.injuries : undefined,
         };
         saveProfile(profile as any);
 
+        // Include loveTags and dislikeTags on shoes
         const currentShoes = step3.currentShoes.map((shoe) => ({
           shoe: shoe.shoe,
           runTypes: shoe.runTypes,
           sentiment: shoe.sentiment ?? "neutral",
+          loveTags: shoe.loveTags,
+          dislikeTags: shoe.dislikeTags,
         }));
         saveShoes(currentShoes as any);
 

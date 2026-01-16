@@ -66,28 +66,34 @@ const ProfileBuilderStep4Analysis = () => {
     setErrorMessage("");
 
     try {
+      // Build complete profile with all fields
       const profile = {
         firstName: step1.firstName,
         age: step1.age ? parseInt(step1.age) : undefined,
-        height: step1.heightCm ?? undefined,
-        weight: step1.weightKg ?? undefined,
+        height: step1.heightCm ? { value: step1.heightCm, unit: "cm" as const } : undefined,
+        weight: step1.weightKg ? { value: step1.weightKg, unit: "kg" as const } : undefined,
         experience: step1.experience!,
         primaryGoal: step2.primaryGoal!,
         runningPattern: step2.runningPattern ?? undefined,
+        trailRunning: step2.trailRunning ?? undefined,
+        footStrike: step2.footStrike ?? undefined,
         weeklyVolume: step2.weeklyVolume ?? undefined,
-        pbs: {
-          mile: step2.personalBests.mile ?? undefined,
-          fiveK: step2.personalBests["5k"] ?? undefined,
-          tenK: step2.personalBests["10k"] ?? undefined,
-          half: step2.personalBests.half ?? undefined,
-          marathon: step2.personalBests.marathon ?? undefined,
-        },
+        raceTime: step2.raceTime ? {
+          distance: step2.raceTime.distance === "13.1mi" ? "half" as const : 
+                    step2.raceTime.distance === "26.2mi" ? "marathon" as const : 
+                    step2.raceTime.distance as "5k" | "10k",
+          timeMinutes: step2.raceTime.hours * 60 + step2.raceTime.minutes + step2.raceTime.seconds / 60
+        } : undefined,
+        currentNiggles: step3.chatContext.injuries.length > 0 ? step3.chatContext.injuries : undefined,
       };
 
+      // Include loveTags and dislikeTags on shoes
       const currentShoes = step3.currentShoes.map((shoe) => ({
         shoeId: shoe.shoe.shoe_id,
         runTypes: shoe.runTypes,
         sentiment: shoe.sentiment ?? "neutral",
+        loveTags: shoe.loveTags,
+        dislikeTags: shoe.dislikeTags,
       }));
 
       const response = await fetch("/api/analyze", {

@@ -424,8 +424,7 @@ export default function RecommendationsPage() {
 
       setMode(detectedMode);
 
-      // 4. Build API payload based on mode
-      // Transform shoes to API format - handle both context format and API format
+      // Transform shoes to API format - include loveTags and dislikeTags
       const currentShoesForAPI = shoes.map((s) => {
         // Check if it's in context format (with nested shoe object)
         const shoeData = (s as { shoe?: { shoe_id: string } }).shoe;
@@ -438,6 +437,8 @@ export default function RecommendationsPage() {
           shoeId: shoeId,
           runTypes: runTypes,
           sentiment: s.sentiment || "neutral",
+          loveTags: (s as { loveTags?: string[] }).loveTags,
+          dislikeTags: (s as { dislikeTags?: string[] }).dislikeTags,
         };
       });
 
@@ -448,10 +449,18 @@ export default function RecommendationsPage() {
           mode: "analysis",
           profile: {
             firstName: profile.firstName,
+            age: profile.age,
+            height: profile.height,
+            weight: profile.weight,
             experience: profile.experience,
             primaryGoal: profile.primaryGoal,
             runningPattern: profile.runningPattern,
+            trailRunning: profile.trailRunning,
+            footStrike: profile.footStrike,
             weeklyVolume: profile.weeklyVolume,
+            raceTime: profile.raceTime,
+            brandPreference: profile.brandPreference,
+            currentNiggles: profile.currentNiggles,
           },
           currentShoes: currentShoesForAPI,
           gap: storedGap,
@@ -462,10 +471,18 @@ export default function RecommendationsPage() {
           mode: "discovery",
           profile: {
             firstName: profile.firstName,
+            age: profile.age,
+            height: profile.height,
+            weight: profile.weight,
             experience: profile.experience,
             primaryGoal: profile.primaryGoal,
             runningPattern: profile.runningPattern,
+            trailRunning: profile.trailRunning,
+            footStrike: profile.footStrike,
             weeklyVolume: profile.weeklyVolume,
+            raceTime: profile.raceTime,
+            brandPreference: profile.brandPreference,
+            currentNiggles: profile.currentNiggles,
           },
           currentShoes: currentShoesForAPI,
           shoeRequests: shoeRequests,
