@@ -173,7 +173,7 @@ const ProfileBuilderStep3b = () => {
                   "animate-fade-in",
                   message.role === 'assistant'
                     ? "max-w-[90%] mr-auto"
-                    : "max-w-[80%] ml-auto"
+                    : "max-w-[80%] ml-auto w-fit"
                 )}
               >
                 {message.role === 'assistant' ? (
@@ -192,7 +192,7 @@ const ProfileBuilderStep3b = () => {
                 ) : (
                   // User messages: subtle muted box with word wrap
                   <div 
-                    className="rounded-2xl px-4 py-3 bg-card-foreground/[0.08] border border-card-foreground/15"
+                    className="rounded-2xl px-4 py-3 bg-card-foreground/[0.04] border border-card-foreground/10"
                     style={{ wordBreak: "break-word" }}
                   >
                     <p className="text-sm leading-relaxed text-card-foreground/90">
@@ -266,7 +266,6 @@ const ProfileBuilderStep3b = () => {
               disabled={showInitialTyping}
             >
               next
-              <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </footer>
         </PageTransition>
