@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
-import { useProfile, DiscoveryShoeRole, GapData } from "@/contexts/ProfileContext";
+import { useProfile, DiscoveryArchetype, GapData } from "@/contexts/ProfileContext";
 
 type Status = "loading" | "success" | "no_gap" | "error";
 
@@ -40,25 +40,25 @@ const ProfileBuilderStep4Analysis = () => {
   const [rotationSummary, setRotationSummary] = useState<RotationShoeSummary[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
-  const mapGapToRole = (missingCapability: string): DiscoveryShoeRole => {
+  const mapGapToArchetype = (missingCapability: string): DiscoveryArchetype => {
     const capability = missingCapability.toLowerCase();
-    if (capability.includes("easy") || capability.includes("recovery")) return "recovery";
-    if (capability.includes("tempo") || capability.includes("interval") || capability.includes("speed")) return "tempo";
-    if (capability.includes("race") || capability.includes("racing")) return "race_day";
-    if (capability.includes("trail")) return "trail";
+    if (capability.includes("easy") || capability.includes("recovery")) return "recovery_shoe";
+    if (capability.includes("tempo") || capability.includes("interval") || capability.includes("speed") || capability.includes("workout")) return "workout_shoe";
+    if (capability.includes("race") || capability.includes("racing")) return "race_shoe";
+    if (capability.includes("trail")) return "trail_shoe";
     return "daily_trainer";
   };
 
-  const getShoeTypeLabel = (role: DiscoveryShoeRole): string => {
-    const labels: Record<DiscoveryShoeRole, string> = {
+  const getShoeTypeLabel = (archetype: DiscoveryArchetype): string => {
+    const labels: Record<DiscoveryArchetype, string> = {
       daily_trainer: "daily trainer",
-      recovery: "recovery shoe",
-      tempo: "tempo shoe",
-      race_day: "race day shoe",
-      trail: "trail shoe",
+      recovery_shoe: "recovery shoe",
+      workout_shoe: "workout shoe",
+      race_shoe: "race shoe",
+      trail_shoe: "trail shoe",
       not_sure: "shoe",
     };
-    return labels[role];
+    return labels[archetype];
   };
 
   const analyzeRotation = async () => {
@@ -129,10 +129,10 @@ const ProfileBuilderStep4Analysis = () => {
 
   const handleSetPreferences = () => {
     if (!gap) return;
-    const role = mapGapToRole(gap.missingCapability || "daily");
+    const archetype = mapGapToArchetype(gap.missingCapability || "daily");
     updateStep4({
-      selectedRoles: [role],
-      currentRoleIndex: 0,
+      selectedArchetypes: [archetype],
+      currentArchetypeIndex: 0,
     });
     navigate("/profile/step4b");
   };
@@ -168,7 +168,7 @@ const ProfileBuilderStep4Analysis = () => {
                 animation: 'text-glisten 3s ease-in-out infinite',
               }}
             >
-              {getShoeTypeLabel(mapGapToRole(gap.missingCapability || "daily"))}
+              {getShoeTypeLabel(mapGapToArchetype(gap.missingCapability || "daily"))}
             </span>
           </p>
           {gap.reasoning && (
@@ -276,7 +276,7 @@ const ProfileBuilderStep4Analysis = () => {
                     variant="cta"
                     className="w-full min-h-[44px] text-sm"
                   >
-                    set preferences for your new {getShoeTypeLabel(mapGapToRole(gap.missingCapability || "daily"))}
+                    set preferences for your new {getShoeTypeLabel(mapGapToArchetype(gap.missingCapability || "daily"))}
                   </Button>
                 </div>
               </div>

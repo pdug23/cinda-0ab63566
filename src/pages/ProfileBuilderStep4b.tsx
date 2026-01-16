@@ -6,7 +6,7 @@ import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { 
   useProfile, 
-  DiscoveryShoeRole, 
+  DiscoveryArchetype, 
   FeelValue, 
   FeelPreferences,
   PreferenceMode,
@@ -140,13 +140,13 @@ const AdaptiveTooltip = ({
   );
 };
 
-// Role display names
-const ROLE_LABELS: Record<DiscoveryShoeRole, string> = {
+// Archetype display names
+const ARCHETYPE_LABELS: Record<DiscoveryArchetype, string> = {
   daily_trainer: "daily trainer",
-  recovery: "recovery shoe",
-  tempo: "tempo shoe",
-  race_day: "race day shoe",
-  trail: "trail shoe",
+  recovery_shoe: "recovery shoe",
+  workout_shoe: "workout shoe",
+  race_shoe: "race shoe",
+  trail_shoe: "trail shoe",
   not_sure: "shoe",
 };
 
@@ -541,28 +541,28 @@ const ProfileBuilderStep4b = () => {
   const { profileData, updateStep4 } = useProfile();
 
   const { step1, step2, step3 } = profileData;
-  const { selectedRoles, currentRoleIndex, shoeRequests } = profileData.step4;
-  const totalRoles = selectedRoles.length;
-  const currentRole = selectedRoles[currentRoleIndex];
+  const { selectedArchetypes, currentArchetypeIndex, shoeRequests } = profileData.step4;
+  const totalArchetypes = selectedArchetypes.length;
+  const currentArchetype = selectedArchetypes[currentArchetypeIndex];
 
   // Initialize local state for preferences
   const [preferences, setPreferences] = useState<FeelPreferences>(getDefaultPreferences);
 
-  // Reset preferences when role changes
+  // Reset preferences when archetype changes
   useEffect(() => {
     setPreferences(getDefaultPreferences());
-  }, [currentRole]);
+  }, [currentArchetype]);
 
-  // Redirect if no roles selected
+  // Redirect if no archetypes selected
   useEffect(() => {
-    if (selectedRoles.length === 0) {
+    if (selectedArchetypes.length === 0) {
       navigate("/profile/step4a");
     }
-  }, [selectedRoles, navigate]);
+  }, [selectedArchetypes, navigate]);
 
   const handleBack = () => {
-    if (currentRoleIndex > 0) {
-      updateStep4({ currentRoleIndex: currentRoleIndex - 1 });
+    if (currentArchetypeIndex > 0) {
+      updateStep4({ currentArchetypeIndex: currentArchetypeIndex - 1 });
     } else {
       const mode = profileData.step4.mode;
       if (mode === "analysis") {
@@ -605,8 +605,8 @@ const ProfileBuilderStep4b = () => {
   const handleNext = () => {
     if (!isValid()) return;
 
-    const newRequest = { role: currentRole, feelPreferences: preferences };
-    const existingIndex = shoeRequests.findIndex((r) => r.role === currentRole);
+    const newRequest = { archetype: currentArchetype, feelPreferences: preferences };
+    const existingIndex = shoeRequests.findIndex((r) => r.archetype === currentArchetype);
 
     let updatedRequests: typeof shoeRequests;
     if (existingIndex >= 0) {
@@ -616,10 +616,10 @@ const ProfileBuilderStep4b = () => {
       updatedRequests = [...shoeRequests, newRequest];
     }
 
-    if (currentRoleIndex < totalRoles - 1) {
+    if (currentArchetypeIndex < totalArchetypes - 1) {
       updateStep4({
         shoeRequests: updatedRequests,
-        currentRoleIndex: currentRoleIndex + 1,
+        currentArchetypeIndex: currentArchetypeIndex + 1,
       });
     } else {
       updateStep4({ shoeRequests: updatedRequests });
@@ -669,7 +669,7 @@ const ProfileBuilderStep4b = () => {
     }
   };
 
-  if (!currentRole) {
+  if (!currentArchetype) {
     return null;
   }
 
@@ -698,7 +698,7 @@ const ProfileBuilderStep4b = () => {
             {/* Heading */}
             <div className="flex items-center gap-1.5 mb-2">
               <p className="text-sm text-card-foreground/90">
-                how do you want your <span className="text-orange-400 font-semibold">{ROLE_LABELS[currentRole]}</span> to feel?
+                how do you want your <span className="text-orange-400 font-semibold">{ARCHETYPE_LABELS[currentArchetype]}</span> to feel?
               </p>
               <AdaptiveTooltip
                 content={
@@ -716,9 +716,9 @@ const ProfileBuilderStep4b = () => {
             </div>
 
             {/* Progress indicator for multiple roles */}
-            {totalRoles > 1 && (
+            {totalArchetypes > 1 && (
               <p className="text-xs text-card-foreground/40 mb-4">
-                shoe {currentRoleIndex + 1} of {totalRoles}
+                shoe {currentArchetypeIndex + 1} of {totalArchetypes}
               </p>
             )}
 
