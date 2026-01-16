@@ -16,6 +16,7 @@ import type {
   ShoeArchetype,
   FeelPreferences,
   ShoeRequest,
+  ChatContext,
 } from '../types.js';
 import {
   shoeHasArchetype,
@@ -583,10 +584,16 @@ export async function generateRecommendations(
   profile: RunnerProfile,
   currentShoes: CurrentShoe[],
   catalogue: Shoe[],
-  feelPreferences: FeelPreferences
+  feelPreferences: FeelPreferences,
+  chatContext?: ChatContext
 ): Promise<RecommendedShoe[]> {
   // Step 1: Build constraints from gap
   let constraints = buildConstraintsFromGap(gap, profile, currentShoes, feelPreferences);
+
+  // Add chat context to constraints for scoring
+  if (chatContext) {
+    constraints.chatContext = chatContext;
+  }
 
   // Step 2: Get candidates
   let candidates = getCandidates(constraints, catalogue);
@@ -737,7 +744,8 @@ export async function generateDiscoveryRecommendations(
   request: ShoeRequest,
   profile: RunnerProfile,
   currentShoes: CurrentShoe[],
-  catalogue: Shoe[]
+  catalogue: Shoe[],
+  chatContext?: ChatContext
 ): Promise<RecommendedShoe[]> {
   // Step 1: Build constraints for this specific archetype and feel preferences
   const constraints: RetrievalConstraints = {
@@ -747,6 +755,7 @@ export async function generateDiscoveryRecommendations(
     excludeShoeIds: currentShoes.map(s => s.shoeId),
     profile: profile,
     currentShoes: currentShoes, // For love/dislike tag modifiers
+    chatContext: chatContext, // For chat-extracted context (injuries, fit, climate, requests)
     stabilityNeed: (() => {
       const stabPref = request.feelPreferences.stabilityAmount;
       if (stabPref.mode === 'user_set' && stabPref.value !== undefined && stabPref.value >= 4) {

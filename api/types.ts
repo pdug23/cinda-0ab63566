@@ -610,6 +610,9 @@ export interface AnalyzeRequest {
   gap?: Gap; // Pre-identified gap from gap_detection call
   feelPreferences?: FeelPreferences; // Preferences for the identified gap
 
+  // Chat context (extracted from chat step, affects scoring)
+  chatContext?: ChatContext;
+
   // Optional constraints (all modes) - note: brandOnly moved to profile.brandPreference
   constraints?: {
     stabilityPreference?: "neutral_only" | "stability_only" | "no_preference";
@@ -662,6 +665,50 @@ export interface ChatRequest {
  */
 export interface ChatResponse {
   reply: string;
+}
+
+// ============================================================================
+// CHAT CONTEXT TYPES (extracted from chat step)
+// ============================================================================
+
+/**
+ * Injury extracted from chat conversation
+ */
+export interface ChatInjury {
+  injury: string;          // e.g., "shin splints", "plantar fasciitis"
+  trigger?: string;        // e.g., "speed work", "long runs"
+  current: boolean;        // Is this a current injury?
+}
+
+/**
+ * Past shoe sentiment from chat
+ */
+export interface ChatPastShoe {
+  shoe?: string;           // Specific shoe name if mentioned
+  brand?: string;          // Brand if mentioned
+  sentiment: "loved" | "liked" | "neutral" | "disliked" | "hated";
+  reason?: string;         // Why they felt this way
+}
+
+/**
+ * Fit information from chat
+ */
+export interface ChatFit {
+  width?: "narrow" | "standard" | "wide" | "extra_wide";
+  volume?: "low" | "standard" | "high";
+  issues?: string[];       // e.g., ["heel slippage", "toe cramping"]
+}
+
+/**
+ * Context extracted from chat conversation
+ * Affects scoring and filtering in recommendations
+ */
+export interface ChatContext {
+  injuries?: ChatInjury[];
+  pastShoes?: ChatPastShoe[];
+  fit?: ChatFit;
+  climate?: string;        // e.g., "hot and humid", "wet", "cold"
+  requests?: string[];     // e.g., ["lightweight", "good for long runs"]
 }
 
 // ============================================================================

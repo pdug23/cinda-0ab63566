@@ -62,7 +62,7 @@ export default async function handler(
       return;
     }
 
-    const { profile, constraints } = body as AnalyzeRequest;
+    const { profile, constraints, chatContext } = body as AnalyzeRequest;
 
     // =========================================================================
     // 1b. BACKWARDS COMPATIBILITY NORMALIZATION
@@ -287,7 +287,8 @@ export default async function handler(
             request,
             profile,
             currentShoes,
-            catalogue
+            catalogue,
+            chatContext
           );
 
           // Helper to describe preference value for reasoning text
@@ -368,7 +369,8 @@ export default async function handler(
           profile,
           currentShoes,
           catalogue,
-          feelPreferences
+          feelPreferences,
+          chatContext
         );
       } catch (error: any) {
         console.error('[analyze] Recommendation generation failed:', error.message);

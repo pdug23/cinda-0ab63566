@@ -12,7 +12,8 @@ import type {
   PreferenceValue,
   HeelDropPreference,
   RunnerProfile,
-  CurrentShoe
+  CurrentShoe,
+  ChatContext
 } from '../types.js';
 import {
   shoeHasArchetype,
@@ -32,6 +33,7 @@ export interface RetrievalConstraints {
   excludeShoeIds?: string[];
   profile?: RunnerProfile; // For brand preferences and other profile-based filtering
   currentShoes?: CurrentShoe[]; // For love/dislike tag modifiers
+  chatContext?: ChatContext; // For chat-extracted context (injuries, fit, climate, requests)
 }
 
 export interface ScoredShoe {
@@ -75,7 +77,7 @@ function passesHardFilters(
   shoe: Shoe,
   constraints: RetrievalConstraints
 ): boolean {
-  const { archetypes, excludeShoeIds, profile } = constraints;
+  const { archetypes, excludeShoeIds, profile, chatContext } = constraints;
 
   // Filter 1: Exclude shoes already in rotation
   if (excludeShoeIds && excludeShoeIds.includes(shoe.shoe_id)) {
@@ -93,6 +95,18 @@ function passesHardFilters(
     if (mode === "exclude" && brands.length > 0) {
       if (brands.some(b => b.toLowerCase() === shoe.brand.toLowerCase())) {
         return false;
+      }
+    }
+  }
+
+  // Filter 2b: Brand exclusions from chat context
+  // If user said "Nike doesn't work for me" or hated a brand, exclude it
+  if (chatContext?.pastShoes) {
+    for (const pastShoe of chatContext.pastShoes) {
+      if (pastShoe.brand && (pastShoe.sentiment === "disliked" || pastShoe.sentiment === "hated")) {
+        if (pastShoe.brand.toLowerCase() === shoe.brand.toLowerCase()) {
+          return false;
+        }
       }
     }
   }
@@ -825,6 +839,318 @@ function scoreFootStrikeMatch(shoe: Shoe, profile?: RunnerProfile): number {
   return 0;
 }
 
+// ============================================================================
+// CHAT CONTEXT MODIFIERS
+// ============================================================================
+
+/**
+ * Score based on injuries mentioned in chat
+ * Boosts cushion/stability for injury-prone runners
+ */
+function scoreChatInjuryModifiers(shoe: Shoe, chatContext?: ChatContext): number {
+  if (!chatContext?.injuries || chatContext.injuries.length === 0) return 0;
+
+  let score = 0;
+
+  for (const injury of chatContext.injuries) {
+    if (!injury.current) continue; // Only score current injuries
+
+    const injuryLower = injury.injury.toLowerCase();
+
+    // Shin splints: boost cushion and stability
+    if (injuryLower.includes("shin") || injuryLower.includes("tibia")) {
+      if (shoe.cushion_softness_1to5 >= 4) score += 12;
+      if (shoe.stability_1to5 >= 3) score += 8;
+      if (shoe.cushion_softness_1to5 <= 2) score -= 10; // Penalize firm shoes
+    }
+
+    // Plantar fasciitis: boost cushion, stability, avoid minimal drop
+    if (injuryLower.includes("plantar") || injuryLower.includes("heel pain")) {
+      if (shoe.cushion_softness_1to5 >= 4) score += 12;
+      if (shoe.stability_1to5 >= 3) score += 8;
+      if (shoe.heel_drop_mm <= 4) score -= 10; // Low drop can aggravate PF
+      if (shoe.heel_drop_mm >= 8) score += 5; // Higher drop can help
+    }
+
+    // Achilles issues: prefer higher drop, avoid aggressive forefoot
+    if (injuryLower.includes("achilles")) {
+      if (shoe.heel_drop_mm >= 8) score += 10;
+      if (shoe.heel_drop_mm <= 4) score -= 12;
+      if (shoe.heel_geometry === "aggressive_forefoot") score -= 15;
+    }
+
+    // Knee issues: boost cushion and stability
+    if (injuryLower.includes("knee") || injuryLower.includes("it band") || injuryLower.includes("itb")) {
+      if (shoe.cushion_softness_1to5 >= 4) score += 10;
+      if (shoe.stability_1to5 >= 3) score += 10;
+      if (shoe.stability_1to5 <= 2) score -= 8;
+    }
+
+    // Hip/back issues: boost cushion
+    if (injuryLower.includes("hip") || injuryLower.includes("back") || injuryLower.includes("lower back")) {
+      if (shoe.cushion_softness_1to5 >= 4) score += 10;
+    }
+
+    // Foot issues (metatarsal, Morton's): boost cushion, prefer roomy toe box
+    if (injuryLower.includes("metatarsal") || injuryLower.includes("morton") || injuryLower.includes("ball of foot")) {
+      if (shoe.cushion_softness_1to5 >= 4) score += 8;
+      if (shoe.toe_box === "roomy" || shoe.toe_box === "wide") score += 10;
+      if (shoe.toe_box === "narrow") score -= 12;
+    }
+  }
+
+  return score;
+}
+
+/**
+ * Score based on fit preferences from chat
+ * Wide feet, narrow feet, volume issues
+ */
+function scoreChatFitModifiers(shoe: Shoe, chatContext?: ChatContext): number {
+  if (!chatContext?.fit) return 0;
+
+  let score = 0;
+  const fit = chatContext.fit;
+
+  // Width preferences
+  if (fit.width === "wide" || fit.width === "extra_wide") {
+    if (shoe.toe_box === "roomy" || shoe.toe_box === "wide") score += 12;
+    if (shoe.width_options?.includes("wide")) score += 8;
+    if (shoe.toe_box === "narrow") score -= 15;
+    if (shoe.fit_volume === "snug" || shoe.fit_volume === "narrow") score -= 10;
+  }
+
+  if (fit.width === "narrow") {
+    if (shoe.toe_box === "narrow") score += 10;
+    if (shoe.fit_volume === "snug") score += 8;
+    if (shoe.toe_box === "roomy" || shoe.toe_box === "wide") score -= 10;
+  }
+
+  // Volume preferences
+  if (fit.volume === "high") {
+    if (shoe.fit_volume === "roomy") score += 10;
+    if (shoe.fit_volume === "snug" || shoe.fit_volume === "narrow") score -= 10;
+  }
+
+  if (fit.volume === "low") {
+    if (shoe.fit_volume === "snug") score += 10;
+    if (shoe.fit_volume === "roomy") score -= 8;
+  }
+
+  // Specific fit issues
+  if (fit.issues) {
+    for (const issue of fit.issues) {
+      const issueLower = issue.toLowerCase();
+
+      if (issueLower.includes("heel slip") || issueLower.includes("heel lockdown")) {
+        // Can't easily score for this without heel data, but snug fit helps
+        if (shoe.fit_volume === "snug") score += 5;
+      }
+
+      if (issueLower.includes("toe cramp") || issueLower.includes("toe box")) {
+        if (shoe.toe_box === "roomy" || shoe.toe_box === "wide") score += 10;
+        if (shoe.toe_box === "narrow") score -= 12;
+      }
+
+      if (issueLower.includes("blister")) {
+        // Blisters often from too narrow or too loose - can't reliably score
+      }
+    }
+  }
+
+  return score;
+}
+
+/**
+ * Score based on climate mentioned in chat
+ * Wet conditions, hot weather
+ */
+function scoreChatClimateModifiers(shoe: Shoe, chatContext?: ChatContext): number {
+  if (!chatContext?.climate) return 0;
+
+  let score = 0;
+  const climateLower = chatContext.climate.toLowerCase();
+
+  // Wet/rainy conditions: boost good wet grip
+  if (climateLower.includes("wet") || climateLower.includes("rain") || climateLower.includes("slippery")) {
+    if (shoe.wet_grip === "excellent") score += 12;
+    if (shoe.wet_grip === "good") score += 8;
+    if (shoe.wet_grip === "poor") score -= 12;
+    if (shoe.wet_grip === "average") score -= 3;
+  }
+
+  // Cold/winter conditions: wet grip important
+  if (climateLower.includes("cold") || climateLower.includes("winter") || climateLower.includes("snow") || climateLower.includes("ice")) {
+    if (shoe.wet_grip === "excellent") score += 10;
+    if (shoe.wet_grip === "good") score += 6;
+    if (shoe.wet_grip === "poor") score -= 10;
+  }
+
+  // Hot conditions: lighter weight preferred
+  if (climateLower.includes("hot") || climateLower.includes("humid") || climateLower.includes("summer")) {
+    if (shoe.weight_g < 250) score += 5;
+    if (shoe.weight_g > 300) score -= 5;
+  }
+
+  return score;
+}
+
+/**
+ * Score based on specific requests from chat
+ * Lightweight, cushioned, fast, etc.
+ */
+function scoreChatRequestModifiers(shoe: Shoe, chatContext?: ChatContext): number {
+  if (!chatContext?.requests || chatContext.requests.length === 0) return 0;
+
+  let score = 0;
+
+  for (const request of chatContext.requests) {
+    const requestLower = request.toLowerCase();
+
+    // Lightweight requests
+    if (requestLower.includes("light") || requestLower.includes("lightweight")) {
+      if (shoe.weight_g < 230) score += 12;
+      else if (shoe.weight_g < 260) score += 6;
+      else if (shoe.weight_g > 300) score -= 10;
+    }
+
+    // Cushion/soft requests
+    if (requestLower.includes("cushion") || requestLower.includes("soft") || requestLower.includes("plush")) {
+      if (shoe.cushion_softness_1to5 >= 4) score += 10;
+      if (shoe.cushion_softness_1to5 <= 2) score -= 10;
+    }
+
+    // Firm/responsive requests
+    if (requestLower.includes("firm") || requestLower.includes("responsive") || requestLower.includes("snappy")) {
+      if (shoe.bounce_1to5 >= 4) score += 8;
+      if (shoe.cushion_softness_1to5 <= 3) score += 5;
+    }
+
+    // Stability requests
+    if (requestLower.includes("stable") || requestLower.includes("stability") || requestLower.includes("support")) {
+      if (shoe.stability_1to5 >= 4) score += 10;
+      if (shoe.stability_1to5 <= 2) score -= 8;
+    }
+
+    // Speed/fast requests
+    if (requestLower.includes("fast") || requestLower.includes("speed") || requestLower.includes("racing")) {
+      if (shoe.weight_g < 250) score += 8;
+      if (shoe.bounce_1to5 >= 4) score += 6;
+      if (shoe.has_plate) score += 5;
+    }
+
+    // Long run requests
+    if (requestLower.includes("long run") || requestLower.includes("marathon") || requestLower.includes("distance")) {
+      if (shoe.cushion_softness_1to5 >= 3) score += 5;
+      if (shoeHasArchetype(shoe, 'daily_trainer')) score += 5;
+    }
+
+    // Recovery/easy requests
+    if (requestLower.includes("recovery") || requestLower.includes("easy") || requestLower.includes("comfortable")) {
+      if (shoe.cushion_softness_1to5 >= 4) score += 8;
+      if (shoeHasArchetype(shoe, 'recovery_shoe')) score += 8;
+    }
+
+    // Bouncy requests
+    if (requestLower.includes("bouncy") || requestLower.includes("energetic") || requestLower.includes("poppy")) {
+      if (shoe.bounce_1to5 >= 4) score += 10;
+      if (shoe.bounce_1to5 <= 2) score -= 8;
+    }
+
+    // Rocker requests
+    if (requestLower.includes("rocker") || requestLower.includes("roll")) {
+      if (shoe.rocker_1to5 >= 4) score += 10;
+    }
+
+    // Ground feel requests
+    if (requestLower.includes("ground feel") || requestLower.includes("road feel") || requestLower.includes("connected")) {
+      if (shoe.ground_feel_1to5 >= 4) score += 10;
+      if (shoe.ground_feel_1to5 <= 2) score -= 8;
+    }
+
+    // Low drop requests
+    if (requestLower.includes("low drop") || requestLower.includes("zero drop")) {
+      if (shoe.heel_drop_mm <= 4) score += 10;
+      if (shoe.heel_drop_mm >= 10) score -= 8;
+    }
+  }
+
+  return score;
+}
+
+/**
+ * Score based on past shoe sentiment from chat
+ * If they loved/hated specific shoes, boost/penalize similar profiles
+ */
+function scoreChatPastShoeModifiers(shoe: Shoe, chatContext?: ChatContext): number {
+  if (!chatContext?.pastShoes || chatContext.pastShoes.length === 0) return 0;
+
+  let score = 0;
+
+  for (const pastShoe of chatContext.pastShoes) {
+    // Reason-based scoring (more specific than just brand/sentiment)
+    if (pastShoe.reason) {
+      const reasonLower = pastShoe.reason.toLowerCase();
+
+      if (pastShoe.sentiment === "loved" || pastShoe.sentiment === "liked") {
+        // Boost similar characteristics
+        if (reasonLower.includes("cushion") || reasonLower.includes("soft")) {
+          if (shoe.cushion_softness_1to5 >= 4) score += 6;
+        }
+        if (reasonLower.includes("bouncy") || reasonLower.includes("responsive")) {
+          if (shoe.bounce_1to5 >= 4) score += 6;
+        }
+        if (reasonLower.includes("light")) {
+          if (shoe.weight_g < 250) score += 6;
+        }
+        if (reasonLower.includes("stable")) {
+          if (shoe.stability_1to5 >= 4) score += 6;
+        }
+      }
+
+      if (pastShoe.sentiment === "disliked" || pastShoe.sentiment === "hated") {
+        // Penalize similar characteristics
+        if (reasonLower.includes("too soft") || reasonLower.includes("mushy")) {
+          if (shoe.cushion_softness_1to5 >= 4) score -= 8;
+        }
+        if (reasonLower.includes("too firm") || reasonLower.includes("harsh")) {
+          if (shoe.cushion_softness_1to5 <= 2) score -= 8;
+        }
+        if (reasonLower.includes("heavy")) {
+          if (shoe.weight_g > 280) score -= 8;
+        }
+        if (reasonLower.includes("unstable") || reasonLower.includes("wobbly")) {
+          if (shoe.stability_1to5 <= 2) score -= 8;
+        }
+        if (reasonLower.includes("narrow") || reasonLower.includes("tight")) {
+          if (shoe.toe_box === "narrow") score -= 10;
+        }
+        if (reasonLower.includes("wide") || reasonLower.includes("sloppy")) {
+          if (shoe.toe_box === "roomy" || shoe.toe_box === "wide") score -= 8;
+        }
+      }
+    }
+  }
+
+  return score;
+}
+
+/**
+ * Combined chat context scoring
+ * Applies all chat-extracted modifiers
+ */
+function scoreChatContextModifiers(shoe: Shoe, chatContext?: ChatContext): number {
+  if (!chatContext) return 0;
+
+  return (
+    scoreChatInjuryModifiers(shoe, chatContext) +
+    scoreChatFitModifiers(shoe, chatContext) +
+    scoreChatClimateModifiers(shoe, chatContext) +
+    scoreChatRequestModifiers(shoe, chatContext) +
+    scoreChatPastShoeModifiers(shoe, chatContext)
+  );
+}
+
 /**
  * Calculate total score for a shoe
  * Applies all modifiers per SCORING_MODIFIERS.md
@@ -854,6 +1180,9 @@ export function scoreShoe(
   // Current shoe sentiment modifiers
   const loveDislikeModifier = scoreLoveDislikeTagModifiers(shoe, constraints.currentShoes);
 
+  // Chat context modifiers (injuries, fit, climate, requests)
+  const chatContextModifier = scoreChatContextModifiers(shoe, constraints.chatContext);
+
   // Sum all scores (per spec: modifiers stack, minimum final score = 0)
   const totalScore = Math.max(0,
     archetypeScore +
@@ -868,7 +1197,8 @@ export function scoreShoe(
     paceBucketModifier +
     bmiModifier +
     trailPreferenceModifier +
-    loveDislikeModifier
+    loveDislikeModifier +
+    chatContextModifier
   );
 
   return {
