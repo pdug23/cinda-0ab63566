@@ -20,17 +20,15 @@ const OptionalBadge = () => (
 
 const GOAL_OPTIONS: { value: PrimaryGoal; label: string; description: string }[] = [
   { value: "general_fitness", label: "general fitness", description: "stay healthy and active" },
-  { value: "improve_pace", label: "improve pace", description: "get faster and more efficient" },
-  { value: "train_for_race", label: "train for race", description: "preparing for an event" },
-  { value: "comfort_recovery", label: "recovery", description: "easy miles and injury prevention" },
-  { value: "just_for_fun", label: "just for fun", description: "enjoy the run, no specific goals" },
+  { value: "get_faster", label: "get faster", description: "improve times and efficiency" },
+  { value: "race_training", label: "train for race", description: "preparing for an event" },
+  { value: "injury_comeback", label: "injury comeback", description: "returning to running safely" },
 ];
 
 const PATTERN_OPTIONS: { value: RunningPattern; label: string; description: string }[] = [
-  { value: "structured_training", label: "structured training", description: "2+ runs/week, mix of easy, tempo, and long runs" },
-  { value: "mostly_easy", label: "mostly easy", description: "2+ runs/week, mostly easy pace with the occasional faster effort" },
-  { value: "workouts", label: "workout-focused", description: "2+ runs/week, mostly workouts and hard efforts" },
-  { value: "infrequent", label: "infrequent", description: "1 run/week or less" },
+  { value: "structured_training", label: "structured", description: "3+ runs/week with long runs, workouts, and recovery days" },
+  { value: "mostly_easy", label: "regular", description: "2+ runs/week, mix of easy and harder efforts" },
+  { value: "infrequent", label: "casual", description: "1 run/week or less" },
 ];
 
 const TRAIL_OPTIONS: { value: TrailRunning; label: string; description: string }[] = [

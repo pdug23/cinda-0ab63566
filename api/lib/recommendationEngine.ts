@@ -615,6 +615,22 @@ export async function generateRecommendations(
   const scoredCandidates: ScoredShoe[] = candidates.map(shoe => ({
     shoe,
     score: 50 + scoreForGapFit(shoe, gap, profile),
+    breakdown: {
+      archetypeScore: 50,
+      feelScore: 0,
+      heelDropScore: 0,
+      stabilityBonus: 0,
+      availabilityBonus: 0,
+      footStrikeScore: 0,
+      experienceScore: 0,
+      primaryGoalScore: scoreForGapFit(shoe, gap, profile),
+      runningPatternScore: 0,
+      paceBucketScore: 0,
+      bmiScore: 0,
+      trailScore: 0,
+      loveDislikeScore: 0,
+      chatContextScore: 0,
+    },
   }));
 
   // Step 5: Select 3 diverse shoes
