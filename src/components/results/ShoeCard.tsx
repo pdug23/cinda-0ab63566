@@ -12,15 +12,18 @@ interface ShoeCardProps {
     version: string;
     matchReason: string[];
     keyStrengths: string[];
-    recommendationType: "closest_match" | "close_match" | "close_match_2" | "trade_off_option";
+    recommendationType: "closest_match" | "close_match" | "close_match_2" | "trade_off" | "trade_off_option";
     badge?: "closest_match" | "close_match" | "trade_off";
-    weight_feel_1to5: 1 | 2 | 3 | 4 | 5;
+    weight_g?: number;
+    weight_feel_1to5?: 1 | 2 | 3 | 4 | 5;
     heel_drop_mm: number;
     has_plate: boolean;
     plate_material: "Nylon" | "Plastic" | "Carbon" | null;
     tradeOffs?: string[];
     similar_to?: string;
     role?: string; // For Shopping Mode - shows which role this shoe is for
+    archetype?: string; // For Discovery Mode - shows which archetype this shoe is for
+    archetypes?: string[]; // Array of archetypes this shoe works for
     // Use case booleans for "also works for" popover
     use_daily?: boolean;
     use_easy_recovery?: boolean;
@@ -38,7 +41,8 @@ interface ShoeCardProps {
 
 // Glow colors are now derived from badge type (see getBadgeConfig)
 
-const getWeightLabel = (weight: 1 | 2 | 3 | 4 | 5): string => {
+const getWeightLabel = (weight?: 1 | 2 | 3 | 4 | 5): string => {
+  if (!weight) return "–";
   const labels: Record<number, string> = {
     1: "very light",
     2: "light",
@@ -72,9 +76,15 @@ const getBadgeConfig = (
   return { text: "CLOSE MATCH", color: "#34D399" }; // Lighter lime-ish
 };
 
-const getRoleBadgeLabel = (role: string): string => {
-  const roleLabels: Record<string, string> = {
+const getRoleBadgeLabel = (roleOrArchetype: string): string => {
+  const labels: Record<string, string> = {
+    // Archetype values
     daily_trainer: "DAILY",
+    recovery_shoe: "RECOVERY",
+    workout_shoe: "WORKOUT",
+    race_shoe: "RACE",
+    trail_shoe: "TRAIL",
+    // Legacy role values
     daily: "DAILY",
     tempo: "TEMPO",
     race_day: "RACE",
@@ -85,7 +95,7 @@ const getRoleBadgeLabel = (role: string): string => {
     trail: "TRAIL",
     intervals: "INTERVALS",
   };
-  return roleLabels[role.toLowerCase()] || role.toUpperCase();
+  return labels[roleOrArchetype.toLowerCase()] || roleOrArchetype.toUpperCase();
 };
 
 const getOtherApplicableRoles = (shoe: ShoeCardProps["shoe"], currentRole?: string): string[] => {
@@ -133,7 +143,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
   const shimmer = badgeConfig.color;
   const weightLabel = getWeightLabel(shoe.weight_feel_1to5);
   const plateLabel = getPlateLabel(shoe.has_plate, shoe.plate_material);
-  const roleBadgeLabel = shoe.role ? getRoleBadgeLabel(shoe.role) : "";
+  const roleBadgeLabel = (shoe.role || shoe.archetype) ? getRoleBadgeLabel(shoe.role || shoe.archetype!) : "";
 
   // Always dark background - light text
   const textColor = "rgba(255, 255, 255, 0.9)";
