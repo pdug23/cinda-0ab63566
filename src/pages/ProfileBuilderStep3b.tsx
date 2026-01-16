@@ -17,7 +17,17 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const CINDA_OPENING = "you've told me the basics, but running's personal. past injuries, shoes that didn't work out, weird fit issues... if there's anything else that might help, let me know.";
+const CINDA_GREETING = "👋 hey, cinda here.";
+
+const CINDA_FOLLOWUPS = [
+  "you've told me the basics, but running's personal. past injuries, shoes that didn't work out, weird fit issues, weather you run in... if there's anything else that might help, let me know.",
+  "thanks for the info so far. before i find your shoes — anything else i should know? injuries, fit quirks, shoes you've loved or hated, or the weather you usually run in?",
+  "almost there. if there's anything the questions didn't cover — past injuries, brands that don't work for you, wet or hot conditions, that kind of thing — now's the time.",
+  "one more thing before i get your recommendations. anything else that might affect your shoe choice? injuries, fit issues, weather conditions, specific needs?",
+  "got the basics. if there's anything personal that might help — an old injury, a shoe that never worked, wide feet, rainy climate — feel free to share.",
+];
+
+const getRandomFollowup = () => CINDA_FOLLOWUPS[Math.floor(Math.random() * CINDA_FOLLOWUPS.length)];
 
 const ProfileBuilderStep3b = () => {
   const navigate = useNavigate();
@@ -44,36 +54,86 @@ const ProfileBuilderStep3b = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Show initial typing, then Cinda's opening message with typewriter effect
+  // Track which phase of the intro we're in
+  const [introPhase, setIntroPhase] = useState<'typing1' | 'message1' | 'pause' | 'typing2' | 'message2' | 'done'>(() => {
+    return profileData.step3.chatHistory.length === 0 ? 'typing1' : 'done';
+  });
+  
+  // Store the randomly selected followup message
+  const [selectedFollowup] = useState(() => getRandomFollowup());
+
+  // Multi-phase intro sequence
   useEffect(() => {
-    if (showInitialTyping) {
-      const timer = setTimeout(() => {
-        setIsTyping(false);
-        setShowInitialTyping(false);
-        const openingMessage: ChatMessage = {
-          role: 'assistant',
-          content: CINDA_OPENING,
-          timestamp: new Date(),
-        };
-        setMessages([openingMessage]);
-        setTypingMessageIndex(0); // Start typewriter for first message
-        updateChatHistory([openingMessage]);
-      }, 1500);
-      return () => clearTimeout(timer);
+    if (introPhase === 'done') return;
+
+    let timer: NodeJS.Timeout;
+
+    switch (introPhase) {
+      case 'typing1':
+        // Show typing indicator for 1s, then show first message
+        timer = setTimeout(() => {
+          setIsTyping(false);
+          const greetingMessage: ChatMessage = {
+            role: 'assistant',
+            content: CINDA_GREETING,
+            timestamp: new Date(),
+          };
+          setMessages([greetingMessage]);
+          setTypingMessageIndex(0);
+          setIntroPhase('message1');
+        }, 1000);
+        break;
+
+      case 'message1':
+        // Wait for typewriter to complete, handled by onComplete callback
+        break;
+
+      case 'pause':
+        // 500ms pause, then show typing indicator again
+        timer = setTimeout(() => {
+          setIsTyping(true);
+          setIntroPhase('typing2');
+        }, 500);
+        break;
+
+      case 'typing2':
+        // Show typing indicator for 1s, then show second message
+        timer = setTimeout(() => {
+          setIsTyping(false);
+          const followupMessage: ChatMessage = {
+            role: 'assistant',
+            content: selectedFollowup,
+            timestamp: new Date(),
+          };
+          setMessages(prev => {
+            const updated = [...prev, followupMessage];
+            updateChatHistory(updated);
+            return updated;
+          });
+          setTypingMessageIndex(1);
+          setIntroPhase('message2');
+        }, 1000);
+        break;
+
+      case 'message2':
+        // Wait for typewriter to complete, handled by onComplete callback
+        break;
     }
-  }, [showInitialTyping, updateChatHistory]);
+
+    return () => clearTimeout(timer);
+  }, [introPhase, selectedFollowup, updateChatHistory]);
 
   // Scroll to bottom when messages change or during typewriter
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping, typingMessageIndex]);
 
-  // Focus input after initial typing completes
+  // Focus input after intro completes
   useEffect(() => {
-    if (!showInitialTyping && !isTyping) {
+    if (introPhase === 'done' && !isTyping) {
       inputRef.current?.focus();
     }
-  }, [showInitialTyping, isTyping]);
+  }, [introPhase, isTyping]);
 
   const handleSend = async () => {
     if (!inputValue.trim() || isTyping) return;
@@ -227,7 +287,16 @@ const ProfileBuilderStep3b = () => {
                       <TypewriterText 
                         text={message.content} 
                         speed={40}
-                        onComplete={() => setTypingMessageIndex(null)}
+                        onComplete={() => {
+                          setTypingMessageIndex(null);
+                          // Progress intro phases when typewriter completes
+                          if (introPhase === 'message1') {
+                            setIntroPhase('pause');
+                          } else if (introPhase === 'message2') {
+                            setShowInitialTyping(false);
+                            setIntroPhase('done');
+                          }
+                        }}
                       />
                     ) : (
                       message.content
@@ -278,7 +347,7 @@ const ProfileBuilderStep3b = () => {
                 onKeyDown={handleKeyDown}
                 placeholder="message cinda..."
                 rows={1}
-                disabled={isTyping || showInitialTyping}
+                disabled={isTyping || introPhase !== 'done'}
                 className={cn(
                   "flex-1 bg-transparent resize-none text-sm leading-relaxed",
                   "text-card-foreground placeholder:text-card-foreground/30",
@@ -290,7 +359,7 @@ const ProfileBuilderStep3b = () => {
               />
               <button
                 onClick={handleSend}
-                disabled={!inputValue.trim() || isTyping || showInitialTyping}
+                disabled={!inputValue.trim() || isTyping || introPhase !== 'done'}
                 className={cn(
                   "flex-shrink-0 p-1.5 rounded-lg",
                   "text-card-foreground/30 hover:text-card-foreground",
@@ -307,7 +376,7 @@ const ProfileBuilderStep3b = () => {
               onClick={handleContinue}
               variant="cta"
               className="w-full min-h-[44px] text-sm"
-              disabled={showInitialTyping}
+              disabled={introPhase !== 'done'}
             >
               next
             </Button>
