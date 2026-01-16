@@ -553,24 +553,40 @@ const ProfileBuilderStep4b = () => {
     setPreferences(getDefaultPreferences());
   }, [currentArchetype]);
 
-  // Auto-populate excluded brands from chat context (disliked pastShoes)
+  // Auto-populate brand preferences from chat context (liked/disliked pastShoes)
   useEffect(() => {
     const { pastShoes } = step3.chatContext;
+    const likedBrands: string[] = [];
     const dislikedBrands: string[] = [];
     
     for (const shoe of pastShoes) {
-      if (typeof shoe === "object" && shoe.sentiment === "disliked") {
+      if (typeof shoe === "object" && shoe.brand) {
         // Normalize brand name to match BRAND_OPTIONS
         const normalizedBrand = BRAND_OPTIONS.find(
           (b) => b.toLowerCase() === shoe.brand.toLowerCase()
         );
-        if (normalizedBrand && !dislikedBrands.includes(normalizedBrand)) {
-          dislikedBrands.push(normalizedBrand);
+        
+        if (normalizedBrand) {
+          if (shoe.sentiment === "liked" && !likedBrands.includes(normalizedBrand)) {
+            likedBrands.push(normalizedBrand);
+          } else if (shoe.sentiment === "disliked" && !dislikedBrands.includes(normalizedBrand)) {
+            dislikedBrands.push(normalizedBrand);
+          }
         }
       }
     }
     
-    if (dislikedBrands.length > 0) {
+    // Prioritize: if user liked specific brands, use "only" mode
+    // Otherwise, if user disliked brands, use "exclude" mode
+    if (likedBrands.length > 0) {
+      setPreferences((prev) => ({
+        ...prev,
+        brandPreference: {
+          mode: "include",
+          brands: likedBrands,
+        },
+      }));
+    } else if (dislikedBrands.length > 0) {
       setPreferences((prev) => ({
         ...prev,
         brandPreference: {
