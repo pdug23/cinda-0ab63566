@@ -7,6 +7,7 @@ import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { useProfile, ChatMessage } from "@/contexts/ProfileContext";
 import { cn } from "@/lib/utils";
+import cindaLogoGrey from "@/assets/cinda-logo-grey.png";
 
 const CINDA_OPENING = "you've told me the basics, but running's personal. past injuries, shoes that didn't work out, weird fit issues... if there's anything else that might help, let me know.";
 
@@ -153,40 +154,42 @@ const ProfileBuilderStep3b = () => {
             </button>
           </header>
 
-          {/* Intro text - matches other steps */}
-          <div className="px-6 md:px-8 pb-4">
-            <p className="italic text-orange-500 text-sm">
-              anything else I should know?
-            </p>
-          </div>
-
           {/* Chat messages area - fills middle space */}
-          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-styled touch-pan-y px-6 md:px-8 space-y-4 pb-4">
+          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-styled touch-pan-y px-6 md:px-8 space-y-6 pb-4">
             {messages.map((message, index) => (
               <div
                 key={index}
                 className={cn(
-                  "max-w-[85%] rounded-xl px-4 py-3 text-sm leading-relaxed animate-fade-in",
+                  "animate-fade-in",
                   message.role === 'assistant'
-                    ? "bg-card-foreground/[0.07] border border-card-foreground/10 text-card-foreground/80 mr-auto"
-                    : "bg-orange-500/90 text-white ml-auto"
+                    ? "max-w-[90%] mr-auto"
+                    : "max-w-[85%] ml-auto"
                 )}
               >
-                {message.content}
+                {message.role === 'assistant' ? (
+                  // Cinda messages: plain text, no bubble
+                  <p className="text-sm leading-relaxed text-card-foreground/70">
+                    {message.content}
+                  </p>
+                ) : (
+                  // User messages: subtle muted box
+                  <div className="rounded-2xl px-4 py-3 bg-card-foreground/[0.08] border border-card-foreground/15">
+                    <p className="text-sm leading-relaxed text-card-foreground/90">
+                      {message.content}
+                    </p>
+                  </div>
+                )}
               </div>
             ))}
             
-            {/* Typing indicator */}
+            {/* Typing indicator - animated Cinda logo */}
             {isTyping && (
-              <div className="max-w-[85%] rounded-xl px-4 py-3 bg-card-foreground/[0.07] border border-card-foreground/10 mr-auto animate-fade-in">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-card-foreground/50 italic">cinda is typing</span>
-                  <div className="flex gap-1">
-                    <span className="w-1.5 h-1.5 bg-card-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <span className="w-1.5 h-1.5 bg-card-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <span className="w-1.5 h-1.5 bg-card-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                  </div>
-                </div>
+              <div className="animate-fade-in">
+                <img 
+                  src={cindaLogoGrey} 
+                  alt="Cinda is typing" 
+                  className="w-6 h-6 opacity-50 animate-pulse"
+                />
               </div>
             )}
             
@@ -202,27 +205,31 @@ const ProfileBuilderStep3b = () => {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="type here..."
+                placeholder="message cinda..."
                 rows={1}
                 disabled={isTyping || showInitialTyping}
                 className={cn(
                   "flex-1 resize-none rounded-lg px-4 py-3 text-sm",
-                  "bg-card-foreground/5 border border-card-foreground/20",
+                  "bg-transparent border border-card-foreground/15",
                   "text-card-foreground placeholder:text-card-foreground/40",
-                  "focus:outline-none focus:border-card-foreground/40",
+                  "focus:outline-none focus:border-card-foreground/30",
                   "disabled:opacity-50 disabled:cursor-not-allowed",
                   "transition-colors"
                 )}
                 style={{ minHeight: "48px", maxHeight: "120px" }}
               />
-              <Button
+              <button
                 onClick={handleSend}
                 disabled={!inputValue.trim() || isTyping || showInitialTyping}
-                size="icon"
-                className="h-12 w-12 rounded-lg bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                className={cn(
+                  "h-12 w-12 rounded-lg flex items-center justify-center flex-shrink-0",
+                  "text-card-foreground/40 hover:text-card-foreground",
+                  "disabled:opacity-30 disabled:cursor-not-allowed",
+                  "transition-colors"
+                )}
               >
-                <Send className="w-4 h-4" />
-              </Button>
+                <Send className="w-5 h-5" />
+              </button>
             </div>
 
             {/* Continue button */}
@@ -232,7 +239,7 @@ const ProfileBuilderStep3b = () => {
               className="w-full min-h-[44px] text-sm"
               disabled={showInitialTyping}
             >
-              I'm done, find my shoes
+              next
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </footer>
