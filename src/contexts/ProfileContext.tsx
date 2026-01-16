@@ -117,9 +117,19 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
+// Extracted context from chat - accumulated across messages
+export interface ChatContext {
+  injuries: string[];
+  pastShoes: string[];
+  fit: Record<string, string>;
+  climate: string | null;
+  requests: string[];
+}
+
 export interface Step3Data {
   currentShoes: CurrentShoe[];
   chatHistory: ChatMessage[];
+  chatContext: ChatContext;
 }
 
 // Step 4 data - discovery mode selections
@@ -166,6 +176,13 @@ const defaultStep2: Step2Data = {
 const defaultStep3: Step3Data = {
   currentShoes: [],
   chatHistory: [],
+  chatContext: {
+    injuries: [],
+    pastShoes: [],
+    fit: {},
+    climate: null,
+    requests: [],
+  },
 };
 
 const defaultStep4: Step4Data = {
@@ -183,6 +200,7 @@ interface ProfileContextType {
   updateStep3: (data: Partial<Step3Data>) => void;
   updateStep4: (data: Partial<Step4Data>) => void;
   updateChatHistory: (messages: ChatMessage[]) => void;
+  updateChatContext: (context: Partial<ChatContext>) => void;
   clearAll: () => void;
 }
 
@@ -231,6 +249,22 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
+  const updateChatContext = (context: Partial<ChatContext>) => {
+    setProfileData((prev) => ({
+      ...prev,
+      step3: {
+        ...prev.step3,
+        chatContext: {
+          injuries: [...prev.step3.chatContext.injuries, ...(context.injuries || [])],
+          pastShoes: [...prev.step3.chatContext.pastShoes, ...(context.pastShoes || [])],
+          fit: { ...prev.step3.chatContext.fit, ...(context.fit || {}) },
+          climate: context.climate ?? prev.step3.chatContext.climate,
+          requests: [...prev.step3.chatContext.requests, ...(context.requests || [])],
+        },
+      },
+    }));
+  };
+
   const clearAll = () => {
     setProfileData({
       step1: defaultStep1,
@@ -241,7 +275,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <ProfileContext.Provider value={{ profileData, updateStep1, updateStep2, updateStep3, updateStep4, updateChatHistory, clearAll }}>
+    <ProfileContext.Provider value={{ profileData, updateStep1, updateStep2, updateStep3, updateStep4, updateChatHistory, updateChatContext, clearAll }}>
       {children}
     </ProfileContext.Provider>
   );
