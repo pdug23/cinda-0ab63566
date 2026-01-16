@@ -118,7 +118,7 @@ RULES:
       text: {
         verbosity: 'low'
       },
-      max_output_tokens: 1000
+      max_output_tokens: 2500
     });
 
     console.log('[generateMatchDescription] Raw LLM response:', JSON.stringify(response, null, 2));
