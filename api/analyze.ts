@@ -206,15 +206,53 @@ export default async function handler(
         "not_sure": "daily_trainer"
       };
 
-      // Normalize shoeRequests: convert "role" to "archetype" if needed
+      // Default feel preferences for when frontend doesn't send them
+      const defaultFeelPreferences = {
+        cushionAmount: { mode: 'cinda_decides' as const },
+        stabilityAmount: { mode: 'cinda_decides' as const },
+        energyReturn: { mode: 'cinda_decides' as const },
+        rocker: { mode: 'cinda_decides' as const },
+        groundFeel: { mode: 'cinda_decides' as const },
+        heelDropPreference: { mode: 'cinda_decides' as const }
+      };
+
+      // Normalize shoeRequests: convert "role" to "archetype" and ensure feelPreferences exists
       const normalizedShoeRequests = rawShoeRequests?.map((req: any) => {
+        let archetype = req.archetype;
+
         // If request has "role" but not "archetype", convert
-        if (req.role && !req.archetype) {
-          const archetype = roleToArchetype[req.role] || "daily_trainer";
+        if (req.role && !archetype) {
+          archetype = roleToArchetype[req.role] || "daily_trainer";
           console.log(`[analyze] Normalized role: ${req.role} → ${archetype}`);
-          return { ...req, archetype, role: undefined };
         }
-        return req;
+
+        // Ensure feelPreferences exists with defaults for any missing properties
+        const feelPreferences = {
+          ...defaultFeelPreferences,
+          ...(req.feelPreferences || {})
+        };
+
+        // Normalize each preference to ensure it has a mode property
+        const normalizePreference = (pref: any) => {
+          if (!pref) return { mode: 'cinda_decides' };
+          if (typeof pref === 'object' && pref.mode) return pref;
+          if (typeof pref === 'number') return { mode: 'user_set', value: pref };
+          return { mode: 'cinda_decides' };
+        };
+
+        return {
+          ...req,
+          archetype,
+          role: undefined,
+          feelPreferences: {
+            cushionAmount: normalizePreference(feelPreferences.cushionAmount),
+            stabilityAmount: normalizePreference(feelPreferences.stabilityAmount),
+            energyReturn: normalizePreference(feelPreferences.energyReturn),
+            rocker: normalizePreference(feelPreferences.rocker),
+            groundFeel: normalizePreference(feelPreferences.groundFeel),
+            heelDropPreference: normalizePreference(feelPreferences.heelDropPreference)
+          }
+        };
       });
 
       // Convert simple requestedArchetypes to shoeRequests if needed
