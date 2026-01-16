@@ -62,6 +62,8 @@ interface MatchDescriptionParams {
  * Returns three bullet points: midsole/ride, differentiator, versatility
  */
 async function generateMatchDescription(params: MatchDescriptionParams): Promise<string[]> {
+  console.log('[generateMatchDescription] Called with params:', JSON.stringify(params, null, 2));
+
   const archetypeLabel = params.archetype.replace('_', ' ');
 
   // Build descriptive context from specs
@@ -119,11 +121,15 @@ RULES:
       max_output_tokens: 1000
     });
 
+    console.log('[generateMatchDescription] Raw LLM response:', JSON.stringify(response, null, 2));
+
     let content: string | undefined;
     content = (response.output?.[0] as any)?.text?.trim();
     if (!content) content = (response.output as any)?.text?.trim();
     if (!content) content = (response.output?.[0] as any)?.content?.trim();
     if (!content) content = (response as any)?.output_text?.trim();
+
+    console.log('[generateMatchDescription] Extracted content:', content);
 
     if (content) {
       // Clean up numbered prefixes like "1. " or "1) " or "- "
@@ -133,12 +139,20 @@ RULES:
         .filter(line => line.length > 0)
         .map(line => line.replace(/^[\d]+[.\)]\s*/, '').replace(/^[-•]\s*/, '').trim());
 
+      console.log('[generateMatchDescription] Parsed lines:', lines);
+
       if (lines.length >= 3) {
-        return [lines[0], lines[1], lines[2]];
+        const result = [lines[0], lines[1], lines[2]];
+        console.log('[generateMatchDescription] Returning 3 bullets:', result);
+        return result;
       } else if (lines.length === 2) {
-        return [lines[0], lines[1], params.notableDetail];
+        const result = [lines[0], lines[1], params.notableDetail];
+        console.log('[generateMatchDescription] Only 2 lines, adding fallback. Returning:', result);
+        return result;
       } else if (lines.length === 1) {
-        return [lines[0], params.notableDetail, params.whyItFeelsThisWay.slice(0, 80)];
+        const result = [lines[0], params.notableDetail, params.whyItFeelsThisWay.slice(0, 80)];
+        console.log('[generateMatchDescription] Only 1 line, adding fallbacks. Returning:', result);
+        return result;
       }
     }
   } catch (error) {
@@ -146,6 +160,7 @@ RULES:
   }
 
   // Fallback if API fails
+  console.log('[generateMatchDescription] Using complete fallback - no valid content from LLM');
   return [
     params.notableDetail,
     params.whyItFeelsThisWay.length > 80

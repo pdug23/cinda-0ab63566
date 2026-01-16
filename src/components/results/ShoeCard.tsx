@@ -288,9 +288,9 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         {/* Divider */}
         <div className="h-px my-3" style={{ backgroundColor: dividerColor }} />
 
-        {/* Match Reasons - Two Bullet Points */}
+        {/* Match Reasons - Three Bullet Points */}
         <div className="space-y-1.5 mb-2">
-          {shoe.matchReason.slice(0, 2).map((reason, idx) => (
+          {shoe.matchReason.slice(0, 3).map((reason, idx) => (
             <div key={idx} className="flex items-start gap-2">
               <Check 
                 className="w-4 h-4 shrink-0 mt-0.5" 
