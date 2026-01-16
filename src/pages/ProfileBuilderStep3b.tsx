@@ -87,6 +87,11 @@ const ProfileBuilderStep3b = () => {
     setInputValue("");
     setIsTyping(true);
 
+    // Reset textarea height
+    if (inputRef.current) {
+      inputRef.current.style.height = "24px";
+    }
+
     // Simulate Cinda's response
     setTimeout(() => {
       const newExchangeCount = exchangeCount + 1;
@@ -182,13 +187,14 @@ const ProfileBuilderStep3b = () => {
               </div>
             ))}
             
-            {/* Typing indicator - animated Cinda logo */}
+            {/* Typing indicator - spinning Cinda logo */}
             {isTyping && (
               <div className="animate-fade-in">
                 <img 
                   src={cindaLogoGrey} 
                   alt="Cinda is typing" 
-                  className="w-6 h-6 opacity-50 animate-pulse"
+                  className="w-6 h-6 opacity-50 animate-spin"
+                  style={{ animationDuration: "2s" }}
                 />
               </div>
             )}
@@ -198,37 +204,41 @@ const ProfileBuilderStep3b = () => {
 
           {/* Input area and button - pinned to bottom */}
           <footer className="flex flex-col px-6 md:px-8 pt-4 pb-4 flex-shrink-0 gap-4">
-            {/* Input row */}
-            <div className="flex gap-3 items-end">
+            {/* Unified input container - ChatGPT-style */}
+            <div className="flex items-end gap-2 bg-card-foreground/[0.04] rounded-2xl px-4 py-2.5 border border-card-foreground/10 focus-within:border-card-foreground/20 transition-colors">
               <textarea
                 ref={inputRef}
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                onChange={(e) => {
+                  setInputValue(e.target.value);
+                  // Auto-resize: reset then clamp to max 4 lines (~96px)
+                  e.target.style.height = "auto";
+                  e.target.style.height = `${Math.min(e.target.scrollHeight, 96)}px`;
+                }}
                 onKeyDown={handleKeyDown}
                 placeholder="message cinda..."
                 rows={1}
                 disabled={isTyping || showInitialTyping}
                 className={cn(
-                  "flex-1 resize-none rounded-lg px-4 py-3 text-sm",
-                  "bg-transparent border border-card-foreground/15",
-                  "text-card-foreground placeholder:text-card-foreground/40",
-                  "focus:outline-none focus:border-card-foreground/30",
+                  "flex-1 bg-transparent resize-none text-sm leading-relaxed",
+                  "text-card-foreground placeholder:text-card-foreground/30",
+                  "focus:outline-none",
                   "disabled:opacity-50 disabled:cursor-not-allowed",
-                  "transition-colors"
+                  "overflow-y-auto scrollbar-styled"
                 )}
-                style={{ minHeight: "48px", maxHeight: "120px" }}
+                style={{ minHeight: "24px", maxHeight: "96px" }}
               />
               <button
                 onClick={handleSend}
                 disabled={!inputValue.trim() || isTyping || showInitialTyping}
                 className={cn(
-                  "h-12 w-12 rounded-lg flex items-center justify-center flex-shrink-0",
-                  "text-card-foreground/40 hover:text-card-foreground",
+                  "flex-shrink-0 p-1.5 rounded-lg",
+                  "text-card-foreground/30 hover:text-card-foreground",
                   "disabled:opacity-30 disabled:cursor-not-allowed",
                   "transition-colors"
                 )}
               >
-                <Send className="w-5 h-5" />
+                <Send className="w-4 h-4" />
               </button>
             </div>
 
