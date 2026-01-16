@@ -92,12 +92,14 @@ const OnboardingLayout = ({
           {children}
         </div>
         
-        {/* Text below container */}
-        {bottomText && (
-          <p className="mt-4 text-xs italic text-orange-400/50 text-center max-w-md px-4 transition-opacity duration-200">
-            {bottomText}
-          </p>
-        )}
+        {/* Bottom spacer - always present for consistent layout */}
+        <div className="mt-4 min-h-[32px] flex items-start justify-center">
+          {bottomText && (
+            <p className="text-xs italic text-orange-400/50 text-center max-w-md px-4 transition-opacity duration-200">
+              {bottomText}
+            </p>
+          )}
+        </div>
       </main>
     </div>
   );
