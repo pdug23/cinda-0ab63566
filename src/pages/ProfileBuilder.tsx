@@ -56,8 +56,8 @@ const UnitToggle = ({
 const EXPERIENCE_OPTIONS: { value: ExperienceLevel; label: string; description: string }[] = [
   { value: "beginner", label: "beginner", description: "new to running or just getting started" },
   { value: "intermediate", label: "intermediate", description: "running regularly for 6+ months" },
-  { value: "advanced", label: "advanced", description: "experienced runner with consistent training" },
-  { value: "racing_focused", label: "elite", description: "training seriously for competitive times" },
+  { value: "experienced", label: "experienced", description: "consistent training, knows your preferences" },
+  { value: "competitive", label: "competitive", description: "racing seriously, performance-focused" },
 ];
 
 const ProfileBuilder = () => {
