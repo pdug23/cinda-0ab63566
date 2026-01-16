@@ -139,18 +139,21 @@ RULES:
         .filter(line => line.length > 0)
         .map(line => line.replace(/^[\d]+[.\)]\s*/, '').replace(/^[-•]\s*/, '').trim());
 
-      console.log('[generateMatchDescription] Parsed lines:', lines);
+      // Ensure consistent punctuation - remove trailing periods
+      const normalizedLines = lines.map(line => line.replace(/\.$/, ''));
 
-      if (lines.length >= 3) {
-        const result = [lines[0], lines[1], lines[2]];
+      console.log('[generateMatchDescription] Parsed lines:', normalizedLines);
+
+      if (normalizedLines.length >= 3) {
+        const result = [normalizedLines[0], normalizedLines[1], normalizedLines[2]];
         console.log('[generateMatchDescription] Returning 3 bullets:', result);
         return result;
-      } else if (lines.length === 2) {
-        const result = [lines[0], lines[1], params.notableDetail];
+      } else if (normalizedLines.length === 2) {
+        const result = [normalizedLines[0], normalizedLines[1], params.notableDetail.replace(/\.$/, '')];
         console.log('[generateMatchDescription] Only 2 lines, adding fallback. Returning:', result);
         return result;
-      } else if (lines.length === 1) {
-        const result = [lines[0], params.notableDetail, params.whyItFeelsThisWay.slice(0, 80)];
+      } else if (normalizedLines.length === 1) {
+        const result = [normalizedLines[0], params.notableDetail.replace(/\.$/, ''), params.whyItFeelsThisWay.slice(0, 80).replace(/\.$/, '')];
         console.log('[generateMatchDescription] Only 1 line, adding fallbacks. Returning:', result);
         return result;
       }
@@ -162,11 +165,11 @@ RULES:
   // Fallback if API fails
   console.log('[generateMatchDescription] Using complete fallback - no valid content from LLM');
   return [
-    params.notableDetail,
+    params.notableDetail.replace(/\.$/, ''),
     params.whyItFeelsThisWay.length > 80
-      ? params.whyItFeelsThisWay.slice(0, 77) + '...'
-      : params.whyItFeelsThisWay,
-    `Well-suited for ${archetypeLabel}.`
+      ? params.whyItFeelsThisWay.slice(0, 77).replace(/\.$/, '') + '...'
+      : params.whyItFeelsThisWay.replace(/\.$/, ''),
+    `Well-suited for ${archetypeLabel}`
   ];
 }
 
@@ -187,6 +190,7 @@ function buildConstraintsFromGap(
     feelPreferences: feelPreferences,
     excludeShoeIds: currentShoes.map(s => s.shoeId),
     profile: profile,
+    currentShoes: currentShoes, // For love/dislike tag modifiers
   };
 
   // Determine stability need from feel preferences (only if user_set mode)
@@ -742,6 +746,7 @@ export async function generateDiscoveryRecommendations(
     feelPreferences: request.feelPreferences,
     excludeShoeIds: currentShoes.map(s => s.shoeId),
     profile: profile,
+    currentShoes: currentShoes, // For love/dislike tag modifiers
     stabilityNeed: (() => {
       const stabPref = request.feelPreferences.stabilityAmount;
       if (stabPref.mode === 'user_set' && stabPref.value !== undefined && stabPref.value >= 4) {

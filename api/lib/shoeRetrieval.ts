@@ -31,6 +31,7 @@ export interface RetrievalConstraints {
   feelPreferences?: FeelPreferences;
   excludeShoeIds?: string[];
   profile?: RunnerProfile; // For brand preferences and other profile-based filtering
+  currentShoes?: CurrentShoe[]; // For love/dislike tag modifiers
 }
 
 export interface ScoredShoe {
@@ -235,7 +236,8 @@ export function getHeelDropRangeDistance(
 }
 
 /**
- * Score how well shoe's feel matches preferences (0-60 points)
+ * Score how well shoe's feel matches preferences
+ * Uses SCORING_MODIFIERS.md spec values
  */
 export function scoreFeelMatch(
   shoe: Shoe,
@@ -243,13 +245,12 @@ export function scoreFeelMatch(
   archetypeContext?: ShoeArchetype
 ): number {
   if (!prefs) {
-    return 30; // Neutral score if no preferences
+    return 0; // No preferences, no score contribution
   }
 
   let totalScore = 0;
-  let dimensionsScored = 0;
 
-  // Helper to score a single dimension
+  // Helper to score a single dimension per SCORING_MODIFIERS.md spec
   const scoreDimension = (
     shoeValue: number,
     pref: PreferenceValue,
@@ -259,23 +260,21 @@ export function scoreFeelMatch(
       return 0; // Skip - no score contribution
     }
 
-    dimensionsScored++;
-
     if (pref.mode === 'user_set' && pref.value !== undefined) {
-      // USER SET: Strict penalties - user knows what they want
-      const targetValue = pref.value;
-      const distance = Math.abs(shoeValue - targetValue);
-
-      if (distance === 0) return 10;      // Perfect match
-      if (distance === 1) return 3;       // -7 penalty (off by 1)
-      if (distance === 2) return -5;      // -15 penalty (off by 2)
-      return -15;                         // -25 penalty (off by 3+)
-
+      // USER SET: Strict penalties per spec
+      const distance = Math.abs(shoeValue - pref.value);
+      if (distance === 0) return 10;   // Perfect match
+      if (distance === 1) return -7;   // Off by 1
+      if (distance === 2) return -15;  // Off by 2
+      return -25;                      // Off by 3+
     } else {
-      // CINDA DECIDES: Softer penalties - we're optimizing holistically
+      // CINDA DECIDES: Softer penalties per spec
       const targetValue = getArchetypeDefault(dimension, archetypeContext);
       const distance = Math.abs(shoeValue - targetValue);
-      return Math.max(0, 10 - distance * 2);  // 10, 8, 6, 4, 2, 0
+      if (distance === 0) return 5;    // Perfect match
+      if (distance === 1) return -2;   // Off by 1
+      if (distance === 2) return -5;   // Off by 2
+      return -10;                      // Off by 3+
     }
   };
 
@@ -286,24 +285,49 @@ export function scoreFeelMatch(
   totalScore += scoreDimension(shoe.rocker_1to5, prefs.rocker, 'rocker');
   totalScore += scoreDimension(shoe.ground_feel_1to5, prefs.groundFeel, 'groundFeel');
 
-  // Normalize to 60 point scale if dimensions were scored
-  if (dimensionsScored === 0) {
-    return 30; // No preferences set, neutral score
-  }
+  return totalScore;
+}
 
-  // Scale score: max possible is dimensionsScored * 10
-  const maxPossible = dimensionsScored * 10;
-  let feelScore = Math.round((totalScore / maxPossible) * 60);
+/**
+ * Score heel drop match using detailed bucket table from SCORING_MODIFIERS.md
+ */
+function scoreHeelDropMatch(shoe: Shoe, prefs?: FeelPreferences): number {
+  if (!prefs?.heelDropPreference) return 0;
 
-  // Apply heel drop bucketing (user_set mode only)
   const heelPref = prefs.heelDropPreference;
-  if (heelPref?.mode === 'user_set' && heelPref.values && heelPref.values.length > 0) {
-    const distance = getHeelDropRangeDistance(shoe.heel_drop_mm, heelPref.values);
-    const bonus = distance === 0 ? 100 : distance === 1 ? 25 : -50;
-    feelScore += bonus;
+  if (heelPref.mode !== 'user_set' || !heelPref.values || heelPref.values.length === 0) {
+    return 0;
   }
 
-  return feelScore;
+  const drop = shoe.heel_drop_mm;
+
+  // Determine shoe's heel drop bucket
+  let shoeBucket: string;
+  if (drop === 0) shoeBucket = "0mm";
+  else if (drop >= 1 && drop <= 4) shoeBucket = "1-4mm";
+  else if (drop >= 5 && drop <= 8) shoeBucket = "5-8mm";
+  else if (drop >= 9 && drop <= 12) shoeBucket = "9-12mm";
+  else shoeBucket = "13mm+";
+
+  // Detailed scoring table from SCORING_MODIFIERS.md
+  const heelDropScoreTable: Record<string, Record<string, number>> = {
+    "0mm": { "0mm": 15, "1-4mm": -10, "5-8mm": -20, "9-12mm": -25, "12mm+": -30 },
+    "1-4mm": { "0mm": -5, "1-4mm": 15, "5-8mm": -5, "9-12mm": -15, "12mm+": -20 },
+    "5-8mm": { "0mm": -15, "1-4mm": -5, "5-8mm": 15, "9-12mm": -5, "12mm+": -10 },
+    "9-12mm": { "0mm": -25, "1-4mm": -15, "5-8mm": -5, "9-12mm": 15, "12mm+": -5 },
+    "13mm+": { "0mm": -30, "1-4mm": -20, "5-8mm": -10, "9-12mm": -5, "12mm+": 15 }
+  };
+
+  // Find best score across all selected ranges
+  let bestScore = -100;
+  for (const userRange of heelPref.values) {
+    // Normalize "12mm+" to "13mm+" for lookup
+    const normalizedUserRange = userRange === "12mm+" ? "13mm+" : userRange;
+    const score = heelDropScoreTable[normalizedUserRange]?.[shoeBucket] ?? -30;
+    if (score > bestScore) bestScore = score;
+  }
+
+  return bestScore;
 }
 
 /**
@@ -348,8 +372,428 @@ function scoreAvailability(shoe: Shoe): number {
   return 0;
 }
 
+// ============================================================================
+// PROFILE-BASED MODIFIERS (per SCORING_MODIFIERS.md)
+// ============================================================================
+
+/**
+ * Experience level soft modifiers (carbon ban is in hard filters)
+ * Per SCORING_MODIFIERS.md
+ */
+function scoreExperienceModifiers(
+  shoe: Shoe,
+  profile?: RunnerProfile,
+  requestedArchetype?: ShoeArchetype
+): number {
+  if (!profile?.experience) return 0;
+
+  let score = 0;
+  const exp = profile.experience;
+
+  if (exp === "beginner") {
+    // Stability boost for beginners
+    if (shoe.stability_1to5 >= 3) score += 10;
+    // Cushion boost for beginners
+    if (shoe.cushion_softness_1to5 >= 4) score += 8;
+    // Race shoe penalty (if not also a daily trainer)
+    if (shoeHasArchetype(shoe, 'race_shoe') && !shoeHasArchetype(shoe, 'daily_trainer')) {
+      score -= 15;
+    }
+    // Lightweight penalty (too light/unstable for beginners)
+    if (shoe.weight_g < 220) score -= 5;
+  }
+
+  if (exp === "intermediate") {
+    // Race-only shoes get mild penalty
+    if (shoeHasArchetype(shoe, 'race_shoe') &&
+        !shoeHasArchetype(shoe, 'daily_trainer') &&
+        !shoeHasArchetype(shoe, 'workout_shoe')) {
+      score -= 5;
+    }
+  }
+
+  if (exp === "experienced") {
+    // Weight penalty for heavy workout shoes
+    if (requestedArchetype === "workout_shoe" && shoe.weight_g > 290) {
+      score -= 5;
+    }
+  }
+
+  if (exp === "competitive") {
+    // Light shoe bonus for workout/race shoes
+    if ((requestedArchetype === "workout_shoe" || requestedArchetype === "race_shoe") &&
+        shoe.weight_g < 250) {
+      score += 5;
+    }
+  }
+
+  return score;
+}
+
+/**
+ * Primary goal modifiers per SCORING_MODIFIERS.md
+ */
+function scorePrimaryGoalModifiers(
+  shoe: Shoe,
+  profile?: RunnerProfile,
+  requestedArchetype?: ShoeArchetype
+): number {
+  if (!profile?.primaryGoal) return 0;
+
+  let score = 0;
+  const goal = profile.primaryGoal;
+
+  if (goal === "general_fitness") {
+    // Daily trainer bonus
+    if (shoeHasArchetype(shoe, 'daily_trainer')) score += 5;
+  }
+
+  if (goal === "get_faster") {
+    // Bounce bonus
+    if (shoe.bounce_1to5 >= 4) score += 5;
+    // Plated workout shoe bonus
+    if (shoe.has_plate && requestedArchetype === "workout_shoe") score += 8;
+  }
+
+  if (goal === "race_training") {
+    // Race shoe bonus when searching for race shoes
+    if (requestedArchetype === "race_shoe" && shoeHasArchetype(shoe, 'race_shoe')) {
+      score += 10;
+    }
+    // Plated workout shoe bonus
+    if (requestedArchetype === "workout_shoe" && shoe.has_plate) {
+      score += 5;
+    }
+  }
+
+  if (goal === "injury_comeback") {
+    // Cushion bonus
+    if (shoe.cushion_softness_1to5 >= 4) score += 12;
+    // Stability bonus
+    if (shoe.stability_1to5 >= 3) score += 10;
+    // Carbon plate penalty
+    if (shoe.has_plate && shoe.plate_material?.toLowerCase() === "carbon") {
+      score -= 10;
+    }
+    // Aggressive rocker penalty
+    if (shoe.rocker_1to5 >= 4) score -= 5;
+  }
+
+  return score;
+}
+
+/**
+ * Running pattern modifiers per SCORING_MODIFIERS.md
+ */
+function scoreRunningPatternModifiers(
+  shoe: Shoe,
+  profile?: RunnerProfile,
+  requestedArchetype?: ShoeArchetype
+): number {
+  if (!profile?.runningPattern) return 0;
+
+  let score = 0;
+  const pattern = profile.runningPattern;
+
+  if (pattern === "mostly_easy") {
+    // Cushion bonus
+    if (shoe.cushion_softness_1to5 >= 4) score += 5;
+    // Recovery shoe bonus
+    if (shoeHasArchetype(shoe, 'recovery_shoe')) score += 5;
+  }
+
+  if (pattern === "workout_focused") {
+    if (requestedArchetype === "workout_shoe") {
+      // Plated shoe bonus
+      if (shoe.has_plate) score += 10;
+      // Bounce bonus
+      if (shoe.bounce_1to5 >= 4) score += 5;
+    }
+  }
+
+  if (pattern === "infrequent") {
+    // Daily trainer bonus - single versatile shoe is best
+    if (shoeHasArchetype(shoe, 'daily_trainer')) score += 8;
+  }
+
+  // structured_training has no direct scoring modifier (affects gap detection only)
+
+  return score;
+}
+
+/**
+ * Calculate pace bucket from race time per SCORING_MODIFIERS.md
+ * Uses half marathon as baseline
+ */
+function getPaceBucket(profile?: RunnerProfile): "elite" | "fast" | "moderate" | "developing" | "newer" | null {
+  if (!profile?.raceTime) return null;
+
+  const { distance, timeMinutes } = profile.raceTime;
+
+  // Convert to half marathon equivalent
+  const conversionFactors: Record<string, number> = {
+    "5k": 4.6,
+    "10k": 2.2,
+    "half": 1.0,
+    "marathon": 0.48
+  };
+
+  const factor = conversionFactors[distance];
+  if (!factor) return null;
+
+  const hmEquivalent = timeMinutes * factor;
+
+  if (hmEquivalent < 75) return "elite";      // < 1:15
+  if (hmEquivalent < 95) return "fast";       // 1:15 - 1:35
+  if (hmEquivalent < 120) return "moderate";  // 1:35 - 2:00
+  if (hmEquivalent < 150) return "developing"; // 2:00 - 2:30
+  return "newer";                              // > 2:30
+}
+
+/**
+ * Pace bucket modifiers per SCORING_MODIFIERS.md
+ */
+function scorePaceBucketModifiers(
+  shoe: Shoe,
+  profile?: RunnerProfile,
+  requestedArchetype?: ShoeArchetype
+): number {
+  const paceBucket = getPaceBucket(profile);
+  if (!paceBucket) return 0;
+
+  let score = 0;
+
+  if (paceBucket === "elite") {
+    // Full access, no restrictions - all plate types encouraged
+    // No modifiers needed
+  }
+
+  if (paceBucket === "fast") {
+    // Plated workout shoe bonus
+    if (requestedArchetype === "workout_shoe" && shoe.has_plate) score += 8;
+    // Carbon plated race shoe bonus
+    if (requestedArchetype === "race_shoe" && shoe.has_plate &&
+        shoe.plate_material?.toLowerCase() === "carbon") {
+      score += 10;
+    }
+  }
+
+  if (paceBucket === "moderate") {
+    // Mild plated workout shoe bonus
+    if (requestedArchetype === "workout_shoe" && shoe.has_plate) score += 3;
+    // Aggressive rocker slight penalty
+    if (shoe.rocker_1to5 === 5) score -= 5;
+    // Stability bonus for recovery shoes
+    if (requestedArchetype === "recovery_shoe" && shoe.stability_1to5 >= 3) score += 5;
+  }
+
+  if (paceBucket === "developing") {
+    // Aggressive rocker penalty
+    if (shoe.rocker_1to5 === 5) score -= 5;
+    // Stability and cushion bonuses for recovery/daily
+    if (requestedArchetype === "recovery_shoe" || requestedArchetype === "daily_trainer") {
+      if (shoe.stability_1to5 >= 3) score += 8;
+      if (shoe.cushion_softness_1to5 >= 4) score += 5;
+    }
+  }
+
+  if (paceBucket === "newer") {
+    // Carbon plated race shoe penalty
+    if (requestedArchetype === "race_shoe" && shoe.has_plate &&
+        shoe.plate_material?.toLowerCase() === "carbon") {
+      score -= 10;
+    }
+    // Aggressive rocker penalty
+    if (shoe.rocker_1to5 === 5) score -= 10;
+    // Stability bonus
+    if (shoe.stability_1to5 >= 3) score += 10;
+    // Cushion bonus
+    if (shoe.cushion_softness_1to5 >= 4) score += 8;
+    // Soft + unstable penalty
+    if (shoe.stability_1to5 <= 2 && shoe.cushion_softness_1to5 >= 4) score -= 8;
+  }
+
+  return score;
+}
+
+/**
+ * Calculate BMI from profile per SCORING_MODIFIERS.md
+ */
+function getBMI(profile?: RunnerProfile): number | null {
+  if (!profile?.height || !profile?.weight) return null;
+
+  // Convert height to cm
+  let heightCm = profile.height.value;
+  if (profile.height.unit === "in") {
+    heightCm = profile.height.value * 2.54;
+  }
+
+  // Convert weight to kg
+  let weightKg = profile.weight.value;
+  if (profile.weight.unit === "lb") {
+    weightKg = profile.weight.value * 0.453592;
+  }
+
+  return weightKg / ((heightCm / 100) ** 2);
+}
+
+/**
+ * BMI modifiers per SCORING_MODIFIERS.md
+ * Only applied if both height and weight provided
+ * Never overrides explicit user preferences
+ */
+function scoreBMIModifiers(shoe: Shoe, profile?: RunnerProfile): number {
+  const bmi = getBMI(profile);
+  if (!bmi) return 0;
+
+  let score = 0;
+
+  if (bmi < 22) {
+    // No modifier
+  } else if (bmi >= 22 && bmi < 27) {
+    if (shoe.cushion_softness_1to5 >= 4) score += 3;
+  } else if (bmi >= 27 && bmi < 32) {
+    if (shoe.cushion_softness_1to5 >= 4) score += 6;
+    if (shoe.stability_1to5 >= 4) score += 4;
+  } else if (bmi >= 32) {
+    if (shoe.cushion_softness_1to5 === 5) score += 10;
+    if (shoe.stability_1to5 >= 4) score += 8;
+    if (shoe.cushion_softness_1to5 <= 2) score -= 8; // Minimal cushion risky
+  }
+
+  return score;
+}
+
+/**
+ * Love/dislike tag modifiers from current shoes per SCORING_MODIFIERS.md
+ */
+function scoreLoveDislikeTagModifiers(shoe: Shoe, currentShoes?: CurrentShoe[]): number {
+  if (!currentShoes || currentShoes.length === 0) return 0;
+
+  let score = 0;
+
+  // Process love tags - boost similar
+  for (const currentShoe of currentShoes) {
+    if (currentShoe.sentiment === "love" && currentShoe.loveTags) {
+      for (const tag of currentShoe.loveTags) {
+        switch (tag) {
+          case "bouncy":
+            if (shoe.bounce_1to5 >= 4) score += 8;
+            break;
+          case "soft_cushion":
+            if (shoe.cushion_softness_1to5 >= 4) score += 8;
+            break;
+          case "lightweight":
+            if (shoe.weight_g < 250) score += 8;
+            break;
+          case "stable":
+            if (shoe.stability_1to5 >= 4) score += 8;
+            break;
+          case "smooth_rocker":
+            if (shoe.rocker_1to5 >= 4) score += 8;
+            break;
+          case "long_run_comfort":
+            if (shoeHasArchetype(shoe, 'daily_trainer')) score += 5;
+            break;
+          case "fast_feeling":
+            if (shoe.weight_g < 240) score += 6;
+            if (shoe.bounce_1to5 >= 4) score += 4;
+            break;
+          case "good_grip":
+            if (shoe.wet_grip === "good" || shoe.wet_grip === "excellent") score += 5;
+            break;
+          // "comfortable_fit" - can't score, note for chat
+        }
+      }
+    }
+
+    // Process dislike tags - penalize similar
+    if (currentShoe.sentiment === "dislike" && currentShoe.dislikeTags) {
+      for (const tag of currentShoe.dislikeTags) {
+        switch (tag) {
+          case "too_heavy":
+            if (shoe.weight_g > 280) score -= 12;
+            break;
+          case "too_soft":
+            if (shoe.cushion_softness_1to5 === 5) score -= 12;
+            break;
+          case "too_firm":
+            if (shoe.cushion_softness_1to5 <= 2) score -= 12;
+            break;
+          case "unstable":
+            if (shoe.stability_1to5 <= 2) score -= 12;
+            break;
+          case "too_narrow":
+            if (shoe.toe_box === "narrow") score -= 15;
+            break;
+          case "too_wide":
+            if (shoe.toe_box === "roomy") score -= 15;
+            break;
+          case "slow_at_speed":
+            if (shoe.bounce_1to5 <= 2) score -= 8;
+            if (shoe.weight_g > 280) score -= 5;
+            break;
+          // "blisters", "wears_fast", "causes_pain" - flag for chat, no scoring
+        }
+      }
+    }
+  }
+
+  return score;
+}
+
+/**
+ * Trail preference scoring modifiers per SCORING_MODIFIERS.md
+ */
+function scoreTrailPreferenceModifiers(
+  shoe: Shoe,
+  profile?: RunnerProfile,
+  requestedArchetype?: ShoeArchetype
+): number {
+  if (!profile?.trailRunning) return 0;
+
+  let score = 0;
+  const trailPref = profile.trailRunning;
+
+  if (trailPref === "most_or_all") {
+    if (requestedArchetype === "trail_shoe") {
+      if (shoe.surface === "trail") score += 10;
+      // road surface for trail request is excluded in hard filters
+    }
+    // Trail shoes recommended for non-trail archetype gets penalty
+    if (requestedArchetype !== "trail_shoe" && shoe.surface === "trail") {
+      score -= 5;
+    }
+  }
+
+  if (trailPref === "infrequently") {
+    if (requestedArchetype === "trail_shoe") {
+      // Hybrids preferred
+      if (shoe.surface === "mixed") score += 8;
+      if (shoe.surface === "trail") score += 3;
+    }
+  }
+
+  if (trailPref === "want_to_start") {
+    if (requestedArchetype === "trail_shoe") {
+      // Entry-level hybrids best
+      if (shoe.surface === "mixed") score += 10;
+      if (shoe.surface === "trail") score += 3;
+    }
+  }
+
+  if (trailPref === "no_trails") {
+    // Trail-only shoes excluded in hard filters
+    // Road/trail hybrids get mild penalty
+    if (shoe.surface === "mixed") score -= 5;
+  }
+
+  return score;
+}
+
 /**
  * Apply foot strike modifier based on heel geometry
+ * Per SCORING_MODIFIERS.md
  */
 function scoreFootStrikeMatch(shoe: Shoe, profile?: RunnerProfile): number {
   if (!profile?.footStrike) {
@@ -383,18 +827,49 @@ function scoreFootStrikeMatch(shoe: Shoe, profile?: RunnerProfile): number {
 
 /**
  * Calculate total score for a shoe
+ * Applies all modifiers per SCORING_MODIFIERS.md
  */
 export function scoreShoe(
   shoe: Shoe,
   constraints: RetrievalConstraints
 ): ScoredShoe {
+  const requestedArchetype = constraints.archetypeContext || constraints.archetypes?.[0];
+
+  // Base scores
   const archetypeScore = scoreArchetypeMatch(shoe, constraints.archetypes);
   const feelScore = scoreFeelMatch(shoe, constraints.feelPreferences, constraints.archetypeContext);
+  const heelDropScore = scoreHeelDropMatch(shoe, constraints.feelPreferences);
   const stabilityBonus = scoreStabilityBonus(shoe, constraints.stabilityNeed);
   const availabilityBonus = scoreAvailability(shoe);
-  const footStrikeBonus = scoreFootStrikeMatch(shoe, constraints.profile);
 
-  const totalScore = archetypeScore + feelScore + stabilityBonus + availabilityBonus + footStrikeBonus;
+  // Profile-based modifiers (per SCORING_MODIFIERS.md)
+  const footStrikeBonus = scoreFootStrikeMatch(shoe, constraints.profile);
+  const experienceModifier = scoreExperienceModifiers(shoe, constraints.profile, requestedArchetype);
+  const primaryGoalModifier = scorePrimaryGoalModifiers(shoe, constraints.profile, requestedArchetype);
+  const runningPatternModifier = scoreRunningPatternModifiers(shoe, constraints.profile, requestedArchetype);
+  const paceBucketModifier = scorePaceBucketModifiers(shoe, constraints.profile, requestedArchetype);
+  const bmiModifier = scoreBMIModifiers(shoe, constraints.profile);
+  const trailPreferenceModifier = scoreTrailPreferenceModifiers(shoe, constraints.profile, requestedArchetype);
+
+  // Current shoe sentiment modifiers
+  const loveDislikeModifier = scoreLoveDislikeTagModifiers(shoe, constraints.currentShoes);
+
+  // Sum all scores (per spec: modifiers stack, minimum final score = 0)
+  const totalScore = Math.max(0,
+    archetypeScore +
+    feelScore +
+    heelDropScore +
+    stabilityBonus +
+    availabilityBonus +
+    footStrikeBonus +
+    experienceModifier +
+    primaryGoalModifier +
+    runningPatternModifier +
+    paceBucketModifier +
+    bmiModifier +
+    trailPreferenceModifier +
+    loveDislikeModifier
+  );
 
   return {
     shoe,
