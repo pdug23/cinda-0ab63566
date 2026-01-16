@@ -111,8 +111,15 @@ export interface CurrentShoe {
   dislikeTags?: string[];
 }
 
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
 export interface Step3Data {
   currentShoes: CurrentShoe[];
+  chatHistory: ChatMessage[];
 }
 
 // Step 4 data - discovery mode selections
@@ -158,6 +165,7 @@ const defaultStep2: Step2Data = {
 
 const defaultStep3: Step3Data = {
   currentShoes: [],
+  chatHistory: [],
 };
 
 const defaultStep4: Step4Data = {
@@ -174,6 +182,7 @@ interface ProfileContextType {
   updateStep2: (data: Partial<Step2Data>) => void;
   updateStep3: (data: Partial<Step3Data>) => void;
   updateStep4: (data: Partial<Step4Data>) => void;
+  updateChatHistory: (messages: ChatMessage[]) => void;
   clearAll: () => void;
 }
 
@@ -215,6 +224,13 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
+  const updateChatHistory = (messages: ChatMessage[]) => {
+    setProfileData((prev) => ({
+      ...prev,
+      step3: { ...prev.step3, chatHistory: messages },
+    }));
+  };
+
   const clearAll = () => {
     setProfileData({
       step1: defaultStep1,
@@ -225,7 +241,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <ProfileContext.Provider value={{ profileData, updateStep1, updateStep2, updateStep3, updateStep4, clearAll }}>
+    <ProfileContext.Provider value={{ profileData, updateStep1, updateStep2, updateStep3, updateStep4, updateChatHistory, clearAll }}>
       {children}
     </ProfileContext.Provider>
   );
