@@ -3,8 +3,8 @@ import { PersonalBests } from "@/components/PBPickerModal";
 
 // Types - matches Epic 1 types
 export type ExperienceLevel = "beginner" | "intermediate" | "advanced" | "racing_focused";
-export type PrimaryGoal = "general_fitness" | "improve_pace" | "train_for_race" | "comfort_recovery" | "just_for_fun";
-export type RunningPattern = "infrequent" | "mostly_easy" | "structured_training" | "workouts" | "long_run_focus";
+export type PrimaryGoal = "general_fitness" | "get_faster" | "race_training" | "injury_comeback";
+export type RunningPattern = "structured_training" | "mostly_easy" | "infrequent";
 export type TrailRunning = "most_runs" | "infrequent" | "want_to_start" | "no_trails";
 export type FootStrike = "forefoot" | "midfoot" | "heel" | "unsure";
 
