@@ -38,27 +38,76 @@ const openaiClient = new OpenAI({
 });
 
 /**
- * Generate a custom match description using gpt-5-mini
- * Returns two bullet points: why it's good for archetype, what's notable
+ * Parameters for generating match description bullets
  */
-async function generateMatchDescription(
-  archetype: string,
-  whyItFeelsThisWay: string,
-  notableDetail: string
-): Promise<string[]> {
-  const archetypeLabel = archetype.replace('_', ' ');
+interface MatchDescriptionParams {
+  fullName: string;
+  archetype: string;
+  whyItFeelsThisWay: string;
+  notableDetail: string;
+  avoidIf: string;
+  plateTechName: string | null;
+  plateMaterial: string | null;
+  wetGrip: string;
+  weight_g: number;
+  heelDrop_mm: number;
+  cushion_1to5: number;
+  bounce_1to5: number;
+  stability_1to5: number;
+  rocker_1to5: number;
+}
 
-  const prompt = `You're Cinda, a shoe recommendation assistant.
+/**
+ * Generate a custom match description using gpt-5-mini
+ * Returns three bullet points: midsole/ride, differentiator, versatility
+ */
+async function generateMatchDescription(params: MatchDescriptionParams): Promise<string[]> {
+  const archetypeLabel = params.archetype.replace('_', ' ');
 
-This is a ${archetypeLabel} recommendation.
-Shoe feel: ${whyItFeelsThisWay}
-What's special: ${notableDetail}
+  // Build descriptive context from specs
+  const cushionDesc = params.cushion_1to5 <= 2 ? 'firm' : params.cushion_1to5 >= 4 ? 'soft' : 'moderate';
+  const bounceDesc = params.bounce_1to5 <= 2 ? 'muted' : params.bounce_1to5 >= 4 ? 'bouncy/responsive' : 'balanced';
+  const weightDesc = params.weight_g < 230 ? 'lightweight' : params.weight_g > 280 ? 'heavier' : 'moderate weight';
+  const plateInfo = params.plateTechName
+    ? `Has ${params.plateTechName} (${params.plateMaterial})`
+    : 'No plate';
 
-Write TWO sentences:
-1. Why this works for ${archetypeLabel} use (connect feel to user benefit, not specs)
-2. What makes it memorable (a simple hook to remember)
+  const prompt = `You're writing shoe card bullets for runners choosing shoes.
 
-Keep each under 15 words. Be confident, not salesy. No em dashes.`;
+SHOE: ${params.fullName}
+USE CASE: ${archetypeLabel}
+
+TECH & FEEL:
+${params.whyItFeelsThisWay}
+
+NOTABLE:
+${params.notableDetail}
+
+SPECS (for context, DO NOT output these as numbers):
+- Weight: ${params.weight_g}g (${weightDesc})
+- Drop: ${params.heelDrop_mm}mm
+- Cushion: ${cushionDesc} (${params.cushion_1to5}/5)
+- Response: ${bounceDesc} (${params.bounce_1to5}/5)
+- ${plateInfo}
+- Wet grip: ${params.wetGrip}
+
+AVOID IF:
+${params.avoidIf}
+
+Write exactly 3 bullets (max 13 words each):
+
+1. MIDSOLE/RIDE: How the foam or plate tech affects the ride. Name specific tech from the data.
+2. DIFFERENTIATOR: What makes this shoe stand out. Be concrete and specific.
+3. VERSATILITY: What else it's good for beyond the primary use case, or who it suits best. Reference other archetypes if applicable (e.g., "doubles as a race shoe" or "can handle easy days too").
+
+RULES:
+- Use tech names from the data (foam names, plate names, plate material)
+- Say what it DOES, not vague feelings
+- No marketing fluff or clever hooks
+- No em dashes
+- NEVER include specific weight (g) or drop (mm) numbers — these are shown elsewhere
+- You can say "lightweight" or "low drop" but not "254g" or "6mm"
+- Start each bullet with the tech or feature, not "The" or "This"`;
 
   try {
     const response = await openaiClient.responses.create({
@@ -77,24 +126,31 @@ Keep each under 15 words. Be confident, not salesy. No em dashes.`;
     if (!content) content = (response as any)?.output_text?.trim();
 
     if (content) {
+      // Clean up numbered prefixes like "1. " or "1) " or "- "
       const lines = content
         .split('\n')
         .map(line => line.trim())
-        .filter(line => line.length > 0);
+        .filter(line => line.length > 0)
+        .map(line => line.replace(/^[\d]+[.\)]\s*/, '').replace(/^[-•]\s*/, '').trim());
 
-      if (lines.length >= 2) {
-        return [lines[0], lines[1]];
+      if (lines.length >= 3) {
+        return [lines[0], lines[1], lines[2]];
+      } else if (lines.length === 2) {
+        return [lines[0], lines[1], params.notableDetail];
       } else if (lines.length === 1) {
-        return [lines[0], notableDetail];
+        return [lines[0], params.notableDetail, params.whyItFeelsThisWay.slice(0, 80)];
       }
     }
   } catch (error) {
     console.error('[generateMatchDescription] OpenAI API error:', error);
   }
 
-  // Fallback to shoe data
+  // Fallback if API fails
   return [
-    notableDetail,
+    params.notableDetail,
+    params.whyItFeelsThisWay.length > 80
+      ? params.whyItFeelsThisWay.slice(0, 77) + '...'
+      : params.whyItFeelsThisWay,
     `Well-suited for ${archetypeLabel}.`
   ];
 }
@@ -600,11 +656,22 @@ async function buildRecommendedShoe(
   position: RecommendationPosition
 ): Promise<RecommendedShoe> {
   // Generate match description using LLM (with fallback)
-  const matchReason = await generateMatchDescription(
-    archetypeLabel,
-    shoe.why_it_feels_this_way,
-    shoe.notable_detail
-  );
+  const matchReason = await generateMatchDescription({
+    fullName: shoe.full_name,
+    archetype: archetypeLabel,
+    whyItFeelsThisWay: shoe.why_it_feels_this_way,
+    notableDetail: shoe.notable_detail,
+    avoidIf: shoe.avoid_if,
+    plateTechName: shoe.plate_tech_name,
+    plateMaterial: shoe.plate_material,
+    wetGrip: shoe.wet_grip,
+    weight_g: shoe.weight_g,
+    heelDrop_mm: shoe.heel_drop_mm,
+    cushion_1to5: shoe.cushion_softness_1to5,
+    bounce_1to5: shoe.bounce_1to5,
+    stability_1to5: shoe.stability_1to5,
+    rocker_1to5: shoe.rocker_1to5
+  });
 
   // Build gap object for strength extraction
   const gap: Gap = {
