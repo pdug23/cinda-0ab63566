@@ -6,24 +6,15 @@ import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import TypewriterText from "@/components/TypewriterText";
-import { useProfile, ChatMessage } from "@/contexts/ProfileContext";
+import { useProfile, ChatMessage, ChatContext } from "@/contexts/ProfileContext";
 import { cn } from "@/lib/utils";
 import cindaLogoGrey from "@/assets/cinda-logo-grey.png";
 
 const CINDA_OPENING = "you've told me the basics, but running's personal. past injuries, shoes that didn't work out, weird fit issues... if there's anything else that might help, let me know.";
 
-const CINDA_RESPONSES = [
-  "got it, I'll keep that in mind. anything else?",
-  "thanks for sharing that. any other details?",
-  "noted! anything else I should know?",
-  "that's helpful context. anything more?",
-];
-
-const CINDA_FINAL = "thanks! ready to find your shoes when you are.";
-
 const ProfileBuilderStep3b = () => {
   const navigate = useNavigate();
-  const { profileData, updateChatHistory } = useProfile();
+  const { profileData, updateChatHistory, updateChatContext } = useProfile();
   
   // Track if we've shown the initial typing animation
   const [showInitialTyping, setShowInitialTyping] = useState(() => {
@@ -40,7 +31,6 @@ const ProfileBuilderStep3b = () => {
   
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(showInitialTyping);
-  const [exchangeCount, setExchangeCount] = useState(0);
   // Track which message index is currently being "typed" (for typewriter effect)
   const [typingMessageIndex, setTypingMessageIndex] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -77,7 +67,7 @@ const ProfileBuilderStep3b = () => {
     }
   }, [showInitialTyping, isTyping]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!inputValue.trim() || isTyping) return;
 
     const userMessage: ChatMessage = {
@@ -96,16 +86,38 @@ const ProfileBuilderStep3b = () => {
       inputRef.current.style.height = "24px";
     }
 
-    // Simulate Cinda's response
-    setTimeout(() => {
-      const newExchangeCount = exchangeCount + 1;
-      setExchangeCount(newExchangeCount);
+    try {
+      // Build conversation history (exclude the hardcoded opening message)
+      const conversationHistory = newMessages
+        .slice(1) // Skip the opening message
+        .map(msg => ({
+          role: msg.role,
+          content: msg.content,
+        }));
 
+      // Call the real API
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage.content,
+          conversationHistory,
+          profile: profileData,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('API request failed');
+      }
+
+      const data = await response.json();
+
+      // Create Cinda's response message
       const cindaResponse: ChatMessage = {
         role: 'assistant',
-        content: newExchangeCount >= 3 
-          ? CINDA_FINAL 
-          : CINDA_RESPONSES[Math.min(newExchangeCount - 1, CINDA_RESPONSES.length - 1)],
+        content: data.response || data.message || "thanks, I'll keep that in mind.",
         timestamp: new Date(),
       };
 
@@ -113,8 +125,29 @@ const ProfileBuilderStep3b = () => {
       setMessages(updatedMessages);
       setTypingMessageIndex(updatedMessages.length - 1); // Start typewriter for new message
       updateChatHistory(updatedMessages);
+
+      // Merge extracted context if present
+      if (data.extractedContext) {
+        updateChatContext(data.extractedContext as Partial<ChatContext>);
+      }
+
+    } catch (error) {
+      console.error('Chat API error:', error);
+      
+      // Show error message with same typing animation
+      const errorMessage: ChatMessage = {
+        role: 'assistant',
+        content: "hmm, something went wrong. try again?",
+        timestamp: new Date(),
+      };
+
+      const updatedMessages = [...newMessages, errorMessage];
+      setMessages(updatedMessages);
+      setTypingMessageIndex(updatedMessages.length - 1);
+      updateChatHistory(updatedMessages);
+    } finally {
       setIsTyping(false);
-    }, 800 + Math.random() * 400);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
