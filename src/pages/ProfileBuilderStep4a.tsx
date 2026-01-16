@@ -10,11 +10,11 @@ import { toast } from "sonner";
 
 
 const ARCHETYPE_OPTIONS: { value: DiscoveryArchetype; label: string; description: string }[] = [
-  { value: "daily_trainer", label: "daily trainer", description: "versatile shoe for most of your runs" },
-  { value: "recovery_shoe", label: "recovery shoe", description: "cushioned comfort for easy days" },
-  { value: "workout_shoe", label: "workout shoe", description: "responsive shoe for speed sessions" },
-  { value: "race_shoe", label: "race shoe", description: "lightweight and fast for race day" },
-  { value: "trail_shoe", label: "trail shoe", description: "grip and protection for off-road" },
+  { value: "daily_trainer", label: "daily trainer", description: "a versatile shoe that handles most runs well" },
+  { value: "recovery_shoe", label: "recovery shoe", description: "maximum comfort for easy and tired days" },
+  { value: "workout_shoe", label: "workout shoe", description: "light and responsive for faster sessions" },
+  { value: "race_shoe", label: "race shoe", description: "built for race day speed and efficiency" },
+  { value: "trail_shoe", label: "trail shoe", description: "grip and protection for off-road running" },
 ];
 
 const ProfileBuilderStep4a = () => {
