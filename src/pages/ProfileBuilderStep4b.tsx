@@ -553,6 +553,34 @@ const ProfileBuilderStep4b = () => {
     setPreferences(getDefaultPreferences());
   }, [currentArchetype]);
 
+  // Auto-populate excluded brands from chat context (disliked pastShoes)
+  useEffect(() => {
+    const { pastShoes } = step3.chatContext;
+    const dislikedBrands: string[] = [];
+    
+    for (const shoe of pastShoes) {
+      if (typeof shoe === "object" && shoe.sentiment === "disliked") {
+        // Normalize brand name to match BRAND_OPTIONS
+        const normalizedBrand = BRAND_OPTIONS.find(
+          (b) => b.toLowerCase() === shoe.brand.toLowerCase()
+        );
+        if (normalizedBrand && !dislikedBrands.includes(normalizedBrand)) {
+          dislikedBrands.push(normalizedBrand);
+        }
+      }
+    }
+    
+    if (dislikedBrands.length > 0) {
+      setPreferences((prev) => ({
+        ...prev,
+        brandPreference: {
+          mode: "exclude",
+          brands: dislikedBrands,
+        },
+      }));
+    }
+  }, []); // Only run once on mount
+
   // Redirect if no archetypes selected
   useEffect(() => {
     if (selectedArchetypes.length === 0) {
