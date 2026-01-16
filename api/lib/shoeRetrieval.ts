@@ -39,11 +39,21 @@ export interface RetrievalConstraints {
 export interface ScoredShoe {
   shoe: Shoe;
   score: number;
-  breakdown?: {
+  breakdown: {
     archetypeScore: number;
     feelScore: number;
+    heelDropScore: number;
     stabilityBonus: number;
     availabilityBonus: number;
+    footStrikeScore: number;
+    experienceScore: number;
+    primaryGoalScore: number;
+    runningPatternScore: number;
+    paceBucketScore: number;
+    bmiScore: number;
+    trailScore: number;
+    loveDislikeScore: number;
+    chatContextScore: number;
   };
 }
 
@@ -1207,8 +1217,18 @@ export function scoreShoe(
     breakdown: {
       archetypeScore,
       feelScore,
+      heelDropScore,
       stabilityBonus,
       availabilityBonus,
+      footStrikeScore: footStrikeBonus,
+      experienceScore: experienceModifier,
+      primaryGoalScore: primaryGoalModifier,
+      runningPatternScore: runningPatternModifier,
+      paceBucketScore: paceBucketModifier,
+      bmiScore: bmiModifier,
+      trailScore: trailPreferenceModifier,
+      loveDislikeScore: loveDislikeModifier,
+      chatContextScore: chatContextModifier,
     },
   };
 }
@@ -1305,10 +1325,34 @@ export function getCandidates(
     );
 
     if (relaxedFiltered.length > filtered.length) {
+      console.log('[getCandidates] Using relaxed constraints, now:', relaxedFiltered.length, 'candidates');
       const scored = relaxedFiltered.map(shoe =>
         scoreShoe(shoe, relaxed)
       );
       scored.sort((a, b) => b.score !== a.score ? b.score - a.score : a.shoe.shoe_id.localeCompare(b.shoe.shoe_id));
+
+      // Log detailed breakdown for top 5 candidates (relaxed)
+      console.log('[scoring] Top 5 candidates breakdown (relaxed constraints):');
+      scored.slice(0, 5).forEach((s, idx) => {
+        console.log(`[scoring] #${idx + 1} ${s.shoe.full_name}`, {
+          finalScore: s.score,
+          archetype: s.breakdown.archetypeScore,
+          feel: s.breakdown.feelScore,
+          heelDrop: s.breakdown.heelDropScore,
+          stability: s.breakdown.stabilityBonus,
+          availability: s.breakdown.availabilityBonus,
+          footStrike: s.breakdown.footStrikeScore,
+          experience: s.breakdown.experienceScore,
+          primaryGoal: s.breakdown.primaryGoalScore,
+          runningPattern: s.breakdown.runningPatternScore,
+          paceBucket: s.breakdown.paceBucketScore,
+          bmi: s.breakdown.bmiScore,
+          trail: s.breakdown.trailScore,
+          loveDislike: s.breakdown.loveDislikeScore,
+          chatContext: s.breakdown.chatContextScore,
+        });
+      });
+
       return scored.slice(0, 30).map(s => s.shoe);
     }
 
@@ -1325,6 +1369,28 @@ export function getCandidates(
 
   // Deterministic sorting - score descending, shoe_id ascending as tiebreaker
   scored.sort((a, b) => b.score !== a.score ? b.score - a.score : a.shoe.shoe_id.localeCompare(b.shoe.shoe_id));
+
+  // Log detailed breakdown for top 5 candidates
+  console.log('[scoring] Top 5 candidates breakdown:');
+  scored.slice(0, 5).forEach((s, idx) => {
+    console.log(`[scoring] #${idx + 1} ${s.shoe.full_name}`, {
+      finalScore: s.score,
+      archetype: s.breakdown.archetypeScore,
+      feel: s.breakdown.feelScore,
+      heelDrop: s.breakdown.heelDropScore,
+      stability: s.breakdown.stabilityBonus,
+      availability: s.breakdown.availabilityBonus,
+      footStrike: s.breakdown.footStrikeScore,
+      experience: s.breakdown.experienceScore,
+      primaryGoal: s.breakdown.primaryGoalScore,
+      runningPattern: s.breakdown.runningPatternScore,
+      paceBucket: s.breakdown.paceBucketScore,
+      bmi: s.breakdown.bmiScore,
+      trail: s.breakdown.trailScore,
+      loveDislike: s.breakdown.loveDislikeScore,
+      chatContext: s.breakdown.chatContextScore,
+    });
+  });
 
   // Return top 30 candidates (or fewer if we don't have 30)
   const topCandidates = scored.slice(0, 30);
