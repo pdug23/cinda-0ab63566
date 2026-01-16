@@ -241,7 +241,7 @@ export default async function handler(
       console.log('[analyze] Processing', effectiveRequests.length, 'archetype requests');
 
       // Process each request
-      const discoveryResults = await Promise.all(effectiveRequests.map(async (request, index) => {
+      const discoveryResults = await Promise.all(effectiveRequests.map(async (request: any, index: number) => {
         console.log(`[analyze] Request ${index + 1}: ${request.archetype} shoes`);
 
         try {

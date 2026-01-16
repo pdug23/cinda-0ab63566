@@ -47,8 +47,11 @@ export interface Step2Data {
 export type RunType = "all_my_runs" | "recovery" | "long_runs" | "workouts" | "races" | "trail";
 export type ShoeSentiment = "love" | "like" | "neutral" | "dislike";
 
-// Step 4 shoe role selection for discovery mode
-export type DiscoveryShoeRole = "daily_trainer" | "recovery" | "tempo" | "race_day" | "trail" | "not_sure";
+// Step 4 archetype selection for discovery mode
+export type DiscoveryArchetype = "daily_trainer" | "recovery_shoe" | "workout_shoe" | "race_shoe" | "trail_shoe" | "not_sure";
+
+// Deprecated - use DiscoveryArchetype
+export type DiscoveryShoeRole = DiscoveryArchetype;
 
 // Feel preferences for each shoe request - new 3-mode system
 export type FeelValue = 1 | 2 | 3 | 4 | 5;
@@ -82,7 +85,7 @@ export interface FeelPreferences {
 }
 
 export interface ShoeRequest {
-  role: DiscoveryShoeRole;
+  archetype: DiscoveryArchetype;
   feelPreferences: FeelPreferences;
 }
 
@@ -115,8 +118,8 @@ export interface Step3Data {
 // Step 4 data - discovery mode selections
 export interface Step4Data {
   mode: "discovery" | "analysis" | null;
-  selectedRoles: DiscoveryShoeRole[];
-  currentRoleIndex: number;
+  selectedArchetypes: DiscoveryArchetype[];
+  currentArchetypeIndex: number;
   shoeRequests: ShoeRequest[];
   gap: GapData | null;
 }
@@ -159,8 +162,8 @@ const defaultStep3: Step3Data = {
 
 const defaultStep4: Step4Data = {
   mode: null,
-  selectedRoles: [],
-  currentRoleIndex: 0,
+  selectedArchetypes: [],
+  currentArchetypeIndex: 0,
   shoeRequests: [],
   gap: null,
 };

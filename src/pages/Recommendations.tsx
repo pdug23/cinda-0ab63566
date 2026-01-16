@@ -429,9 +429,13 @@ export default function RecommendationsPage() {
         // Check if it's in context format (with nested shoe object)
         const shoeData = (s as { shoe?: { shoe_id: string } }).shoe;
         const shoeId = shoeData ? shoeData.shoe_id : (s as APICurrentShoe).shoeId;
+        // Map runTypes values: "all_my_runs" → "all_runs"
+        const runTypes = (s.runTypes || []).map((rt: string) =>
+          rt === "all_my_runs" ? "all_runs" : rt
+        );
         return {
           shoeId: shoeId,
-          roles: s.roles,
+          runTypes: runTypes,
           sentiment: s.sentiment || "neutral",
         };
       });
@@ -454,7 +458,7 @@ export default function RecommendationsPage() {
         };
       } else {
         payload = {
-          mode: "shopping",
+          mode: "discovery",
           profile: {
             firstName: profile.firstName,
             experience: profile.experience,
