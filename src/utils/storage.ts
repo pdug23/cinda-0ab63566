@@ -8,7 +8,8 @@ import type {
   Gap,
   RecommendedShoe
 } from '../../api/types';
-import type { ShoeRequest, GapData } from '../contexts/ProfileContext';
+import type { ShoeRequest, GapData, RaceTime as PickerRaceTime } from '../contexts/ProfileContext';
+import { buildAPIRaceTimeFromPicker } from "@/utils/raceTime";
 
 // localStorage Helper Utilities for Cinda
 // Use these functions to ensure consistent data handling across all epics
@@ -69,29 +70,39 @@ export function loadProfile(): RunnerProfile | null {
       console.warn('Profile schema version mismatch, may need migration');
     }
 
-    // Backwards-compat: older builds sometimes stored raceTime.timeMinutes as decimal HOURS.
-    // Example: 2h 17m → 2.2833 (hours) instead of 137 (minutes).
+    // Backwards-compat: older builds stored raceTime.timeMinutes as HOURS (integer or decimal)
+    // instead of total minutes.
+    // - Example (decimal): 2h 17m → 2.2833
+    // - Example (integer): 2h 15m → 2
     const profile = data.profile;
     const rt = profile?.raceTime;
-    if (rt && typeof rt.timeMinutes === 'number' && rt.timeMinutes > 0) {
-      const thresholds: Record<string, number> = {
-        '5k': 6,
-        '10k': 10,
-        half: 30,
-        marathon: 60,
-      };
-      const threshold = thresholds[rt.distance] ?? 10;
+    const raceTimeInput = (profile as any)?.raceTimeInput as PickerRaceTime | undefined;
 
-      const looksLikeHoursDecimal = rt.timeMinutes < threshold && !Number.isInteger(rt.timeMinutes);
-      if (looksLikeHoursDecimal) {
+    if (rt && typeof rt.timeMinutes === 'number' && rt.timeMinutes > 0) {
+      // Distance-specific "too small to be minutes" thresholds (minutes)
+      // Kept conservative to avoid misclassifying very fast 5k/10k times.
+      const minPlausibleMinutes: Record<string, number> = {
+        '5k': 3,
+        '10k': 5,
+        half: 15,
+        marathon: 30,
+      };
+      const threshold = minPlausibleMinutes[rt.distance] ?? 10;
+
+      const looksLikeHours = rt.timeMinutes < threshold;
+      if (looksLikeHours) {
+        const rebuilt = raceTimeInput ? buildAPIRaceTimeFromPicker(raceTimeInput) : undefined;
+        const correctedMinutes = rebuilt?.timeMinutes ?? Math.round(rt.timeMinutes * 60);
+        const correctedDistance = rebuilt?.distance ?? rt.distance;
+
         const normalized: RunnerProfile = {
           ...profile,
           raceTime: {
-            ...rt,
-            timeMinutes: Math.round(rt.timeMinutes * 60),
+            distance: correctedDistance,
+            timeMinutes: correctedMinutes,
           },
         };
-        // Persist migration so future loads are clean
+
         saveProfile(normalized);
         return normalized;
       }
