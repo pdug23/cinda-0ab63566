@@ -34,6 +34,142 @@ const GAP_MESSAGES: Record<RunType, string> = {
   "trail": "You need trail shoes for off-road running."
 };
 
+const ARCHETYPE_GAP_MESSAGES: Record<ShoeArchetype, string> = {
+  "daily_trainer": "Your running pattern suggests you need a versatile daily trainer to handle your regular mileage.",
+  "recovery_shoe": "Based on your training, a dedicated recovery shoe would help protect your legs on easy days.",
+  "workout_shoe": "Your training focus suggests you need a responsive workout shoe for speed sessions.",
+  "race_shoe": "A race shoe would help you maximize performance on race day.",
+  "trail_shoe": "You need trail shoes for your off-road running."
+};
+
+// ============================================================================
+// PROFILE-BASED ARCHETYPE REQUIREMENTS
+// ============================================================================
+
+/**
+ * Determine which archetypes the runner's profile demands
+ * Based on runningPattern, primaryGoal, and trailRunning preference
+ */
+function getRequiredArchetypes(profile: RunnerProfile): ShoeArchetype[] {
+  const required = new Set<ShoeArchetype>();
+
+  // Everyone needs at least a daily trainer
+  required.add("daily_trainer");
+
+  // Based on running pattern
+  const pattern = profile.runningPattern || "mostly_easy";
+
+  switch (pattern) {
+    case "infrequent":
+      // Just need a daily trainer
+      break;
+
+    case "mostly_easy":
+      // Daily trainer + recovery shoe
+      required.add("recovery_shoe");
+      break;
+
+    case "structured_training":
+      // Full rotation: daily + recovery + workout
+      required.add("recovery_shoe");
+      required.add("workout_shoe");
+      break;
+
+    case "workout_focused":
+      // Daily + workout
+      required.add("workout_shoe");
+      break;
+  }
+
+  // Based on primary goal
+  switch (profile.primaryGoal) {
+    case "race_training":
+      required.add("workout_shoe");
+      required.add("race_shoe");
+      break;
+
+    case "get_faster":
+      required.add("workout_shoe");
+      break;
+
+    case "injury_comeback":
+      required.add("recovery_shoe");
+      break;
+  }
+
+  // Trail running
+  if (profile.trailRunning === "most_or_all" || profile.trailRunning === "infrequently") {
+    required.add("trail_shoe");
+  }
+
+  return Array.from(required);
+}
+
+/**
+ * Get archetypes covered by current shoes
+ */
+function getCoveredArchetypes(
+  currentShoes: CurrentShoe[],
+  catalogue: Shoe[]
+): ShoeArchetype[] {
+  const covered = new Set<ShoeArchetype>();
+
+  for (const userShoe of currentShoes) {
+    const shoe = catalogue.find(s => s.shoe_id === userShoe.shoeId);
+    if (!shoe) continue;
+
+    if (shoeHasArchetype(shoe, 'daily_trainer')) covered.add('daily_trainer');
+    if (shoeHasArchetype(shoe, 'recovery_shoe')) covered.add('recovery_shoe');
+    if (shoeHasArchetype(shoe, 'workout_shoe')) covered.add('workout_shoe');
+    if (shoeHasArchetype(shoe, 'race_shoe')) covered.add('race_shoe');
+    if (shoeHasArchetype(shoe, 'trail_shoe')) covered.add('trail_shoe');
+  }
+
+  return Array.from(covered);
+}
+
+/**
+ * Detect gaps based on profile-demanded archetypes vs what current shoes cover
+ */
+function detectProfileArchetypeGaps(
+  profile: RunnerProfile,
+  currentShoes: CurrentShoe[],
+  catalogue: Shoe[]
+): Array<{ archetype: ShoeArchetype; priority: number }> {
+  const requiredArchetypes = getRequiredArchetypes(profile);
+  const coveredArchetypes = getCoveredArchetypes(currentShoes, catalogue);
+
+  console.log('[detectProfileArchetypeGaps] Required archetypes:', requiredArchetypes);
+  console.log('[detectProfileArchetypeGaps] Covered archetypes:', coveredArchetypes);
+
+  // Priority order for archetypes
+  const archetypePriority: Record<ShoeArchetype, number> = {
+    "daily_trainer": 1,
+    "workout_shoe": 2,
+    "race_shoe": 3,
+    "recovery_shoe": 4,
+    "trail_shoe": 5
+  };
+
+  const gaps: Array<{ archetype: ShoeArchetype; priority: number }> = [];
+
+  for (const archetype of requiredArchetypes) {
+    if (!coveredArchetypes.includes(archetype)) {
+      console.log(`[detectProfileArchetypeGaps] GAP: Missing required archetype ${archetype}`);
+      gaps.push({
+        archetype,
+        priority: archetypePriority[archetype] || 10
+      });
+    }
+  }
+
+  // Sort by priority
+  gaps.sort((a, b) => a.priority - b.priority);
+
+  console.log('[detectProfileArchetypeGaps] Final gaps:', gaps);
+  return gaps;
+}
+
 // ============================================================================
 // COVERAGE GAP DETECTION
 // ============================================================================
@@ -101,8 +237,12 @@ function detectCoverageGaps(
 }
 
 /**
- * Check if there's a coverage gap (missing archetype for a run type)
+ * Check if there's a coverage gap (missing archetype for a run type OR profile demand)
  * Coverage gaps are HIGHEST PRIORITY
+ *
+ * Now checks TWO sources:
+ * 1. Profile-demanded archetypes (based on runningPattern, primaryGoal)
+ * 2. RunType-based gaps (if user assigns runTypes that their shoes can't handle)
  */
 function checkCoverageGap(
   analysis: RotationAnalysis,
@@ -110,14 +250,61 @@ function checkCoverageGap(
   currentShoes: CurrentShoe[],
   catalogue: Shoe[]
 ): Gap | null {
-  const gaps = detectCoverageGaps(currentShoes, catalogue);
+  // First check profile-demanded archetypes (PRIORITY)
+  const profileGaps = detectProfileArchetypeGaps(profile, currentShoes, catalogue);
 
-  if (gaps.length === 0) {
+  if (profileGaps.length > 0) {
+    const primaryGap = profileGaps[0];
+
+    // Determine severity based on archetype importance
+    let severity: GapSeverity = "medium";
+
+    // High severity for daily trainer (everyone needs one)
+    if (primaryGap.archetype === "daily_trainer") {
+      severity = "high";
+    }
+    // High severity for workout shoe if focused on speed/racing
+    else if (primaryGap.archetype === "workout_shoe" &&
+      (profile.primaryGoal === "get_faster" || profile.primaryGoal === "race_training")) {
+      severity = "high";
+    }
+    // High severity for race shoe if race training
+    else if (primaryGap.archetype === "race_shoe" && profile.primaryGoal === "race_training") {
+      severity = "high";
+    }
+    // High severity for recovery if structured training or injury comeback
+    else if (primaryGap.archetype === "recovery_shoe" &&
+      (profile.runningPattern === "structured_training" || profile.primaryGoal === "injury_comeback")) {
+      severity = "high";
+    }
+    // High severity for trail if doing most/all trails
+    else if (primaryGap.archetype === "trail_shoe" && profile.trailRunning === "most_or_all") {
+      severity = "high";
+    }
+
+    console.log('[checkCoverageGap] Found profile-based gap:', {
+      archetype: primaryGap.archetype,
+      severity,
+      message: ARCHETYPE_GAP_MESSAGES[primaryGap.archetype]
+    });
+
+    return {
+      type: "coverage",
+      severity,
+      reasoning: ARCHETYPE_GAP_MESSAGES[primaryGap.archetype],
+      recommendedArchetype: primaryGap.archetype,
+    };
+  }
+
+  // Then check runType-based gaps (if user assigned specific runTypes)
+  const runTypeGaps = detectCoverageGaps(currentShoes, catalogue);
+
+  if (runTypeGaps.length === 0) {
     return null; // No coverage gaps
   }
 
   // Take the highest priority gap
-  const primaryGap = gaps[0];
+  const primaryGap = runTypeGaps[0];
 
   // Determine severity based on profile
   let severity: GapSeverity = "medium";
