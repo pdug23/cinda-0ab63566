@@ -8,6 +8,7 @@ import { ShoeCarousel } from "@/components/results/ShoeCarousel";
 import { Button } from "@/components/ui/button";
 import { LeaveRecommendationsModal } from "@/components/LeaveRecommendationsModal";
 import { loadProfile, loadShoes, loadShoeRequests, loadGap, loadChatContext } from "@/utils/storage";
+import { normalizeStoredRaceTimeForApi } from "@/utils/raceTime";
 import type { FeelPreferences as APIFeelPreferences, CurrentShoe as APICurrentShoe } from "../../api/types";
 import cindaLogo from "@/assets/cinda-logo-white-v2.png";
 
@@ -401,6 +402,11 @@ export default function RecommendationsPage() {
         return;
       }
 
+      const normalizedRaceTime = normalizeStoredRaceTimeForApi(
+        profile.raceTime,
+        (profile as any).raceTimeInput
+      );
+
       // 3. Determine mode based on stored data
       // Analysis mode: has gap + feelPreferences
       // Shopping mode: has shoeRequests
@@ -459,7 +465,7 @@ export default function RecommendationsPage() {
             trailRunning: profile.trailRunning,
             footStrike: profile.footStrike,
             weeklyVolume: profile.weeklyVolume,
-            raceTime: profile.raceTime,
+            raceTime: normalizedRaceTime,
             brandPreference: profile.brandPreference,
             currentNiggles: profile.currentNiggles,
           },
@@ -482,7 +488,7 @@ export default function RecommendationsPage() {
             trailRunning: profile.trailRunning,
             footStrike: profile.footStrike,
             weeklyVolume: profile.weeklyVolume,
-            raceTime: profile.raceTime,
+            raceTime: normalizedRaceTime,
             brandPreference: profile.brandPreference,
             currentNiggles: profile.currentNiggles,
           },

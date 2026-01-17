@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { saveProfile, saveShoes, saveShoeRequests, saveGap, saveChatContext } from "@/utils/storage";
+import { buildAPIRaceTimeFromPicker } from "@/utils/raceTime";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Mobile tooltip modal component - proper centered modal with backdrop
@@ -685,12 +686,9 @@ const ProfileBuilderStep4b = () => {
             unit: step2.weeklyVolume.unit
           } : undefined,
           // Convert raceTime to API format (timeMinutes)
-          raceTime: step2.raceTime ? {
-            distance: step2.raceTime.distance === "13.1mi" ? "half" as const : 
-                      step2.raceTime.distance === "26.2mi" ? "marathon" as const : 
-                      step2.raceTime.distance as "5k" | "10k",
-            timeMinutes: (step2.raceTime.hours || 0) * 60 + (step2.raceTime.minutes || 0)
-          } : undefined,
+          raceTime: step2.raceTime ? buildAPIRaceTimeFromPicker(step2.raceTime) : undefined,
+          // Keep original input (hours/mins) in storage for backwards-compat recovery
+          raceTimeInput: step2.raceTime ?? undefined,
           // Include brand preference from current feel preferences
           brandPreference: preferences.brandPreference.mode !== "all" ? {
             mode: preferences.brandPreference.mode,

@@ -6,6 +6,7 @@ import AnimatedBackground from "@/components/AnimatedBackground";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import { useProfile, DiscoveryArchetype, GapData } from "@/contexts/ProfileContext";
+import { buildAPIRaceTimeFromPicker } from "@/utils/raceTime";
 
 type Status = "loading" | "success" | "no_gap" | "error";
 
@@ -78,12 +79,7 @@ const ProfileBuilderStep4Analysis = () => {
         trailRunning: step2.trailRunning ?? undefined,
         footStrike: step2.footStrike ?? undefined,
         weeklyVolume: step2.weeklyVolume ?? undefined,
-        raceTime: step2.raceTime ? {
-          distance: step2.raceTime.distance === "13.1mi" ? "half" as const : 
-                    step2.raceTime.distance === "26.2mi" ? "marathon" as const : 
-                    step2.raceTime.distance as "5k" | "10k",
-          timeMinutes: (step2.raceTime.hours || 0) * 60 + (step2.raceTime.minutes || 0)
-        } : undefined,
+        raceTime: step2.raceTime ? buildAPIRaceTimeFromPicker(step2.raceTime) : undefined,
         currentNiggles: step3.chatContext.injuries.length > 0 ? step3.chatContext.injuries : undefined,
       };
 
