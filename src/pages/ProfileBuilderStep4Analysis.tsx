@@ -33,6 +33,45 @@ const formatRoleLabel = (role: string): string => {
   return labels[role] || role.toLowerCase().replace(/_/g, " ");
 };
 
+const formatArchetypesToRunTypes = (archetypes: string[]): string => {
+  if (!archetypes || archetypes.length === 0) return "";
+
+  const runTypeMap: Record<string, string[]> = {
+    daily_trainer: ["recovery runs", "long runs at a comfortable pace"],
+    recovery_shoe: ["recovery runs"],
+    workout_shoe: ["workouts", "long runs with workout segments"],
+    race_shoe: ["races", "workouts", "long runs with workout segments"],
+    trail_shoe: ["trail"],
+  };
+
+  // Collect all run types from archetypes
+  const allRunTypes: string[] = [];
+  archetypes.forEach((archetype) => {
+    const types = runTypeMap[archetype] || [];
+    allRunTypes.push(...types);
+  });
+
+  // Check for long run collapsing: if both "comfortable pace" and "workout segments" exist
+  const hasComfortablePace = allRunTypes.includes("long runs at a comfortable pace");
+  const hasWorkoutSegments = allRunTypes.includes("long runs with workout segments");
+
+  let finalTypes: string[];
+  if (hasComfortablePace && hasWorkoutSegments) {
+    // Collapse to "all long runs" and remove the specific variants
+    finalTypes = allRunTypes.filter(
+      (t) => t !== "long runs at a comfortable pace" && t !== "long runs with workout segments"
+    );
+    finalTypes.push("all long runs");
+  } else {
+    finalTypes = [...allRunTypes];
+  }
+
+  // Deduplicate while preserving order
+  const unique = [...new Set(finalTypes)];
+
+  return unique.join(", ");
+};
+
 const ProfileBuilderStep4Analysis = () => {
   const navigate = useNavigate();
   const { profileData, updateStep4 } = useProfile();
@@ -236,7 +275,7 @@ const ProfileBuilderStep4Analysis = () => {
                   you use it for: {(item.userRunTypes || []).map(formatRoleLabel).join(", ")}
                 </p>
                 <p className="text-sm text-gray-300 lowercase">
-                  best suited for: {(item.archetypes || []).map(formatRoleLabel).join(", ")}
+                  best suited for: {formatArchetypesToRunTypes(item.archetypes || [])}
                 </p>
                 {isSevere && item.misuseMessage && (
                   <div className="mt-3 p-2 bg-red-500/15 border border-red-500/30 rounded-md">
