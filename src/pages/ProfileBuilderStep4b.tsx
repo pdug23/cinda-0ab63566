@@ -24,7 +24,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { saveProfile, saveShoes, saveShoeRequests, saveGap } from "@/utils/storage";
+import { saveProfile, saveShoes, saveShoeRequests, saveGap, saveChatContext } from "@/utils/storage";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Mobile tooltip modal component - proper centered modal with backdrop
@@ -689,7 +689,7 @@ const ProfileBuilderStep4b = () => {
             distance: step2.raceTime.distance === "13.1mi" ? "half" as const : 
                       step2.raceTime.distance === "26.2mi" ? "marathon" as const : 
                       step2.raceTime.distance as "5k" | "10k",
-            timeMinutes: step2.raceTime.hours * 60 + step2.raceTime.minutes + step2.raceTime.seconds / 60
+            timeMinutes: (step2.raceTime.hours || 0) * 60 + (step2.raceTime.minutes || 0) + ((step2.raceTime.seconds || 0) / 60)
           } : undefined,
           // Include brand preference from current feel preferences
           brandPreference: preferences.brandPreference.mode !== "all" ? {
@@ -716,6 +716,15 @@ const ProfileBuilderStep4b = () => {
         if (profileData.step4.gap) {
           saveGap(profileData.step4.gap);
         }
+
+        // Save chat context for API
+        saveChatContext({
+          injuries: step3.chatContext.injuries,
+          pastShoes: step3.chatContext.pastShoes,
+          fit: step3.chatContext.fit,
+          climate: step3.chatContext.climate,
+          requests: step3.chatContext.requests,
+        });
 
         navigate("/recommendations");
       } catch (error) {

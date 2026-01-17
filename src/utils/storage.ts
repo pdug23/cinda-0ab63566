@@ -353,6 +353,74 @@ export function clearGap(): void {
 }
 
 // ============================================================================
+// CHAT CONTEXT (Epic 2.5 - Chat insights)
+// ============================================================================
+
+// PastShoeContext from ProfileContext
+interface PastShoeContext {
+  brand: string;
+  model?: string;
+  sentiment?: "liked" | "disliked" | "neutral";
+}
+
+export interface ChatContextData {
+  injuries: string[];
+  pastShoes: (string | PastShoeContext)[];
+  fit: Record<string, string>;
+  climate: string | null;
+  requests: string[];
+}
+
+export interface StoredChatContext {
+  schemaVersion: number;
+  chatContext: ChatContextData;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Save chat context to localStorage
+ */
+export function saveChatContext(chatContext: ChatContextData): boolean {
+  try {
+    const stored: StoredChatContext = {
+      schemaVersion: SCHEMA_VERSION,
+      chatContext,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    localStorage.setItem('cindaChatContext', JSON.stringify(stored));
+    return true;
+  } catch (error) {
+    console.error('Failed to save chat context:', error);
+    return false;
+  }
+}
+
+/**
+ * Load chat context from localStorage
+ */
+export function loadChatContext(): ChatContextData | null {
+  try {
+    const stored = localStorage.getItem('cindaChatContext');
+    if (!stored) return null;
+
+    const data = JSON.parse(stored) as StoredChatContext;
+    return data.chatContext || null;
+  } catch (error) {
+    console.error('Failed to load chat context:', error);
+    return null;
+  }
+}
+
+/**
+ * Clear chat context data
+ */
+export function clearChatContext(): void {
+  localStorage.removeItem('cindaChatContext');
+}
+
+// ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
 
