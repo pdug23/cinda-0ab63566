@@ -56,6 +56,8 @@ function detectCoverageGaps(
     }
   }
 
+  console.log('[detectCoverageGaps] All run types user does:', Array.from(allRunTypes));
+
   // Priority order for run types
   const runTypePriority: Record<RunType, number> = {
     "all_runs": 1,
@@ -72,11 +74,17 @@ function detectCoverageGaps(
 
     const hasSuitable = currentShoes.some(userShoe => {
       const shoe = catalogue.find(s => s.shoe_id === userShoe.shoeId);
-      if (!shoe) return false;
-      return suitableArchetypes.some(archetype => shoeHasArchetype(shoe, archetype));
+      if (!shoe) {
+        console.log(`[detectCoverageGaps] Shoe not found in catalogue: ${userShoe.shoeId}`);
+        return false;
+      }
+      const shoeArchetypes = suitableArchetypes.filter(archetype => shoeHasArchetype(shoe, archetype));
+      console.log(`[detectCoverageGaps] Shoe ${shoe.full_name} (${userShoe.shoeId}) archetypes for ${runType}:`, shoeArchetypes);
+      return shoeArchetypes.length > 0;
     });
 
     if (!hasSuitable) {
+      console.log(`[detectCoverageGaps] GAP: No suitable archetype for ${runType}, recommending ${suitableArchetypes[0]}`);
       gaps.push({
         runType,
         recommendedArchetype: suitableArchetypes[0], // First archetype is preferred
@@ -88,6 +96,7 @@ function detectCoverageGaps(
   // Sort by priority (lower number = higher priority)
   gaps.sort((a, b) => a.priority - b.priority);
 
+  console.log('[detectCoverageGaps] Final gaps:', gaps);
   return gaps;
 }
 
@@ -372,8 +381,17 @@ export function identifyPrimaryGap(
   currentShoes: CurrentShoe[],
   catalogue: Shoe[]
 ): Gap {
+  console.log('[identifyPrimaryGap] Input:', {
+    currentShoesCount: currentShoes.length,
+    coveredArchetypes: analysis.coveredArchetypes,
+    missingArchetypes: analysis.missingArchetypes,
+    coveredRunTypes: analysis.coveredRunTypes,
+    uncoveredRunTypes: analysis.uncoveredRunTypes
+  });
+
   // Edge case: Empty rotation
   if (currentShoes.length === 0) {
+    console.log('[identifyPrimaryGap] Empty rotation - recommending daily_trainer');
     return {
       type: "coverage",
       severity: "high",
@@ -408,15 +426,18 @@ export function identifyPrimaryGap(
     if (volumeContext) {
       misuseGap.reasoning = `${misuseGap.reasoning} ${volumeContext}`;
     }
+    console.log('[identifyPrimaryGap] Found misuse gap:', misuseGap);
     return misuseGap;
   }
 
   // Priority 2: Coverage gaps
   const coverageGap = checkCoverageGap(analysis, profile, currentShoes, catalogue);
+  console.log('[identifyPrimaryGap] Coverage gap check result:', coverageGap);
   if (coverageGap && coverageGap.severity === "high") {
     if (volumeContext) {
       coverageGap.reasoning = `${coverageGap.reasoning} ${volumeContext}`;
     }
+    console.log('[identifyPrimaryGap] Found high-severity coverage gap:', coverageGap);
     return coverageGap;
   }
 
@@ -473,7 +494,7 @@ export function identifyPrimaryGap(
   }
 
   // No gaps found - rotation is well-balanced
-  return {
+  const defaultGap: Gap = {
     type: "coverage",
     severity: volumeSeverityBoost ? "high" : "low",
     reasoning: volumeContext
@@ -481,6 +502,8 @@ export function identifyPrimaryGap(
       : "Your rotation covers the basics well. Consider adding variety with a different shoe type or feel to expand your options.",
     recommendedArchetype: "daily_trainer",
   };
+  console.log('[identifyPrimaryGap] No significant gaps found, returning default:', defaultGap);
+  return defaultGap;
 }
 
 // ============================================================================

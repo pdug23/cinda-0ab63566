@@ -233,10 +233,25 @@ export function analyzeRotation(
   profile: RunnerProfile,
   catalogue: Shoe[]
 ): RotationAnalysis {
+  console.log('[analyzeRotation] Input:', {
+    currentShoesCount: currentShoes?.length || 0,
+    currentShoes: currentShoes?.map(s => ({
+      shoeId: s.shoeId,
+      runTypes: s.runTypes,
+      sentiment: s.sentiment
+    })),
+    profile: {
+      runningPattern: profile.runningPattern,
+      primaryGoal: profile.primaryGoal,
+      experience: profile.experience
+    }
+  });
+
   // Edge case: empty rotation
   if (!currentShoes || currentShoes.length === 0) {
     const expectedRunTypes = getExpectedRunTypes(profile);
     const expectedArchetypes = getExpectedArchetypes(profile);
+    console.log('[analyzeRotation] Empty rotation - expected archetypes:', expectedArchetypes);
     return {
       coveredRunTypes: [],
       uncoveredRunTypes: expectedRunTypes,
@@ -287,7 +302,7 @@ export function analyzeRotation(
     shoe => shoe.lifecycle === "near_replacement"
   );
 
-  return {
+  const result = {
     coveredRunTypes,
     uncoveredRunTypes,
     coveredArchetypes,
@@ -297,6 +312,18 @@ export function analyzeRotation(
     hasDislikedShoes,
     hasNearReplacementShoes,
   };
+
+  console.log('[analyzeRotation] Result:', {
+    coveredRunTypes: result.coveredRunTypes,
+    uncoveredRunTypes: result.uncoveredRunTypes,
+    coveredArchetypes: result.coveredArchetypes,
+    missingArchetypes: result.missingArchetypes,
+    redundanciesCount: result.redundancies.length,
+    allShoesLoved: result.allShoesLoved,
+    hasDislikedShoes: result.hasDislikedShoes
+  });
+
+  return result;
 }
 
 // ============================================================================
