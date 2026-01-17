@@ -67,6 +67,13 @@ const ProfileBuilderStep4Analysis = () => {
     setStatus("loading");
     setErrorMessage("");
 
+    // Guard: ensure we have shoes to analyze
+    if (!step3.currentShoes || step3.currentShoes.length === 0) {
+      setErrorMessage("No shoes found in your rotation. Please add shoes first.");
+      setStatus("error");
+      return;
+    }
+
     try {
       // Build complete profile with all fields
       const profile = {
@@ -85,7 +92,7 @@ const ProfileBuilderStep4Analysis = () => {
       };
 
       // Include loveTags and dislikeTags on shoes
-      const currentShoes = step3.currentShoes.map((shoe) => ({
+      const currentShoes = (step3.currentShoes || []).map((shoe) => ({
         shoeId: shoe.shoe.shoe_id,
         runTypes: shoe.runTypes,
         sentiment: shoe.sentiment ?? "neutral",
@@ -197,7 +204,7 @@ const ProfileBuilderStep4Analysis = () => {
   };
 
   const RotationSummarySection = () => {
-    if (rotationSummary.length === 0) return null;
+    if (!rotationSummary || rotationSummary.length === 0) return null;
 
     return (
       <div className="w-full mb-6">
@@ -226,10 +233,10 @@ const ProfileBuilderStep4Analysis = () => {
                   </p>
                 </div>
                 <p className="text-sm text-gray-300 mb-1 lowercase">
-                  you use it for: {item.userRoles.map(formatRoleLabel).join(", ")}
+                  you use it for: {(item.userRoles || []).map(formatRoleLabel).join(", ")}
                 </p>
                 <p className="text-sm text-gray-300 lowercase">
-                  best suited for: {item.capabilities.map(formatRoleLabel).join(", ")}
+                  best suited for: {(item.capabilities || []).map(formatRoleLabel).join(", ")}
                 </p>
                 {isSevere && item.misuseMessage && (
                   <div className="mt-3 p-2 bg-red-500/15 border border-red-500/30 rounded-md">
