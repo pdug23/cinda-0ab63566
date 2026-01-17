@@ -13,8 +13,8 @@ type Status = "loading" | "success" | "no_gap" | "error";
 
 interface RotationShoeSummary {
   shoe: { shoe_id: string; full_name: string };
-  userRoles: string[];
-  capabilities: string[];
+  userRunTypes: string[];
+  archetypes: string[];
   misuseLevel: "severe" | "suboptimal" | "good";
   misuseMessage?: string;
 }
@@ -233,10 +233,10 @@ const ProfileBuilderStep4Analysis = () => {
                   </p>
                 </div>
                 <p className="text-sm text-gray-300 mb-1 lowercase">
-                  you use it for: {(item.userRoles || []).map(formatRoleLabel).join(", ")}
+                  you use it for: {(item.userRunTypes || []).map(formatRoleLabel).join(", ")}
                 </p>
                 <p className="text-sm text-gray-300 lowercase">
-                  best suited for: {(item.capabilities || []).map(formatRoleLabel).join(", ")}
+                  best suited for: {(item.archetypes || []).map(formatRoleLabel).join(", ")}
                 </p>
                 {isSevere && item.misuseMessage && (
                   <div className="mt-3 p-2 bg-red-500/15 border border-red-500/30 rounded-md">
