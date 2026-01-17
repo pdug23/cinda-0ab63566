@@ -689,7 +689,7 @@ const ProfileBuilderStep4b = () => {
             distance: step2.raceTime.distance === "13.1mi" ? "half" as const : 
                       step2.raceTime.distance === "26.2mi" ? "marathon" as const : 
                       step2.raceTime.distance as "5k" | "10k",
-            timeMinutes: (step2.raceTime.hours || 0) * 60 + (step2.raceTime.minutes || 0) + ((step2.raceTime.seconds || 0) / 60)
+            timeMinutes: (step2.raceTime.hours || 0) * 60 + (step2.raceTime.minutes || 0)
           } : undefined,
           // Include brand preference from current feel preferences
           brandPreference: preferences.brandPreference.mode !== "all" ? {

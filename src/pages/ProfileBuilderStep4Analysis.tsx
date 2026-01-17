@@ -82,7 +82,7 @@ const ProfileBuilderStep4Analysis = () => {
           distance: step2.raceTime.distance === "13.1mi" ? "half" as const : 
                     step2.raceTime.distance === "26.2mi" ? "marathon" as const : 
                     step2.raceTime.distance as "5k" | "10k",
-          timeMinutes: (step2.raceTime.hours || 0) * 60 + (step2.raceTime.minutes || 0) + ((step2.raceTime.seconds || 0) / 60)
+          timeMinutes: (step2.raceTime.hours || 0) * 60 + (step2.raceTime.minutes || 0)
         } : undefined,
         currentNiggles: step3.chatContext.injuries.length > 0 ? step3.chatContext.injuries : undefined,
       };
