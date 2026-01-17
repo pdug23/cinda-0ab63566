@@ -82,7 +82,7 @@ const ProfileBuilderStep4Analysis = () => {
           distance: step2.raceTime.distance === "13.1mi" ? "half" as const : 
                     step2.raceTime.distance === "26.2mi" ? "marathon" as const : 
                     step2.raceTime.distance as "5k" | "10k",
-          timeMinutes: step2.raceTime.hours * 60 + step2.raceTime.minutes + step2.raceTime.seconds / 60
+          timeMinutes: (step2.raceTime.hours || 0) * 60 + (step2.raceTime.minutes || 0) + ((step2.raceTime.seconds || 0) / 60)
         } : undefined,
         currentNiggles: step3.chatContext.injuries.length > 0 ? step3.chatContext.injuries : undefined,
       };
@@ -96,6 +96,15 @@ const ProfileBuilderStep4Analysis = () => {
         dislikeTags: shoe.dislikeTags,
       }));
 
+      // Build chatContext for API
+      const chatContext = {
+        injuries: step3.chatContext.injuries,
+        pastShoes: step3.chatContext.pastShoes,
+        fit: step3.chatContext.fit,
+        climate: step3.chatContext.climate,
+        requests: step3.chatContext.requests,
+      };
+
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -103,6 +112,7 @@ const ProfileBuilderStep4Analysis = () => {
           mode: "gap_detection",
           profile,
           currentShoes,
+          chatContext,
         }),
       });
 

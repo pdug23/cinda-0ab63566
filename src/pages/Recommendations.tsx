@@ -7,7 +7,7 @@ import OnboardingLayout from "@/components/OnboardingLayout";
 import { ShoeCarousel } from "@/components/results/ShoeCarousel";
 import { Button } from "@/components/ui/button";
 import { LeaveRecommendationsModal } from "@/components/LeaveRecommendationsModal";
-import { loadProfile, loadShoes, loadShoeRequests, loadGap } from "@/utils/storage";
+import { loadProfile, loadShoes, loadShoeRequests, loadGap, loadChatContext } from "@/utils/storage";
 import type { FeelPreferences as APIFeelPreferences, CurrentShoe as APICurrentShoe } from "../../api/types";
 import cindaLogo from "@/assets/cinda-logo-white-v2.png";
 
@@ -392,6 +392,7 @@ export default function RecommendationsPage() {
       const storedGap = loadGap();
       const shoeRequests = loadShoeRequests();
       const feelPreferences = loadFromStorage<APIFeelPreferences>('cindaFeelPreferences');  // Keep this one for now
+      const chatContext = loadChatContext();
 
       // 2. Validate required data
       if (!profile) {
@@ -465,6 +466,7 @@ export default function RecommendationsPage() {
           currentShoes: currentShoesForAPI,
           gap: storedGap,
           feelPreferences: feelPreferences,
+          chatContext: chatContext,
         };
       } else {
         payload = {
@@ -486,6 +488,7 @@ export default function RecommendationsPage() {
           },
           currentShoes: currentShoesForAPI,
           shoeRequests: shoeRequests,
+          chatContext: chatContext,
         };
       }
 
