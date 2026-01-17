@@ -52,12 +52,24 @@ interface Gap {
   severity: string;
   reasoning: string;
   missingCapability?: string;
+  recommendedArchetype?: string;
+}
+
+interface RotationShoe {
+  shoeId: string;
+  fullName: string;
+  brand: string;
+  runTypes: string[];
+  archetypes: string[];
+  misuseLevel: 'good' | 'suboptimal' | 'severe';
+  misuseReason?: string;
 }
 
 interface AnalysisResult {
   gap: Gap;
   recommendations: RecommendedShoe[];
   summaryReasoning: string;
+  rotationSummary?: RotationShoe[];
 }
 
 interface DiscoveryResultItem {
@@ -264,6 +276,114 @@ function PageHeader() {
 }
 
 
+// Helper to format archetype for display
+function formatArchetype(archetype: string): string {
+  const formatMap: Record<string, string> = {
+    daily_trainer: 'daily trainer',
+    recovery_shoe: 'recovery',
+    workout_shoe: 'workout',
+    race_shoe: 'race',
+    trail_shoe: 'trail',
+  };
+  return formatMap[archetype] || archetype.replace(/_/g, ' ');
+}
+
+// Helper to get border color based on misuse level
+function getMisuseBorderClass(level: 'good' | 'suboptimal' | 'severe'): string {
+  switch (level) {
+    case 'good': return 'border-green-500/60';
+    case 'suboptimal': return 'border-amber-500/60';
+    case 'severe': return 'border-red-500/60';
+    default: return 'border-card-foreground/20';
+  }
+}
+
+function AnalysisSummaryView({
+  gap,
+  rotationSummary,
+  onSetPreferences,
+}: {
+  gap: Gap;
+  rotationSummary: RotationShoe[];
+  onSetPreferences: () => void;
+}) {
+  return (
+    <div className="flex-1 flex flex-col px-6 md:px-8 pb-6 gap-6 overflow-y-auto">
+      {/* Rotation Summary */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-medium text-card-foreground/70 uppercase tracking-wider">
+          your rotation
+        </h2>
+        <div className="space-y-3">
+          {rotationSummary.map((shoe) => (
+            <div
+              key={shoe.shoeId}
+              className={`p-4 rounded-xl bg-card-foreground/5 border-2 ${getMisuseBorderClass(shoe.misuseLevel)}`}
+            >
+              <div className="flex flex-col gap-2">
+                <span className="font-semibold text-card-foreground/90">
+                  {shoe.fullName}
+                </span>
+                {/* Run types */}
+                <div className="flex flex-wrap gap-1.5">
+                  {shoe.runTypes.map((rt) => (
+                    <span
+                      key={rt}
+                      className="px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary-foreground/80"
+                    >
+                      {rt.replace(/_/g, ' ')}
+                    </span>
+                  ))}
+                </div>
+                {/* Archetypes */}
+                <div className="flex flex-wrap gap-1.5">
+                  {shoe.archetypes.map((arch) => (
+                    <span
+                      key={arch}
+                      className="px-2 py-0.5 text-xs rounded-full bg-card-foreground/10 text-card-foreground/70"
+                    >
+                      {formatArchetype(arch)}
+                    </span>
+                  ))}
+                </div>
+                {shoe.misuseReason && (
+                  <p className="text-xs text-card-foreground/60 mt-1">
+                    {shoe.misuseReason}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Gap Analysis */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-medium text-card-foreground/70 uppercase tracking-wider">
+          recommendation
+        </h2>
+        <div className="p-4 rounded-xl bg-primary/10 border border-primary/30">
+          <p className="text-card-foreground/90 font-medium mb-2">
+            you'd benefit from a {formatArchetype(gap.recommendedArchetype || gap.missingCapability || 'daily_trainer')}
+          </p>
+          <p className="text-sm text-card-foreground/70">
+            {gap.reasoning}
+          </p>
+        </div>
+      </div>
+
+      {/* CTA */}
+      <Button
+        onClick={onSetPreferences}
+        variant="cta"
+        className="w-full min-h-[48px] mt-2"
+      >
+        set preferences
+      </Button>
+    </div>
+  );
+}
+
 function AnalysisModeResults({
   result,
   gap,
@@ -278,7 +398,7 @@ function AnalysisModeResults({
   const carouselRole = mapArchetypeToCarouselRole(gap.missingCapability || 'daily');
 
   // Transform recommendations for ShoeCarousel
-  const carouselShoes = result.recommendations.map((shoe) => ({
+  const carouselShoes = (result.recommendations || []).map((shoe) => ({
     ...shoe,
     tradeOffs: shoe.tradeOffs,
   }));
@@ -534,16 +654,19 @@ export default function RecommendationsPage() {
         const resultGap = data.result?.gap;
         const resultRecommendations = data.result?.recommendations || [];
         const resultSummary = data.result?.summaryReasoning || '';
+        const resultRotationSummary = data.result?.rotationSummary || [];
         
         console.log('[Recommendations] Analysis result:', {
           hasGap: !!resultGap,
           recommendationsCount: resultRecommendations.length,
+          rotationSummaryCount: resultRotationSummary.length,
         });
 
         setAnalysisResult({
           gap: resultGap || storedGap,
           recommendations: resultRecommendations,
           summaryReasoning: resultSummary,
+          rotationSummary: resultRotationSummary,
         });
         // Update gap from response if available, fallback to stored
         if (resultGap) {
@@ -569,9 +692,14 @@ export default function RecommendationsPage() {
     loadDataAndFetch();
   }, [loadDataAndFetch]);
 
-  // Check for empty results
+  // Check for empty results - analysis mode is not empty if it has rotationSummary
+  const hasAnalysisContent = analysisResult && (
+    (analysisResult.recommendations && analysisResult.recommendations.length > 0) ||
+    (analysisResult.rotationSummary && analysisResult.rotationSummary.length > 0)
+  );
+  
   const isEmpty =
-    (mode === "analysis" && analysisResult?.recommendations.length === 0) ||
+    (mode === "analysis" && !hasAnalysisContent) ||
     (mode === "discovery" && (discoveryResult?.discoveryResults?.length === 0 || 
       discoveryResult?.discoveryResults?.every(r => r.recommendations?.length === 0)));
 
@@ -603,14 +731,26 @@ export default function RecommendationsPage() {
           {!loading && !error && !isEmpty && mode === "analysis" && analysisResult && gap && (
             <div className="flex-1 flex flex-col min-h-0 overflow-visible">
               <PageHeader />
-              <div className="flex-1 flex items-center min-h-0 overflow-visible">
-                <AnalysisModeResults 
-                  result={analysisResult} 
-                  gap={gap} 
-                  shortlistedShoes={shortlistedShoes}
-                  onShortlist={handleShortlist}
+              {/* Show AnalysisSummaryView if no recommendations but has rotationSummary */}
+              {(!analysisResult.recommendations || analysisResult.recommendations.length === 0) && 
+               analysisResult.rotationSummary && analysisResult.rotationSummary.length > 0 ? (
+                <AnalysisSummaryView 
+                  gap={gap}
+                  rotationSummary={analysisResult.rotationSummary}
+                  onSetPreferences={() => navigate('/profile/step4b', { 
+                    state: { recommendedArchetype: gap.recommendedArchetype || gap.missingCapability } 
+                  })}
                 />
-              </div>
+              ) : (
+                <div className="flex-1 flex items-center min-h-0 overflow-visible">
+                  <AnalysisModeResults 
+                    result={analysisResult} 
+                    gap={gap} 
+                    shortlistedShoes={shortlistedShoes}
+                    onShortlist={handleShortlist}
+                  />
+                </div>
+              )}
             </div>
           )}
 
