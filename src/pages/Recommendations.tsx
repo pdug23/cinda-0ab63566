@@ -395,6 +395,15 @@ export default function RecommendationsPage() {
       const feelPreferences = loadFromStorage<APIFeelPreferences>('cindaFeelPreferences');  // Keep this one for now
       const chatContext = loadChatContext();
 
+      console.log('[Recommendations] Loaded from storage:', {
+        hasProfile: !!profile,
+        hasShoes: shoes.length,
+        hasGap: !!storedGap,
+        hasShoeRequests: shoeRequests?.length,
+        hasFeelPreferences: !!feelPreferences,
+        storedGap,
+      });
+
       // 2. Validate required data
       if (!profile) {
         toast.error("Please complete the profile first");
@@ -408,25 +417,23 @@ export default function RecommendationsPage() {
       );
 
       // 3. Determine mode based on stored data
-      // Analysis mode: has gap + feelPreferences
-      // Shopping mode: has shoeRequests
+      // Analysis mode: has gap (feelPreferences optional now)
+      // Discovery mode: has shoeRequests
       let detectedMode: Mode;
 
-      if (storedGap && feelPreferences) {
+      if (storedGap) {
         detectedMode = "analysis";
         setGap(storedGap);
+        console.log('[Recommendations] Mode: analysis (gap found)');
       } else if (shoeRequests && shoeRequests.length > 0) {
         detectedMode = "discovery";
+        console.log('[Recommendations] Mode: discovery (shoeRequests found)');
       } else {
-        // Default to analysis if we have gap, otherwise redirect
-        if (storedGap) {
-          detectedMode = "analysis";
-          setGap(storedGap);
-        } else {
-          toast.error("Please complete the profile builder first");
-          navigate("/profile/step4");
-          return;
-        }
+        // No gap and no shoe requests - redirect to profile builder
+        console.log('[Recommendations] No gap or shoeRequests - redirecting');
+        toast.error("Please complete the profile builder first");
+        navigate("/profile/step4");
+        return;
       }
 
       setMode(detectedMode);
@@ -515,6 +522,7 @@ export default function RecommendationsPage() {
       }
 
       const data = await response.json();
+      console.log('[Recommendations] API response:', data);
 
       if (!data.success) {
         throw new Error(data.error || "Failed to get recommendations");
@@ -522,18 +530,29 @@ export default function RecommendationsPage() {
 
       // 6. Set results based on mode
       if (detectedMode === "analysis") {
-        setAnalysisResult({
-          gap: data.result.gap,
-          recommendations: data.result.recommendations,
-          summaryReasoning: data.result.summaryReasoning,
+        // Handle both 'analysis' and 'gap_detection' response formats
+        const resultGap = data.result?.gap;
+        const resultRecommendations = data.result?.recommendations || [];
+        const resultSummary = data.result?.summaryReasoning || '';
+        
+        console.log('[Recommendations] Analysis result:', {
+          hasGap: !!resultGap,
+          recommendationsCount: resultRecommendations.length,
         });
-        // Update gap from response if available
-        if (data.result.gap) {
-          setGap(data.result.gap);
+
+        setAnalysisResult({
+          gap: resultGap || storedGap,
+          recommendations: resultRecommendations,
+          summaryReasoning: resultSummary,
+        });
+        // Update gap from response if available, fallback to stored
+        if (resultGap) {
+          setGap(resultGap);
         }
       } else {
         // Discovery mode - handle discoveryResults
         const discoveryResults = data.result?.discoveryResults || [];
+        console.log('[Recommendations] Discovery results:', discoveryResults.length);
         setDiscoveryResult({
           discoveryResults: discoveryResults,
         });

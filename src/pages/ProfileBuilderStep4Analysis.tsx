@@ -7,6 +7,7 @@ import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import { useProfile, DiscoveryArchetype, GapData } from "@/contexts/ProfileContext";
 import { buildAPIRaceTimeFromPicker } from "@/utils/raceTime";
+import { saveGap } from "@/utils/storage";
 
 type Status = "loading" | "success" | "no_gap" | "error";
 
@@ -127,6 +128,8 @@ const ProfileBuilderStep4Analysis = () => {
       } else {
         setGap(detectedGap);
         updateStep4({ gap: detectedGap });
+        // Save gap to localStorage so Recommendations page can load it
+        saveGap(detectedGap);
         setStatus("success");
       }
     } catch (err) {
