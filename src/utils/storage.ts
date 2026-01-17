@@ -69,7 +69,35 @@ export function loadProfile(): RunnerProfile | null {
       console.warn('Profile schema version mismatch, may need migration');
     }
 
-    return data.profile;
+    // Backwards-compat: older builds sometimes stored raceTime.timeMinutes as decimal HOURS.
+    // Example: 2h 17m → 2.2833 (hours) instead of 137 (minutes).
+    const profile = data.profile;
+    const rt = profile?.raceTime;
+    if (rt && typeof rt.timeMinutes === 'number' && rt.timeMinutes > 0) {
+      const thresholds: Record<string, number> = {
+        '5k': 6,
+        '10k': 10,
+        half: 30,
+        marathon: 60,
+      };
+      const threshold = thresholds[rt.distance] ?? 10;
+
+      const looksLikeHoursDecimal = rt.timeMinutes < threshold && !Number.isInteger(rt.timeMinutes);
+      if (looksLikeHoursDecimal) {
+        const normalized: RunnerProfile = {
+          ...profile,
+          raceTime: {
+            ...rt,
+            timeMinutes: Math.round(rt.timeMinutes * 60),
+          },
+        };
+        // Persist migration so future loads are clean
+        saveProfile(normalized);
+        return normalized;
+      }
+    }
+
+    return profile;
   } catch (error) {
     console.error('Failed to load profile:', error);
     return null;
