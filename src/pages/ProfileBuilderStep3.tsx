@@ -643,6 +643,11 @@ const ProfileBuilderStep3 = () => {
     return currentShoes.every((s) => s.runTypes.length > 0 && s.sentiment !== null);
   }, [currentShoes]);
 
+  // Check if user has added at least one complete shoe (for skip/continue button text)
+  const hasCompletedShoe = useMemo(() => {
+    return currentShoes.length > 0 && currentShoes.some((s) => s.runTypes.length > 0 && s.sentiment !== null);
+  }, [currentShoes]);
+
   // Navigation
   const handleBack = () => {
     updateStep3({ currentShoes });
@@ -734,7 +739,7 @@ const ProfileBuilderStep3 = () => {
               onClick={handleSkipClick}
               className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
             >
-              skip
+              {hasCompletedShoe ? 'continue' : 'skip'}
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </header>
