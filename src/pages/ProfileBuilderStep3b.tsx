@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, ArrowUp, Mic } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUp, Mic, X } from "lucide-react";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
@@ -394,20 +394,36 @@ const ProfileBuilderStep3b = () => {
 
       {/* Confirmation modal */}
       <Dialog open={confirmLeaveOpen} onOpenChange={setConfirmLeaveOpen}>
-        <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px] p-6">
-          <DialogHeader>
-            <DialogTitle className="text-base font-semibold text-card-foreground">
+        <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px] p-0 gap-0">
+          <DialogHeader className="p-4 pb-0 relative">
+            <button
+              onClick={() => setConfirmLeaveOpen(false)}
+              className="absolute right-4 top-4 p-1 rounded-full text-card-foreground/50 hover:text-card-foreground hover:bg-card-foreground/10 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <DialogTitle className="text-lg font-semibold text-card-foreground">
               ready to move on?
             </DialogTitle>
-            <DialogDescription className="text-sm text-card-foreground/60 mt-2">
-              cinda will use what you've shared to personalise your recommendations.
-            </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col gap-3 mt-4">
-            <Button variant="cta" onClick={handleConfirmLeave} className="w-full">
+          <div className="px-4 pt-4 pb-6">
+            <p className="text-sm text-card-foreground/70">
+              cinda will use what you've shared to personalise your recommendations.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 p-4 pt-0">
+            <Button 
+              onClick={handleConfirmLeave} 
+              variant="outline"
+              className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
+            >
               yes, find my shoes
             </Button>
-            <Button variant="outline" onClick={() => setConfirmLeaveOpen(false)} className="w-full">
+            <Button 
+              onClick={() => setConfirmLeaveOpen(false)} 
+              variant="outline"
+              className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
+            >
               keep chatting
             </Button>
           </div>

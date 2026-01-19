@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, RotateCcw } from "lucide-react";
+import { Send, RotateCcw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ChatMessage";
 import AnimatedBackground from "@/components/AnimatedBackground";
@@ -357,23 +357,31 @@ const Chat = () => {
 
       {/* Restart confirmation dialog */}
       <AlertDialog open={showRestartDialog} onOpenChange={setShowRestartDialog}>
-        <AlertDialogContent className="bg-card border-border/30">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-card-foreground">Restart chat?</AlertDialogTitle>
-            <AlertDialogDescription className="text-muted-foreground">
-              This will clear the current conversation and start fresh. This action cannot be undone.
-            </AlertDialogDescription>
+        <AlertDialogContent className="bg-card border-border/30 w-[calc(100%-48px)] max-w-[320px] p-0 gap-0">
+          <AlertDialogHeader className="p-4 pb-0 relative">
+            <button
+              onClick={() => setShowRestartDialog(false)}
+              className="absolute right-4 top-4 p-1 rounded-full text-card-foreground/50 hover:text-card-foreground hover:bg-card-foreground/10 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <AlertDialogTitle className="text-lg font-semibold text-card-foreground">restart chat?</AlertDialogTitle>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-transparent border-border/30 text-card-foreground hover:bg-border/20">
-              Cancel
-            </AlertDialogCancel>
+          <div className="px-4 pt-4 pb-6">
+            <p className="text-sm text-card-foreground/70">
+              this will clear the current conversation and start fresh. this action cannot be undone.
+            </p>
+          </div>
+          <AlertDialogFooter className="flex flex-col gap-2 p-4 pt-0">
             <AlertDialogAction
               onClick={confirmRestart}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="w-full min-h-[44px] bg-transparent border border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm rounded-lg"
             >
-              Restart chat
+              restart chat
             </AlertDialogAction>
+            <AlertDialogCancel className="w-full min-h-[44px] bg-transparent border border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm rounded-lg mt-0">
+              cancel
+            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

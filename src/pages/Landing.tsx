@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 import cindaLogo from "@/assets/cinda-logo-grey.png";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
@@ -12,7 +13,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 
 type ViewState = "landing" | "orientation";
@@ -217,21 +217,29 @@ const Landing = () => {
         )}
 
         <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:duration-150">
-            <DialogHeader>
-              <DialogTitle className="text-lg font-semibold text-primary">
+          <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px] p-0 gap-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:duration-150">
+            <DialogHeader className="p-4 pb-0 relative">
+              <button
+                onClick={() => setShowModal(false)}
+                className="absolute right-4 top-4 p-1 rounded-full text-card-foreground/50 hover:text-card-foreground hover:bg-card-foreground/10 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <DialogTitle className="text-lg font-semibold text-card-foreground">
                 how does cinda work?
               </DialogTitle>
-              <DialogDescription className="text-muted-foreground pt-3 space-y-3 text-sm">
+            </DialogHeader>
+            <div className="px-4 pt-4 pb-6">
+              <p className="text-sm text-card-foreground/70 space-y-3">
                 <span className="block">cinda helps runners find shoes that suit how they actually run.</span>
                 <span className="block">instead of guessing based on brand or hype, cinda understands your preferences and looks at things like your body, pace and goals to find the right fit.</span>
-              </DialogDescription>
-            </DialogHeader>
-            <div className="pt-4">
+              </p>
+            </div>
+            <div className="p-4 pt-0">
               <Button
                 onClick={() => setShowModal(false)}
                 variant="outline"
-                className="w-full bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
+                className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
               >
                 got it
               </Button>
