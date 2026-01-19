@@ -94,6 +94,7 @@ export interface GapData {
   severity: 'low' | 'medium' | 'high';
   reasoning: string;
   missingCapability?: string;
+  recommendedArchetype?: string;
 }
 
 export interface CurrentShoe {

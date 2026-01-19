@@ -81,14 +81,6 @@ const ProfileBuilderStep4Analysis = () => {
   const [rotationSummary, setRotationSummary] = useState<RotationShoeSummary[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
-  const mapGapToArchetype = (missingCapability: string): DiscoveryArchetype => {
-    const capability = missingCapability.toLowerCase();
-    if (capability.includes("easy") || capability.includes("recovery")) return "recovery_shoe";
-    if (capability.includes("tempo") || capability.includes("interval") || capability.includes("speed") || capability.includes("workout")) return "workout_shoe";
-    if (capability.includes("race") || capability.includes("racing")) return "race_shoe";
-    if (capability.includes("trail")) return "trail_shoe";
-    return "daily_trainer";
-  };
 
   const getShoeTypeLabel = (archetype: DiscoveryArchetype): string => {
     const labels: Record<DiscoveryArchetype, string> = {
@@ -190,7 +182,7 @@ const ProfileBuilderStep4Analysis = () => {
 
   const handleSetPreferences = () => {
     if (!gap) return;
-    const archetype = mapGapToArchetype(gap.missingCapability || "daily");
+    const archetype = (gap.recommendedArchetype || "daily_trainer") as DiscoveryArchetype;
     updateStep4({
       selectedArchetypes: [archetype],
       currentArchetypeIndex: 0,
@@ -229,7 +221,7 @@ const ProfileBuilderStep4Analysis = () => {
                 animation: 'text-glisten 3s ease-in-out infinite',
               }}
             >
-              {getShoeTypeLabel(mapGapToArchetype(gap.missingCapability || "daily"))}
+              {getShoeTypeLabel((gap.recommendedArchetype || "daily_trainer") as DiscoveryArchetype)}
             </span>
           </p>
           {gap.reasoning && (
@@ -337,7 +329,7 @@ const ProfileBuilderStep4Analysis = () => {
                     variant="cta"
                     className="w-full min-h-[44px] text-sm"
                   >
-                    set preferences for your new {getShoeTypeLabel(mapGapToArchetype(gap.missingCapability || "daily"))}
+                    set preferences for your new {getShoeTypeLabel((gap.recommendedArchetype || "daily_trainer") as DiscoveryArchetype)}
                   </Button>
                 </div>
               </div>
