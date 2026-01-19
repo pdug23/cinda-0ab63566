@@ -848,33 +848,39 @@ const ProfileBuilderStep3 = () => {
 
           {/* Confirm Shoes Modal */}
           <Dialog open={confirmShoesModalOpen} onOpenChange={setConfirmShoesModalOpen}>
-            <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px]">
-              <DialogHeader>
-                <DialogTitle className="text-lg font-semibold text-primary">
+            <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px] p-0 gap-0">
+              <DialogHeader className="p-4 pb-0 relative">
+                <button
+                  onClick={() => setConfirmShoesModalOpen(false)}
+                  className="absolute right-4 top-4 p-1 rounded-full text-card-foreground/50 hover:text-card-foreground hover:bg-card-foreground/10 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                <DialogTitle className="text-lg font-semibold text-card-foreground">
                   confirm your rotation
                 </DialogTitle>
-                <DialogDescription className="text-muted-foreground pt-3 text-sm">
-                  <ul className="space-y-1.5">
-                    {currentShoes.map((item) => (
-                      <li key={item.shoe.shoe_id} className="normal-case">
-                        {item.shoe.full_name}
-                      </li>
-                    ))}
-                  </ul>
-                </DialogDescription>
               </DialogHeader>
-              <div className="pt-4 flex flex-col gap-2">
+              <div className="px-4 pt-4 pb-6">
+                <ul className="space-y-1.5 text-sm text-card-foreground/70">
+                  {currentShoes.map((item) => (
+                    <li key={item.shoe.shoe_id} className="normal-case">
+                      {item.shoe.full_name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="p-4 pt-0 flex flex-col gap-2">
                 <Button
                   onClick={handleConfirmNext}
-                  variant="cta"
-                  className="w-full text-sm"
+                  variant="outline"
+                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
                 >
                   looks good
                 </Button>
                 <Button
                   onClick={() => setConfirmShoesModalOpen(false)}
                   variant="outline"
-                  className="w-full bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
+                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
                 >
                   go back
                 </Button>
@@ -884,27 +890,35 @@ const ProfileBuilderStep3 = () => {
 
           {/* Confirm Skip Modal */}
           <Dialog open={confirmSkipModalOpen} onOpenChange={setConfirmSkipModalOpen}>
-            <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px]">
-              <DialogHeader>
-                <DialogTitle className="text-lg font-semibold text-primary">
+            <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px] p-0 gap-0">
+              <DialogHeader className="p-4 pb-0 relative">
+                <button
+                  onClick={() => setConfirmSkipModalOpen(false)}
+                  className="absolute right-4 top-4 p-1 rounded-full text-card-foreground/50 hover:text-card-foreground hover:bg-card-foreground/10 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                <DialogTitle className="text-lg font-semibold text-card-foreground">
                   are you sure?
                 </DialogTitle>
-                <DialogDescription className="text-muted-foreground pt-3 text-sm">
-                  skipping means cinda won't be able to analyse your rotation
-                </DialogDescription>
               </DialogHeader>
-              <div className="pt-4 flex flex-col gap-2">
+              <div className="px-4 pt-4 pb-6">
+                <p className="text-sm text-card-foreground/70">
+                  skipping means cinda won't be able to analyse your rotation
+                </p>
+              </div>
+              <div className="p-4 pt-0 flex flex-col gap-2">
                 <Button
                   onClick={handleConfirmSkip}
                   variant="outline"
-                  className="w-full bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
+                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
                 >
                   skip anyway
                 </Button>
                 <Button
                   onClick={() => setConfirmSkipModalOpen(false)}
-                  variant="cta"
-                  className="w-full text-sm"
+                  variant="outline"
+                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
                 >
                   go back
                 </Button>
@@ -914,13 +928,22 @@ const ProfileBuilderStep3 = () => {
 
           {/* Custom Shoe Modal */}
           <Dialog open={customShoeModalOpen} onOpenChange={setCustomShoeModalOpen}>
-            <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px]">
-              <DialogHeader>
-                <DialogTitle className="text-lg font-semibold text-primary">
+            <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px] p-0 gap-0">
+              <DialogHeader className="p-4 pb-0 relative">
+                <button
+                  onClick={() => {
+                    setCustomShoeName("");
+                    setCustomShoeModalOpen(false);
+                  }}
+                  className="absolute right-4 top-4 p-1 rounded-full text-card-foreground/50 hover:text-card-foreground hover:bg-card-foreground/10 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                <DialogTitle className="text-lg font-semibold text-card-foreground">
                   enter shoe name
                 </DialogTitle>
               </DialogHeader>
-              <div className="pt-3">
+              <div className="px-4 pt-4">
                 <Input
                   type="text"
                   value={customShoeName}
@@ -934,11 +957,11 @@ const ProfileBuilderStep3 = () => {
                   }}
                 />
               </div>
-              <div className="pt-4 flex flex-col gap-2">
+              <div className="p-4 flex flex-col gap-2">
                 <Button
                   onClick={handleAddCustomShoe}
-                  variant="cta"
-                  className="w-full text-sm"
+                  variant="outline"
+                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
                   disabled={!customShoeName.trim()}
                 >
                   add shoe
@@ -949,7 +972,7 @@ const ProfileBuilderStep3 = () => {
                     setCustomShoeModalOpen(false);
                   }}
                   variant="outline"
-                  className="w-full bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
+                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
                 >
                   cancel
                 </Button>
