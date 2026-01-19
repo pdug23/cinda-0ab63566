@@ -331,52 +331,49 @@ const ProfileBuilderStep3b = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Spacer to push content above the fixed input */}
-          <div className="h-20 flex-shrink-0" />
+          {/* Input area at bottom of container */}
+          <div className="flex-shrink-0 px-6 md:px-8 pb-6 pt-3">
+            <div className="flex items-end gap-3">
+              <div className="flex-1 bg-card-foreground/[0.04] rounded-2xl px-4 py-2.5 border border-card-foreground/10 focus-within:border-card-foreground/20 transition-colors">
+                <textarea
+                  ref={inputRef}
+                  value={inputValue}
+                  onChange={(e) => {
+                    setInputValue(e.target.value);
+                    // Auto-resize: reset then clamp to max 4 lines (~96px)
+                    e.target.style.height = "auto";
+                    e.target.style.height = `${Math.min(e.target.scrollHeight, 96)}px`;
+                  }}
+                  onKeyDown={handleKeyDown}
+                  placeholder="reply..."
+                  rows={1}
+                  disabled={isTyping || introPhase !== 'done'}
+                  className={cn(
+                    "w-full bg-transparent resize-none text-sm leading-relaxed",
+                    "text-card-foreground placeholder:text-card-foreground/30",
+                    "focus:outline-none",
+                    "disabled:opacity-50 disabled:cursor-not-allowed",
+                    "overflow-y-auto scrollbar-styled"
+                  )}
+                  style={{ minHeight: "24px", maxHeight: "96px" }}
+                />
+              </div>
+              <button
+                onClick={handleSend}
+                disabled={!inputValue.trim() || isTyping || introPhase !== 'done'}
+                className={cn(
+                  "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center",
+                  "bg-accent text-accent-foreground",
+                  "disabled:opacity-30 disabled:cursor-not-allowed",
+                  "hover:opacity-90 transition-opacity"
+                )}
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         </PageTransition>
       </OnboardingLayout>
-
-      {/* Fixed input area at very bottom of screen */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-3 bg-gradient-to-t from-background via-background to-transparent">
-        <div className="max-w-md mx-auto flex items-end gap-3">
-          <div className="flex-1 bg-card-foreground/[0.04] rounded-2xl px-4 py-2.5 border border-card-foreground/10 focus-within:border-card-foreground/20 transition-colors">
-            <textarea
-              ref={inputRef}
-              value={inputValue}
-              onChange={(e) => {
-                setInputValue(e.target.value);
-                // Auto-resize: reset then clamp to max 4 lines (~96px)
-                e.target.style.height = "auto";
-                e.target.style.height = `${Math.min(e.target.scrollHeight, 96)}px`;
-              }}
-              onKeyDown={handleKeyDown}
-              placeholder="reply..."
-              rows={1}
-              disabled={isTyping || introPhase !== 'done'}
-              className={cn(
-                "w-full bg-transparent resize-none text-sm leading-relaxed",
-                "text-card-foreground placeholder:text-card-foreground/30",
-                "focus:outline-none",
-                "disabled:opacity-50 disabled:cursor-not-allowed",
-                "overflow-y-auto scrollbar-styled"
-              )}
-              style={{ minHeight: "24px", maxHeight: "96px" }}
-            />
-          </div>
-          <button
-            onClick={handleSend}
-            disabled={!inputValue.trim() || isTyping || introPhase !== 'done'}
-            className={cn(
-              "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center",
-              "bg-accent text-accent-foreground",
-              "disabled:opacity-30 disabled:cursor-not-allowed",
-              "hover:opacity-90 transition-opacity"
-            )}
-          >
-            <Send className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
 
       {/* Confirmation modal */}
       <Dialog open={confirmLeaveOpen} onOpenChange={setConfirmLeaveOpen}>
