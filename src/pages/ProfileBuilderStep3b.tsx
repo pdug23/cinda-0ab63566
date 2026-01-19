@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Send, Mic } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUp, Mic } from "lucide-react";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
@@ -363,7 +363,8 @@ const ProfileBuilderStep3b = () => {
                     disabled={isTyping || introPhase !== 'done'}
                     className={cn(
                       "w-8 h-8 rounded-full flex items-center justify-center",
-                      "text-card-foreground/40 hover:text-card-foreground/70",
+                      "bg-card-foreground/10 text-card-foreground/50",
+                      "hover:bg-card-foreground/15 hover:text-card-foreground/70",
                       "disabled:opacity-30 disabled:cursor-not-allowed",
                       "transition-colors"
                     )}
@@ -375,12 +376,13 @@ const ProfileBuilderStep3b = () => {
                     disabled={!inputValue.trim() || isTyping || introPhase !== 'done'}
                     className={cn(
                       "w-8 h-8 rounded-full flex items-center justify-center",
-                      "bg-accent text-accent-foreground",
+                      "bg-card-foreground/15 text-card-foreground/60",
+                      "hover:bg-card-foreground/20 hover:text-card-foreground/80",
                       "disabled:opacity-30 disabled:cursor-not-allowed",
-                      "hover:opacity-90 transition-opacity"
+                      "transition-colors"
                     )}
                   >
-                    <Send className="w-4 h-4" />
+                    <ArrowUp className="w-4 h-4" />
                   </button>
                 </div>
               </div>
