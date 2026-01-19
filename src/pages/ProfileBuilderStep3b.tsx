@@ -47,6 +47,7 @@ const ProfileBuilderStep3b = () => {
   });
   
   const [inputValue, setInputValue] = useState("");
+  const hasUserSentMessage = messages.some(msg => msg.role === 'user');
   const [isTyping, setIsTyping] = useState(showInitialTyping);
   // Track which message index is currently being "typed" (for typewriter effect)
   const [typingMessageIndex, setTypingMessageIndex] = useState<number | null>(null);
@@ -263,7 +264,7 @@ const ProfileBuilderStep3b = () => {
               onClick={handleContinue}
               className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
             >
-              continue
+              {hasUserSentMessage ? 'continue' : 'skip'}
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </header>
