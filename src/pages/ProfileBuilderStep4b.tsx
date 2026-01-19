@@ -79,7 +79,7 @@ const TooltipModal = ({
         {/* Got it button */}
         <button
           onClick={onClose}
-          className="mt-4 w-full py-3 text-sm font-medium rounded-lg bg-transparent border border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground transition-colors"
+          className="mt-4 w-full py-3 text-sm font-medium rounded-lg bg-transparent border border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 transition-colors"
         >
           got it
         </button>

@@ -375,11 +375,11 @@ const Chat = () => {
           <AlertDialogFooter className="flex flex-col gap-2 p-4 pt-0">
             <AlertDialogAction
               onClick={confirmRestart}
-              className="w-full min-h-[44px] bg-transparent border border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm rounded-lg"
+              className="w-full min-h-[44px] bg-transparent border border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm rounded-lg"
             >
               restart chat
             </AlertDialogAction>
-            <AlertDialogCancel className="w-full min-h-[44px] bg-transparent border border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm rounded-lg mt-0">
+            <AlertDialogCancel className="w-full min-h-[44px] bg-transparent border border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm rounded-lg mt-0">
               cancel
             </AlertDialogCancel>
           </AlertDialogFooter>
