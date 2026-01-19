@@ -24,7 +24,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { saveProfile, saveShoes, saveShoeRequests, saveGap, saveChatContext } from "@/utils/storage";
+import { saveProfile, saveShoes, saveShoeRequests, saveGap, clearGap, saveChatContext } from "@/utils/storage";
 import { buildAPIRaceTimeFromPicker } from "@/utils/raceTime";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -711,8 +711,11 @@ const ProfileBuilderStep4b = () => {
 
         saveShoeRequests(updatedRequests);
 
-        if (profileData.step4.gap) {
+        // In analysis mode, save the gap; in discovery mode, clear any stale gap
+        if (profileData.step4.mode === "analysis" && profileData.step4.gap) {
           saveGap(profileData.step4.gap);
+        } else {
+          clearGap();
         }
 
         // Save chat context for API
