@@ -7,94 +7,71 @@ import { useProfile } from "@/contexts/ProfileContext";
 import { usePageNavigation } from "@/hooks/usePageNavigation";
 import { cn } from "@/lib/utils";
 
-// Custom Discovery Icon - Geometric compass with targeting crosshairs
-const DiscoveryIcon = ({ className }: { className?: string }) => (
+// Custom Crosshair Icon - Minimalistic target/crosshair for "find a specific shoe"
+const CrosshairIcon = ({ className }: { className?: string }) => (
   <svg
-    viewBox="0 0 32 32"
+    viewBox="0 0 24 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    {/* Outer targeting circle */}
+    {/* Outer circle */}
     <circle
-      cx="16"
-      cy="16"
-      r="12"
+      cx="12"
+      cy="12"
+      r="9"
       stroke="currentColor"
       strokeWidth="1.5"
-      strokeOpacity="0.5"
-    />
-    {/* Inner circle */}
-    <circle
-      cx="16"
-      cy="16"
-      r="6"
-      stroke="currentColor"
-      strokeWidth="1"
-      strokeOpacity="0.4"
     />
     {/* Crosshair lines */}
     <path
-      d="M16 2V7M16 25V30M2 16H7M25 16H30"
+      d="M12 3V7M12 17V21M3 12H7M17 12H21"
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
-      strokeOpacity="0.6"
     />
-    {/* Center target dot */}
-    <circle cx="16" cy="16" r="2.5" fill="currentColor" />
-    {/* Direction indicator - arrow pointing NE */}
+    {/* Center dot */}
+    <circle cx="12" cy="12" r="2" fill="currentColor" />
+  </svg>
+);
+
+// Custom Rotation Icon - Circular arrows for "check my rotation"
+const RotationIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    {/* Top arrow arc */}
     <path
-      d="M22 10L24 8M24 8L22 8M24 8V10"
+      d="M16.5 4.5C14.5 3.5 12 3.2 9.5 4C6 5.2 3.5 8.3 3.5 12"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    {/* Top arrowhead */}
+    <path
+      d="M16.5 4.5L14 3M16.5 4.5L15 7"
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
-    {/* Accent dots at cardinal points */}
-    <circle cx="16" cy="4" r="1" fill="currentColor" fillOpacity="0.7" />
-    <circle cx="28" cy="16" r="1" fill="currentColor" fillOpacity="0.5" />
-  </svg>
-);
-
-// Custom Analysis Icon - Connected nodes / data visualization
-const AnalysisIcon = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 32 32"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-  >
-    {/* Connection lines */}
+    {/* Bottom arrow arc */}
     <path
-      d="M10 10L16 16M16 16L22 10M16 16L10 22M16 16L22 22M16 16V6M16 16V26"
+      d="M7.5 19.5C9.5 20.5 12 20.8 14.5 20C18 18.8 20.5 15.7 20.5 12"
       stroke="currentColor"
-      strokeWidth="1"
-      strokeOpacity="0.3"
+      strokeWidth="1.5"
+      strokeLinecap="round"
     />
-    {/* Central hexagon */}
+    {/* Bottom arrowhead */}
     <path
-      d="M16 12L19.5 14V18L16 20L12.5 18V14L16 12Z"
-      fill="currentColor"
-      fillOpacity="0.2"
+      d="M7.5 19.5L10 21M7.5 19.5L9 17"
       stroke="currentColor"
-      strokeWidth="1"
-    />
-    {/* Outer nodes */}
-    <circle cx="10" cy="10" r="2.5" fill="currentColor" fillOpacity="0.7" />
-    <circle cx="22" cy="10" r="2.5" fill="currentColor" fillOpacity="0.9" />
-    <circle cx="10" cy="22" r="2.5" fill="currentColor" fillOpacity="0.5" />
-    <circle cx="22" cy="22" r="2.5" fill="currentColor" fillOpacity="0.7" />
-    {/* Top and bottom nodes */}
-    <circle cx="16" cy="6" r="2" fill="currentColor" fillOpacity="0.6" />
-    <circle cx="16" cy="26" r="2" fill="currentColor" fillOpacity="0.4" />
-    {/* Center node */}
-    <circle cx="16" cy="16" r="3" fill="currentColor" />
-    {/* Accent sparkle */}
-    <path
-      d="M26 6L27 8L29 7L27 8L28 10L27 8L25 9L27 8L26 6Z"
-      fill="currentColor"
-      fillOpacity="0.6"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
@@ -184,7 +161,7 @@ const ModeCard = ({
     <div className="text-left relative z-10 flex-1">
       <span
         className={cn(
-          "block text-sm font-medium transition-colors mb-1",
+          "block text-sm font-semibold transition-colors mb-1",
           disabled
             ? "text-card-foreground/40"
             : "text-card-foreground/90 group-hover:text-card-foreground"
@@ -260,14 +237,14 @@ const ProfileBuilderStep4 = () => {
             {/* Mode cards - stacked vertically, full width */}
             <div className="flex flex-col gap-4">
               <ModeCard
-                icon={<DiscoveryIcon className="w-6 h-6" />}
-                label="discovery"
-                description="looking for something specific? cinda works with you to find the shoe you need"
+                icon={<CrosshairIcon className="w-6 h-6" />}
+                label="find a specific shoe"
+                description="know what type of shoe you're after? cinda works with you to find the shoe you need"
                 onClick={handleShoppingMode}
               />
               <ModeCard
-                icon={<AnalysisIcon className="w-6 h-6" />}
-                label="analysis"
+                icon={<RotationIcon className="w-6 h-6" />}
+                label="check my rotation"
                 description="not sure what you're missing? cinda reviews your current rotation and identifies what's missing"
                 disabled={!hasShoes}
                 disabledReason={
