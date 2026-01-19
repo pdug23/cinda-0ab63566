@@ -10,7 +10,7 @@ import { LeaveRecommendationsModal } from "@/components/LeaveRecommendationsModa
 import { loadProfile, loadShoes, loadShoeRequests, loadGap, loadChatContext } from "@/utils/storage";
 import { normalizeStoredRaceTimeForApi } from "@/utils/raceTime";
 import type { FeelPreferences as APIFeelPreferences, CurrentShoe as APICurrentShoe } from "../../api/types";
-import cindaLogo from "@/assets/cinda-logo-white-v2.png";
+import { LiquidMetalLoader } from "@/components/LiquidMetalLoader";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -132,19 +132,7 @@ const loadingMessages = [
 ];
 
 function LoadingState() {
-  const [spinKey, setSpinKey] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
-  const prefersReducedMotion = typeof window !== 'undefined' 
-    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // Trigger spin every 3 seconds
-  useEffect(() => {
-    if (prefersReducedMotion) return;
-    const interval = setInterval(() => {
-      setSpinKey(prev => prev + 1);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [prefersReducedMotion]);
 
   // Cycle through loading messages every 2.5 seconds
   useEffect(() => {
@@ -155,57 +143,17 @@ function LoadingState() {
   }, []);
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center gap-8 px-4">
-      {/* Spinning Logo */}
-      <img
-        key={spinKey}
-        src={cindaLogo}
-        alt="cinda"
-        className="w-20 h-20"
-        style={{
-          animation: prefersReducedMotion ? 'none' : 'spin-settle 0.6s ease-out',
-        }}
-      />
+    <div className="flex-1 flex flex-col items-center justify-center gap-16 px-4">
+      {/* Liquid Metal Animation */}
+      <LiquidMetalLoader />
 
-      {/* Glowing card placeholder */}
-      <div 
-        className="relative w-full max-w-[280px] aspect-square rounded-2xl overflow-hidden"
-        style={{
-          animation: 'border-glisten 3s ease-in-out infinite',
-        }}
-      >
-        <div className="absolute inset-0 bg-card-foreground/5" />
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)",
-            animation: "shimmer 2s infinite",
-          }}
-        />
-        {/* Shoe silhouette placeholder */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div 
-            className="w-32 h-20 rounded-full bg-card-foreground/10"
-            style={{ animation: 'pulse 2s ease-in-out infinite' }}
-          />
-        </div>
-      </div>
-
-      {/* Rotating loading messages with fade */}
+      {/* Rotating loading messages - refined typography */}
       <p 
         key={messageIndex}
-        className="text-card-foreground/70 text-base italic animate-fade-in"
-        style={{ fontWeight: 700 }}
+        className="text-lg text-muted-foreground/60 font-light italic tracking-wide animate-fade-in"
       >
         {loadingMessages[messageIndex]}
       </p>
-
-      <style>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-      `}</style>
     </div>
   );
 }
