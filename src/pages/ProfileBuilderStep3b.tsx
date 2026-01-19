@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Send } from "lucide-react";
+import { ArrowLeft, ArrowRight, Send, Mic } from "lucide-react";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
@@ -333,8 +333,8 @@ const ProfileBuilderStep3b = () => {
 
           {/* Input area at bottom of container */}
           <div className="flex-shrink-0 px-6 md:px-8 pb-6 pt-3">
-            <div className="flex items-end gap-3">
-              <div className="flex-1 bg-card-foreground/[0.04] rounded-2xl px-4 py-2.5 border border-card-foreground/10 focus-within:border-card-foreground/20 transition-colors">
+            <div className="bg-card-foreground/[0.04] rounded-2xl px-4 py-2.5 border border-card-foreground/10 focus-within:border-card-foreground/20 transition-colors">
+              <div className="flex items-end gap-2">
                 <textarea
                   ref={inputRef}
                   value={inputValue}
@@ -349,7 +349,7 @@ const ProfileBuilderStep3b = () => {
                   rows={1}
                   disabled={isTyping || introPhase !== 'done'}
                   className={cn(
-                    "w-full bg-transparent resize-none text-sm leading-relaxed",
+                    "flex-1 w-full bg-transparent resize-none text-sm leading-relaxed",
                     "text-card-foreground placeholder:text-card-foreground/30",
                     "focus:outline-none",
                     "disabled:opacity-50 disabled:cursor-not-allowed",
@@ -357,19 +357,33 @@ const ProfileBuilderStep3b = () => {
                   )}
                   style={{ minHeight: "24px", maxHeight: "96px" }}
                 />
+                <div className="flex items-center gap-1.5 flex-shrink-0 pb-0.5">
+                  <button
+                    type="button"
+                    disabled={isTyping || introPhase !== 'done'}
+                    className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center",
+                      "text-card-foreground/40 hover:text-card-foreground/70",
+                      "disabled:opacity-30 disabled:cursor-not-allowed",
+                      "transition-colors"
+                    )}
+                  >
+                    <Mic className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={handleSend}
+                    disabled={!inputValue.trim() || isTyping || introPhase !== 'done'}
+                    className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center",
+                      "bg-accent text-accent-foreground",
+                      "disabled:opacity-30 disabled:cursor-not-allowed",
+                      "hover:opacity-90 transition-opacity"
+                    )}
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={handleSend}
-                disabled={!inputValue.trim() || isTyping || introPhase !== 'done'}
-                className={cn(
-                  "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center",
-                  "bg-accent text-accent-foreground",
-                  "disabled:opacity-30 disabled:cursor-not-allowed",
-                  "hover:opacity-90 transition-opacity"
-                )}
-              >
-                <Send className="w-4 h-4" />
-              </button>
             </div>
           </div>
         </PageTransition>
