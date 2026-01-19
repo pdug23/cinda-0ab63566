@@ -98,22 +98,72 @@ const getRoleBadgeLabel = (roleOrArchetype: string): string => {
   return labels[roleOrArchetype.toLowerCase()] || roleOrArchetype.toUpperCase();
 };
 
-const getOtherApplicableRoles = (shoe: ShoeCardProps["shoe"], currentRole?: string): string[] => {
-  const roleMap: Record<string, boolean | undefined> = {
-    daily: shoe.use_daily,
-    recovery: shoe.use_easy_recovery,
-    tempo: shoe.use_tempo_workout,
-    intervals: shoe.use_speed_intervals,
-    race: shoe.use_race,
-    trail: shoe.use_trail,
-  };
+// Archetype display labels (lowercase for sentence use)
+const archetypeLabels: Record<string, string> = {
+  daily_trainer: "daily",
+  recovery_shoe: "recovery",
+  workout_shoe: "workout",
+  race_shoe: "race",
+  trail_shoe: "trail",
+};
+
+// Archetype noun (trainer vs shoe)
+const archetypeNoun: Record<string, string> = {
+  daily_trainer: "trainer",
+  recovery_shoe: "shoe",
+  workout_shoe: "shoe",
+  race_shoe: "shoe",
+  trail_shoe: "shoe",
+};
+
+// What run types each archetype is suited for
+const archetypeRunTypes: Record<string, string> = {
+  daily_trainer: "recovery runs and long runs at a comfortable pace",
+  recovery_shoe: "recovery runs",
+  workout_shoe: "workouts and long runs with workout segments",
+  race_shoe: "races, workouts, and long runs with workout segments",
+  trail_shoe: "trail runs",
+};
+
+// Inline badge component for archetype display in popover
+const ArchetypeBadge = ({ archetype }: { archetype: string }) => (
+  <span
+    className="text-xs uppercase tracking-wide px-1.5 py-0.5 rounded font-medium mx-0.5 inline-block align-middle"
+    style={{
+      backgroundColor: "rgba(148, 163, 184, 0.15)",
+      border: "1px solid rgba(148, 163, 184, 0.4)",
+      color: "#94a3b8",
+    }}
+  >
+    {archetypeLabels[archetype] || archetype}
+  </span>
+);
+
+// Build the popover content based on archetypes
+const buildArchetypePopoverContent = (archetypes: string[]) => {
+  if (!archetypes || archetypes.length === 0) return null;
   
-  // Normalize current role to match our keys
-  const normalizedCurrentRole = currentRole?.toLowerCase().replace('_trainer', '').replace('_day', '').replace('easy', 'recovery');
+  const primary = archetypes[0];
+  const secondary = archetypes.length > 1 ? archetypes.slice(1) : [];
   
-  return Object.entries(roleMap)
-    .filter(([role, isApplicable]) => isApplicable && role !== normalizedCurrentRole)
-    .map(([role]) => role);
+  if (secondary.length === 0) {
+    // Single archetype
+    return (
+      <p className="text-sm text-white/80 leading-relaxed">
+        this shoe is considered a<ArchetypeBadge archetype={primary} />{archetypeNoun[primary] || "shoe"} and cinda recommends using it for your {archetypeRunTypes[primary] || "runs"}
+      </p>
+    );
+  } else {
+    // Multiple archetypes
+    const primaryRunTypes = archetypeRunTypes[primary] || "runs";
+    const secondaryRunTypes = secondary.map(a => archetypeRunTypes[a] || "runs").join(", and ");
+    
+    return (
+      <p className="text-sm text-white/80 leading-relaxed">
+        this shoe is considered both a<ArchetypeBadge archetype={primary} />{archetypeNoun[primary] || "shoe"} and a<ArchetypeBadge archetype={secondary[0]} />{archetypeNoun[secondary[0]] || "shoe"}. cinda recommends using it for your {primaryRunTypes}, but it can also be used for {secondaryRunTypes}.
+      </p>
+    );
+  }
 };
 
 const getBrandLogoPath = (brand: string): string => {
@@ -236,38 +286,13 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
                 </button>
               </PopoverTrigger>
               <PopoverContent 
-                className="w-64 p-4 z-50"
+                className="w-72 p-4 z-50"
                 style={{
                   backgroundColor: "rgba(26, 26, 30, 0.98)",
                   border: "1px solid rgba(255, 255, 255, 0.2)",
                 }}
               >
-                <p className="text-sm text-white/80 mb-3">
-                  cinda recommends this shoe for your <span className="text-primary font-medium">{roleBadgeLabel.toLowerCase()}</span> runs
-                </p>
-                {(() => {
-                  const otherRoles = getOtherApplicableRoles(shoe, shoe.role);
-                  return otherRoles.length > 0 ? (
-                    <>
-                      <p className="text-xs text-white/50 mb-2">this shoe also works well for:</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {otherRoles.map((role) => (
-                          <span
-                            key={role}
-                            className="text-xs uppercase tracking-wide px-2 py-1 rounded font-medium"
-                            style={{
-                              backgroundColor: "rgba(148, 163, 184, 0.15)",
-                              border: "1px solid rgba(148, 163, 184, 0.3)",
-                              color: "#94a3b8",
-                            }}
-                          >
-                            {getRoleBadgeLabel(role)}
-                          </span>
-                        ))}
-                      </div>
-                    </>
-                  ) : null;
-                })()}
+                {buildArchetypePopoverContent(shoe.archetypes || (shoe.archetype ? [shoe.archetype] : [shoe.role || "daily_trainer"]))}
               </PopoverContent>
             </Popover>
           )}
