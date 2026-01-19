@@ -45,14 +45,14 @@ export const LeaveRecommendationsModal = ({
           <Button
             onClick={onLeave}
             variant="outline"
-            className="flex-1 min-h-[44px] text-sm bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground"
+            className="flex-1 min-h-[44px] text-sm bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5"
           >
             leave
           </Button>
           <Button
             onClick={handleClose}
             variant="outline"
-            className="flex-1 min-h-[44px] text-sm bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground"
+            className="flex-1 min-h-[44px] text-sm bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5"
           >
             stay
           </Button>

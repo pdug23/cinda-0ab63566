@@ -239,7 +239,7 @@ const Landing = () => {
               <Button
                 onClick={() => setShowModal(false)}
                 variant="outline"
-                className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
+                className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
               >
                 got it
               </Button>

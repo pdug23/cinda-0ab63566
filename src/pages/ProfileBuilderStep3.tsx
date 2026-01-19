@@ -873,14 +873,14 @@ const ProfileBuilderStep3 = () => {
                 <Button
                   onClick={handleConfirmNext}
                   variant="outline"
-                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
+                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
                 >
                   looks good
                 </Button>
                 <Button
                   onClick={() => setConfirmShoesModalOpen(false)}
                   variant="outline"
-                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
+                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
                 >
                   go back
                 </Button>
@@ -911,14 +911,14 @@ const ProfileBuilderStep3 = () => {
                 <Button
                   onClick={handleConfirmSkip}
                   variant="outline"
-                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
+                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
                 >
                   skip anyway
                 </Button>
                 <Button
                   onClick={() => setConfirmSkipModalOpen(false)}
                   variant="outline"
-                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
+                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
                 >
                   go back
                 </Button>
@@ -961,7 +961,7 @@ const ProfileBuilderStep3 = () => {
                 <Button
                   onClick={handleAddCustomShoe}
                   variant="outline"
-                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
+                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
                   disabled={!customShoeName.trim()}
                 >
                   add shoe
@@ -972,7 +972,7 @@ const ProfileBuilderStep3 = () => {
                     setCustomShoeModalOpen(false);
                   }}
                   variant="outline"
-                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:bg-muted/20 hover:text-foreground text-sm"
+                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
                 >
                   cancel
                 </Button>
