@@ -13,7 +13,7 @@ import type {
   RecommendedShoe,
   RotationSummary
 } from './types.js';
-import { analyzeRotation } from './lib/rotationAnalyzer.js';
+import { analyzeRotation, calculateRotationHealth } from './lib/rotationAnalyzer.js';
 import { identifyPrimaryGap } from './lib/gapDetector.js';
 import { generateRecommendations, generateDiscoveryRecommendations } from './lib/recommendationEngine.js';
 import { getShoeCapabilities, detectMisuse } from './lib/shoeCapabilities.js';
@@ -202,6 +202,9 @@ export default async function handler(
       } as AnalyzeResponse);
       return;
     }
+
+    const health = calculateRotationHealth(currentShoes, profile, catalogue);
+    console.log('[analyze] Rotation health:', health);
 
     // =========================================================================
     // 4. MODE: DISCOVERY (was SHOPPING)

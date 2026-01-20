@@ -6,6 +6,7 @@
 
 import type {
   RotationAnalysis,
+  RotationHealth,
   CurrentShoe,
   RunnerProfile,
   Shoe,
@@ -415,4 +416,159 @@ export function getRotationHealthSummary(analysis: RotationAnalysis): {
   }
 
   return { status, issues };
+}
+
+// ============================================================================
+// ROTATION HEALTH SCORING
+// Internal scoring system for tier selection and AI summaries
+// ============================================================================
+
+/**
+ * Get covered archetypes from current shoes
+ * Helper to avoid duplicating logic from analyzeRotation
+ */
+function getCoveredArchetypes(
+  currentShoes: CurrentShoe[],
+  catalogue: Shoe[]
+): ShoeArchetype[] {
+  const coveredArchetypesSet = new Set<ShoeArchetype>();
+  for (const userShoe of currentShoes) {
+    const shoe = catalogue.find(s => s.shoe_id === userShoe.shoeId);
+    if (shoe) {
+      const archetypes = getShoeArchetypes(shoe);
+      archetypes.forEach(a => coveredArchetypesSet.add(a));
+    }
+  }
+  return Array.from(coveredArchetypesSet);
+}
+
+/**
+ * Calculate variety score based on range across feel dimensions
+ * Higher score = more diverse rotation
+ */
+function calculateVariety(shoes: Shoe[]): number {
+  if (shoes.length <= 1) return 0;
+
+  const dimensions = [
+    shoes.map(s => s.cushion_softness_1to5),
+    shoes.map(s => s.stability_1to5),
+    shoes.map(s => s.rocker_1to5),
+    shoes.map(s => Math.min(Math.floor(s.heel_drop_mm / 3), 4)), // normalize to 0-4
+  ];
+
+  const dimensionScores = dimensions.map(values => {
+    const range = Math.max(...values) - Math.min(...values);
+    return Math.min(range * 25, 100);
+  });
+
+  return Math.round(dimensionScores.reduce((a, b) => a + b, 0) / dimensionScores.length);
+}
+
+/**
+ * Calculate load resilience based on shoe count vs weekly volume
+ * Higher volume needs more shoes for rotation
+ */
+function calculateLoadResilience(shoeCount: number, profile: RunnerProfile): number {
+  if (!profile.weeklyVolume) return 80; // default assumption
+
+  const volumeKm = profile.weeklyVolume.unit === "mi"
+    ? profile.weeklyVolume.value * 1.6
+    : profile.weeklyVolume.value;
+
+  let idealCount: number;
+  if (volumeKm < 30) idealCount = 1;
+  else if (volumeKm < 50) idealCount = 2;
+  else if (volumeKm < 80) idealCount = 3;
+  else idealCount = 4;
+
+  const shortfall = Math.max(0, idealCount - shoeCount);
+  return Math.max(0, 100 - (shortfall * 33));
+}
+
+/**
+ * Calculate goal alignment based on whether rotation supports stated goal
+ */
+function calculateGoalAlignment(
+  profile: RunnerProfile,
+  coveredArchetypes: ShoeArchetype[]
+): number {
+  const has = (a: ShoeArchetype) => coveredArchetypes.includes(a);
+
+  switch (profile.primaryGoal) {
+    case "race_training":
+      if (has("workout_shoe") && has("race_shoe")) return 100;
+      if (has("workout_shoe") || has("race_shoe")) return 60;
+      return 20;
+
+    case "get_faster":
+      return has("workout_shoe") ? 100 : 40;
+
+    case "injury_comeback":
+      return has("recovery_shoe") ? 100 : 30;
+
+    case "general_fitness":
+      return has("daily_trainer") ? 100 : 50;
+
+    default:
+      return 70;
+  }
+}
+
+/**
+ * Calculate overall rotation health score across 4 dimensions
+ * Internal metric - not displayed directly to users
+ * Used for tier selection and AI summary generation
+ */
+export function calculateRotationHealth(
+  currentShoes: CurrentShoe[],
+  profile: RunnerProfile,
+  catalogue: Shoe[]
+): RotationHealth {
+  // Get expected and covered archetypes
+  const expected = getExpectedArchetypes(profile);
+  const covered = getCoveredArchetypes(currentShoes, catalogue);
+
+  // 1. Coverage score (40% weight)
+  let coverage: number;
+  if (expected.length === 0) {
+    coverage = 100;
+  } else {
+    const missingCount = expected.filter(a => !covered.includes(a)).length;
+    coverage = Math.round(100 * (expected.length - missingCount) / expected.length);
+  }
+
+  // 2. Variety score (10% weight)
+  // Resolve current shoes to Shoe objects
+  const resolvedShoes: Shoe[] = [];
+  for (const userShoe of currentShoes) {
+    const shoe = catalogue.find(s => s.shoe_id === userShoe.shoeId);
+    if (shoe) resolvedShoes.push(shoe);
+  }
+  const variety = calculateVariety(resolvedShoes);
+
+  // 3. Load resilience score (20% weight)
+  const loadResilience = calculateLoadResilience(currentShoes.length, profile);
+
+  // 4. Goal alignment score (30% weight)
+  const goalAlignment = calculateGoalAlignment(profile, covered);
+
+  // Calculate weighted overall score
+  const overall = Math.round(
+    coverage * 0.40 +
+    variety * 0.10 +
+    loadResilience * 0.20 +
+    goalAlignment * 0.30
+  );
+
+  const result: RotationHealth = {
+    coverage,
+    variety,
+    loadResilience,
+    goalAlignment,
+    overall,
+  };
+
+  console.log('[calculateRotationHealth] Result:', result);
+
+  return result;
 }

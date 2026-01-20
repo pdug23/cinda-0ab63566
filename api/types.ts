@@ -264,6 +264,18 @@ export interface RotationAnalysis {
   hasNearReplacementShoes: boolean;
 }
 
+/**
+ * Internal rotation health score - drives recommendation tiers and AI summaries
+ * Not displayed directly to users
+ */
+export interface RotationHealth {
+  coverage: number;       // 0-100: has shoes for expected archetypes
+  variety: number;        // 0-100: range across feel dimensions
+  loadResilience: number; // 0-100: enough shoes for volume
+  goalAlignment: number;  // 0-100: rotation supports stated goal
+  overall: number;        // weighted average
+}
+
 // ============================================================================
 // GAP DETECTION TYPES
 // ============================================================================
