@@ -11,6 +11,7 @@ import { loadProfile, loadShoes, loadShoeRequests, loadGap, loadChatContext } fr
 import { normalizeStoredRaceTimeForApi } from "@/utils/raceTime";
 import type { FeelPreferences as APIFeelPreferences, CurrentShoe as APICurrentShoe } from "../../api/types";
 import { LiquidMetalLoader } from "@/components/LiquidMetalLoader";
+import { LiquidMetalShoeLoader } from "@/components/LiquidMetalShoeLoader";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -133,6 +134,7 @@ const loadingMessages = [
 
 function LoadingState() {
   const [messageIndex, setMessageIndex] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   // Cycle through loading messages every 2.5 seconds
   useEffect(() => {
@@ -142,10 +144,21 @@ function LoadingState() {
     return () => clearInterval(interval);
   }, []);
 
+  // Track elapsed time for phase transitions
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setElapsedTime(prev => prev + 0.1);
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Switch to ambient phase after 8 seconds
+  const phase = elapsedTime > 8 ? "ambient" : "construction";
+
   return (
     <div className="flex-1 flex flex-col items-center justify-center gap-16 px-4">
-      {/* Liquid Metal Animation */}
-      <LiquidMetalLoader />
+      {/* 3D Liquid Metal Shoe Animation */}
+      <LiquidMetalShoeLoader phase={phase} />
 
       {/* Rotating loading messages - refined typography */}
       <p 
