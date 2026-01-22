@@ -164,6 +164,10 @@ export default async function handler(
       console.log('[analyze] Mode: Gap Detection');
 
       const analysis = analyzeRotation(currentShoes, profile, catalogue);
+      
+      const health = calculateRotationHealth(currentShoes, profile, catalogue);
+      console.log('[analyze] Rotation health:', health);
+            
       const gap = identifyPrimaryGap(analysis, profile, currentShoes, catalogue);
 
       console.log('[analyze] Gap identified:', {
@@ -202,9 +206,6 @@ export default async function handler(
       } as AnalyzeResponse);
       return;
     }
-
-    const health = calculateRotationHealth(currentShoes, profile, catalogue);
-    console.log('[analyze] Rotation health:', health);
 
     // =========================================================================
     // 4. MODE: DISCOVERY (was SHOPPING)
