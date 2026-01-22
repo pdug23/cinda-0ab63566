@@ -313,6 +313,37 @@ export interface TierClassification {
   tierReason: string;  // Why this tier was chosen (for debugging/summary)
 }
 
+/**
+ * AI-generated rotation summary for display to user
+ */
+export interface RotationSummaryProse {
+  prose: string;              // 2-3 sentence summary of their rotation
+  strengths: string[];        // What's good about their rotation (1-3 items)
+  improvements: string[];     // What could be better (0-3 items)
+}
+
+/**
+ * Complete analysis result for gap_detection mode (Epic 6c structure)
+ */
+export interface AnalysisResult {
+  // AI-generated summary
+  rotationSummary: RotationSummaryProse;
+
+  // Tiered recommendation
+  recommendations: {
+    tier: RecommendationTier;
+    confidence: RecommendationConfidence;
+    primary: RecommendationSlot;
+    secondary?: RecommendationSlot;
+  };
+
+  // Internal health scores (for debugging, not displayed directly)
+  health: RotationHealth;
+
+  // Per-shoe breakdown (existing, keep for compatibility)
+  shoeBreakdown: RotationSummary[];
+}
+
 // ============================================================================
 // GAP DETECTION TYPES
 // ============================================================================
@@ -676,16 +707,19 @@ export interface AnalyzeResponse {
   success: boolean;
   mode?: "gap_detection" | "discovery" | "analysis";
   result?: {
-    // Gap detection mode: just return the gap
-    gap?: Gap;
+    // Gap detection mode (Epic 6c)
+    analysis?: AnalysisResult;
 
-    // Discovery mode: recommendations per requested archetype
+    // Legacy gap detection fields (keep for backwards compatibility)
+    gap?: Gap;
+    rotationSummary?: RotationSummary[];
+
+    // Discovery mode
     discoveryResults?: ShoppingResult[];
 
-    // Analysis mode: gap + recommendations (existing pattern)
+    // Analysis mode (post-gap recommendations)
     recommendations?: RecommendedShoe[];
     summaryReasoning?: string;
-    rotationSummary?: RotationSummary[];
   };
   error?: string;
 }
