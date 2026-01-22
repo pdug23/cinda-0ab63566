@@ -17,6 +17,7 @@ import { analyzeRotation, calculateRotationHealth } from './lib/rotationAnalyzer
 import { identifyPrimaryGap } from './lib/gapDetector.js';
 import { generateRecommendations, generateDiscoveryRecommendations } from './lib/recommendationEngine.js';
 import { getShoeCapabilities, detectMisuse } from './lib/shoeCapabilities.js';
+import { classifyRotationTier } from './lib/tierClassifier.js';
 import shoebase from '../src/data/shoebase.json' with { type: "json" };
 
 /**
@@ -167,6 +168,9 @@ export default async function handler(
       
       const health = calculateRotationHealth(currentShoes, profile, catalogue);
       console.log('[analyze] Rotation health:', health);
+      
+      const tierResult = classifyRotationTier(health, analysis, profile, currentShoes, catalogue);
+      console.log('[analyze] Tier classification:', tierResult);
             
       const gap = identifyPrimaryGap(analysis, profile, currentShoes, catalogue);
 

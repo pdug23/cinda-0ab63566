@@ -277,6 +277,43 @@ export interface RotationHealth {
 }
 
 // ============================================================================
+// TIER CLASSIFICATION TYPES
+// ============================================================================
+
+/**
+ * Recommendation tier based on rotation health
+ * Tier 1: Genuine gaps - missing something important
+ * Tier 2: Improvements - covered but could be better
+ * Tier 3: Exploration - solid rotation, try something different
+ */
+export type RecommendationTier = 1 | 2 | 3;
+
+/**
+ * Confidence level for recommendations
+ * Matches tier: Tier 1 = high, Tier 2 = medium, Tier 3 = soft
+ */
+export type RecommendationConfidence = "high" | "medium" | "soft";
+
+/**
+ * A single recommendation slot (primary or secondary)
+ */
+export interface RecommendationSlot {
+  archetype: ShoeArchetype;
+  reason: string;  // Why this archetype is recommended
+}
+
+/**
+ * Result of tier classification
+ */
+export interface TierClassification {
+  tier: RecommendationTier;
+  confidence: RecommendationConfidence;
+  primary: RecommendationSlot;
+  secondary?: RecommendationSlot;  // Optional second recommendation
+  tierReason: string;  // Why this tier was chosen (for debugging/summary)
+}
+
+// ============================================================================
 // GAP DETECTION TYPES
 // ============================================================================
 
