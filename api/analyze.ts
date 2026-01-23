@@ -195,8 +195,13 @@ export default async function handler(
         );
         console.log('[analyze] Summary generated:', {
           proseLength: rotationSummaryProse.prose.length,
-          strengths: rotationSummaryProse.strengths.length,
-          improvements: rotationSummaryProse.improvements.length
+          strengthsCount: rotationSummaryProse.strengths.length,
+          improvementsCount: rotationSummaryProse.improvements.length
+        });
+        console.log('[analyze] Summary content:', {
+          prose: rotationSummaryProse.prose,
+          strengths: rotationSummaryProse.strengths,
+          improvements: rotationSummaryProse.improvements
         });
       } catch (error) {
         console.error('[analyze] Summary generation failed:', error);
