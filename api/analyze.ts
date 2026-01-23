@@ -8,6 +8,8 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type {
   AnalyzeRequest,
   AnalyzeResponse,
+  AnalysisResult,
+  RotationSummaryProse,
   Shoe,
   Gap,
   RecommendedShoe,
@@ -18,6 +20,7 @@ import { identifyPrimaryGap } from './lib/gapDetector.js';
 import { generateRecommendations, generateDiscoveryRecommendations } from './lib/recommendationEngine.js';
 import { getShoeCapabilities, detectMisuse } from './lib/shoeCapabilities.js';
 import { classifyRotationTier } from './lib/tierClassifier.js';
+import { generateRotationSummary } from './lib/summaryGenerator.js';
 import shoebase from '../src/data/shoebase.json' with { type: "json" };
 
 /**
@@ -164,24 +167,49 @@ export default async function handler(
     if (mode === "gap_detection") {
       console.log('[analyze] Mode: Gap Detection');
 
+      // 1. Analyze rotation
       const analysis = analyzeRotation(currentShoes, profile, catalogue);
-      
+
+      // 2. Calculate health scores
       const health = calculateRotationHealth(currentShoes, profile, catalogue);
       console.log('[analyze] Rotation health:', health);
-      
-      const tierResult = classifyRotationTier(health, analysis, profile, currentShoes, catalogue);
-      console.log('[analyze] Tier classification:', tierResult);
-            
-      const gap = identifyPrimaryGap(analysis, profile, currentShoes, catalogue);
 
-      console.log('[analyze] Gap identified:', {
-        type: gap.type,
-        severity: gap.severity,
-        recommendedArchetype: gap.recommendedArchetype,
+      // 3. Classify tier
+      const tierResult = classifyRotationTier(health, analysis, profile, currentShoes, catalogue);
+      console.log('[analyze] Tier classification:', {
+        tier: tierResult.tier,
+        confidence: tierResult.confidence,
+        primary: tierResult.primary.archetype,
+        secondary: tierResult.secondary?.archetype
       });
 
-      // Build rotation summary
-      const rotationSummary = currentShoes.map(cs => {
+      // 4. Generate LLM summary
+      let rotationSummaryProse: RotationSummaryProse;
+      try {
+        rotationSummaryProse = await generateRotationSummary(
+          health,
+          tierResult,
+          currentShoes,
+          profile,
+          catalogue
+        );
+        console.log('[analyze] Summary generated:', {
+          proseLength: rotationSummaryProse.prose.length,
+          strengths: rotationSummaryProse.strengths.length,
+          improvements: rotationSummaryProse.improvements.length
+        });
+      } catch (error) {
+        console.error('[analyze] Summary generation failed:', error);
+        // Fallback handled inside generateRotationSummary, but just in case
+        rotationSummaryProse = {
+          prose: `You have ${currentShoes.length} shoe${currentShoes.length === 1 ? '' : 's'} in your rotation.`,
+          strengths: [],
+          improvements: tierResult.primary ? [tierResult.primary.reason] : []
+        };
+      }
+
+      // 5. Build per-shoe breakdown (existing logic)
+      const shoeBreakdown = currentShoes.map(cs => {
         const shoe = catalogue.find(s => s.shoe_id === cs.shoeId);
         if (!shoe) return null;
 
@@ -197,6 +225,28 @@ export default async function handler(
         } as RotationSummary;
       }).filter((item): item is RotationSummary => item !== null);
 
+      // 6. Build Epic 6c AnalysisResult
+      const analysisResult: AnalysisResult = {
+        rotationSummary: rotationSummaryProse,
+        recommendations: {
+          tier: tierResult.tier,
+          confidence: tierResult.confidence,
+          primary: tierResult.primary,
+          secondary: tierResult.secondary
+        },
+        health,
+        shoeBreakdown
+      };
+
+      // 7. Also build legacy gap for backwards compatibility
+      const legacyGap = identifyPrimaryGap(analysis, profile, currentShoes, catalogue);
+
+      console.log('[analyze] Gap identified (legacy):', {
+        type: legacyGap.type,
+        severity: legacyGap.severity,
+        recommendedArchetype: legacyGap.recommendedArchetype,
+      });
+
       const elapsed = Date.now() - startTime;
       console.log('[analyze] Gap detection complete. Elapsed time:', elapsed, 'ms');
 
@@ -204,8 +254,12 @@ export default async function handler(
         success: true,
         mode: "gap_detection",
         result: {
-          gap,
-          rotationSummary
+          // New Epic 6c structure
+          analysis: analysisResult,
+
+          // Legacy fields for backwards compatibility
+          gap: legacyGap,
+          rotationSummary: shoeBreakdown  // Note: legacy field name, contains shoe breakdown
         },
       } as AnalyzeResponse);
       return;
