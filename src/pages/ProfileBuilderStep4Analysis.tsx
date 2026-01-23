@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader, AlertTriangle, Check, ArrowLeft } from "lucide-react";
+import { Loader, AlertTriangle, Check, ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import { useProfile, DiscoveryArchetype, GapData } from "@/contexts/ProfileContext";
 import { buildAPIRaceTimeFromPicker } from "@/utils/raceTime";
 import { saveGap } from "@/utils/storage";
+import { cn } from "@/lib/utils";
 
 type Status = "loading" | "success" | "no_gap" | "error";
 
@@ -17,6 +19,21 @@ interface RotationShoeSummary {
   archetypes: string[];
   misuseLevel: "severe" | "suboptimal" | "good";
   misuseMessage?: string;
+}
+
+interface AnalysisData {
+  rotationSummary: {
+    prose: string;
+    strengths: string[];
+    improvements: string[];
+  };
+  recommendations: {
+    tier: 1 | 2 | 3;
+    confidence: "high" | "medium" | "soft";
+    primary: { archetype: string; reason: string };
+    secondary?: { archetype: string; reason: string };
+  };
+  health: Record<string, number>;
 }
 
 const formatRoleLabel = (role: string): string => {
@@ -44,20 +61,17 @@ const formatArchetypesToRunTypes = (archetypes: string[]): string => {
     trail_shoe: ["trail"],
   };
 
-  // Collect all run types from archetypes
   const allRunTypes: string[] = [];
   archetypes.forEach((archetype) => {
     const types = runTypeMap[archetype] || [];
     allRunTypes.push(...types);
   });
 
-  // Check for long run collapsing: if both "comfortable pace" and "workout segments" exist
   const hasComfortablePace = allRunTypes.includes("long runs at a comfortable pace");
   const hasWorkoutSegments = allRunTypes.includes("long runs with workout segments");
 
   let finalTypes: string[];
   if (hasComfortablePace && hasWorkoutSegments) {
-    // Collapse to "all long runs" and remove the specific variants
     finalTypes = allRunTypes.filter(
       (t) => t !== "long runs at a comfortable pace" && t !== "long runs with workout segments"
     );
@@ -66,11 +80,26 @@ const formatArchetypesToRunTypes = (archetypes: string[]): string => {
     finalTypes = [...allRunTypes];
   }
 
-  // Deduplicate while preserving order
   const unique = [...new Set(finalTypes)];
-
   return unique.join(", ");
 };
+
+const formatArchetype = (archetype: string): string => {
+  const labels: Record<string, string> = {
+    daily_trainer: "daily trainer",
+    recovery_shoe: "recovery shoe",
+    workout_shoe: "workout shoe",
+    race_shoe: "race shoe",
+    trail_shoe: "trail shoe",
+  };
+  return labels[archetype] || archetype.replace(/_/g, " ");
+};
+
+const TIER_CONFIG = {
+  1: { label: "priority", className: "bg-red-500/20 text-red-400 border-red-500/40" },
+  2: { label: "recommended", className: "bg-amber-500/20 text-amber-400 border-amber-500/40" },
+  3: { label: "explore", className: "bg-teal-500/20 text-teal-400 border-teal-500/40" },
+} as const;
 
 const ProfileBuilderStep4Analysis = () => {
   const navigate = useNavigate();
@@ -78,27 +107,15 @@ const ProfileBuilderStep4Analysis = () => {
   const { step1, step2, step3 } = profileData;
   const [status, setStatus] = useState<Status>("loading");
   const [gap, setGap] = useState<GapData | null>(null);
+  const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
+  const [selectedArchetypes, setSelectedArchetypes] = useState<string[]>([]);
   const [rotationSummary, setRotationSummary] = useState<RotationShoeSummary[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>("");
-
-
-  const getShoeTypeLabel = (archetype: DiscoveryArchetype): string => {
-    const labels: Record<DiscoveryArchetype, string> = {
-      daily_trainer: "daily trainer",
-      recovery_shoe: "recovery shoe",
-      workout_shoe: "workout shoe",
-      race_shoe: "race shoe",
-      trail_shoe: "trail shoe",
-      not_sure: "shoe",
-    };
-    return labels[archetype];
-  };
 
   const analyzeRotation = async () => {
     setStatus("loading");
     setErrorMessage("");
 
-    // Guard: ensure we have shoes to analyze
     if (!step3.currentShoes || step3.currentShoes.length === 0) {
       setErrorMessage("No shoes found in your rotation. Please add shoes first.");
       setStatus("error");
@@ -106,7 +123,6 @@ const ProfileBuilderStep4Analysis = () => {
     }
 
     try {
-      // Build complete profile with all fields
       const profile = {
         firstName: step1.firstName,
         age: step1.age ? parseInt(step1.age) : undefined,
@@ -122,7 +138,6 @@ const ProfileBuilderStep4Analysis = () => {
         currentNiggles: step3.chatContext.injuries.length > 0 ? step3.chatContext.injuries : undefined,
       };
 
-      // Include loveTags and dislikeTags on shoes
       const currentShoes = (step3.currentShoes || []).map((shoe) => ({
         shoeId: shoe.shoe.shoe_id,
         runTypes: shoe.runTypes,
@@ -131,7 +146,6 @@ const ProfileBuilderStep4Analysis = () => {
         dislikeTags: shoe.dislikeTags,
       }));
 
-      // Build chatContext for API
       const chatContext = {
         injuries: step3.chatContext.injuries,
         pastShoes: step3.chatContext.pastShoes,
@@ -157,18 +171,39 @@ const ProfileBuilderStep4Analysis = () => {
         throw new Error(data.error || "Failed to analyse rotation");
       }
 
+      const analysisData = data.result?.analysis;
       const detectedGap = data.result?.gap;
       const summary = data.result?.rotationSummary || [];
       setRotationSummary(summary);
 
-      if (!detectedGap || detectedGap.severity === "low") {
-        setStatus("no_gap");
-      } else {
+      // New analysis structure takes priority
+      if (analysisData) {
+        setAnalysis(analysisData);
+        // Pre-select all recommendations
+        const archetypes = [analysisData.recommendations.primary.archetype];
+        if (analysisData.recommendations.secondary) {
+          archetypes.push(analysisData.recommendations.secondary.archetype);
+        }
+        setSelectedArchetypes(archetypes);
+        // Also set gap for backwards compat
+        if (detectedGap) {
+          setGap(detectedGap);
+          updateStep4({ gap: detectedGap });
+          saveGap(detectedGap);
+        }
+        setStatus("success");
+      } else if (detectedGap) {
+        // Legacy fallback
         setGap(detectedGap);
         updateStep4({ gap: detectedGap });
-        // Save gap to localStorage so Recommendations page can load it
         saveGap(detectedGap);
-        setStatus("success");
+        if (detectedGap.severity === "low") {
+          setStatus("no_gap");
+        } else {
+          setStatus("success");
+        }
+      } else {
+        setStatus("no_gap");
       }
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "An error occurred");
@@ -180,48 +215,69 @@ const ProfileBuilderStep4Analysis = () => {
     analyzeRotation();
   }, []);
 
+  const handleToggleArchetype = (archetype: string) => {
+    if (selectedArchetypes.includes(archetype)) {
+      // Prevent deselecting if it's the only one
+      if (selectedArchetypes.length > 1) {
+        setSelectedArchetypes((prev) => prev.filter((a) => a !== archetype));
+      }
+    } else {
+      setSelectedArchetypes((prev) => [...prev, archetype]);
+    }
+  };
+
+  const getCTAText = (): string => {
+    if (selectedArchetypes.length === 2) {
+      return "set preferences for your new shoes";
+    }
+    return `set preferences for your new ${formatArchetype(selectedArchetypes[0])}`;
+  };
+
   const handleSetPreferences = () => {
-    if (!gap) return;
-    const archetype = (gap.recommendedArchetype || "daily_trainer") as DiscoveryArchetype;
+    if (selectedArchetypes.length === 0) return;
     updateStep4({
-      selectedArchetypes: [archetype],
+      selectedArchetypes: selectedArchetypes as DiscoveryArchetype[],
       currentArchetypeIndex: 0,
     });
     navigate("/profile/step4b");
+  };
+
+  const handleHappyWithRotation = () => {
+    navigate("/");
   };
 
   const handleChooseSpecific = () => {
     navigate("/profile/step4a");
   };
 
-  const RecommendationSection = () => {
+  // Legacy recommendation section (fallback)
+  const LegacyRecommendationSection = () => {
     if (!gap) return null;
-    
+
     return (
       <div className="w-full mb-6">
         <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
           cinda's recommendation
         </h3>
-        <div 
+        <div
           className="relative bg-transparent rounded-lg p-4 border-2 border-slate-500 overflow-hidden"
-          style={{
-            animation: 'border-glisten 4s ease-in-out infinite',
-          }}
+          style={{ animation: "border-glisten 4s ease-in-out infinite" }}
         >
           <p className="text-white mb-3 lowercase">
             based on your rotation, you'd benefit from a{" "}
-            <span 
+            <span
               className="font-bold"
               style={{
-                background: 'linear-gradient(90deg, #94a3b8 0%, #94a3b8 30%, #ffffff 50%, #94a3b8 70%, #94a3b8 100%)',
-                backgroundSize: '200% auto',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                animation: 'text-glisten 3s ease-in-out infinite',
+                background:
+                  "linear-gradient(90deg, #94a3b8 0%, #94a3b8 30%, #ffffff 50%, #94a3b8 70%, #94a3b8 100%)",
+                backgroundSize: "200% auto",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                animation: "text-glisten 3s ease-in-out infinite",
               }}
             >
-              {getShoeTypeLabel((gap.recommendedArchetype || "daily_trainer") as DiscoveryArchetype)}
+              {formatArchetype(gap.recommendedArchetype || "daily_trainer")}
             </span>
           </p>
           {gap.reasoning && (
@@ -234,7 +290,154 @@ const ProfileBuilderStep4Analysis = () => {
     );
   };
 
-  const RotationSummarySection = () => {
+  // New rotation prose section
+  const RotationProseSection = () => {
+    if (!analysis?.rotationSummary) return null;
+
+    const { prose, strengths, improvements } = analysis.rotationSummary;
+
+    return (
+      <div className="w-full mb-6">
+        <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
+          your rotation
+        </h3>
+
+        {/* Prose card */}
+        <div className="bg-card/80 rounded-lg p-4 border border-card-foreground/20 mb-4">
+          <p className="text-white/90 lowercase leading-relaxed">{prose}</p>
+        </div>
+
+        {/* Strengths | Improvements grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Strengths column */}
+          {strengths && strengths.length > 0 && (
+            <div>
+              <h4 className="text-xs font-medium text-green-400 mb-2 flex items-center gap-1.5 lowercase">
+                <Check className="w-3.5 h-3.5" /> strengths
+              </h4>
+              <ul className="space-y-1.5">
+                {strengths.map((s, i) => (
+                  <li key={i} className="text-sm text-gray-300 lowercase">
+                    • {s}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Improvements column */}
+          {improvements && improvements.length > 0 && (
+            <div>
+              <h4 className="text-xs font-medium text-amber-400 mb-2 flex items-center gap-1.5 lowercase">
+                <ArrowRight className="w-3.5 h-3.5" /> improvements
+              </h4>
+              <ul className="space-y-1.5">
+                {improvements.map((imp, i) => (
+                  <li key={i} className="text-sm text-gray-300 lowercase">
+                    • {imp}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Recommendation card component
+  const RecommendationCard = ({
+    recommendation,
+    tier,
+    isSelected,
+    showCheckbox,
+  }: {
+    recommendation: { archetype: string; reason: string };
+    tier: 1 | 2 | 3;
+    isSelected: boolean;
+    showCheckbox: boolean;
+  }) => {
+    const config = TIER_CONFIG[tier];
+
+    return (
+      <div
+        className={cn(
+          "relative bg-card/80 rounded-lg p-4 border-2 transition-all",
+          isSelected ? "border-slate-400/50" : "border-card-foreground/20 opacity-60"
+        )}
+      >
+        {/* Checkbox (only if 2 recommendations) */}
+        {showCheckbox && (
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={() => handleToggleArchetype(recommendation.archetype)}
+            className="absolute left-4 top-4"
+          />
+        )}
+
+        {/* Tier badge (top right) */}
+        <span
+          className={cn(
+            "absolute right-4 top-4 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border",
+            config.className
+          )}
+        >
+          {config.label}
+        </span>
+
+        {/* Content */}
+        <div className={showCheckbox ? "ml-8" : ""}>
+          <p className="text-white font-medium lowercase mb-1 pr-20">
+            {formatArchetype(recommendation.archetype)}
+          </p>
+          <p className="text-sm text-gray-400 lowercase">{recommendation.reason}</p>
+        </div>
+      </div>
+    );
+  };
+
+  // New recommendations section
+  const RecommendationsSection = () => {
+    if (!analysis?.recommendations) return null;
+
+    const { tier, primary, secondary } = analysis.recommendations;
+    const hasSecondary = !!secondary;
+
+    return (
+      <div className="w-full mb-6">
+        <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
+          cinda recommends
+        </h3>
+
+        {/* Tier 3 intro text */}
+        {tier === 3 && (
+          <p className="text-sm text-gray-400 mb-4 lowercase">
+            your rotation is solid! if you're looking to experiment:
+          </p>
+        )}
+
+        {/* Recommendation cards */}
+        <div className="flex flex-col gap-3">
+          <RecommendationCard
+            recommendation={primary}
+            tier={tier}
+            isSelected={selectedArchetypes.includes(primary.archetype)}
+            showCheckbox={hasSecondary}
+          />
+          {secondary && (
+            <RecommendationCard
+              recommendation={secondary}
+              tier={tier}
+              isSelected={selectedArchetypes.includes(secondary.archetype)}
+              showCheckbox={hasSecondary}
+            />
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const CurrentRotationSection = () => {
     if (!rotationSummary || rotationSummary.length === 0) return null;
 
     return (
@@ -245,7 +448,7 @@ const ProfileBuilderStep4Analysis = () => {
         <div className="flex flex-col gap-3">
           {rotationSummary.map((item, index) => {
             const isSevere = item.misuseLevel === "severe";
-            
+
             return (
               <div
                 key={item.shoe.shoe_id || index}
@@ -259,9 +462,7 @@ const ProfileBuilderStep4Analysis = () => {
                   ) : (
                     <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                   )}
-                  <p className="text-white font-medium">
-                    {item.shoe.full_name}
-                  </p>
+                  <p className="text-white font-medium">{item.shoe.full_name}</p>
                 </div>
                 <p className="text-sm text-gray-300 mb-1 lowercase">
                   you use it for: {(item.userRunTypes || []).map(formatRoleLabel).join(", ")}
@@ -271,9 +472,7 @@ const ProfileBuilderStep4Analysis = () => {
                 </p>
                 {isSevere && item.misuseMessage && (
                   <div className="mt-3 p-2 bg-red-500/15 border border-red-500/30 rounded-md">
-                    <p className="text-sm text-red-400 lowercase">
-                      {item.misuseMessage}
-                    </p>
+                    <p className="text-sm text-red-400 lowercase">{item.misuseMessage}</p>
                   </div>
                 )}
               </div>
@@ -283,6 +482,29 @@ const ProfileBuilderStep4Analysis = () => {
       </div>
     );
   };
+
+  // Loading skeleton
+  const LoadingSkeleton = () => (
+    <div className="space-y-6 animate-pulse">
+      {/* Prose skeleton */}
+      <div>
+        <div className="h-4 w-24 bg-card-foreground/10 rounded mb-4" />
+        <div className="h-24 bg-card-foreground/10 rounded-lg mb-4" />
+        <div className="grid grid-cols-2 gap-4">
+          <div className="h-16 bg-card-foreground/10 rounded" />
+          <div className="h-16 bg-card-foreground/10 rounded" />
+        </div>
+      </div>
+      {/* Recommendations skeleton */}
+      <div>
+        <div className="h-4 w-32 bg-card-foreground/10 rounded mb-4" />
+        <div className="space-y-3">
+          <div className="h-20 bg-card-foreground/10 rounded-lg" />
+          <div className="h-20 bg-card-foreground/10 rounded-lg" />
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -303,33 +525,67 @@ const ProfileBuilderStep4Analysis = () => {
           <div className="w-full max-w-md mx-auto flex flex-col flex-1 min-h-0 px-6 md:px-8">
             {/* Loading State */}
             {status === "loading" && (
-              <div className="flex flex-col items-center justify-center gap-6 animate-in fade-in duration-300 flex-1">
-                <Loader className="w-8 h-8 text-primary animate-spin" />
-                <div className="text-center">
-                  <h2 className="text-lg font-medium text-foreground mb-2 lowercase">
-                    analysing your rotation...
-                  </h2>
-                  <p className="text-sm text-muted-foreground lowercase">
-                    this will take a few seconds
-                  </p>
-                </div>
+              <div className="flex flex-col animate-in fade-in duration-300 flex-1">
+                <LoadingSkeleton />
               </div>
             )}
 
-            {/* Success State - Gap Found */}
-            {status === "success" && gap && (
+            {/* Success State - New Analysis Structure */}
+            {status === "success" && analysis && (
               <div className="flex flex-col animate-in fade-in duration-300 flex-1 min-h-0 overflow-hidden">
-                <div className="flex-1 min-h-0 overflow-y-auto pb-6 pr-2 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
-                  <RecommendationSection />
-                  <RotationSummarySection />
+                <div
+                  className="flex-1 min-h-0 overflow-y-auto pb-6 pr-2 scrollbar-styled touch-pan-y"
+                  style={{ WebkitOverflowScrolling: "touch" }}
+                >
+                  <RotationProseSection />
+                  <RecommendationsSection />
+                  <CurrentRotationSection />
                 </div>
                 <div className="flex flex-col items-center pt-4 pb-4 flex-shrink-0">
                   <Button
                     onClick={handleSetPreferences}
                     variant="cta"
                     className="w-full min-h-[44px] text-sm"
+                    disabled={selectedArchetypes.length === 0}
                   >
-                    set preferences for your new {getShoeTypeLabel((gap.recommendedArchetype || "daily_trainer") as DiscoveryArchetype)}
+                    {getCTAText()}
+                  </Button>
+                  {analysis.recommendations.tier === 3 && (
+                    <button
+                      onClick={handleHappyWithRotation}
+                      className="mt-4 text-sm text-slate-400 hover:text-slate-300 underline underline-offset-4 decoration-dotted lowercase"
+                    >
+                      i'm happy with my rotation
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Success State - Legacy Gap Fallback */}
+            {status === "success" && !analysis && gap && (
+              <div className="flex flex-col animate-in fade-in duration-300 flex-1 min-h-0 overflow-hidden">
+                <div
+                  className="flex-1 min-h-0 overflow-y-auto pb-6 pr-2 scrollbar-styled touch-pan-y"
+                  style={{ WebkitOverflowScrolling: "touch" }}
+                >
+                  <LegacyRecommendationSection />
+                  <CurrentRotationSection />
+                </div>
+                <div className="flex flex-col items-center pt-4 pb-4 flex-shrink-0">
+                  <Button
+                    onClick={() => {
+                      const archetype = (gap.recommendedArchetype || "daily_trainer") as DiscoveryArchetype;
+                      updateStep4({
+                        selectedArchetypes: [archetype],
+                        currentArchetypeIndex: 0,
+                      });
+                      navigate("/profile/step4b");
+                    }}
+                    variant="cta"
+                    className="w-full min-h-[44px] text-sm"
+                  >
+                    set preferences for your new {formatArchetype(gap.recommendedArchetype || "daily_trainer")}
                   </Button>
                 </div>
               </div>
@@ -338,17 +594,21 @@ const ProfileBuilderStep4Analysis = () => {
             {/* No Gap State */}
             {status === "no_gap" && (
               <div className="flex flex-col animate-in fade-in duration-300 flex-1 min-h-0 overflow-hidden">
-                <div className="flex-1 min-h-0 overflow-y-auto pb-6 scrollbar-styled touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
+                <div
+                  className="flex-1 min-h-0 overflow-y-auto pb-6 scrollbar-styled touch-pan-y"
+                  style={{ WebkitOverflowScrolling: "touch" }}
+                >
                   <div className="w-full mb-6">
                     <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
                       cinda's recommendation
                     </h3>
                     <div className="relative bg-white/10 rounded-lg p-4 border border-slate-500/30 overflow-hidden">
-                      <div 
+                      <div
                         className="absolute inset-0 pointer-events-none"
                         style={{
-                          background: 'linear-gradient(110deg, transparent 20%, hsl(0 0% 100% / 0.06) 40%, hsl(0 0% 100% / 0.12) 50%, hsl(0 0% 100% / 0.06) 60%, transparent 80%)',
-                          animation: 'shimmer-diagonal 3s ease-in-out infinite',
+                          background:
+                            "linear-gradient(110deg, transparent 20%, hsl(0 0% 100% / 0.06) 40%, hsl(0 0% 100% / 0.12) 50%, hsl(0 0% 100% / 0.06) 60%, transparent 80%)",
+                          animation: "shimmer-diagonal 3s ease-in-out infinite",
                         }}
                       />
                       <p className="text-white lowercase relative z-10">
@@ -356,7 +616,7 @@ const ProfileBuilderStep4Analysis = () => {
                       </p>
                     </div>
                   </div>
-                  <RotationSummarySection />
+                  <CurrentRotationSection />
                 </div>
                 <div className="flex flex-col items-center pt-4 pb-4 flex-shrink-0">
                   <Button
