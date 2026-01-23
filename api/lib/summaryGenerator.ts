@@ -13,8 +13,10 @@ import type {
   Shoe,
   ShoeArchetype,
   RunType,
+  MisuseLevel,
 } from '../types.js';
 import { getShoeArchetypes } from '../types.js';
+import { detectMisuse } from './shoeCapabilities.js';
 
 // ============================================================================
 // CONTEXT TYPES
@@ -25,7 +27,12 @@ interface SummaryContext {
   experience: string;
   goal: string;
   runningPattern: string;
-  weeklyVolume?: string;
+
+  // Weekly volume if provided
+  weeklyVolume?: {
+    value: number;
+    unit: string;  // "km" or "mi"
+  };
 
   // Their shoes (resolved to full details)
   shoes: Array<{
@@ -33,6 +40,12 @@ interface SummaryContext {
     usedFor: string[];  // run types in plain English
     sentiment: string;
     archetypes: string[];  // what the shoe IS
+    // Misuse detection
+    misuseLevel?: MisuseLevel;
+    misuseMessage?: string;
+    // Sentiment tags
+    loveTags?: string[];
+    dislikeTags?: string[];
   }>;
 
   // Health scores
@@ -118,30 +131,46 @@ function buildContext(
   profile: RunnerProfile,
   catalogue: Shoe[]
 ): SummaryContext {
-  // Build shoes array with resolved details
+  // Build shoes array with resolved details including misuse and tags
   const shoes = currentShoes.map(cs => {
     const shoe = catalogue.find(s => s.shoe_id === cs.shoeId);
-    const archetypes = shoe ? getShoeArchetypes(shoe) : [];
+    if (!shoe) {
+      return {
+        name: cs.shoeId,
+        usedFor: (cs.runTypes || []).map((rt: RunType) => toPlainEnglish(rt)),
+        sentiment: toPlainEnglish(cs.sentiment),
+        archetypes: [],
+      };
+    }
+
+    const archetypes = getShoeArchetypes(shoe);
+
+    // Get misuse detection
+    const misuse = detectMisuse(cs.runTypes || [], archetypes, shoe);
 
     return {
-      name: shoe?.full_name || cs.shoeId,
+      name: shoe.full_name,
       usedFor: (cs.runTypes || []).map((rt: RunType) => toPlainEnglish(rt)),
       sentiment: toPlainEnglish(cs.sentiment),
       archetypes: archetypes.map((a: ShoeArchetype) => toPlainEnglish(a)),
+      // Only include misuse if not 'good'
+      misuseLevel: misuse.level !== 'good' ? misuse.level : undefined,
+      misuseMessage: misuse.level !== 'good' ? misuse.message : undefined,
+      // Include love/dislike tags if present
+      loveTags: cs.sentiment === 'love' && cs.loveTags?.length ? cs.loveTags : undefined,
+      dislikeTags: cs.sentiment === 'dislike' && cs.dislikeTags?.length ? cs.dislikeTags : undefined,
     };
   });
-
-  // Build weekly volume string
-  let weeklyVolume: string | undefined;
-  if (profile.weeklyVolume) {
-    weeklyVolume = `${profile.weeklyVolume.value} ${profile.weeklyVolume.unit}/week`;
-  }
 
   return {
     experience: toPlainEnglish(profile.experience),
     goal: toPlainEnglish(profile.primaryGoal),
     runningPattern: toPlainEnglish(profile.runningPattern || 'mostly_easy'),
-    weeklyVolume,
+    // Include weekly volume as structured data
+    weeklyVolume: profile.weeklyVolume ? {
+      value: profile.weeklyVolume.value,
+      unit: profile.weeklyVolume.unit,
+    } : undefined,
     shoes,
     health: {
       coverage: health.coverage,
@@ -178,11 +207,31 @@ Your tone is:
 You must respond with valid JSON only, no markdown, no explanation.`;
 
 function buildUserPrompt(context: SummaryContext): string {
+  // Build shoes section with misuse warnings and sentiment tags
   const shoesSection = context.shoes.length > 0
-    ? context.shoes.map(s =>
-        `- ${s.name}: used for ${s.usedFor.join(', ')} (${s.sentiment}). This shoe is a ${s.archetypes.join(', ')}.`
-      ).join('\n')
+    ? context.shoes.map(s => {
+        let line = `- ${s.name}: used for ${s.usedFor.join(', ')} (${s.sentiment}). This shoe is a ${s.archetypes.join(', ')}.`;
+
+        if (s.misuseLevel && s.misuseMessage) {
+          line += `\n  ⚠️ MISUSE (${s.misuseLevel}): ${s.misuseMessage}`;
+        }
+
+        if (s.loveTags?.length) {
+          line += `\n  Loves: ${s.loveTags.join(', ')}`;
+        }
+
+        if (s.dislikeTags?.length) {
+          line += `\n  Dislikes: ${s.dislikeTags.join(', ')}`;
+        }
+
+        return line;
+      }).join('\n')
     : '- No shoes added yet';
+
+  // Build volume string
+  const volumeString = context.weeklyVolume
+    ? `- Weekly volume: ${context.weeklyVolume.value} ${context.weeklyVolume.unit}`
+    : '';
 
   return `Analyze this runner's shoe rotation and generate a summary.
 
@@ -190,7 +239,7 @@ function buildUserPrompt(context: SummaryContext): string {
 - Experience: ${context.experience}
 - Goal: ${context.goal}
 - Running pattern: ${context.runningPattern}
-${context.weeklyVolume ? `- Weekly volume: ${context.weeklyVolume}` : ''}
+${volumeString}
 
 ## Current Shoes
 ${shoesSection}
@@ -233,6 +282,12 @@ Generate a rotation summary with:
    - For Tier 2: the improvement opportunity (1 item)
    - For Tier 3: optional soft suggestion or empty array
    - Phrase as actionable: "Add a..." or "Consider a..."
+
+Additional guidance:
+- If weekly volume is provided, reference it when discussing load or shoe count (e.g., "At 60km per week...")
+- If a shoe has a MISUSE warning, address it directly in the prose - this is important feedback
+- If the user has love/dislike tags, you can reference what they enjoy (e.g., "Since you love bouncy shoes...")
+- Be specific about misuse: "Using a race shoe for recovery runs wears it out without benefit"
 
 Respond with this exact JSON structure:
 {
@@ -326,6 +381,10 @@ export async function generateRotationSummary(
     shoeCount: context.shoes.length,
     tier: context.tier,
     healthOverall: context.health.overall,
+    hasVolume: !!context.weeklyVolume,
+    hasMisuse: context.shoes.some(s => s.misuseLevel),
+    hasLoveTags: context.shoes.some(s => s.loveTags?.length),
+    hasDislikeTags: context.shoes.some(s => s.dislikeTags?.length),
   });
 
   try {
