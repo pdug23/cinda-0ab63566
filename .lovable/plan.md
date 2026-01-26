@@ -1,167 +1,327 @@
 
-## Plan: Redesign Recommendation Toggle to X/+ Remove/Add Pattern
+## Plan: Fix feelGap/contrastWith Pass-through and Build Error
 
-### Overview
-Replace the current "SKIP/INCLUDE" toggle button with a new interaction pattern:
-1. **Default state**: Show full recommendation card with an "X" button to remove
-2. **On X click**: Show a confirmation warning modal
-3. **After removal**: Show a collapsed, greyed-out summary with a "+" button to re-add
+### Problem Summary
 
----
+Two issues need to be addressed:
 
-### Visual Design
+1. **Build Error**: The `ScoredShoe` interface requires a `contrastScore` field in the breakdown, but one code path in `recommendationEngine.ts` creates a breakdown object without it.
 
-**Default State (Included)**
-```text
-┌─────────────────────────────────────────────────────────┐
-│ You'd benefit from a daily trainer              [  X  ]│
-│                                                         │
-│ A cushioned daily trainer would complement your         │
-│ rotation for recovery and easy days.                    │
-└─────────────────────────────────────────────────────────┘
-```
-
-**Removed State (Greyed Out Summary)**
-```text
-┌─────────────────────────────────────────────────────────┐
-│ You'd benefit from a daily trainer              [  +  ]│
-└─────────────────────────────────────────────────────────┘
-(greyed out, single line, no reason text)
-```
+2. **Smart Recommendations Broken**: The backend builds `feelGap` and `contrastWith` during rotation analysis to enable smart variety recommendations, but the frontend ignores these fields and never passes them through to the final discovery API call.
 
 ---
 
-### Changes to `src/pages/ProfileBuilderStep4Analysis.tsx`
+### Current Data Flow (Broken)
 
-#### 1. Add state for removal confirmation modal
-```tsx
-const [removalTarget, setRemovalTarget] = useState<string | null>(null);
-```
-This tracks which archetype the user is trying to remove (null = modal closed).
+```text
+Step 4 Analysis → API gap_detection → Returns:
+                   analysis.recommendations.primary.feelGap ✓
+                   analysis.recommendations.primary.contrastWith ✓
 
-#### 2. Create RemoveConfirmModal component
-A small inline modal following the app's existing modal design pattern (matching UnsavedChangesModal styling):
-- Title: "Remove this recommendation?"
-- Body: "You can add it back at any time."
-- Buttons: "Cancel" and "Remove"
+                   Frontend extracts only:
+                   ├── archetype ✓
+                   └── reason ✓
+                   (feelGap and contrastWith ignored) ✗
 
-#### 3. Replace NotForMeToggle with two new components
+Step 4b → Builds ShoeRequest with:
+          ├── archetype ✓
+          └── feelPreferences ✓
+          (no feelGap/contrastWith) ✗
 
-**RemoveButton** - An "X" icon button shown when the recommendation is included:
-- Small circular button with X icon
-- Positioned in the top-right of the recommendation card
-- On click: Opens the confirmation modal (sets removalTarget)
-- Disabled when this is the only remaining recommendation
-
-**AddBackButton** - A "+" icon button shown on the collapsed summary:
-- Small circular button with Plus icon
-- On click: Immediately re-adds the archetype (no confirmation needed)
-
-#### 4. Update the recommendation card rendering logic
-
-**When included (full card)**:
-```tsx
-<div className="bg-card/80 rounded-lg p-4 border-2 border-slate-500/50">
-  <div className="flex items-start justify-between gap-3">
-    <p className="text-white">{getIntroText(archetype)}</p>
-    <RemoveButton 
-      onRemove={() => setRemovalTarget(archetype)}
-      canRemove={canRemove}
-    />
-  </div>
-  <p className="text-sm text-gray-300 mt-3">{reason}</p>
-</div>
+Recommendations → API discovery → Receives:
+                  shoeRequests without feelGap/contrastWith ✗
+                  Smart variety recommendations disabled ✗
 ```
 
-**When removed (collapsed summary)**:
-```tsx
-<div className="bg-card/40 rounded-lg px-4 py-3 border border-slate-600/30 opacity-60">
-  <div className="flex items-center justify-between gap-3">
-    <p className="text-slate-400 text-sm">
-      You'd benefit from a <span className="font-medium">{formatArchetype(archetype).toLowerCase()}</span>
-    </p>
-    <AddBackButton onAdd={() => handleToggleArchetype(archetype)} />
-  </div>
-</div>
+### Fixed Data Flow
+
+```text
+Step 4 Analysis → API gap_detection → Returns:
+                   analysis.recommendations.primary.feelGap ✓
+                   analysis.recommendations.primary.contrastWith ✓
+
+                   Frontend extracts ALL:
+                   ├── archetype ✓
+                   ├── reason ✓
+                   ├── feelGap ✓
+                   └── contrastWith ✓
+
+                   Stored in ProfileContext step4.analysisRecommendations
+
+Step 4b → Builds ShoeRequest with:
+          ├── archetype ✓
+          ├── feelPreferences ✓
+          ├── feelGap ✓ (from stored analysis)
+          └── contrastWith ✓ (from stored analysis)
+
+Recommendations → API discovery → Receives full shoeRequests ✓
+                  Smart variety recommendations enabled ✓
 ```
 
-#### 5. Modal confirmation handler
-```tsx
-const handleConfirmRemoval = () => {
-  if (removalTarget) {
-    handleToggleArchetype(removalTarget);
-    setRemovalTarget(null);
+---
+
+### Changes Required
+
+#### 1. Fix Build Error in `api/lib/recommendationEngine.ts`
+
+**Location**: Lines 618-633
+
+**Issue**: The breakdown object is missing the `contrastScore` field that's required by the `ScoredShoe` interface.
+
+**Fix**: Add `contrastScore: 0` to the breakdown object:
+
+```typescript
+breakdown: {
+  archetypeScore: 50,
+  feelScore: 0,
+  heelDropScore: 0,
+  stabilityBonus: 0,
+  availabilityBonus: 0,
+  footStrikeScore: 0,
+  experienceScore: 0,
+  primaryGoalScore: scoreForGapFit(shoe, gap, profile),
+  runningPatternScore: 0,
+  paceBucketScore: 0,
+  bmiScore: 0,
+  trailScore: 0,
+  loveDislikeScore: 0,
+  chatContextScore: 0,
+  contrastScore: 0,  // ADD THIS LINE
+}
+```
+
+---
+
+#### 2. Update `ShoeRequest` Type in `ProfileContext.tsx`
+
+**Location**: Lines 87-90
+
+**Current**:
+```typescript
+export interface ShoeRequest {
+  archetype: DiscoveryArchetype;
+  feelPreferences: FeelPreferences;
+}
+```
+
+**Updated**:
+```typescript
+// Feel gap from rotation analysis
+export interface FeelGapInfo {
+  dimension: 'cushion' | 'drop' | 'rocker' | 'stability';
+  suggestion: 'low' | 'high';
+  targetValue?: number;
+}
+
+// Contrast profile for variety recommendations
+export interface ContrastProfile {
+  cushion?: number;
+  stability?: number;
+  bounce?: number;
+  rocker?: number;
+  groundFeel?: number;
+}
+
+export interface ShoeRequest {
+  archetype: DiscoveryArchetype;
+  feelPreferences: FeelPreferences;
+  feelGap?: FeelGapInfo;
+  contrastWith?: ContrastProfile;
+}
+```
+
+---
+
+#### 3. Store Analysis Recommendations in Step4Data
+
+**Location**: `ProfileContext.tsx` - `Step4Data` interface
+
+**Update Step4Data** to include the full recommendation slots:
+
+```typescript
+// Full recommendation slot from analysis
+export interface AnalysisRecommendation {
+  archetype: string;
+  reason: string;
+  feelGap?: FeelGapInfo;
+  contrastWith?: ContrastProfile;
+}
+
+export interface Step4Data {
+  mode: "discovery" | "analysis" | null;
+  selectedArchetypes: DiscoveryArchetype[];
+  currentArchetypeIndex: number;
+  shoeRequests: ShoeRequest[];
+  gap: GapData | null;
+  analysisRecommendations?: {
+    primary: AnalysisRecommendation;
+    secondary?: AnalysisRecommendation;
+  };
+}
+```
+
+---
+
+#### 4. Update `ProfileBuilderStep4Analysis.tsx` to Store Full Recommendations
+
+**Location**: Lines 36-43 and 188-200
+
+**Update AnalysisData interface** to include feelGap and contrastWith:
+
+```typescript
+interface AnalysisData {
+  rotationSummary: {
+    prose: string;
+    strengths: string[];
+    improvements: string[];
+  };
+  recommendations: {
+    tier: 1 | 2 | 3;
+    confidence: "high" | "medium" | "soft";
+    primary: { 
+      archetype: string; 
+      reason: string;
+      feelGap?: FeelGapInfo;
+      contrastWith?: ContrastProfile;
+    };
+    secondary?: { 
+      archetype: string; 
+      reason: string;
+      feelGap?: FeelGapInfo;
+      contrastWith?: ContrastProfile;
+    };
+  };
+  health: Record<string, number>;
+}
+```
+
+**Update `analyzeRotation` success handler** to store full recommendation data:
+
+```typescript
+if (analysisData) {
+  setAnalysis(analysisData);
+  // Pre-select all recommendations
+  const archetypes = [analysisData.recommendations.primary.archetype];
+  if (analysisData.recommendations.secondary) {
+    archetypes.push(analysisData.recommendations.secondary.archetype);
   }
+  setSelectedArchetypes(archetypes);
+  
+  // Store full recommendations including feelGap/contrastWith
+  updateStep4({
+    analysisRecommendations: {
+      primary: analysisData.recommendations.primary,
+      secondary: analysisData.recommendations.secondary,
+    }
+  });
+  
+  // Also set gap for backwards compat
+  if (detectedGap) {
+    setGap(detectedGap);
+    updateStep4({ gap: detectedGap });
+    saveGap(detectedGap);
+  }
+  setStatus("success");
+}
+```
+
+---
+
+#### 5. Update `ProfileBuilderStep4b.tsx` to Include feelGap/contrastWith
+
+**Location**: Lines 650-662 (handleNext function)
+
+**When building the ShoeRequest**, look up the feelGap and contrastWith from the stored analysis recommendations:
+
+```typescript
+const handleNext = () => {
+  if (!isValid()) return;
+
+  // Get feelGap and contrastWith from stored analysis recommendations
+  const analysisRecs = profileData.step4.analysisRecommendations;
+  let feelGap: FeelGapInfo | undefined;
+  let contrastWith: ContrastProfile | undefined;
+  
+  if (analysisRecs) {
+    if (analysisRecs.primary.archetype === currentArchetype) {
+      feelGap = analysisRecs.primary.feelGap;
+      contrastWith = analysisRecs.primary.contrastWith;
+    } else if (analysisRecs.secondary?.archetype === currentArchetype) {
+      feelGap = analysisRecs.secondary.feelGap;
+      contrastWith = analysisRecs.secondary.contrastWith;
+    }
+  }
+
+  const newRequest: ShoeRequest = { 
+    archetype: currentArchetype, 
+    feelPreferences: preferences,
+    feelGap,
+    contrastWith,
+  };
+  
+  // ... rest of the function
 };
 ```
 
 ---
 
-### New Component: RemoveConfirmModal
+#### 6. Update Storage Functions
 
-Located inline within ProfileBuilderStep4Analysis.tsx (similar pattern to existing modals):
+**Location**: `src/utils/storage.ts` - `saveShoeRequests` and `loadShoeRequests`
 
-```tsx
-const RemoveConfirmModal = () => (
-  <Dialog open={!!removalTarget} onOpenChange={() => setRemovalTarget(null)}>
-    <DialogContent className="max-w-sm bg-card border-border/20 p-0 gap-0">
-      <DialogHeader className="p-4 pb-0 relative">
-        <button
-          onClick={() => setRemovalTarget(null)}
-          className="absolute right-4 top-4 p-1 rounded-full ..."
-        >
-          <X className="w-4 h-4" />
-        </button>
-        <DialogTitle>Remove this recommendation?</DialogTitle>
-      </DialogHeader>
-      <div className="px-4 pt-4 pb-6">
-        <p className="text-sm text-card-foreground/70">
-          You can add it back at any time.
-        </p>
-      </div>
-      <div className="flex gap-3 p-4 pt-0">
-        <Button onClick={() => setRemovalTarget(null)}>Cancel</Button>
-        <Button onClick={handleConfirmRemoval}>Remove</Button>
-      </div>
-    </DialogContent>
-  </Dialog>
-);
+The storage functions use generic JSON serialization, so they should automatically preserve the new `feelGap` and `contrastWith` fields. No changes needed here, but verify the `ShoeRequest` import is updated.
+
+---
+
+### Files to Modify
+
+| File | Changes |
+|------|---------|
+| `api/lib/recommendationEngine.ts` | Add `contrastScore: 0` to breakdown (line 633) |
+| `src/contexts/ProfileContext.tsx` | Add `FeelGapInfo`, `ContrastProfile`, and `AnalysisRecommendation` interfaces; update `ShoeRequest` and `Step4Data` |
+| `src/pages/ProfileBuilderStep4Analysis.tsx` | Update `AnalysisData` interface; store full recommendations in `updateStep4` |
+| `src/pages/ProfileBuilderStep4b.tsx` | Import new types; update `handleNext` to include feelGap/contrastWith |
+
+---
+
+### Testing Verification
+
+After implementation, verify by:
+
+1. Add a shoe (e.g., HOKA Clifton 10)
+2. Complete rotation analysis (Step 4)
+3. Observe the API response includes `feelGap` and `contrastWith` in the recommendations
+4. Select the recommended archetype and proceed to Step 4b
+5. Choose "Let Cinda decide" for all preferences
+6. Check the network tab on /recommendations - the discovery request should include `feelGap` and `contrastWith` in each `shoeRequest`
+
+---
+
+### Expected API Request (After Fix)
+
+```json
+{
+  "mode": "discovery",
+  "profile": { ... },
+  "currentShoes": [ ... ],
+  "shoeRequests": [
+    {
+      "archetype": "daily_trainer",
+      "feelPreferences": { ... },
+      "feelGap": { 
+        "dimension": "cushion", 
+        "suggestion": "high", 
+        "targetValue": 5 
+      },
+      "contrastWith": { 
+        "cushion": 3.5, 
+        "bounce": 2.8, 
+        "rocker": 2.0, 
+        "stability": 2.5 
+      }
+    }
+  ]
+}
 ```
 
----
-
-### Technical Details
-
-| Item | Details |
-|------|---------|
-| **File** | `src/pages/ProfileBuilderStep4Analysis.tsx` |
-| **New imports** | `Plus` from lucide-react, `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle` from ui/dialog |
-| **New state** | `removalTarget: string \| null` |
-| **Components modified** | `NotForMeToggle` → replaced by `RemoveButton` + `AddBackButton` |
-| **Components added** | `RemoveConfirmModal`, `RemoveButton`, `AddBackButton`, `CollapsedRecommendation` |
-| **Lines affected** | ~390-460 (RecommendationBoxSection and NotForMeToggle) |
-
----
-
-### Button Styling
-
-**X Button (Remove)**
-- Size: `w-6 h-6` circle
-- Icon: `X` from lucide-react, size 14px
-- Style: `bg-transparent border border-slate-600 text-slate-400 hover:border-red-500/60 hover:text-red-400`
-- Disabled state: `opacity-40 cursor-not-allowed`
-
-**+ Button (Add Back)**
-- Size: `w-6 h-6` circle  
-- Icon: `Plus` from lucide-react, size 14px
-- Style: `bg-transparent border border-slate-500 text-slate-400 hover:border-primary/60 hover:text-primary`
-
----
-
-### Summary of User Experience
-
-1. User sees full recommendation cards with small "X" buttons in top-right
-2. Clicking "X" opens a gentle confirmation: "Remove this recommendation? You can add it back at any time."
-3. Clicking "Remove" collapses the card to a single-line greyed-out summary with "+" button
-4. Clicking "+" immediately restores the full card (no confirmation needed for adding back)
-5. At least one recommendation must remain - the "X" on the last included card is disabled
+This enables the recommendation engine to use the `contrastWith` profile to favor shoes that are different from the user's current rotation, implementing the "smart variety" feature.
