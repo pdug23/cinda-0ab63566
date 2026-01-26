@@ -430,7 +430,7 @@ const ProfileBuilderStep4Analysis = () => {
     );
   };
 
-  // "Not for me" toggle button
+  // Skip/Include toggle button
   const NotForMeToggle = ({
     isSkipped,
     onToggle,
@@ -444,14 +444,15 @@ const ProfileBuilderStep4Analysis = () => {
       onClick={() => canSkip && onToggle()}
       disabled={!canSkip && !isSkipped}
       className={cn(
-        "px-3 py-1 text-xs rounded-full border transition-all whitespace-nowrap flex-shrink-0",
+        "px-2.5 py-0.5 rounded-full border transition-all whitespace-nowrap flex-shrink-0",
+        "text-[10px] tracking-wide font-medium",
         isSkipped
           ? "bg-slate-500/30 border-slate-400 text-white"
           : "bg-transparent border-slate-600 text-slate-400 hover:border-slate-500",
         !canSkip && !isSkipped && "opacity-40 cursor-not-allowed"
       )}
     >
-      Not for me
+      {isSkipped ? "INCLUDE" : "SKIP"}
     </button>
   );
 
