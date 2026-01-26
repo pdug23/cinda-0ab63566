@@ -769,6 +769,7 @@ export async function generateDiscoveryRecommendations(
     archetypeContext: request.archetype,
     feelPreferences: request.feelPreferences,
     feelGap: request.feelGap, // Pass feel gap from rotation analysis for cinda_decides scoring
+    contrastWith: request.contrastWith, // For variety mode (Tier 3) - favor shoes different from rotation
     excludeShoeIds: currentShoes.map(s => s.shoeId),
     profile: profile,
     currentShoes: currentShoes, // For love/dislike tag modifiers

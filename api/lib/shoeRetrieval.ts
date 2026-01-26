@@ -14,7 +14,8 @@ import type {
   RunnerProfile,
   CurrentShoe,
   ChatContext,
-  FeelGapInfo
+  FeelGapInfo,
+  ContrastProfile
 } from '../types.js';
 import {
   shoeHasArchetype,
@@ -32,6 +33,7 @@ export interface RetrievalConstraints {
   stabilityNeed?: "neutral" | "stability" | "stable_feel";
   feelPreferences?: FeelPreferences;
   feelGap?: FeelGapInfo; // Feel gap from rotation analysis - overrides cinda_decides defaults
+  contrastWith?: ContrastProfile; // Favor shoes different from this profile (variety mode)
   excludeShoeIds?: string[];
   profile?: RunnerProfile; // For brand preferences and other profile-based filtering
   currentShoes?: CurrentShoe[]; // For love/dislike tag modifiers
@@ -56,6 +58,7 @@ export interface ScoredShoe {
     trailScore: number;
     loveDislikeScore: number;
     chatContextScore: number;
+    contrastScore: number;  // Bonus for variety (shoes different from current rotation)
   };
 }
 
@@ -1232,6 +1235,57 @@ function scoreChatContextModifiers(shoe: Shoe, chatContext?: ChatContext): numbe
 }
 
 /**
+ * Score contrast bonus for variety recommendations
+ * Rewards shoes that differ from current rotation profile
+ */
+function scoreContrastBonus(
+  shoe: Shoe,
+  contrastWith?: ContrastProfile
+): number {
+  if (!contrastWith) return 0;
+
+  let bonus = 0;
+
+  // Reward shoes that differ from current rotation averages
+  // +10 for 2+ difference, +5 for 1 difference on each dimension
+  if (contrastWith.cushion !== undefined) {
+    const diff = Math.abs(shoe.cushion_softness_1to5 - contrastWith.cushion);
+    if (diff >= 2) bonus += 10;
+    else if (diff === 1) bonus += 5;
+  }
+
+  if (contrastWith.bounce !== undefined) {
+    const diff = Math.abs(shoe.bounce_1to5 - contrastWith.bounce);
+    if (diff >= 2) bonus += 10;
+    else if (diff === 1) bonus += 5;
+  }
+
+  if (contrastWith.rocker !== undefined) {
+    const diff = Math.abs(shoe.rocker_1to5 - contrastWith.rocker);
+    if (diff >= 2) bonus += 10;
+    else if (diff === 1) bonus += 5;
+  }
+
+  if (contrastWith.stability !== undefined) {
+    const diff = Math.abs(shoe.stability_1to5 - contrastWith.stability);
+    if (diff >= 2) bonus += 10;
+    else if (diff === 1) bonus += 5;
+  }
+
+  if (contrastWith.groundFeel !== undefined) {
+    const diff = Math.abs(shoe.ground_feel_1to5 - contrastWith.groundFeel);
+    if (diff >= 2) bonus += 10;
+    else if (diff === 1) bonus += 5;
+  }
+
+  if (bonus > 0) {
+    console.log(`[scoreContrastBonus] ${shoe.model}: +${bonus} (differs from current rotation)`);
+  }
+
+  return bonus;
+}
+
+/**
  * Calculate total score for a shoe
  * Applies all modifiers per SCORING_MODIFIERS.md
  */
@@ -1263,6 +1317,9 @@ export function scoreShoe(
   // Chat context modifiers (injuries, fit, climate, requests)
   const chatContextModifier = scoreChatContextModifiers(shoe, constraints.chatContext);
 
+  // Contrast bonus for variety recommendations (Tier 3)
+  const contrastBonus = scoreContrastBonus(shoe, constraints.contrastWith);
+
   // Sum all scores (per spec: modifiers stack, minimum final score = 0)
   const totalScore = Math.max(0,
     archetypeScore +
@@ -1278,7 +1335,8 @@ export function scoreShoe(
     bmiModifier +
     trailPreferenceModifier +
     loveDislikeModifier +
-    chatContextModifier
+    chatContextModifier +
+    contrastBonus
   );
 
   return {
@@ -1299,6 +1357,7 @@ export function scoreShoe(
       trailScore: trailPreferenceModifier,
       loveDislikeScore: loveDislikeModifier,
       chatContextScore: chatContextModifier,
+      contrastScore: contrastBonus,
     },
   };
 }

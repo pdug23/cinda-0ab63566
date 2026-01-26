@@ -13,6 +13,7 @@ import type {
   Shoe,
   ShoeArchetype,
   FeelGapInfo,
+  ContrastProfile,
 } from '../types.js';
 
 // ============================================================================
@@ -118,6 +119,38 @@ function getCriticalArchetypes(profile: RunnerProfile): ShoeArchetype[] {
   }
 
   return critical;
+}
+
+// ============================================================================
+// CONTRAST PROFILE
+// ============================================================================
+
+/**
+ * Build a contrast profile from the user's current rotation
+ * Used for variety recommendations - favors shoes that differ from this profile
+ */
+function buildContrastProfile(
+  currentShoes: CurrentShoe[],
+  catalogue: Shoe[]
+): ContrastProfile {
+  const shoes = resolveShoes(currentShoes, catalogue);
+
+  if (shoes.length === 0) return {};
+
+  // Calculate average feel across rotation
+  const avg = (arr: number[]) => Math.round(arr.reduce((a, b) => a + b, 0) / arr.length);
+
+  const profile: ContrastProfile = {
+    cushion: avg(shoes.map(s => s.cushion_softness_1to5)),
+    stability: avg(shoes.map(s => s.stability_1to5)),
+    bounce: avg(shoes.map(s => s.bounce_1to5)),
+    rocker: avg(shoes.map(s => s.rocker_1to5)),
+    groundFeel: avg(shoes.map(s => s.ground_feel_1to5)),
+  };
+
+  console.log('[buildContrastProfile] Current rotation averages:', profile);
+
+  return profile;
 }
 
 // ============================================================================
@@ -548,6 +581,9 @@ export function classifyRotationTier(
     console.log('[classifyRotationTier] Complete rotation - analyzing feel gaps');
     const feelGaps = detectFeelGaps(currentShoes, catalogue);
 
+    // Build contrast profile to favor shoes different from current rotation
+    const contrastProfile = buildContrastProfile(currentShoes, catalogue);
+
     // Build Tier 3 result based on feel gaps
     let primary: RecommendationSlot;
     let secondary: RecommendationSlot | undefined;
@@ -568,7 +604,8 @@ export function classifyRotationTier(
       primary = {
         archetype,
         reason,
-        feelGap: toFeelGapInfo(primaryGap)  // Include feel gap info for recommendation engine
+        feelGap: toFeelGapInfo(primaryGap),  // Include feel gap info for recommendation engine
+        contrastWith: contrastProfile  // Favor shoes different from current rotation
       };
 
       // Secondary = second feel gap if exists and different dimension
@@ -577,7 +614,8 @@ export function classifyRotationTier(
         secondary = {
           archetype: secondaryGap.recommendedArchetype,
           reason: secondaryGap.reason,
-          feelGap: toFeelGapInfo(secondaryGap)
+          feelGap: toFeelGapInfo(secondaryGap),
+          contrastWith: contrastProfile
         };
       }
     } else {
@@ -585,7 +623,8 @@ export function classifyRotationTier(
       // Give a soft "you're all set" with optional exploration
       primary = {
         archetype: "daily_trainer",
-        reason: "Your rotation has great coverage and variety. If you ever want to experiment, a new daily trainer is always a safe way to try something different."
+        reason: "Your rotation has great coverage and variety. If you ever want to experiment, a new daily trainer is always a safe way to try something different.",
+        contrastWith: contrastProfile  // Still favor different shoes
       };
       secondary = undefined;
     }
@@ -598,7 +637,8 @@ export function classifyRotationTier(
         primary = {
           archetype: 'daily_trainer',
           reason: "A second daily trainer with a different feel could add variety and share the load.",
-          feelGap: primary.feelGap  // Preserve the feel gap info
+          feelGap: primary.feelGap,  // Preserve the feel gap info
+          contrastWith: contrastProfile  // Preserve contrast profile
         };
       }
     }
@@ -735,6 +775,9 @@ export function classifyRotationTier(
   console.log('[classifyRotationTier] Tier 3 - analyzing feel gaps');
   const feelGaps = detectFeelGaps(currentShoes, catalogue);
 
+  // Build contrast profile to favor shoes different from current rotation
+  const contrastProfile = buildContrastProfile(currentShoes, catalogue);
+
   // Build Tier 3 result based on feel gaps
   let primary: RecommendationSlot;
   let secondary: RecommendationSlot | undefined;
@@ -755,7 +798,8 @@ export function classifyRotationTier(
     primary = {
       archetype,
       reason,
-      feelGap: toFeelGapInfo(primaryGap)  // Include feel gap info for recommendation engine
+      feelGap: toFeelGapInfo(primaryGap),  // Include feel gap info for recommendation engine
+      contrastWith: contrastProfile  // Favor shoes different from current rotation
     };
 
     // Secondary = second feel gap if exists
@@ -764,14 +808,16 @@ export function classifyRotationTier(
       secondary = {
         archetype: secondaryGap.recommendedArchetype,
         reason: secondaryGap.reason,
-        feelGap: toFeelGapInfo(secondaryGap)
+        feelGap: toFeelGapInfo(secondaryGap),
+        contrastWith: contrastProfile
       };
     }
   } else {
     // No feel gaps detected - rotation has great variety
     primary = {
       archetype: "daily_trainer",
-      reason: "Your rotation is solid and varied. If you want to experiment, a new daily trainer is always a safe way to try something different."
+      reason: "Your rotation is solid and varied. If you want to experiment, a new daily trainer is always a safe way to try something different.",
+      contrastWith: contrastProfile  // Still favor different shoes
     };
     secondary = undefined;
   }
@@ -784,7 +830,8 @@ export function classifyRotationTier(
       primary = {
         archetype: 'daily_trainer',
         reason: "A second daily trainer with a different feel could add variety and share the load.",
-        feelGap: primary.feelGap  // Preserve the feel gap info
+        feelGap: primary.feelGap,  // Preserve the feel gap info
+        contrastWith: contrastProfile  // Preserve contrast profile
       };
     }
   }

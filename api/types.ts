@@ -305,12 +305,25 @@ export interface FeelGapInfo {
 }
 
 /**
+ * Average feel profile of current rotation
+ * Used to favor shoes that DIFFER from what the user already has (variety mode)
+ */
+export interface ContrastProfile {
+  cushion?: number;
+  stability?: number;
+  bounce?: number;
+  rocker?: number;
+  groundFeel?: number;
+}
+
+/**
  * A single recommendation slot (primary or secondary)
  */
 export interface RecommendationSlot {
   archetype: ShoeArchetype;
   reason: string;  // Why this archetype is recommended
   feelGap?: FeelGapInfo;  // Optional: feel gap that drove this recommendation
+  contrastWith?: ContrastProfile;  // Optional: favor shoes different from this profile (variety mode)
 }
 
 /**
@@ -674,6 +687,7 @@ export interface ShoeRequest {
   archetype: ShoeArchetype;
   feelPreferences: FeelPreferences;
   feelGap?: FeelGapInfo; // Optional: feel gap from rotation analysis to guide "cinda_decides" preferences
+  contrastWith?: ContrastProfile; // Optional: favor shoes different from current rotation (variety mode)
 }
 
 /**
