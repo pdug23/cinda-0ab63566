@@ -1,37 +1,26 @@
 
 
-## Plan: Add Time Estimates Under Buttons & Remove Logo from Orientation
+## Plan: Restore Logo on Orientation View
 
-### Changes Overview
+### The Problem
 
-Two small updates to the orientation view on the landing page:
+When implementing the previous plan, the logo was accidentally hidden on the orientation view by adding this condition:
 
-1. **Add subtle time estimates** beneath each button
-2. **Remove the logo** from the orientation view (keep it on the landing/splash screen)
-
----
-
-### Visual Result
-
-```text
-┌─────────────────────────────────────────┐
-│                                         │
-│   [Full analysis ↗]    [Quick match]    │
-│      ~5 minutes           ~1 minute     │
-│                                         │
-└─────────────────────────────────────────┘
+```tsx
+{viewState === "landing" && (
+  <img src={cindaLogo} ... />
+)}
 ```
 
----
+This means the logo only shows on the landing view, not on orientation.
 
-### Technical Changes
+### The Fix
 
-**File: `src/pages/Landing.tsx`**
+Change the condition so the logo is visible on **both** the landing and orientation views:
 
-#### 1. Make Logo Conditional (Hide on Orientation)
+**File: `src/pages/Landing.tsx` (line 89)**
 
-The logo element (lines 88-95) will be wrapped in a condition to only show on the landing view:
-
+From:
 ```tsx
 {viewState === "landing" && (
   <img 
@@ -44,53 +33,28 @@ The logo element (lines 88-95) will be wrapped in a condition to only show on th
 )}
 ```
 
-#### 2. Restructure Buttons with Time Estimates
-
-Replace the current side-by-side button layout (lines 189-204) with a structure that includes time estimates beneath each button:
-
+To:
 ```tsx
-<div className="flex flex-col sm:flex-row gap-4 w-full">
-  {/* Full analysis column */}
-  <div className="flex-1 flex flex-col items-center gap-1.5">
-    <Button
-      onClick={handleStartProfile}
-      variant="cta"
-      className="w-full min-h-[44px] text-sm bg-primary/10 border-primary/30 ..."
-    >
-      Full analysis <LogIn className="w-3.5 h-3.5 ml-1" />
-    </Button>
-    <span className="text-xs text-muted-foreground/60">~5 minutes</span>
-  </div>
-  
-  {/* Quick match column */}
-  <div className="flex-1 flex flex-col items-center gap-1.5">
-    <Button
-      onClick={() => navigateWithTransition("/quick-match")}
-      variant="cta"
-      className="w-full min-h-[44px] text-sm"
-    >
-      Quick match
-    </Button>
-    <span className="text-xs text-muted-foreground/60">~1 minute</span>
-  </div>
-</div>
+<img 
+  src={cindaLogo} 
+  alt="Cinda" 
+  className={`h-[80px] absolute top-[60px] left-1/2 -translate-x-1/2 z-20 ${
+    isExiting ? "animate-spin-settle" : ""
+  }`}
+/>
 ```
 
----
+Simply remove the conditional wrapper so the logo is always visible (on both landing and orientation).
 
-### Styling Details
+### Result
 
-| Element | Style |
-|---------|-------|
-| Time text | `text-xs text-muted-foreground/60` (small, subtle, 60% opacity) |
-| Gap between button and time | `gap-1.5` (6px) |
-| Column gap | `gap-4` (16px) - slightly increased for breathing room |
-
----
+- Logo appears at `top-[60px]` on landing page
+- When user clicks "FIND YOURS", the logo performs the spin-settle animation
+- Logo remains in place on the orientation page
 
 ### Files Modified
 
 | File | Change |
 |------|--------|
-| `src/pages/Landing.tsx` | Conditionally hide logo on orientation view; add time estimate spans under each button |
+| `src/pages/Landing.tsx` | Remove the `viewState === "landing"` condition from the logo |
 
