@@ -10,6 +10,7 @@ import { useProfile, DiscoveryArchetype, GapData } from "@/contexts/ProfileConte
 import { buildAPIRaceTimeFromPicker } from "@/utils/raceTime";
 import { saveGap } from "@/utils/storage";
 import { cn } from "@/lib/utils";
+import cindaLogo from "@/assets/cinda-logo-grey.png";
 
 type Status = "loading" | "success" | "no_gap" | "error";
 
@@ -227,6 +228,10 @@ const ProfileBuilderStep4Analysis = () => {
   };
 
   const getCTAText = (): string => {
+    // Tier 3 = exploration mode, softer language
+    if (analysis?.recommendations.tier === 3) {
+      return "explore these options";
+    }
     if (selectedArchetypes.length === 2) {
       return "set preferences for your new shoes";
     }
@@ -297,17 +302,36 @@ const ProfileBuilderStep4Analysis = () => {
     const { prose } = analysis.rotationSummary;
 
     return (
-      <div className="w-full mb-6">
-        <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
-          cinda's analysis
-        </h3>
-
-        {/* Prose card with typing animation - preserves original casing */}
-        <div className="bg-card/80 rounded-lg p-4 border border-card-foreground/20">
+      <div className="w-full mb-4">
+        {/* Prose card with Cinda logo and premium shimmer background */}
+        <div 
+          className="relative rounded-lg p-5 overflow-hidden"
+          style={{
+            background: "linear-gradient(135deg, hsl(215 25% 20% / 0.6) 0%, hsl(220 20% 12% / 0.8) 50%, hsl(215 25% 20% / 0.6) 100%)"
+          }}
+        >
+          {/* Soft shimmer overlay */}
+          <div 
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: "linear-gradient(110deg, transparent 20%, hsl(215 20% 60% / 0.04) 40%, hsl(215 20% 80% / 0.08) 50%, hsl(215 20% 60% / 0.04) 60%, transparent 80%)",
+              backgroundSize: "200% 100%",
+              animation: "shimmer-diagonal 4s ease-in-out infinite"
+            }}
+          />
+          
+          {/* Cinda logo with spin animation */}
+          <img 
+            src={cindaLogo}
+            alt=""
+            className="w-6 h-6 mb-3 opacity-50 animate-spin-once"
+          />
+          
+          {/* Prose content */}
           <TypewriterText
             text={prose}
             speed={40}
-            className="text-white/90 leading-relaxed"
+            className="text-white/90 leading-relaxed relative z-10"
           />
         </div>
       </div>
@@ -529,12 +553,9 @@ const ProfileBuilderStep4Analysis = () => {
 
   // Loading skeleton
   const LoadingSkeleton = () => (
-    <div className="space-y-6 animate-pulse">
-      {/* Prose skeleton */}
-      <div>
-        <div className="h-4 w-32 bg-card-foreground/10 rounded mb-4" />
-        <div className="h-24 bg-card-foreground/10 rounded-lg" />
-      </div>
+    <div className="space-y-4 animate-pulse">
+      {/* Prose skeleton - no header, matches new design */}
+      <div className="h-28 bg-card-foreground/10 rounded-lg" />
       {/* Recommendations skeleton */}
       <div>
         <div className="h-4 w-32 bg-card-foreground/10 rounded mb-4" />

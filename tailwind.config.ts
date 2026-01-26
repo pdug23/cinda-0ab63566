@@ -101,13 +101,22 @@ export default {
 				'100%': {
 					transform: 'translateX(-50%) rotate(360deg)'
 				}
+			},
+			'spin-once': {
+				'0%': {
+					transform: 'rotate(0deg)'
+				},
+				'100%': {
+					transform: 'rotate(360deg)'
+				}
 			}
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
   			'glow-pulse': 'glow-pulse 8s ease-in-out infinite',
-  			'spin-settle': 'spin-settle 0.6s ease-out'
+  			'spin-settle': 'spin-settle 0.6s ease-out',
+  			'spin-once': 'spin-once 0.6s ease-out'
   		},
 		fontFamily: {
 			sans: [
