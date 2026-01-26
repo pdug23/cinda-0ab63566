@@ -85,16 +85,14 @@ const Landing = () => {
       {(viewState === "orientation" || isExiting) && <FloatingJargon />}
 
       <OnboardingLayout centerContent transparent>
-        {/* Logo - only visible on landing, spins on transition */}
-        {viewState === "landing" && (
-          <img 
-            src={cindaLogo} 
-            alt="Cinda" 
-            className={`h-[80px] absolute top-[60px] left-1/2 -translate-x-1/2 z-20 ${
-              isExiting ? "animate-spin-settle" : ""
-            }`}
-          />
-        )}
+        {/* Logo - visible on both landing and orientation, spins on transition */}
+        <img 
+          src={cindaLogo} 
+          alt="Cinda" 
+          className={`h-[80px] absolute top-[60px] left-1/2 -translate-x-1/2 z-20 ${
+            isExiting ? "animate-spin-settle" : ""
+          }`}
+        />
 
         {viewState === "landing" && (
           <PageTransition className="absolute inset-0 flex flex-col items-center text-center px-6 z-10">
