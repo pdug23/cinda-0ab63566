@@ -47,10 +47,10 @@ const UnitToggle = ({
 );
 
 const EXPERIENCE_OPTIONS: { value: ExperienceLevel; label: string; description: string }[] = [
-  { value: "beginner", label: "beginner", description: "new to running or just getting started" },
-  { value: "intermediate", label: "intermediate", description: "running regularly for 6+ months" },
-  { value: "experienced", label: "experienced", description: "consistent training, knows your preferences" },
-  { value: "competitive", label: "competitive", description: "racing seriously, performance-focused" },
+  { value: "beginner", label: "Beginner", description: "New to running or just getting started" },
+  { value: "intermediate", label: "Intermediate", description: "Running regularly for 6+ months" },
+  { value: "experienced", label: "Experienced", description: "Consistent training, knows your preferences" },
+  { value: "competitive", label: "Competitive", description: "Racing seriously, performance-focused" },
 ];
 
 const ProfileBuilder = () => {
@@ -233,7 +233,7 @@ const ProfileBuilder = () => {
       <AnimatedBackground />
       <OnboardingLayout 
         scrollable 
-        bottomText={allOptionalsFilled ? null : "completing optional fields will help cinda better recommend shoes for how you run."}
+        bottomText={allOptionalsFilled ? null : "Completing optional fields will help Cinda better recommend shoes for how you run."}
       >
         <PageTransition className="flex flex-col flex-1 min-h-0">
         {/* Card header (fixed) */}
@@ -244,7 +244,7 @@ const ProfileBuilder = () => {
               className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              back
+              Back
             </button>
           </header>
 
@@ -256,7 +256,7 @@ const ProfileBuilder = () => {
             {/* First Name - Required */}
             <div>
               <label className="block text-card-foreground/90 mb-2" style={{ fontSize: '14px' }}>
-                first name
+                First name
               </label>
               <Input
                 type="text"
@@ -270,7 +270,7 @@ const ProfileBuilder = () => {
             {/* Age - Optional */}
             <div>
               <label className="block text-sm text-card-foreground/90 mb-2">
-                age
+                Age
                 <OptionalBadge />
               </label>
               <Input
@@ -286,7 +286,7 @@ const ProfileBuilder = () => {
             {/* Height - Optional */}
             <div>
               <label className="block text-sm text-card-foreground/90 mb-2">
-                height
+                Height
                 <OptionalBadge />
               </label>
               <div className="flex gap-2 items-center">
@@ -348,7 +348,7 @@ const ProfileBuilder = () => {
             {/* Weight - Optional */}
             <div>
               <label className="block text-sm text-card-foreground/90 mb-2">
-                weight
+                Weight
                 <OptionalBadge />
               </label>
               <div className="flex gap-2 items-center">
@@ -379,7 +379,7 @@ const ProfileBuilder = () => {
             {/* Experience Level - Required */}
             <div>
               <label className="block text-sm text-card-foreground/90 mb-3">
-                how would you describe your running experience?
+                How would you describe your running experience?
               </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {EXPERIENCE_OPTIONS.map((option) => (
@@ -410,7 +410,7 @@ const ProfileBuilder = () => {
               className="w-full min-h-[44px] text-sm"
               disabled={!canProceed}
             >
-              next
+              Next
             </Button>
           </footer>
       </PageTransition>

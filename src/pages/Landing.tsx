@@ -71,9 +71,9 @@ const Landing = () => {
   }, [viewState, prefersReducedMotion]);
 
   const steps = [
-    "tell us about you and how you run",
-    "share your current shoes (or don't)",
-    "get recommendations that actually fit your needs",
+    "Tell us about you and how you run",
+    "Share your current shoes (or don't)",
+    "Get recommendations that actually fit your needs",
   ];
 
   return (
@@ -105,7 +105,7 @@ const Landing = () => {
                 className="text-card-foreground/90 max-w-md leading-tight italic text-center"
                 style={{ fontVariantLigatures: "none", fontSize: "24px", fontWeight: 900 }}
               >
-                every runner deserves to find their perfect fit.
+                Every runner deserves to find their perfect fit.
               </h1>
             </div>
 
@@ -120,7 +120,7 @@ const Landing = () => {
                 variant="cta"
                 className="px-10 min-h-[44px] text-sm"
               >
-                find yours
+                Find yours
               </Button>
             </div>
           </PageTransition>
@@ -139,16 +139,16 @@ const Landing = () => {
                   className="text-card-foreground leading-tight italic"
                   style={{ fontVariantLigatures: "none", fontSize: "24px", fontWeight: 900 }}
                 >
-                  buying running shoes has never felt more overwhelming.
+                  Buying running shoes has never felt more overwhelming.
                 </h1>
                 <p 
                   className="text-card-foreground leading-tight italic mt-4"
                   style={{ fontVariantLigatures: "none", fontSize: "20px", fontWeight: 900 }}
                 >
-                  endless marketing. infinite options. zero clarity.
+                  Endless marketing. Infinite options. Zero clarity.
                 </p>
                 <p className="text-card-foreground/80 text-base mt-4">
-                  cinda helps you cut through the noise.
+                  Cinda helps you cut through the noise.
                 </p>
               </div>
 
@@ -190,7 +190,7 @@ const Landing = () => {
                 variant="cta"
                 className="px-10 min-h-[44px] text-sm"
               >
-                let's get started
+                Let's get started
               </Button>
             </div>
           </PageTransition>
@@ -202,7 +202,7 @@ const Landing = () => {
             onClick={() => setShowModal(true)}
             className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/50 hover:text-muted-foreground/70 transition-all cursor-pointer z-10 underline underline-offset-2 decoration-dotted decoration-muted-foreground/30 hover:decoration-solid hover:decoration-muted-foreground/50"
           >
-            how does cinda work?
+            How does Cinda work?
           </button>
         )}
 
@@ -212,7 +212,7 @@ const Landing = () => {
             onClick={() => setShowA2HSModal(true)}
             className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/50 hover:text-muted-foreground/70 transition-all cursor-pointer z-10 underline underline-offset-2 decoration-dotted decoration-muted-foreground/30 hover:decoration-solid hover:decoration-muted-foreground/50"
           >
-            add cinda to your home screen
+            Add Cinda to your home screen
           </button>
         )}
 
@@ -226,13 +226,13 @@ const Landing = () => {
                 <X className="w-4 h-4" />
               </button>
               <DialogTitle className="text-lg font-semibold text-card-foreground">
-                how does cinda work?
+                How does Cinda work?
               </DialogTitle>
             </DialogHeader>
             <div className="px-4 pt-4 pb-6">
               <p className="text-sm text-card-foreground/70 space-y-3">
-                <span className="block">cinda helps runners find shoes that suit how they actually run.</span>
-                <span className="block">instead of guessing based on brand or hype, cinda understands your preferences and looks at things like your body, pace and goals to find the right fit.</span>
+                <span className="block">Cinda helps runners find shoes that suit how they actually run.</span>
+                <span className="block">Instead of guessing based on brand or hype, Cinda understands your preferences and looks at things like your body, pace and goals to find the right fit.</span>
               </p>
             </div>
             <div className="p-4 pt-0">
@@ -241,7 +241,7 @@ const Landing = () => {
                 variant="outline"
                 className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
               >
-                got it
+                Got it
               </Button>
             </div>
           </DialogContent>

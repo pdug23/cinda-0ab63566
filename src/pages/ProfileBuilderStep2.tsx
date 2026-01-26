@@ -19,30 +19,30 @@ const OptionalBadge = () => (
 );
 
 const GOAL_OPTIONS: { value: PrimaryGoal; label: string; description: string }[] = [
-  { value: "general_fitness", label: "general fitness", description: "stay healthy and active" },
-  { value: "get_faster", label: "get faster", description: "improve times and efficiency" },
-  { value: "race_training", label: "train for race", description: "preparing for an event" },
-  { value: "injury_comeback", label: "injury comeback", description: "returning to running safely" },
+  { value: "general_fitness", label: "General fitness", description: "Stay healthy and active" },
+  { value: "get_faster", label: "Get faster", description: "Improve times and efficiency" },
+  { value: "race_training", label: "Train for race", description: "Preparing for an event" },
+  { value: "injury_comeback", label: "Injury comeback", description: "Returning to running safely" },
 ];
 
 const PATTERN_OPTIONS: { value: RunningPattern; label: string; description: string }[] = [
-  { value: "structured_training", label: "structured", description: "3+ runs/week with long runs, workouts, and recovery days" },
-  { value: "mostly_easy", label: "regular", description: "2+ runs/week, mix of easy and harder efforts" },
-  { value: "infrequent", label: "casual", description: "1 run/week or less" },
+  { value: "structured_training", label: "Structured", description: "3+ runs/week with long runs, workouts, and recovery days" },
+  { value: "mostly_easy", label: "Regular", description: "2+ runs/week, mix of easy and harder efforts" },
+  { value: "infrequent", label: "Casual", description: "1 run/week or less" },
 ];
 
 const TRAIL_OPTIONS: { value: TrailRunning; label: string; description: string }[] = [
-  { value: "most_or_all", label: "mostly trails", description: "trail shoes are a priority" },
-  { value: "infrequently", label: "occasional trails", description: "some off-road capability" },
-  { value: "want_to_start", label: "want to try trails", description: "looking to explore" },
-  { value: "no_trails", label: "road only", description: "no trail running" },
+  { value: "most_or_all", label: "Mostly trails", description: "Trail shoes are a priority" },
+  { value: "infrequently", label: "Occasional trails", description: "Some off-road capability" },
+  { value: "want_to_start", label: "Want to try trails", description: "Looking to explore" },
+  { value: "no_trails", label: "Road only", description: "No trail running" },
 ];
 
 const FOOT_STRIKE_OPTIONS: { value: FootStrike; label: string; description: string }[] = [
-  { value: "forefoot", label: "forefoot", description: "land on the ball of my foot" },
-  { value: "midfoot", label: "midfoot", description: "land evenly across my foot" },
-  { value: "heel", label: "heel", description: "land on my heel first" },
-  { value: "unsure", label: "unsure", description: "i don't know my strike pattern" },
+  { value: "forefoot", label: "Forefoot", description: "Land on the ball of my foot" },
+  { value: "midfoot", label: "Midfoot", description: "Land evenly across my foot" },
+  { value: "heel", label: "Heel", description: "Land on my heel first" },
+  { value: "unsure", label: "Unsure", description: "I don't know my strike pattern" },
 ];
 
 // Unit toggle component (matches Step 1 styling)
@@ -115,13 +115,13 @@ const ProfileBuilderStep2 = () => {
     
     const value = parseInt(trimmed, 10);
     if (isNaN(value)) {
-      setVolumeError("please enter a valid number");
+      setVolumeError("Please enter a valid number");
       return undefined as unknown as WeeklyVolume | null; // Signal error
     }
     
     const maxValue = volumeUnit === "km" ? 300 : 186;
     if (value < 0 || value > maxValue) {
-      setVolumeError(`please enter a value between 0 and ${maxValue} ${volumeUnit}`);
+      setVolumeError(`Please enter a value between 0 and ${maxValue} ${volumeUnit}`);
       return undefined as unknown as WeeklyVolume | null;
     }
     
@@ -234,7 +234,7 @@ const ProfileBuilderStep2 = () => {
       <AnimatedBackground />
       <OnboardingLayout 
         scrollable
-        bottomText={allOptionalsFilled ? null : "completing optional fields will help cinda better recommend shoes for how you run."}
+        bottomText={allOptionalsFilled ? null : "Completing optional fields will help Cinda better recommend shoes for how you run."}
       >
         <PageTransition className="flex flex-col flex-1 min-h-0">
         {/* Card header (fixed) */}
@@ -245,7 +245,7 @@ const ProfileBuilderStep2 = () => {
             className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            back
+            Back
           </button>
         </header>
 
@@ -257,7 +257,7 @@ const ProfileBuilderStep2 = () => {
           {/* Primary Goal - Required */}
           <div>
             <label className="block text-sm text-card-foreground/90 mb-3">
-              what's your primary running goal right now?
+              What's your primary running goal right now?
             </label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {GOAL_OPTIONS.map((option) => (
@@ -275,7 +275,7 @@ const ProfileBuilderStep2 = () => {
           {/* Running Pattern - Required */}
           <div>
             <label className="block text-sm text-card-foreground/90 mb-3">
-              what's your running pattern?
+              What's your running pattern?
             </label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {PATTERN_OPTIONS.map((option) => (
@@ -293,7 +293,7 @@ const ProfileBuilderStep2 = () => {
           {/* Trail Running */}
           <div>
             <label className="block text-sm text-card-foreground/90 mb-3">
-              what about trail running?
+              What about trail running?
             </label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {TRAIL_OPTIONS.map((option) => (
@@ -312,7 +312,7 @@ const ProfileBuilderStep2 = () => {
           {!isBeginner && (
             <div>
               <label className="block text-sm text-card-foreground/90 mb-3">
-                what's your foot strike pattern?
+                What's your foot strike pattern?
                 <OptionalBadge />
               </label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -333,7 +333,7 @@ const ProfileBuilderStep2 = () => {
           {!isBeginner && (
             <div>
               <label className="block text-sm text-card-foreground/90 mb-2">
-                average weekly volume
+                Average weekly volume
                 <OptionalBadge />
               </label>
               <div className="flex gap-2 items-center">
@@ -372,7 +372,7 @@ const ProfileBuilderStep2 = () => {
           {!isBeginner && (
             <div>
               <label className="block text-sm text-card-foreground/90 mb-2">
-                estimated race times
+                Estimated race times
                 <OptionalBadge />
               </label>
               <button
@@ -381,15 +381,15 @@ const ProfileBuilderStep2 = () => {
                 className="w-full h-10 px-3 text-sm rounded-md bg-card-foreground/5 border border-card-foreground/20 text-card-foreground hover:bg-card-foreground/10 transition-colors flex items-center justify-between"
               >
                 <span className={raceTime ? "text-card-foreground" : "text-card-foreground/40"}>
-                  {raceTime ? formatRaceTime(raceTime) : "tap to enter time"}
+                  {raceTime ? formatRaceTime(raceTime) : "Tap to enter time"}
                 </span>
                 <span className={raceTime ? "text-orange-400" : "text-card-foreground/40"}>
-                  {raceTime ? raceTime.distance : "select distance"}
+                  {raceTime ? raceTime.distance : "Select distance"}
                 </span>
               </button>
               <p className="mt-3 text-[13px]">
-                <span className="italic text-orange-500">what about pbs?</span>{" "}
-                <span className="text-muted-foreground">estimated race times may or may not be your pb, but should reflect your current race pace for each distance.</span>
+                <span className="italic text-orange-500">What about PBs?</span>{" "}
+                <span className="text-muted-foreground">Estimated race times may or may not be your PB, but should reflect your current race pace for each distance.</span>
               </p>
             </div>
           )}
@@ -403,7 +403,7 @@ const ProfileBuilderStep2 = () => {
             className="w-full min-h-[44px] text-sm"
             disabled={!canProceed}
           >
-            next
+            Next
           </Button>
         </footer>
 

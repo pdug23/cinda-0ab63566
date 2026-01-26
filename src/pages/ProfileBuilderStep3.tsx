@@ -39,12 +39,12 @@ const shoes = shoebaseData as Shoe[];
 
 // Run type options
 const RUN_TYPE_OPTIONS: { value: RunType; label: string }[] = [
-  { value: "all_my_runs", label: "all my runs" },
-  { value: "recovery", label: "recovery" },
-  { value: "long_runs", label: "long runs" },
-  { value: "workouts", label: "workouts" },
-  { value: "races", label: "races" },
-  { value: "trail", label: "trail" },
+  { value: "all_my_runs", label: "All my runs" },
+  { value: "recovery", label: "Recovery" },
+  { value: "long_runs", label: "Long runs" },
+  { value: "workouts", label: "Workouts" },
+  { value: "races", label: "Races" },
+  { value: "trail", label: "Trail" },
 ];
 
 // Run types that get auto-selected when "all my runs" is selected (trail excluded)
@@ -73,25 +73,25 @@ const mapShoesFromBackend = (shoes: CurrentShoe[]): CurrentShoe[] => {
 
 // Sentiment options
 const SENTIMENT_OPTIONS: { value: ShoeSentiment; label: string; icon: React.ReactNode }[] = [
-  { value: "love", label: "love it", icon: <Heart className="w-4 h-4" /> },
-  { value: "neutral", label: "neutral", icon: <Meh className="w-4 h-4" /> },
-  { value: "dislike", label: "dislike", icon: <ThumbsDown className="w-4 h-4" /> },
+  { value: "love", label: "Love it", icon: <Heart className="w-4 h-4" /> },
+  { value: "neutral", label: "Neutral", icon: <Meh className="w-4 h-4" /> },
+  { value: "dislike", label: "Dislike", icon: <ThumbsDown className="w-4 h-4" /> },
 ];
 
 // Run type explanations for tooltip
 const RUN_TYPE_EXPLANATIONS: Record<string, string> = {
-  "all my runs": "I use this shoe for everything (except trail)",
-  "recovery": "easy, slow, recovery days",
-  "long runs": "weekly long run",
-  "workouts": "tempo, intervals, hills, track sessions",
-  "races": "race day",
-  "trail": "off-road running",
+  "All my runs": "I use this shoe for everything (except trail)",
+  "Recovery": "Easy, slow, recovery days",
+  "Long runs": "Weekly long run",
+  "Workouts": "Tempo, intervals, hills, track sessions",
+  "Races": "Race day",
+  "Trail": "Off-road running",
 };
 
 // Love tags
 const LOVE_TAGS = [
-  "bouncy", "soft cushion", "lightweight", "stable", "smooth rocker",
-  "long run comfort", "fast feeling", "comfortable fit", "good grip"
+  "Bouncy", "Soft cushion", "Lightweight", "Stable", "Smooth rocker",
+  "Long run comfort", "Fast feeling", "Comfortable fit", "Good grip"
 ];
 
 // Dislike tags
@@ -365,10 +365,10 @@ const ShoeCard = ({
           {/* Run type selection */}
           <div className="mb-4">
             <div className="flex items-center gap-1.5 mb-2">
-              <label className="text-xs text-card-foreground/60">
-                what do you use this shoe for?
-              </label>
-              <AdaptiveTooltip title="run types">
+            <label className="text-xs text-card-foreground/60">
+              What do you use this shoe for?
+            </label>
+              <AdaptiveTooltip title="Run types">
                 <ul className="space-y-1.5">
                   {Object.entries(RUN_TYPE_EXPLANATIONS).map(([type, explanation]) => (
                     <li key={type}>
@@ -394,7 +394,7 @@ const ShoeCard = ({
           {/* Sentiment selection */}
           <div>
             <label className="block text-xs text-card-foreground/60 mb-2">
-              how do you feel about this shoe?
+              How do you feel about this shoe?
             </label>
             <div className="grid grid-cols-3 gap-2">
               {SENTIMENT_OPTIONS.map((option) => (
@@ -413,7 +413,7 @@ const ShoeCard = ({
           {sentiment === "love" && (
             <div className="mt-4">
               <label className="block text-xs text-card-foreground/60 mb-2">
-                what do you love about it? <span className="text-card-foreground/40">(optional)</span>
+                What do you love about it? <span className="text-card-foreground/40">(optional)</span>
               </label>
               <div className="flex flex-wrap gap-2">
                 {LOVE_TAGS.map((tag) => (
@@ -432,7 +432,7 @@ const ShoeCard = ({
           {sentiment === "dislike" && (
             <div className="mt-4">
               <label className="block text-xs text-card-foreground/60 mb-2">
-                what's the issue? <span className="text-card-foreground/40">(optional)</span>
+                What's the issue? <span className="text-card-foreground/40">(optional)</span>
               </label>
               <div className="flex flex-wrap gap-2">
                 {DISLIKE_TAGS.map((tag) => (
@@ -732,14 +732,14 @@ const ProfileBuilderStep3 = () => {
               className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              back
+              Back
             </button>
             <button
               type="button"
               onClick={handleSkipClick}
               className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
             >
-              {hasCompletedShoe ? 'continue' : 'skip'}
+              {hasCompletedShoe ? 'Continue' : 'Skip'}
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </header>
@@ -751,7 +751,7 @@ const ProfileBuilderStep3 = () => {
           >
             {/* Intro sentence */}
             <p className="text-sm text-card-foreground/90 mb-3">
-              add your current shoes (or skip if you don't have any)
+              Add your current shoes (or skip if you don't have any)
             </p>
 
             {/* Search input */}
@@ -768,7 +768,7 @@ const ProfileBuilderStep3 = () => {
                   // Delay to allow click on dropdown
                   setTimeout(() => setShowDropdown(false), 200);
                 }}
-                placeholder="search for your shoes..."
+                placeholder="Search for your shoes..."
                 className="w-full bg-card-foreground/5 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/40"
               />
 
@@ -797,7 +797,7 @@ const ProfileBuilderStep3 = () => {
                     onClick={() => setCustomShoeModalOpen(true)}
                     className="w-full px-4 py-3 text-left text-sm text-orange-500 hover:bg-orange-500/10 hover:text-orange-400 transition-colors"
                   >
-                    can't find your shoe? add it manually
+                    Can't find your shoe? Add it manually
                   </button>
                 </div>
               )}
@@ -835,7 +835,7 @@ const ProfileBuilderStep3 = () => {
               className="w-full min-h-[44px] text-sm"
               disabled={!allShoesComplete || currentShoes.length === 0}
             >
-              next
+              Next
             </Button>
           </footer>
 
@@ -857,7 +857,7 @@ const ProfileBuilderStep3 = () => {
                   <X className="w-4 h-4" />
                 </button>
                 <DialogTitle className="text-lg font-semibold text-card-foreground">
-                  confirm your rotation
+                  Confirm your rotation
                 </DialogTitle>
               </DialogHeader>
               <div className="px-4 pt-4 pb-6">
@@ -875,14 +875,14 @@ const ProfileBuilderStep3 = () => {
                   variant="outline"
                   className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
                 >
-                  looks good
+                  Looks good
                 </Button>
                 <Button
                   onClick={() => setConfirmShoesModalOpen(false)}
                   variant="outline"
                   className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
                 >
-                  go back
+                  Go back
                 </Button>
               </div>
             </DialogContent>
@@ -899,12 +899,12 @@ const ProfileBuilderStep3 = () => {
                   <X className="w-4 h-4" />
                 </button>
                 <DialogTitle className="text-lg font-semibold text-card-foreground">
-                  are you sure?
+                  Are you sure?
                 </DialogTitle>
               </DialogHeader>
               <div className="px-4 pt-4 pb-6">
                 <p className="text-sm text-card-foreground/70">
-                  skipping means cinda won't be able to analyse your rotation
+                  Skipping means Cinda won't be able to analyse your rotation
                 </p>
               </div>
               <div className="p-4 pt-0 flex flex-col gap-2">
@@ -913,14 +913,14 @@ const ProfileBuilderStep3 = () => {
                   variant="outline"
                   className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
                 >
-                  skip anyway
+                  Skip anyway
                 </Button>
                 <Button
                   onClick={() => setConfirmSkipModalOpen(false)}
                   variant="outline"
                   className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
                 >
-                  go back
+                  Go back
                 </Button>
               </div>
             </DialogContent>
@@ -940,7 +940,7 @@ const ProfileBuilderStep3 = () => {
                   <X className="w-4 h-4" />
                 </button>
                 <DialogTitle className="text-lg font-semibold text-card-foreground">
-                  enter shoe name
+                  Enter shoe name
                 </DialogTitle>
               </DialogHeader>
               <div className="px-4 pt-4">
@@ -964,7 +964,7 @@ const ProfileBuilderStep3 = () => {
                   className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
                   disabled={!customShoeName.trim()}
                 >
-                  add shoe
+                  Add shoe
                 </Button>
                 <Button
                   onClick={() => {
@@ -974,7 +974,7 @@ const ProfileBuilderStep3 = () => {
                   variant="outline"
                   className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
                 >
-                  cancel
+                  Cancel
                 </Button>
               </div>
             </DialogContent>
