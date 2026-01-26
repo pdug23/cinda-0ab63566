@@ -195,8 +195,8 @@ function detectFeelGaps(
       currentRange: { min: Math.min(...rockers), max: rockerMax },
       suggestion: 'high',
       reason: shoeCount === 1
-        ? "Your shoe doesn't have much rocker. A rocker shoe could ease joint stress and offer a different ride."
-        : "None of your shoes have an aggressive rocker. A rocker shoe could ease joint stress and offer a different ride.",
+        ? "Your shoe doesn't have much rocker. A shoe with an aggressive rocker could ease joint stress and offer a different ride."
+        : "None of your shoes have an aggressive rocker. A shoe with an aggressive rocker could ease joint stress and offer a different ride.",
       recommendedArchetype: 'daily_trainer'
     });
   }
@@ -551,6 +551,18 @@ export function classifyRotationTier(
       secondary = undefined;
     }
 
+    // Beginners only get one practical recommendation
+    if (profile.experience === 'beginner') {
+      secondary = undefined;
+      // Swap recovery_shoe to daily_trainer for beginners - more practical
+      if (primary.archetype === 'recovery_shoe') {
+        primary = {
+          archetype: 'daily_trainer',
+          reason: "A second daily trainer with a different feel could add variety and share the load."
+        };
+      }
+    }
+
     const feelGapNames = feelGaps.length > 0
       ? feelGaps.map(g => g.dimension).join(", ")
       : "none";
@@ -717,6 +729,18 @@ export function classifyRotationTier(
       reason: "Your rotation is solid and varied. If you want to experiment, a new daily trainer is always a safe way to try something different."
     };
     secondary = undefined;
+  }
+
+  // Beginners only get one practical recommendation
+  if (profile.experience === 'beginner') {
+    secondary = undefined;
+    // Swap recovery_shoe to daily_trainer for beginners - more practical
+    if (primary.archetype === 'recovery_shoe') {
+      primary = {
+        archetype: 'daily_trainer',
+        reason: "A second daily trainer with a different feel could add variety and share the load."
+      };
+    }
   }
 
   const feelGapNames = feelGaps.length > 0
