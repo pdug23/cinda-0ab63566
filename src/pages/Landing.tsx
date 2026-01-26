@@ -120,8 +120,8 @@ const Landing = () => {
             >
               <Button
                 onClick={handleStartOrientation}
-                variant="cta"
-                className="px-10 min-h-[44px] text-sm"
+                variant="outline"
+                className="px-10 min-h-[44px] text-xs uppercase"
               >
                 Find yours
               </Button>
@@ -192,18 +192,18 @@ const Landing = () => {
                 <div className="flex-1 flex flex-col items-center gap-1.5">
                   <Button
                     onClick={handleStartProfile}
-                    variant="cta"
-                    className="w-full min-h-[44px] text-sm bg-primary/10 border-primary/30 text-card-foreground hover:bg-primary/20 hover:border-primary/50 hover:shadow-[0_2px_20px_hsl(var(--primary)/0.25)]"
+                    variant="outline"
+                    className="w-full min-h-[44px] text-xs uppercase bg-primary/10 border-primary/30 text-card-foreground hover:bg-primary/20 hover:border-primary/50 hover:shadow-[0_2px_20px_hsl(var(--primary)/0.25)]"
                   >
-                    Full analysis <LogIn className="w-3.5 h-3.5 ml-1" />
+                    Full analysis
                   </Button>
                   <span className="text-xs text-muted-foreground/60">~5 minutes</span>
                 </div>
                 <div className="flex-1 flex flex-col items-center gap-1.5">
                   <Button
                     onClick={() => navigateWithTransition("/quick-match")}
-                    variant="cta"
-                    className="w-full min-h-[44px] text-sm"
+                    variant="outline"
+                    className="w-full min-h-[44px] text-xs uppercase"
                   >
                     Quick match
                   </Button>
