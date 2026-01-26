@@ -303,7 +303,7 @@ const ProfileBuilderStep4Analysis = () => {
 
     return (
       <div className="w-full mb-4">
-        <div className="bg-card/80 rounded-lg p-4 border-2 border-slate-400">
+        <div className="bg-card/80 rounded-lg p-4 border-2 border-slate-500/50">
           <p className="text-sm text-white/90 leading-relaxed">
             {prose}
           </p>
@@ -375,7 +375,7 @@ const ProfileBuilderStep4Analysis = () => {
     if (!hasSecondary) {
       return (
         <div className="w-full mb-4">
-          <div className="bg-card/80 rounded-lg p-4 border-2 border-slate-400">
+          <div className="bg-card/80 rounded-lg p-4 border-2 border-slate-500/50">
             <p className="text-white mb-3">
               {getIntroText(primary.archetype)}
             </p>
@@ -393,7 +393,7 @@ const ProfileBuilderStep4Analysis = () => {
         <div
           className={cn(
             "bg-card/80 rounded-lg p-4 border-2 transition-all",
-            primaryIncluded ? "border-slate-400" : "border-slate-600/30 opacity-50"
+            primaryIncluded ? "border-slate-500/50" : "border-slate-600/30 opacity-50"
           )}
         >
           <div className="flex items-start justify-between gap-3">
@@ -411,7 +411,7 @@ const ProfileBuilderStep4Analysis = () => {
         <div
           className={cn(
             "bg-card/80 rounded-lg p-4 border-2 transition-all",
-            secondaryIncluded ? "border-slate-400" : "border-slate-600/30 opacity-50"
+            secondaryIncluded ? "border-slate-500/50" : "border-slate-600/30 opacity-50"
           )}
         >
           <div className="flex items-start justify-between gap-3">
@@ -474,16 +474,16 @@ const ProfileBuilderStep4Analysis = () => {
                 <div
                   className={cn(
                     "bg-card/80 rounded-lg border-2 transition-all",
-                    isSevere ? "border-red-500" : "border-green-500"
+                    isSevere ? "border-red-500/60" : "border-green-500/60"
                   )}
                 >
                   {/* Collapsed header - always visible */}
                   <CollapsibleTrigger className="w-full p-4 flex items-center justify-between cursor-pointer">
                     <div className="flex items-center gap-2">
                       {isSevere ? (
-                        <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                        <AlertTriangle className="w-4 h-4 text-red-500/80 flex-shrink-0" />
                       ) : (
-                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                        <Check className="w-4 h-4 text-green-500/80 flex-shrink-0" />
                       )}
                       <p className="text-white font-medium text-left">{item.shoe.full_name}</p>
                     </div>
