@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle, Check, ArrowLeft, ChevronDown } from "lucide-react";
+import { AlertTriangle, Check, ArrowLeft, ChevronDown, X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
@@ -112,6 +118,7 @@ const ProfileBuilderStep4Analysis = () => {
   const [selectedArchetypes, setSelectedArchetypes] = useState<string[]>([]);
   const [rotationSummary, setRotationSummary] = useState<RotationShoeSummary[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [removalTarget, setRemovalTarget] = useState<string | null>(null);
 
   const analyzeRotation = async () => {
     setStatus("loading");
@@ -387,74 +394,140 @@ const ProfileBuilderStep4Analysis = () => {
       );
     }
 
-    // Two recommendations with "Not for me" toggle
-    return (
-      <div className="w-full mb-4 flex flex-col gap-3">
-        <div
-          className={cn(
-            "bg-card/80 rounded-lg p-4 border-2 transition-all",
-            primaryIncluded ? "border-slate-500/50" : "border-slate-600/30 opacity-50"
-          )}
-        >
-          <div className="flex items-start justify-between gap-3">
-            <p className="text-white">
-              {getIntroText(primary.archetype)}
-            </p>
-            <NotForMeToggle
-              isSkipped={!primaryIncluded}
-              onToggle={() => handleToggleArchetype(primary.archetype)}
-              canSkip={canSkipPrimary}
-            />
-          </div>
-          <p className="text-sm text-gray-300 mt-3">{primary.reason}</p>
-        </div>
-        <div
-          className={cn(
-            "bg-card/80 rounded-lg p-4 border-2 transition-all",
-            secondaryIncluded ? "border-slate-500/50" : "border-slate-600/30 opacity-50"
-          )}
-        >
-          <div className="flex items-start justify-between gap-3">
-            <p className="text-white">
-              {getIntroText(secondary.archetype)}
-            </p>
-            <NotForMeToggle
-              isSkipped={!secondaryIncluded}
-              onToggle={() => handleToggleArchetype(secondary.archetype)}
-              canSkip={canSkipSecondary}
-            />
-          </div>
-          <p className="text-sm text-gray-300 mt-3">{secondary.reason}</p>
+    // Handle confirmation of removal
+    const handleConfirmRemoval = () => {
+      if (removalTarget) {
+        handleToggleArchetype(removalTarget);
+        setRemovalTarget(null);
+      }
+    };
+
+    // Remove button (X icon)
+    const RemoveButton = ({
+      onRemove,
+      canRemove,
+    }: {
+      onRemove: () => void;
+      canRemove: boolean;
+    }) => (
+      <button
+        onClick={onRemove}
+        disabled={!canRemove}
+        className={cn(
+          "w-6 h-6 rounded-full border flex items-center justify-center transition-all flex-shrink-0",
+          "bg-transparent border-slate-600 text-slate-400",
+          canRemove && "hover:border-red-500/60 hover:text-red-400",
+          !canRemove && "opacity-40 cursor-not-allowed"
+        )}
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
+    );
+
+    // Add back button (+ icon)
+    const AddBackButton = ({ onAdd }: { onAdd: () => void }) => (
+      <button
+        onClick={onAdd}
+        className="w-6 h-6 rounded-full border flex items-center justify-center transition-all flex-shrink-0 bg-transparent border-slate-500 text-slate-400 hover:border-primary/60 hover:text-primary"
+      >
+        <Plus className="w-3.5 h-3.5" />
+      </button>
+    );
+
+    // Collapsed summary for removed recommendation
+    const CollapsedRecommendation = ({
+      archetype,
+      onAdd,
+    }: {
+      archetype: string;
+      onAdd: () => void;
+    }) => (
+      <div className="bg-card/40 rounded-lg px-4 py-3 border border-slate-600/30 opacity-60">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-slate-400 text-sm">
+            {tier === 3 ? "You could explore a " : "You'd benefit from a "}
+            <span className="font-medium">{formatArchetype(archetype).toLowerCase()}</span>
+          </p>
+          <AddBackButton onAdd={onAdd} />
         </div>
       </div>
     );
-  };
 
-  // Skip/Include toggle button
-  const NotForMeToggle = ({
-    isSkipped,
-    onToggle,
-    canSkip,
-  }: {
-    isSkipped: boolean;
-    onToggle: () => void;
-    canSkip: boolean;
-  }) => (
-    <button
-      onClick={() => canSkip && onToggle()}
-      disabled={!canSkip && !isSkipped}
-      className={cn(
-        "px-2.5 py-0.5 rounded-full border transition-all whitespace-nowrap flex-shrink-0",
-        "text-[10px] tracking-wide font-medium",
-        isSkipped
-          ? "bg-slate-500/30 border-slate-400 text-white"
-          : "bg-transparent border-slate-600 text-slate-400 hover:border-slate-500",
-        !canSkip && !isSkipped && "opacity-40 cursor-not-allowed"
-      )}
-    >
-      {isSkipped ? "INCLUDE" : "SKIP"}
-    </button>
-  );
+    // Two recommendations with X/+ remove/add pattern
+    return (
+      <div className="w-full mb-4 flex flex-col gap-3">
+        {/* Primary recommendation */}
+        {primaryIncluded ? (
+          <div className="bg-card/80 rounded-lg p-4 border-2 border-slate-500/50 transition-all">
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-white">
+                {getIntroText(primary.archetype)}
+              </p>
+              <RemoveButton
+                onRemove={() => setRemovalTarget(primary.archetype)}
+                canRemove={canSkipPrimary}
+              />
+            </div>
+            <p className="text-sm text-gray-300 mt-3">{primary.reason}</p>
+          </div>
+        ) : (
+          <CollapsedRecommendation
+            archetype={primary.archetype}
+            onAdd={() => handleToggleArchetype(primary.archetype)}
+          />
+        )}
+
+        {/* Secondary recommendation */}
+        {secondaryIncluded ? (
+          <div className="bg-card/80 rounded-lg p-4 border-2 border-slate-500/50 transition-all">
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-white">
+                {getIntroText(secondary.archetype)}
+              </p>
+              <RemoveButton
+                onRemove={() => setRemovalTarget(secondary.archetype)}
+                canRemove={canSkipSecondary}
+              />
+            </div>
+            <p className="text-sm text-gray-300 mt-3">{secondary.reason}</p>
+          </div>
+        ) : (
+          <CollapsedRecommendation
+            archetype={secondary.archetype}
+            onAdd={() => handleToggleArchetype(secondary.archetype)}
+          />
+        )}
+
+        {/* Remove confirmation modal */}
+        <Dialog open={!!removalTarget} onOpenChange={() => setRemovalTarget(null)}>
+          <DialogContent className="max-w-sm bg-card border-border/20 p-0 gap-0">
+            <DialogHeader className="p-4 pb-0">
+              <DialogTitle className="text-card-foreground">Remove this recommendation?</DialogTitle>
+            </DialogHeader>
+            <div className="px-4 pt-4 pb-6">
+              <p className="text-sm text-card-foreground/70">
+                You can add it back at any time.
+              </p>
+            </div>
+            <div className="flex gap-3 p-4 pt-0">
+              <button
+                onClick={() => setRemovalTarget(null)}
+                className="flex-1 px-4 py-2 rounded-lg border border-border/40 text-muted-foreground transition-colors hover:border-primary/60 hover:text-primary hover:bg-primary/5"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmRemoval}
+                className="flex-1 px-4 py-2 rounded-lg border border-border/40 text-muted-foreground transition-colors hover:border-primary/60 hover:text-primary hover:bg-primary/5"
+              >
+                Remove
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  };
 
   // Note: Old RecommendationCard and RecommendationsSection removed - now using RecommendationBoxSection
 
