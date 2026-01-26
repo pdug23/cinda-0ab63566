@@ -233,6 +233,16 @@ function buildUserPrompt(context: SummaryContext): string {
     ? `- Weekly volume: ${context.weeklyVolume.value} ${context.weeklyVolume.unit}`
     : '';
 
+  // Check for load resilience warning
+  const loadResilienceWarning = context.health.loadResilience < 70
+    ? ' ⚠️ LOW - not enough shoes for their volume, EMPHASIZE THIS'
+    : '';
+
+  // Check for high-volume small rotation
+  const isHighVolumeSmallRotation = context.weeklyVolume &&
+    context.weeklyVolume.value >= 50 &&
+    context.shoes.length <= 2;
+
   return `Analyze this runner's shoe rotation and generate a summary.
 
 ## Runner Profile
@@ -246,10 +256,11 @@ ${shoesSection}
 
 ## Rotation Health Scores (0-100)
 - Coverage: ${context.health.coverage} (do they have shoes for their needs?)
+- Load Resilience: ${context.health.loadResilience}${loadResilienceWarning}
 - Variety: ${context.health.variety} (range of different feels?)
-- Load Resilience: ${context.health.loadResilience} (enough shoes for their volume?)
 - Goal Alignment: ${context.health.goalAlignment} (rotation supports their goal?)
 - Overall: ${context.health.overall}
+${isHighVolumeSmallRotation ? '\n⚠️ HIGH VOLUME ON SMALL ROTATION: This runner is doing 50+ km/week on only ' + context.shoes.length + ' shoe(s). Load distribution is a critical concern.' : ''}
 
 ## Recommendation Tier
 Tier ${context.tier} (${context.confidence} confidence)
@@ -265,7 +276,9 @@ ${context.secondaryGap ? `Secondary recommendation: ${context.secondaryGap.arche
 Generate a rotation summary with:
 
 1. **prose**: 2-3 sentences describing their rotation naturally.
-   - Mention specific shoe names
+   - You MUST mention ALL shoes by name (e.g., "The Clifton 10 handles recovery, while the Pegasus 41 covers daily runs")
+   - For single-shoe rotations, name the shoe and what it covers
+   - For multi-shoe rotations (3+), briefly describe the role of each shoe
    - For Tier 1: acknowledge what they have, then highlight the gap
    - For Tier 2: acknowledge good coverage, suggest the improvement
    - For Tier 3: celebrate the rotation, offer exploration idea
@@ -285,6 +298,9 @@ Generate a rotation summary with:
 
 Additional guidance:
 - If weekly volume is provided, reference it when discussing load or shoe count (e.g., "At 60km per week...")
+- For runners doing 50km+ per week on 1-2 shoes, ALWAYS emphasize load distribution and injury prevention - this is a critical concern
+- When load resilience score is below 70, lead with the volume/load issue before discussing performance gaps
+- Frame load issues in terms of injury prevention and shoe longevity, not just performance
 - If a shoe has a MISUSE warning, address it directly in the prose - this is important feedback
 - If the user has love/dislike tags, you can reference what they enjoy (e.g., "Since you love bouncy shoes...")
 - Be specific about misuse: "Using a race shoe for recovery runs wears it out without benefit"

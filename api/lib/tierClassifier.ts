@@ -131,6 +131,12 @@ const TIER_1_REASONS: Record<ShoeArchetype, string> = {
   "trail_shoe": "You're running trails but don't have trail-specific shoes.",
 };
 
+// Load resilience specific reasons
+const LOAD_RESILIENCE_REASONS = {
+  need_load_sharing: "At your weekly volume, one shoe is taking too much punishment. Adding another daily trainer would spread the load and reduce injury risk.",
+  high_volume_small_rotation: "You're running high mileage on a small rotation. A second daily trainer would help protect your legs and extend the life of your shoes.",
+};
+
 const TIER_2_REASONS = {
   no_plates: "A plated shoe could help you get more from your speed sessions.",
   low_variety: "Your shoes are similar in feel - adding variety could reduce injury risk.",
@@ -212,7 +218,7 @@ export function classifyRotationTier(
   // Check health thresholds
   const hasCoverageGap = health.coverage < 70;
   const hasGoalAlignmentGap = health.goalAlignment < 50;
-  const hasLoadResilienceGap = health.loadResilience < 50;
+  const hasLoadResilienceGap = health.loadResilience < 70; // Changed from 50 to catch more cases
 
   // Check for critical missing archetypes (user's suggested addition)
   const criticalArchetypes = getCriticalArchetypes(profile);
@@ -224,47 +230,105 @@ export function classifyRotationTier(
   // Tier 1 triggers
   const isTier1 = hasCoverageGap || hasGoalAlignmentGap || hasLoadResilienceGap || hasCriticalMissing;
 
+  // Check if this is a high-volume load resilience issue
+  const volumeKm = getVolumeKm(profile);
+  const isHighVolumeLoadIssue = hasLoadResilienceGap && volumeKm >= 50;
+
+  if (isHighVolumeLoadIssue) {
+    console.log('[classifyRotationTier] Load resilience issue:', {
+      loadResilience: health.loadResilience,
+      weeklyVolume: profile.weeklyVolume,
+      shoeCount: currentShoes.length
+    });
+  }
+
   if (isTier1) {
     // Determine primary gap using priority order
     const priorityOrder = getPriorityArchetypes(profile);
     const missing = analysis.missingArchetypes;
 
-    // Find highest priority missing archetype
     let primaryArchetype: ShoeArchetype | undefined;
-    for (const archetype of priorityOrder) {
-      if (missing.includes(archetype)) {
-        primaryArchetype = archetype;
-        break;
+    let primaryReason: string | undefined;
+
+    // Special handling for high-volume load resilience issues
+    // Load sharing takes priority over performance shoes
+    if (isHighVolumeLoadIssue && currentShoes.length < 3) {
+      // Check if they have a daily trainer
+      const hasDailyTrainer = analysis.coveredArchetypes.includes("daily_trainer");
+
+      if (!hasDailyTrainer) {
+        // No daily trainer - recommend one
+        primaryArchetype = "daily_trainer";
+        primaryReason = TIER_1_REASONS["daily_trainer"];
+      } else if (currentShoes.length === 1) {
+        // Only one shoe - recommend another daily trainer for load sharing
+        primaryArchetype = "daily_trainer";
+        primaryReason = LOAD_RESILIENCE_REASONS.need_load_sharing;
+      } else {
+        // 2 shoes but still load issue - recommend daily trainer
+        primaryArchetype = "daily_trainer";
+        primaryReason = LOAD_RESILIENCE_REASONS.high_volume_small_rotation;
       }
     }
 
-    // Fallback to first missing if none in priority
-    if (!primaryArchetype && missing.length > 0) {
-      primaryArchetype = missing[0];
-    }
-
-    // If still no archetype, use goal-based default
+    // If not a load issue or load issue handled, use normal priority
     if (!primaryArchetype) {
-      primaryArchetype = profile.primaryGoal === "race_training" ? "workout_shoe" :
-                         profile.primaryGoal === "get_faster" ? "workout_shoe" :
-                         profile.primaryGoal === "injury_comeback" ? "recovery_shoe" :
-                         "daily_trainer";
+      // Find highest priority missing archetype
+      for (const archetype of priorityOrder) {
+        if (missing.includes(archetype)) {
+          primaryArchetype = archetype;
+          break;
+        }
+      }
+
+      // Fallback to first missing if none in priority
+      if (!primaryArchetype && missing.length > 0) {
+        primaryArchetype = missing[0];
+      }
+
+      // If still no archetype, use goal-based default
+      if (!primaryArchetype) {
+        primaryArchetype = profile.primaryGoal === "race_training" ? "workout_shoe" :
+                           profile.primaryGoal === "get_faster" ? "workout_shoe" :
+                           profile.primaryGoal === "injury_comeback" ? "recovery_shoe" :
+                           "daily_trainer";
+      }
     }
 
     const primary: RecommendationSlot = {
       archetype: primaryArchetype,
-      reason: TIER_1_REASONS[primaryArchetype],
+      reason: primaryReason || TIER_1_REASONS[primaryArchetype],
     };
 
     // Find secondary gap (different from primary)
     let secondary: RecommendationSlot | undefined;
-    for (const archetype of priorityOrder) {
-      if (missing.includes(archetype) && archetype !== primaryArchetype) {
-        secondary = {
-          archetype,
-          reason: TIER_1_REASONS[archetype],
-        };
-        break;
+
+    // For high-volume load issues, secondary should be a performance shoe based on goal
+    if (isHighVolumeLoadIssue && primaryArchetype === "daily_trainer") {
+      // Suggest a performance shoe as secondary based on goal
+      if (profile.primaryGoal === "race_training") {
+        if (!analysis.coveredArchetypes.includes("race_shoe")) {
+          secondary = { archetype: "race_shoe", reason: TIER_1_REASONS["race_shoe"] };
+        } else if (!analysis.coveredArchetypes.includes("workout_shoe")) {
+          secondary = { archetype: "workout_shoe", reason: TIER_1_REASONS["workout_shoe"] };
+        }
+      } else if (profile.primaryGoal === "get_faster") {
+        if (!analysis.coveredArchetypes.includes("workout_shoe")) {
+          secondary = { archetype: "workout_shoe", reason: TIER_1_REASONS["workout_shoe"] };
+        }
+      }
+    }
+
+    // If no secondary yet, find from priority order
+    if (!secondary) {
+      for (const archetype of priorityOrder) {
+        if (missing.includes(archetype) && archetype !== primaryArchetype) {
+          secondary = {
+            archetype,
+            reason: TIER_1_REASONS[archetype],
+          };
+          break;
+        }
       }
     }
 
