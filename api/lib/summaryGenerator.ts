@@ -297,6 +297,7 @@ Generate a rotation summary with:
    - Phrase as actionable: "Add a..." or "Consider a..."
 
 Additional guidance:
+- NEVER mention specific health scores or numbers to the user (e.g., "variety score of 13", "coverage of 85%") - these are internal metrics
 - If weekly volume is provided, reference it when discussing load or shoe count (e.g., "At 60km per week...")
 - For runners doing 50km+ per week on 1-2 shoes, ALWAYS emphasize load distribution and injury prevention - this is a critical concern
 - When load resilience score is below 70, lead with the volume/load issue before discussing performance gaps
@@ -304,6 +305,16 @@ Additional guidance:
 - If a shoe has a MISUSE warning, address it directly in the prose - this is important feedback
 - If the user has love/dislike tags, you can reference what they enjoy (e.g., "Since you love bouncy shoes...")
 - Be specific about misuse: "Using a race shoe for recovery runs wears it out without benefit"
+
+Complete rotation guidance (when coverage is 100% and Tier 3):
+- The rotation is COMPLETE - celebrate this achievement genuinely
+- Tone should be warm and congratulatory, not clinical
+- Use phrases like "covers all your training needs", "well-rounded rotation", "solid setup", "you're set"
+- Do NOT use "However" or "That said" to pivot to recommendations - keep the celebration pure
+- Any recommendations should be framed as OPTIONAL exploration, not necessities
+- Use phrases like "If you're ever curious...", "For fun, you could explore...", "for variety" - NOT "you need" or "you'd benefit from"
+- For improvements, prefer empty array or very soft suggestions like "If you want to explore..."
+- Never suggest they "need" something when coverage is 100%
 
 Respond with this exact JSON structure:
 {

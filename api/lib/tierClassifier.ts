@@ -149,6 +149,9 @@ const TIER_3_REASONS = {
   high_rocker: "A rocker shoe could give your joints a break with a different gait.",
   max_cushion: "A max-cushion shoe is great for easy days and trying something different.",
   firm_option: "A firmer shoe strengthens feet and adds feel variety.",
+  // Complete rotation reasons
+  complete_rotation: "Your rotation covers all your training needs. If you're looking for variety, a shoe with a different feel could be a fun experiment.",
+  complete_low_variety: "Your rotation is solid. If you want to explore, a shoe with contrasting cushion or drop could be interesting.",
 };
 
 // ============================================================================
@@ -358,6 +361,136 @@ export function classifyRotationTier(
   }
 
   // =========================================================================
+  // CHECK FOR COMPLETE ROTATION - Skip Tier 2 if rotation is complete
+  // =========================================================================
+
+  // A complete rotation should go straight to Tier 3 exploration
+  const isCompleteRotation =
+    health.coverage === 100 &&
+    health.loadResilience >= 70 &&
+    analysis.missingArchetypes.length === 0;
+
+  if (isCompleteRotation) {
+    console.log('[classifyRotationTier] Complete rotation detected:', {
+      coverage: health.coverage,
+      loadResilience: health.loadResilience,
+      variety: health.variety,
+      downgradingToTier3: true
+    });
+
+    // Skip Tier 2, go straight to Tier 3 exploration
+    // Even if variety is low, frame it as exploration not necessity
+    const tier3Triggers: Array<{ archetype: ShoeArchetype; reason: string; triggerName: string }> = [];
+
+    const dropRange = getDropRange(currentShoes, catalogue);
+    const cushionRange = getCushionRange(currentShoes, catalogue);
+    const rockerRange = getRockerRange(currentShoes, catalogue);
+
+    // For complete rotations with low variety, recommend based on feel gaps
+    if (health.variety < 30) {
+      // If all high cushion, suggest firmer
+      if (cushionRange.min > 2) {
+        tier3Triggers.push({
+          archetype: "workout_shoe",
+          reason: TIER_3_REASONS.complete_low_variety,
+          triggerName: "complete_low_variety_firm",
+        });
+      }
+      // If all low cushion, suggest more cushion
+      else if (cushionRange.max < 4) {
+        tier3Triggers.push({
+          archetype: "recovery_shoe",
+          reason: TIER_3_REASONS.complete_low_variety,
+          triggerName: "complete_low_variety_cushion",
+        });
+      }
+      // If all high drop, suggest lower
+      else if (dropRange.min > 6) {
+        tier3Triggers.push({
+          archetype: "workout_shoe",
+          reason: TIER_3_REASONS.zero_drop,
+          triggerName: "complete_low_variety_drop",
+        });
+      }
+    }
+
+    // Standard Tier 3 exploration checks
+    if (dropRange.min > 4) {
+      tier3Triggers.push({
+        archetype: "workout_shoe",
+        reason: TIER_3_REASONS.zero_drop,
+        triggerName: "zero_drop",
+      });
+    }
+    if (rockerRange.max < 4) {
+      tier3Triggers.push({
+        archetype: "daily_trainer",
+        reason: TIER_3_REASONS.high_rocker,
+        triggerName: "high_rocker",
+      });
+    }
+    if (cushionRange.max < 5) {
+      tier3Triggers.push({
+        archetype: "recovery_shoe",
+        reason: TIER_3_REASONS.max_cushion,
+        triggerName: "max_cushion",
+      });
+    }
+    if (cushionRange.min > 2) {
+      tier3Triggers.push({
+        archetype: "race_shoe",
+        reason: TIER_3_REASONS.firm_option,
+        triggerName: "firm_option",
+      });
+    }
+
+    // Build Tier 3 result for complete rotation
+    let primary: RecommendationSlot;
+    let secondary: RecommendationSlot | undefined;
+
+    if (tier3Triggers.length > 0) {
+      primary = {
+        archetype: tier3Triggers[0].archetype,
+        reason: tier3Triggers[0].reason,
+      };
+
+      if (tier3Triggers.length > 1 && tier3Triggers[1].archetype !== tier3Triggers[0].archetype) {
+        secondary = {
+          archetype: tier3Triggers[1].archetype,
+          reason: tier3Triggers[1].reason,
+        };
+      }
+    } else {
+      // Default for complete rotation with nothing to suggest
+      primary = {
+        archetype: "daily_trainer",
+        reason: TIER_3_REASONS.complete_rotation,
+      };
+    }
+
+    const triggerNames = tier3Triggers.length > 0
+      ? tier3Triggers.map(t => t.triggerName).join(", ")
+      : "complete rotation";
+
+    const result: TierClassification = {
+      tier: 3,
+      confidence: "soft",
+      primary,
+      secondary,
+      tierReason: `Tier 3: ${triggerNames}`,
+    };
+
+    console.log('[classifyRotationTier] Result:', {
+      tier: result.tier,
+      confidence: result.confidence,
+      primary: result.primary.archetype,
+      secondary: result.secondary?.archetype,
+    });
+
+    return result;
+  }
+
+  // =========================================================================
   // TIER 2: ROTATION IMPROVEMENTS
   // =========================================================================
 
@@ -377,7 +510,7 @@ export function classifyRotationTier(
     });
   }
 
-  // Check 2: Low variety
+  // Check 2: Low variety (only for incomplete rotations - complete rotations handled above)
   if (health.variety < 30 && currentShoes.length > 1) {
     // Recommend archetype that adds variety - check what's clustered
     const cushionRange = getCushionRange(currentShoes, catalogue);
