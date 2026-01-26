@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader, AlertTriangle, Check, ArrowLeft, ArrowRight } from "lucide-react";
+import { AlertTriangle, Check, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
+import TypewriterText from "@/components/TypewriterText";
 import { useProfile, DiscoveryArchetype, GapData } from "@/contexts/ProfileContext";
 import { buildAPIRaceTimeFromPicker } from "@/utils/raceTime";
 import { saveGap } from "@/utils/storage";
@@ -290,108 +290,132 @@ const ProfileBuilderStep4Analysis = () => {
     );
   };
 
-  // New rotation prose section
+  // New rotation prose section with typing animation
   const RotationProseSection = () => {
     if (!analysis?.rotationSummary) return null;
 
-    const { prose, strengths, improvements } = analysis.rotationSummary;
+    const { prose } = analysis.rotationSummary;
 
     return (
       <div className="w-full mb-6">
         <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
-          your rotation
+          cinda's analysis
         </h3>
 
-        {/* Prose card */}
-        <div className="bg-card/80 rounded-lg p-4 border border-card-foreground/20 mb-4">
-          <p className="text-white/90 lowercase leading-relaxed">{prose}</p>
-        </div>
-
-        {/* Strengths | Improvements grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Strengths column */}
-          {strengths && strengths.length > 0 && (
-            <div>
-              <h4 className="text-xs font-medium text-green-400 mb-2 flex items-center gap-1.5 lowercase">
-                <Check className="w-3.5 h-3.5" /> strengths
-              </h4>
-              <ul className="space-y-1.5">
-                {strengths.map((s, i) => (
-                  <li key={i} className="text-sm text-gray-300 lowercase">
-                    • {s}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Improvements column */}
-          {improvements && improvements.length > 0 && (
-            <div>
-              <h4 className="text-xs font-medium text-amber-400 mb-2 flex items-center gap-1.5 lowercase">
-                <ArrowRight className="w-3.5 h-3.5" /> improvements
-              </h4>
-              <ul className="space-y-1.5">
-                {improvements.map((imp, i) => (
-                  <li key={i} className="text-sm text-gray-300 lowercase">
-                    • {imp}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+        {/* Prose card with typing animation - preserves original casing */}
+        <div className="bg-card/80 rounded-lg p-4 border border-card-foreground/20">
+          <TypewriterText
+            text={prose}
+            speed={40}
+            className="text-white/90 leading-relaxed"
+          />
         </div>
       </div>
     );
   };
 
+  // Include/Skip pill buttons
+  const IncludeSkipPills = ({
+    isIncluded,
+    onToggle,
+    canSkip,
+  }: {
+    isIncluded: boolean;
+    onToggle: () => void;
+    canSkip: boolean;
+  }) => (
+    <div className="flex gap-2 mt-3">
+      <button
+        onClick={() => !isIncluded && onToggle()}
+        className={cn(
+          "px-3 py-1 text-xs rounded-full border transition-all lowercase",
+          isIncluded
+            ? "bg-slate-500/30 border-slate-400 text-white"
+            : "bg-transparent border-slate-600 text-slate-400 hover:border-slate-500"
+        )}
+      >
+        include
+      </button>
+      <button
+        onClick={() => isIncluded && canSkip && onToggle()}
+        disabled={!canSkip}
+        className={cn(
+          "px-3 py-1 text-xs rounded-full border transition-all lowercase",
+          !isIncluded
+            ? "bg-slate-500/30 border-slate-400 text-white"
+            : "bg-transparent border-slate-600 text-slate-400 hover:border-slate-500",
+          !canSkip && isIncluded && "opacity-40 cursor-not-allowed"
+        )}
+      >
+        skip
+      </button>
+    </div>
+  );
+
   // Recommendation card component
   const RecommendationCard = ({
     recommendation,
+    isIncluded,
+    showPills,
+    showTierBadge,
     tier,
-    isSelected,
-    showCheckbox,
+    canSkip,
+    onToggle,
   }: {
     recommendation: { archetype: string; reason: string };
+    isIncluded: boolean;
+    showPills: boolean;
+    showTierBadge: boolean;
     tier: 1 | 2 | 3;
-    isSelected: boolean;
-    showCheckbox: boolean;
+    canSkip: boolean;
+    onToggle: () => void;
   }) => {
     const config = TIER_CONFIG[tier];
 
     return (
       <div
         className={cn(
-          "relative bg-card/80 rounded-lg p-4 border-2 transition-all",
-          isSelected ? "border-slate-400/50" : "border-card-foreground/20 opacity-60"
+          "relative rounded-lg p-4 border-2 transition-all",
+          isIncluded
+            ? "bg-card/80 border-slate-400/50"
+            : "bg-transparent border-slate-600/30 opacity-50"
         )}
       >
-        {/* Checkbox (only if 2 recommendations) */}
-        {showCheckbox && (
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={() => handleToggleArchetype(recommendation.archetype)}
-            className="absolute left-4 top-4"
-          />
+        {/* Tier badge (top right) - only if showTierBadge */}
+        {showTierBadge && (
+          <span
+            className={cn(
+              "absolute right-4 top-4 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border",
+              config.className
+            )}
+          >
+            {config.label}
+          </span>
         )}
 
-        {/* Tier badge (top right) */}
-        <span
-          className={cn(
-            "absolute right-4 top-4 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border",
-            config.className
-          )}
-        >
-          {config.label}
-        </span>
-
         {/* Content */}
-        <div className={showCheckbox ? "ml-8" : ""}>
-          <p className="text-white font-medium lowercase mb-1 pr-20">
+        <div>
+          <p
+            className="font-bold mb-1 pr-20 lowercase"
+            style={{
+              background:
+                "linear-gradient(90deg, #94a3b8 0%, #94a3b8 30%, #ffffff 50%, #94a3b8 70%, #94a3b8 100%)",
+              backgroundSize: "200% auto",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              animation: isIncluded ? "text-glisten 3s ease-in-out infinite" : "none",
+            }}
+          >
             {formatArchetype(recommendation.archetype)}
           </p>
           <p className="text-sm text-gray-400 lowercase">{recommendation.reason}</p>
         </div>
+
+        {/* Include/Skip pills */}
+        {showPills && (
+          <IncludeSkipPills isIncluded={isIncluded} onToggle={onToggle} canSkip={canSkip} />
+        )}
       </div>
     );
   };
@@ -402,6 +426,20 @@ const ProfileBuilderStep4Analysis = () => {
 
     const { tier, primary, secondary } = analysis.recommendations;
     const hasSecondary = !!secondary;
+
+    // Only show tier badges if there are 2 recommendations with different tiers
+    // Since we have a single tier for the recommendations object, we only show badge if there's a secondary
+    // and they could theoretically differ (for future-proofing). For now, hide if single or same tier.
+    const showTierBadges = false; // Both share same tier in current API structure
+
+    const primaryIncluded = selectedArchetypes.includes(primary.archetype);
+    const secondaryIncluded = secondary
+      ? selectedArchetypes.includes(secondary.archetype)
+      : false;
+
+    // Can skip primary only if secondary is included, and vice versa
+    const canSkipPrimary = secondaryIncluded;
+    const canSkipSecondary = primaryIncluded;
 
     return (
       <div className="w-full mb-6">
@@ -420,16 +458,22 @@ const ProfileBuilderStep4Analysis = () => {
         <div className="flex flex-col gap-3">
           <RecommendationCard
             recommendation={primary}
+            isIncluded={primaryIncluded}
+            showPills={hasSecondary}
+            showTierBadge={showTierBadges}
             tier={tier}
-            isSelected={selectedArchetypes.includes(primary.archetype)}
-            showCheckbox={hasSecondary}
+            canSkip={canSkipPrimary}
+            onToggle={() => handleToggleArchetype(primary.archetype)}
           />
           {secondary && (
             <RecommendationCard
               recommendation={secondary}
+              isIncluded={secondaryIncluded}
+              showPills={hasSecondary}
+              showTierBadge={showTierBadges}
               tier={tier}
-              isSelected={selectedArchetypes.includes(secondary.archetype)}
-              showCheckbox={hasSecondary}
+              canSkip={canSkipSecondary}
+              onToggle={() => handleToggleArchetype(secondary.archetype)}
             />
           )}
         </div>
@@ -488,19 +532,15 @@ const ProfileBuilderStep4Analysis = () => {
     <div className="space-y-6 animate-pulse">
       {/* Prose skeleton */}
       <div>
-        <div className="h-4 w-24 bg-card-foreground/10 rounded mb-4" />
-        <div className="h-24 bg-card-foreground/10 rounded-lg mb-4" />
-        <div className="grid grid-cols-2 gap-4">
-          <div className="h-16 bg-card-foreground/10 rounded" />
-          <div className="h-16 bg-card-foreground/10 rounded" />
-        </div>
+        <div className="h-4 w-32 bg-card-foreground/10 rounded mb-4" />
+        <div className="h-24 bg-card-foreground/10 rounded-lg" />
       </div>
       {/* Recommendations skeleton */}
       <div>
         <div className="h-4 w-32 bg-card-foreground/10 rounded mb-4" />
         <div className="space-y-3">
-          <div className="h-20 bg-card-foreground/10 rounded-lg" />
-          <div className="h-20 bg-card-foreground/10 rounded-lg" />
+          <div className="h-24 bg-card-foreground/10 rounded-lg" />
+          <div className="h-24 bg-card-foreground/10 rounded-lg" />
         </div>
       </div>
     </div>
