@@ -14,7 +14,10 @@ import {
   HeelDropPreference,
   HeelDropOption,
   BrandPreference,
-  BrandPreferenceMode
+  BrandPreferenceMode,
+  ShoeRequest,
+  FeelGapInfo,
+  ContrastProfile
 } from "@/contexts/ProfileContext";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -650,7 +653,27 @@ const ProfileBuilderStep4b = () => {
   const handleNext = () => {
     if (!isValid()) return;
 
-    const newRequest = { archetype: currentArchetype, feelPreferences: preferences };
+    // Get feelGap and contrastWith from stored analysis recommendations
+    const analysisRecs = profileData.step4.analysisRecommendations;
+    let feelGap: FeelGapInfo | undefined;
+    let contrastWith: ContrastProfile | undefined;
+    
+    if (analysisRecs) {
+      if (analysisRecs.primary.archetype === currentArchetype) {
+        feelGap = analysisRecs.primary.feelGap;
+        contrastWith = analysisRecs.primary.contrastWith;
+      } else if (analysisRecs.secondary?.archetype === currentArchetype) {
+        feelGap = analysisRecs.secondary.feelGap;
+        contrastWith = analysisRecs.secondary.contrastWith;
+      }
+    }
+
+    const newRequest: ShoeRequest = { 
+      archetype: currentArchetype, 
+      feelPreferences: preferences,
+      feelGap,
+      contrastWith,
+    };
     const existingIndex = shoeRequests.findIndex((r) => r.archetype === currentArchetype);
 
     let updatedRequests: typeof shoeRequests;

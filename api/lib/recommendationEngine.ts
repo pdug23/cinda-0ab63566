@@ -630,6 +630,7 @@ export async function generateRecommendations(
       trailScore: 0,
       loveDislikeScore: 0,
       chatContextScore: 0,
+      contrastScore: 0,
     },
   }));
 
