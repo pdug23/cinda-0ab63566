@@ -485,20 +485,27 @@ export default function RecommendationsPage() {
       );
 
       // 3. Determine mode based on stored data
-      // Analysis mode: has gap (feelPreferences optional now)
-      // Discovery mode: has shoeRequests
+      // PRIORITY: shoeRequests → discovery mode (both analysis and discovery flows save shoeRequests)
+      // FALLBACK: gap only (legacy) → analysis mode
       let detectedMode: Mode;
 
-      if (storedGap) {
+      if (shoeRequests && shoeRequests.length > 0) {
+        // ShoeRequests exist - use discovery mode
+        // This works for both flows since Step4b always saves shoeRequests
+        detectedMode = "discovery";
+        // Keep gap for display purposes if available (e.g., showing context)
+        if (storedGap) {
+          setGap(storedGap);
+        }
+        console.log('[Recommendations] Mode: discovery (shoeRequests found)', { shoeRequestsCount: shoeRequests.length });
+      } else if (storedGap) {
+        // Legacy fallback: gap exists but no shoeRequests
         detectedMode = "analysis";
         setGap(storedGap);
-        console.log('[Recommendations] Mode: analysis (gap found)');
-      } else if (shoeRequests && shoeRequests.length > 0) {
-        detectedMode = "discovery";
-        console.log('[Recommendations] Mode: discovery (shoeRequests found)');
+        console.log('[Recommendations] Mode: analysis (legacy - gap only)');
       } else {
-        // No gap and no shoe requests - redirect to profile builder
-        console.log('[Recommendations] No gap or shoeRequests - redirecting');
+        // No shoeRequests and no gap - redirect to profile builder
+        console.log('[Recommendations] No shoeRequests or gap - redirecting');
         toast.error("Please complete the profile builder first");
         navigate("/profile/step4");
         return;
