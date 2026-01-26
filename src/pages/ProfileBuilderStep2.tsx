@@ -284,7 +284,15 @@ const ProfileBuilderStep2 = () => {
                   label={option.label}
                   description={option.description}
                   selected={runningPattern === option.value}
-                  onClick={() => setRunningPattern(option.value)}
+                  onClick={() => {
+                    setRunningPattern(option.value);
+                    // Clear weekly volume if switching to Casual (infrequent) since volume input is hidden
+                    if (option.value === "infrequent") {
+                      setVolumeInput("");
+                      setWeeklyVolume(null);
+                      setVolumeError(null);
+                    }
+                  }}
                 />
               ))}
             </div>
