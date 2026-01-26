@@ -128,6 +128,7 @@ function getCriticalArchetypes(profile: RunnerProfile): ShoeArchetype[] {
  */
 interface FeelGap {
   dimension: 'drop' | 'cushion' | 'rocker' | 'stability';
+  priority: number;  // Lower = more important (1 = highest priority)
   currentRange: { min: number; max: number };
   suggestion: 'low' | 'high';  // Which end to explore
   reason: string;
@@ -137,6 +138,7 @@ interface FeelGap {
 /**
  * Detect feel gaps in the current rotation
  * Returns ordered list of feel dimensions that could use more variety
+ * Priority: max cushion > high rocker > stability > drop
  */
 function detectFeelGaps(
   currentShoes: CurrentShoe[],
@@ -146,6 +148,8 @@ function detectFeelGaps(
 
   if (shoes.length === 0) return [];
 
+  const shoeCount = shoes.length;
+
   // Calculate values for each dimension
   const drops = shoes.map(s => s.heel_drop_mm);
   const cushions = shoes.map(s => s.cushion_softness_1to5);
@@ -153,6 +157,7 @@ function detectFeelGaps(
   const stabilities = shoes.map(s => s.stability_1to5);
 
   console.log('[detectFeelGaps] Feel dimensions:', {
+    shoeCount,
     drops,
     cushions,
     rockers,
@@ -161,85 +166,86 @@ function detectFeelGaps(
 
   const gaps: FeelGap[] = [];
 
-  // Check DROP gap
+  // Calculate ranges
   const dropMin = Math.min(...drops);
   const dropMax = Math.max(...drops);
+  const cushionMax = Math.max(...cushions);
+  const rockerMax = Math.max(...rockers);
+  const stabilityMax = Math.max(...stabilities);
 
+  // Priority 1: Max cushion gap (no shoe has cushion 5)
+  if (cushionMax < 5) {
+    gaps.push({
+      dimension: 'cushion',
+      priority: 1,
+      currentRange: { min: Math.min(...cushions), max: cushionMax },
+      suggestion: 'high',
+      reason: shoeCount === 1
+        ? "Your shoe is moderate cushion. A max-cushion option could protect your legs on easy days."
+        : "None of your shoes have max cushion. A plush recovery shoe could protect your legs on easy days.",
+      recommendedArchetype: 'recovery_shoe'
+    });
+  }
+
+  // Priority 2: High rocker gap (no shoe has rocker 4+)
+  if (rockerMax < 4) {
+    gaps.push({
+      dimension: 'rocker',
+      priority: 2,
+      currentRange: { min: Math.min(...rockers), max: rockerMax },
+      suggestion: 'high',
+      reason: shoeCount === 1
+        ? "Your shoe doesn't have much rocker. A rocker shoe could ease joint stress and offer a different ride."
+        : "None of your shoes have an aggressive rocker. A rocker shoe could ease joint stress and offer a different ride.",
+      recommendedArchetype: 'daily_trainer'
+    });
+  }
+
+  // Priority 3: Stability gap (all shoes neutral, stability ≤ 2)
+  if (stabilityMax <= 2) {
+    gaps.push({
+      dimension: 'stability',
+      priority: 3,
+      currentRange: { min: Math.min(...stabilities), max: stabilityMax },
+      suggestion: 'high',
+      reason: shoeCount === 1
+        ? "Your shoe is neutral. A light stability option could offer support on tired days."
+        : "Your rotation is all neutral. A light stability shoe could offer support on tired days.",
+      recommendedArchetype: 'daily_trainer'
+    });
+  }
+
+  // Priority 4: Drop gap (check both directions)
   if (dropMin > 5) {
     // All shoes are mid-to-high drop, suggest low drop
     gaps.push({
       dimension: 'drop',
+      priority: 4,
       currentRange: { min: dropMin, max: dropMax },
       suggestion: 'low',
-      reason: "All your shoes are 6mm+ drop. A low-drop shoe could strengthen different muscles and add variety.",
+      reason: shoeCount === 1
+        ? "Your shoe is higher drop. A low-drop option could strengthen different muscles and add variety."
+        : "All your shoes are 6mm+ drop. A low-drop shoe could strengthen different muscles and add variety.",
       recommendedArchetype: 'daily_trainer'
     });
   } else if (dropMax < 6) {
     // All shoes are low drop, suggest higher drop
     gaps.push({
       dimension: 'drop',
+      priority: 4,
       currentRange: { min: dropMin, max: dropMax },
       suggestion: 'high',
-      reason: "Your rotation is low-drop focused. A traditional drop shoe could give your calves a break.",
+      reason: shoeCount === 1
+        ? "Your shoe is low drop. A traditional drop shoe could give your calves a break."
+        : "Your rotation is low-drop focused. A traditional drop shoe could give your calves a break.",
       recommendedArchetype: 'daily_trainer'
     });
   }
 
-  // Check CUSHION gap
-  const cushionMin = Math.min(...cushions);
-  const cushionMax = Math.max(...cushions);
+  // Sort by priority before returning
+  gaps.sort((a, b) => a.priority - b.priority);
 
-  if (cushionMin >= 3) {
-    // All shoes are moderate-to-soft (3+), suggest firmer
-    gaps.push({
-      dimension: 'cushion',
-      currentRange: { min: cushionMin, max: cushionMax },
-      suggestion: 'low',
-      reason: "Your shoes are all on the softer side. A firmer, more responsive shoe could improve ground feel for faster efforts.",
-      recommendedArchetype: 'workout_shoe'
-    });
-  } else if (cushionMax <= 2) {
-    // All shoes are firm (1-2), suggest more cushion
-    gaps.push({
-      dimension: 'cushion',
-      currentRange: { min: cushionMin, max: cushionMax },
-      suggestion: 'high',
-      reason: "Your rotation lacks a plush option. A max-cushion shoe could protect your legs on easy days.",
-      recommendedArchetype: 'recovery_shoe'
-    });
-  }
-
-  // Check ROCKER gap
-  const rockerMin = Math.min(...rockers);
-  const rockerMax = Math.max(...rockers);
-
-  if (rockerMax < 3) {
-    // No high-rocker shoes, suggest one
-    gaps.push({
-      dimension: 'rocker',
-      currentRange: { min: rockerMin, max: rockerMax },
-      suggestion: 'high',
-      reason: "None of your shoes have an aggressive rocker. A rocker shoe could ease joint stress and offer a different ride.",
-      recommendedArchetype: 'daily_trainer'
-    });
-  }
-
-  // Check STABILITY gap (only if all shoes are neutral)
-  const stabilityMin = Math.min(...stabilities);
-  const stabilityMax = Math.max(...stabilities);
-
-  if (stabilityMax <= 2) {
-    // All neutral shoes
-    gaps.push({
-      dimension: 'stability',
-      currentRange: { min: stabilityMin, max: stabilityMax },
-      suggestion: 'high',
-      reason: "Your rotation is all neutral. A light stability shoe could offer support on tired days.",
-      recommendedArchetype: 'daily_trainer'
-    });
-  }
-
-  console.log('[detectFeelGaps] Gaps found:', gaps.map(g => g.dimension));
+  console.log('[detectFeelGaps] Gaps found (sorted by priority):', gaps.map(g => `${g.dimension} (p${g.priority})`));
 
   return gaps;
 }
