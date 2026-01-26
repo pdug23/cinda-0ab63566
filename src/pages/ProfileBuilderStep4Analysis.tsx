@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle, Check, ArrowLeft } from "lucide-react";
+import { AlertTriangle, Check, ArrowLeft, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
@@ -9,7 +10,6 @@ import { useProfile, DiscoveryArchetype, GapData } from "@/contexts/ProfileConte
 import { buildAPIRaceTimeFromPicker } from "@/utils/raceTime";
 import { saveGap } from "@/utils/storage";
 import { cn } from "@/lib/utils";
-import cindaLogo from "@/assets/cinda-logo-grey.png";
 
 type Status = "loading" | "success" | "no_gap" | "error";
 
@@ -474,37 +474,47 @@ const ProfileBuilderStep4Analysis = () => {
         <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
           your current rotation
         </h3>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           {rotationSummary.map((item, index) => {
             const isSevere = item.misuseLevel === "severe";
 
             return (
-              <div
-                key={item.shoe.shoe_id || index}
-                className={`bg-card/80 rounded-lg p-4 border-2 ${
-                  isSevere ? "border-red-500" : "border-green-500"
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  {isSevere ? (
-                    <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
-                  ) : (
-                    <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+              <Collapsible key={item.shoe.shoe_id || index} className="group">
+                <div
+                  className={cn(
+                    "bg-card/80 rounded-lg border-2 transition-all",
+                    isSevere ? "border-red-500" : "border-green-500"
                   )}
-                  <p className="text-white font-medium">{item.shoe.full_name}</p>
+                >
+                  {/* Collapsed header - always visible */}
+                  <CollapsibleTrigger className="w-full p-4 flex items-center justify-between cursor-pointer">
+                    <div className="flex items-center gap-2">
+                      {isSevere ? (
+                        <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                      ) : (
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      )}
+                      <p className="text-white font-medium text-left">{item.shoe.full_name}</p>
+                    </div>
+                    <ChevronDown className="w-4 h-4 text-slate-400 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                  </CollapsibleTrigger>
+                  
+                  {/* Expanded content - hidden by default */}
+                  <CollapsibleContent className="px-4 pb-4">
+                    <p className="text-sm text-gray-300 mb-1 lowercase">
+                      you use it for: {(item.userRunTypes || []).map(formatRoleLabel).join(", ")}
+                    </p>
+                    <p className="text-sm text-gray-300 lowercase">
+                      best suited for: {formatArchetypesToRunTypes(item.archetypes || [])}
+                    </p>
+                    {isSevere && item.misuseMessage && (
+                      <div className="mt-3 p-2 bg-red-500/15 border border-red-500/30 rounded-md">
+                        <p className="text-sm text-red-400 lowercase">{item.misuseMessage}</p>
+                      </div>
+                    )}
+                  </CollapsibleContent>
                 </div>
-                <p className="text-sm text-gray-300 mb-1 lowercase">
-                  you use it for: {(item.userRunTypes || []).map(formatRoleLabel).join(", ")}
-                </p>
-                <p className="text-sm text-gray-300 lowercase">
-                  best suited for: {formatArchetypesToRunTypes(item.archetypes || [])}
-                </p>
-                {isSevere && item.misuseMessage && (
-                  <div className="mt-3 p-2 bg-red-500/15 border border-red-500/30 rounded-md">
-                    <p className="text-sm text-red-400 lowercase">{item.misuseMessage}</p>
-                  </div>
-                )}
-              </div>
+              </Collapsible>
             );
           })}
         </div>
@@ -512,22 +522,19 @@ const ProfileBuilderStep4Analysis = () => {
     );
   };
 
-  // Loading skeleton matching new layout: logo → recommendation → summary → rotation
+  // Loading skeleton matching new layout: recommendation → summary → rotation (collapsed)
   const LoadingSkeleton = () => (
     <div className="space-y-4 animate-pulse">
-      {/* Logo skeleton */}
-      <div className="flex justify-center">
-        <div className="w-8 h-8 bg-card-foreground/10 rounded-full" />
-      </div>
       {/* Recommendation box skeleton */}
       <div className="h-24 bg-card-foreground/10 rounded-lg" />
       {/* Summary box skeleton */}
       <div className="h-20 bg-card-foreground/10 rounded-lg" />
-      {/* Rotation header + cards skeleton */}
+      {/* Rotation header + collapsed cards skeleton */}
       <div>
         <div className="h-4 w-32 bg-card-foreground/10 rounded mb-4" />
-        <div className="space-y-3">
-          <div className="h-24 bg-card-foreground/10 rounded-lg" />
+        <div className="space-y-2">
+          <div className="h-14 bg-card-foreground/10 rounded-lg" />
+          <div className="h-14 bg-card-foreground/10 rounded-lg" />
         </div>
       </div>
     </div>
@@ -564,15 +571,7 @@ const ProfileBuilderStep4Analysis = () => {
                   className="flex-1 min-h-0 overflow-y-auto pb-6 pr-2 scrollbar-styled touch-pan-y"
                   style={{ WebkitOverflowScrolling: "touch" }}
                 >
-                  {/* Cinda logo at top */}
-                  <div className="flex justify-center mb-4">
-                    <img 
-                      src={cindaLogo}
-                      alt=""
-                      className="w-8 h-8 opacity-40 animate-spin-once"
-                    />
-                  </div>
-                  {/* New order: Recommendation → Summary → Current Rotation */}
+                  {/* Order: Recommendation → Summary → Current Rotation */}
                   <RecommendationBoxSection />
                   <AnalysisSummarySection />
                   <CurrentRotationSection />
