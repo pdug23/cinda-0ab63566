@@ -81,7 +81,7 @@ const TooltipModal = ({
           onClick={onClose}
           className="mt-4 w-full py-3 text-sm font-medium rounded-lg bg-transparent border border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 transition-colors"
         >
-          got it
+          Got it
         </button>
       </div>
     </div>
@@ -164,35 +164,35 @@ interface SliderConfig {
 const SLIDERS: SliderConfig[] = [
   {
     key: "cushionAmount",
-    label: "cushion amount",
-    tooltip: "how much cushioning the shoe provides. minimal offers ground feel and responsiveness. protective provides maximum cushioning.",
-    leftLabel: "minimal",
-    middleLabel: "balanced",
-    rightLabel: "protective",
+    label: "Cushion amount",
+    tooltip: "How much cushioning the shoe provides. Minimal offers ground feel and responsiveness. Protective provides maximum cushioning.",
+    leftLabel: "Minimal",
+    middleLabel: "Balanced",
+    rightLabel: "Protective",
   },
   {
     key: "stabilityAmount",
-    label: "stability amount",
-    tooltip: "how much guidance the shoe provides. neutral shoes allow natural movement. stable shoes help control motion.",
-    leftLabel: "neutral",
-    middleLabel: "balanced",
-    rightLabel: "stable",
+    label: "Stability amount",
+    tooltip: "How much guidance the shoe provides. Neutral shoes allow natural movement. Stable shoes help control motion.",
+    leftLabel: "Neutral",
+    middleLabel: "Balanced",
+    rightLabel: "Stable",
   },
   {
     key: "energyReturn",
-    label: "energy return",
-    tooltip: "how the shoe responds. damped shoes absorb impact smoothly. bouncy shoes feel springy and propulsive.",
-    leftLabel: "damped",
-    middleLabel: "balanced",
-    rightLabel: "bouncy",
+    label: "Energy return",
+    tooltip: "How the shoe responds. Damped shoes absorb impact smoothly. Bouncy shoes feel springy and propulsive.",
+    leftLabel: "Damped",
+    middleLabel: "Balanced",
+    rightLabel: "Bouncy",
   },
   {
     key: "rocker",
-    label: "rocker",
-    tooltip: "the curved geometry of the sole. flat shoes allow natural foot motion. max rocker propels you forward through your stride.",
-    leftLabel: "flat",
-    middleLabel: "balanced",
-    rightLabel: "max",
+    label: "Rocker",
+    tooltip: "The curved geometry of the sole. Flat shoes allow natural foot motion. Max rocker propels you forward through your stride.",
+    leftLabel: "Flat",
+    middleLabel: "Balanced",
+    rightLabel: "Max",
   },
 ];
 
@@ -353,8 +353,8 @@ const HeelDropPreferenceCard = ({
     <div className="p-4 rounded-lg bg-card-foreground/[0.02] border border-card-foreground/10">
       {/* Label with tooltip */}
       <div className="flex items-center gap-1.5 mb-3">
-        <span className="text-sm text-card-foreground/90">heel drop</span>
-        <AdaptiveTooltip content="the height difference between heel and forefoot. lower drops encourage midfoot striking. higher drops suit heel strikers." />
+        <span className="text-sm text-card-foreground/90">Heel drop</span>
+        <AdaptiveTooltip content="The height difference between heel and forefoot. Lower drops encourage midfoot striking. Higher drops suit heel strikers." />
       </div>
 
       {/* Mode selector */}
@@ -363,7 +363,7 @@ const HeelDropPreferenceCard = ({
       {/* Checkboxes (only shown when "i have a preference") */}
       {showCheckboxes && (
         <div className="mt-3">
-          <p className="text-xs text-card-foreground/40 mb-2">select all that apply</p>
+          <p className="text-xs text-card-foreground/40 mb-2">Select all that apply</p>
           <div className="flex flex-wrap gap-2">
             {HEEL_DROP_OPTIONS.map((option) => {
               const isSelected = selectedValues.includes(option);
@@ -430,19 +430,19 @@ const BrandPreferenceCard = ({
   };
 
   const getSummaryText = () => {
-    if (preference.mode === "all") return "showing all brands";
+    if (preference.mode === "all") return "Showing all brands";
     if (preference.brands.length === 0) {
-      return preference.mode === "include" ? "select brands to show" : "select brands to hide";
+      return preference.mode === "include" ? "Select brands to show" : "Select brands to hide";
     }
     const brandList = preference.brands.join(", ");
-    return preference.mode === "include" ? `only: ${brandList}` : `excluding: ${brandList}`;
+    return preference.mode === "include" ? `Only: ${brandList}` : `Excluding: ${brandList}`;
   };
 
   return (
     <div className="p-4 rounded-lg bg-card-foreground/[0.02] border border-card-foreground/10">
       {/* Label */}
       <div className="flex items-center gap-1.5 mb-3">
-        <span className="text-sm text-card-foreground/90">brand preference</span>
+        <span className="text-sm text-card-foreground/90">Brand preference</span>
       </div>
 
       {/* Collapsed view */}
@@ -454,7 +454,7 @@ const BrandPreferenceCard = ({
             onClick={() => setIsExpanded(true)}
             className="text-xs text-orange-400 hover:text-orange-300 transition-colors"
           >
-            {preference.mode === "all" ? "filter" : "edit"}
+            {preference.mode === "all" ? "Filter" : "Edit"}
           </button>
         </div>
       )}
@@ -474,7 +474,7 @@ const BrandPreferenceCard = ({
                   : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
               )}
             >
-              only show
+              Only show
             </button>
             <button
               type="button"
@@ -486,7 +486,7 @@ const BrandPreferenceCard = ({
                   : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
               )}
             >
-              exclude
+              Exclude
             </button>
           </div>
 
@@ -519,7 +519,7 @@ const BrandPreferenceCard = ({
             onClick={handleReset}
             className="text-xs text-card-foreground/40 hover:text-card-foreground/60 transition-colors"
           >
-            clear / show all brands
+            Clear / show all brands
           </button>
         </div>
       )}
@@ -764,18 +764,18 @@ const ProfileBuilderStep4b = () => {
             {/* Heading */}
             <div className="flex items-center gap-1.5 mb-2">
               <p className="text-sm text-card-foreground/90">
-                how do you want your <span className="text-orange-400 font-semibold">{ARCHETYPE_LABELS[currentArchetype]}</span> to feel?
+                How do you want your <span className="text-orange-400 font-semibold">{ARCHETYPE_LABELS[currentArchetype].toLowerCase()}</span> to feel?
               </p>
               <AdaptiveTooltip
                 content={
                   <>
-                    <p className="font-medium mb-2">understanding your preferences:</p>
+                    <p className="font-medium mb-2">Understanding your preferences:</p>
                     <ul className="space-y-1.5 text-card-foreground/80">
-                      <li><span className="text-orange-400">let cinda decide</span> – we'll choose based on your shoe type and running style</li>
-                      <li><span className="text-orange-400">i have a preference</span> – you tell us exactly what you want</li>
-                      <li><span className="text-orange-400">i don't mind</span> – this won't factor into your recommendations</li>
+                      <li><span className="text-orange-400">Let Cinda decide</span> – we'll choose based on your shoe type and running style</li>
+                      <li><span className="text-orange-400">I have a preference</span> – you tell us exactly what you want</li>
+                      <li><span className="text-orange-400">I don't mind</span> – this won't factor into your recommendations</li>
                     </ul>
-                    <p className="mt-2 text-card-foreground/60">most runners leave preferences on 'let cinda decide' and only set specific preferences where they have strong feelings.</p>
+                    <p className="mt-2 text-card-foreground/60">Most runners leave preferences on 'Let Cinda decide' and only set specific preferences where they have strong feelings.</p>
                   </>
                 }
               />
@@ -784,7 +784,7 @@ const ProfileBuilderStep4b = () => {
             {/* Progress indicator for multiple roles */}
             {totalArchetypes > 1 && (
               <p className="text-xs text-card-foreground/40 mb-4">
-                shoe {currentArchetypeIndex + 1} of {totalArchetypes}
+                Shoe {currentArchetypeIndex + 1} of {totalArchetypes}
               </p>
             )}
 
