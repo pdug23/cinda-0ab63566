@@ -200,31 +200,77 @@ export function scoreArchetypeMatch(shoe: Shoe, archetypes: ShoeArchetype[] = []
 }
 
 /**
- * Get archetype-based default preference values for cinda_decides mode
+ * Acceptable ranges for each feel dimension per archetype
+ * Shoes within range all score equally well (+5)
+ * Outside range: penalties based on distance from nearest edge
  */
-function getArchetypeDefault(
+const ARCHETYPE_FEEL_RANGES: Record<ShoeArchetype, Record<string, [number, number]>> = {
+  daily_trainer: {
+    cushion: [3, 5],      // Daily trainers can be moderate to max cushion
+    stability: [2, 4],    // Neutral to moderate stability
+    bounce: [2, 4],       // Moderate range
+    rocker: [2, 4],       // Moderate range
+    groundFeel: [2, 4],   // Moderate range
+  },
+  recovery_shoe: {
+    cushion: [4, 5],      // Recovery needs plush cushion
+    stability: [2, 4],    // Can be neutral to stable
+    bounce: [2, 4],       // Not bouncy, but acceptable range
+    rocker: [2, 4],       // Moderate range
+    groundFeel: [1, 3],   // Less ground feel preferred
+  },
+  workout_shoe: {
+    cushion: [1, 4],      // Firm to moderate (not max soft)
+    stability: [1, 5],    // Full range acceptable
+    bounce: [4, 5],       // Must be bouncy
+    rocker: [2, 5],       // Moderate to aggressive
+    groundFeel: [2, 5],   // More ground feel acceptable
+  },
+  race_shoe: {
+    cushion: [1, 4],      // Firm to moderate (not max soft)
+    stability: [1, 5],    // Full range acceptable
+    bounce: [4, 5],       // Must be bouncy
+    rocker: [2, 5],       // Moderate to aggressive
+    groundFeel: [3, 5],   // Ground feel preferred
+  },
+  trail_shoe: {
+    cushion: [2, 4],      // Moderate range
+    stability: [3, 5],    // More stability preferred
+    bounce: [2, 4],       // Moderate range
+    rocker: [2, 4],       // Moderate range
+    groundFeel: [3, 5],   // Ground feel important for trails
+  },
+};
+
+/**
+ * Get archetype-based acceptable range for a feel dimension
+ * Returns [min, max] - shoes within this range all score equally well
+ */
+function getArchetypeRange(
   dimension: 'cushion' | 'stability' | 'bounce' | 'rocker' | 'groundFeel',
   archetype?: ShoeArchetype
-): number {
-  const defaults: Record<string, Record<ShoeArchetype, number>> = {
-    cushion: {
-      daily_trainer: 3, recovery_shoe: 4, workout_shoe: 2, race_shoe: 2, trail_shoe: 3
-    },
-    stability: {
-      daily_trainer: 3, recovery_shoe: 3, workout_shoe: 2, race_shoe: 2, trail_shoe: 4
-    },
-    bounce: {
-      daily_trainer: 3, recovery_shoe: 2, workout_shoe: 5, race_shoe: 5, trail_shoe: 2
-    },
-    rocker: {
-      daily_trainer: 3, recovery_shoe: 2, workout_shoe: 4, race_shoe: 5, trail_shoe: 2
-    },
-    groundFeel: {
-      daily_trainer: 3, recovery_shoe: 2, workout_shoe: 3, race_shoe: 4, trail_shoe: 4
-    }
-  };
+): [number, number] {
+  const arch = archetype ?? 'daily_trainer';
+  return ARCHETYPE_FEEL_RANGES[arch]?.[dimension] ?? [2, 4]; // Default moderate range
+}
 
-  return defaults[dimension]?.[archetype ?? 'daily_trainer'] ?? 3;
+/**
+ * Calculate distance from a value to a range
+ * Returns 0 if value is within range, otherwise distance to nearest edge
+ */
+function distanceFromRange(value: number, min: number, max: number): number {
+  if (value >= min && value <= max) return 0;
+  return value < min ? min - value : value - max;
+}
+
+/**
+ * Convert distance to score for cinda_decides mode
+ */
+function distanceToScore(distance: number): number {
+  if (distance === 0) return 5;    // In range or exact match
+  if (distance === 1) return -2;   // 1 away from range
+  if (distance === 2) return -5;   // 2 away from range
+  return -10;                      // 3+ away from range
 }
 
 /**
@@ -297,8 +343,7 @@ export function scoreFeelMatch(
       if (distance === 2) return -15;  // Off by 2
       return -25;                      // Off by 3+
     } else {
-      // CINDA DECIDES: Use feelGap if it matches this dimension, otherwise archetype defaults
-      let targetValue: number;
+      // CINDA DECIDES: Use feelGap if it matches this dimension, otherwise archetype ranges
 
       // Map dimension names to feelGap dimension names
       const dimensionToFeelGap: Record<string, FeelGapInfo['dimension']> = {
@@ -311,18 +356,19 @@ export function scoreFeelMatch(
       const feelGapDimension = dimensionToFeelGap[dimension];
 
       if (feelGap && feelGapDimension && feelGap.dimension === feelGapDimension) {
-        // Use feelGap targetValue - this is the rotation analysis override
-        targetValue = feelGap.targetValue;
+        // Use feelGap targetValue - this is the rotation analysis override (single target)
+        const distance = Math.abs(shoeValue - feelGap.targetValue);
+        const score = distanceToScore(distance);
+        console.log(`[scoreFeelMatch] ${dimension}: feelGap target=${feelGap.targetValue}, shoe=${shoeValue}, distance=${distance}, score=${score}`);
+        return score;
       } else {
-        // Fall back to archetype defaults
-        targetValue = getArchetypeDefault(dimension, archetypeContext);
+        // Use archetype range - shoes within range all score equally well
+        const [min, max] = getArchetypeRange(dimension, archetypeContext);
+        const distance = distanceFromRange(shoeValue, min, max);
+        const score = distanceToScore(distance);
+        console.log(`[scoreFeelMatch] ${dimension}: range=[${min},${max}], shoe=${shoeValue}, inRange=${distance === 0}, distance=${distance}, score=${score}`);
+        return score;
       }
-
-      const distance = Math.abs(shoeValue - targetValue);
-      if (distance === 0) return 5;    // Perfect match
-      if (distance === 1) return -2;   // Off by 1
-      if (distance === 2) return -5;   // Off by 2
-      return -10;                      // Off by 3+
     }
   };
 
