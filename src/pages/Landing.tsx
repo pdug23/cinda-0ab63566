@@ -120,7 +120,7 @@ const Landing = () => {
             >
               <Button
                 onClick={handleStartOrientation}
-                variant="outline"
+                variant="cta"
                 className="px-10 min-h-[44px] text-xs uppercase"
               >
                 Find yours
@@ -192,7 +192,7 @@ const Landing = () => {
                 <div className="flex-1 flex flex-col items-center gap-1.5">
                   <Button
                     onClick={handleStartProfile}
-                    variant="outline"
+                    variant="cta"
                     className="w-full min-h-[44px] text-xs uppercase bg-primary/10 border-primary/30 text-card-foreground hover:bg-primary/20 hover:border-primary/50 hover:shadow-[0_2px_20px_hsl(var(--primary)/0.25)]"
                   >
                     Full analysis
@@ -202,7 +202,7 @@ const Landing = () => {
                 <div className="flex-1 flex flex-col items-center gap-1.5">
                   <Button
                     onClick={() => navigateWithTransition("/quick-match")}
-                    variant="outline"
+                    variant="cta"
                     className="w-full min-h-[44px] text-xs uppercase"
                   >
                     Quick match
