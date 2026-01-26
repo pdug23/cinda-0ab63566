@@ -179,19 +179,27 @@ const Landing = () => {
               </div>
             </div>
 
-            {/* CTA fixed above bottom link */}
+            {/* CTA buttons fixed above bottom link */}
             <div
-              className={`absolute bottom-20 left-1/2 -translate-x-1/2 transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
+              className={`absolute bottom-20 left-1/2 -translate-x-1/2 w-full max-w-xs px-6 transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
                 showCta ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               }`}
             >
-              <Button
-                onClick={handleStartProfile}
-                variant="cta"
-                className="px-10 min-h-[44px] text-sm"
-              >
-                Let's get started
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3 w-full">
+                <Button
+                  onClick={() => navigateWithTransition("/quick-match")}
+                  variant="outline"
+                  className="flex-1 min-h-[44px] text-sm lowercase bg-transparent border-primary text-card-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+                >
+                  quick match
+                </Button>
+                <Button
+                  onClick={handleStartProfile}
+                  className="flex-1 min-h-[44px] text-sm lowercase bg-primary text-primary-foreground hover:bg-primary/90 transition-all"
+                >
+                  cinda analysis 🔒
+                </Button>
+              </div>
             </div>
           </PageTransition>
         )}
