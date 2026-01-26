@@ -120,6 +120,131 @@ function getCriticalArchetypes(profile: RunnerProfile): ShoeArchetype[] {
 }
 
 // ============================================================================
+// FEEL GAP DETECTION
+// ============================================================================
+
+/**
+ * Describes a gap in feel variety that could be explored
+ */
+interface FeelGap {
+  dimension: 'drop' | 'cushion' | 'rocker' | 'stability';
+  currentRange: { min: number; max: number };
+  suggestion: 'low' | 'high';  // Which end to explore
+  reason: string;
+  recommendedArchetype: ShoeArchetype;
+}
+
+/**
+ * Detect feel gaps in the current rotation
+ * Returns ordered list of feel dimensions that could use more variety
+ */
+function detectFeelGaps(
+  currentShoes: CurrentShoe[],
+  catalogue: Shoe[]
+): FeelGap[] {
+  const shoes = resolveShoes(currentShoes, catalogue);
+
+  if (shoes.length === 0) return [];
+
+  // Calculate values for each dimension
+  const drops = shoes.map(s => s.heel_drop_mm);
+  const cushions = shoes.map(s => s.cushion_softness_1to5);
+  const rockers = shoes.map(s => s.rocker_1to5);
+  const stabilities = shoes.map(s => s.stability_1to5);
+
+  console.log('[detectFeelGaps] Feel dimensions:', {
+    drops,
+    cushions,
+    rockers,
+    stabilities
+  });
+
+  const gaps: FeelGap[] = [];
+
+  // Check DROP gap
+  const dropMin = Math.min(...drops);
+  const dropMax = Math.max(...drops);
+
+  if (dropMin > 5) {
+    // All shoes are mid-to-high drop, suggest low drop
+    gaps.push({
+      dimension: 'drop',
+      currentRange: { min: dropMin, max: dropMax },
+      suggestion: 'low',
+      reason: "All your shoes are 6mm+ drop. A low-drop shoe could strengthen different muscles and add variety.",
+      recommendedArchetype: 'daily_trainer'
+    });
+  } else if (dropMax < 6) {
+    // All shoes are low drop, suggest higher drop
+    gaps.push({
+      dimension: 'drop',
+      currentRange: { min: dropMin, max: dropMax },
+      suggestion: 'high',
+      reason: "Your rotation is low-drop focused. A traditional drop shoe could give your calves a break.",
+      recommendedArchetype: 'daily_trainer'
+    });
+  }
+
+  // Check CUSHION gap
+  const cushionMin = Math.min(...cushions);
+  const cushionMax = Math.max(...cushions);
+
+  if (cushionMin >= 3) {
+    // All shoes are moderate-to-soft (3+), suggest firmer
+    gaps.push({
+      dimension: 'cushion',
+      currentRange: { min: cushionMin, max: cushionMax },
+      suggestion: 'low',
+      reason: "Your shoes are all on the softer side. A firmer, more responsive shoe could improve ground feel for faster efforts.",
+      recommendedArchetype: 'workout_shoe'
+    });
+  } else if (cushionMax <= 2) {
+    // All shoes are firm (1-2), suggest more cushion
+    gaps.push({
+      dimension: 'cushion',
+      currentRange: { min: cushionMin, max: cushionMax },
+      suggestion: 'high',
+      reason: "Your rotation lacks a plush option. A max-cushion shoe could protect your legs on easy days.",
+      recommendedArchetype: 'recovery_shoe'
+    });
+  }
+
+  // Check ROCKER gap
+  const rockerMin = Math.min(...rockers);
+  const rockerMax = Math.max(...rockers);
+
+  if (rockerMax < 3) {
+    // No high-rocker shoes, suggest one
+    gaps.push({
+      dimension: 'rocker',
+      currentRange: { min: rockerMin, max: rockerMax },
+      suggestion: 'high',
+      reason: "None of your shoes have an aggressive rocker. A rocker shoe could ease joint stress and offer a different ride.",
+      recommendedArchetype: 'daily_trainer'
+    });
+  }
+
+  // Check STABILITY gap (only if all shoes are neutral)
+  const stabilityMin = Math.min(...stabilities);
+  const stabilityMax = Math.max(...stabilities);
+
+  if (stabilityMax <= 2) {
+    // All neutral shoes
+    gaps.push({
+      dimension: 'stability',
+      currentRange: { min: stabilityMin, max: stabilityMax },
+      suggestion: 'high',
+      reason: "Your rotation is all neutral. A light stability shoe could offer support on tired days.",
+      recommendedArchetype: 'daily_trainer'
+    });
+  }
+
+  console.log('[detectFeelGaps] Gaps found:', gaps.map(g => g.dimension));
+
+  return gaps;
+}
+
+// ============================================================================
 // REASON STRINGS
 // ============================================================================
 
@@ -379,105 +504,57 @@ export function classifyRotationTier(
     });
 
     // Skip Tier 2, go straight to Tier 3 exploration
-    // Even if variety is low, frame it as exploration not necessity
-    const tier3Triggers: Array<{ archetype: ShoeArchetype; reason: string; triggerName: string }> = [];
+    // Use feel-based gap detection for recommendations
+    console.log('[classifyRotationTier] Complete rotation - analyzing feel gaps');
+    const feelGaps = detectFeelGaps(currentShoes, catalogue);
 
-    const dropRange = getDropRange(currentShoes, catalogue);
-    const cushionRange = getCushionRange(currentShoes, catalogue);
-    const rockerRange = getRockerRange(currentShoes, catalogue);
-
-    // For complete rotations with low variety, recommend based on feel gaps
-    if (health.variety < 30) {
-      // If all high cushion, suggest firmer
-      if (cushionRange.min > 2) {
-        tier3Triggers.push({
-          archetype: "workout_shoe",
-          reason: TIER_3_REASONS.complete_low_variety,
-          triggerName: "complete_low_variety_firm",
-        });
-      }
-      // If all low cushion, suggest more cushion
-      else if (cushionRange.max < 4) {
-        tier3Triggers.push({
-          archetype: "recovery_shoe",
-          reason: TIER_3_REASONS.complete_low_variety,
-          triggerName: "complete_low_variety_cushion",
-        });
-      }
-      // If all high drop, suggest lower
-      else if (dropRange.min > 6) {
-        tier3Triggers.push({
-          archetype: "workout_shoe",
-          reason: TIER_3_REASONS.zero_drop,
-          triggerName: "complete_low_variety_drop",
-        });
-      }
-    }
-
-    // Standard Tier 3 exploration checks
-    if (dropRange.min > 4) {
-      tier3Triggers.push({
-        archetype: "workout_shoe",
-        reason: TIER_3_REASONS.zero_drop,
-        triggerName: "zero_drop",
-      });
-    }
-    if (rockerRange.max < 4) {
-      tier3Triggers.push({
-        archetype: "daily_trainer",
-        reason: TIER_3_REASONS.high_rocker,
-        triggerName: "high_rocker",
-      });
-    }
-    if (cushionRange.max < 5) {
-      tier3Triggers.push({
-        archetype: "recovery_shoe",
-        reason: TIER_3_REASONS.max_cushion,
-        triggerName: "max_cushion",
-      });
-    }
-    if (cushionRange.min > 2) {
-      tier3Triggers.push({
-        archetype: "race_shoe",
-        reason: TIER_3_REASONS.firm_option,
-        triggerName: "firm_option",
-      });
-    }
-
-    // Build Tier 3 result for complete rotation
+    // Build Tier 3 result based on feel gaps
     let primary: RecommendationSlot;
     let secondary: RecommendationSlot | undefined;
 
-    if (tier3Triggers.length > 0) {
-      primary = {
-        archetype: tier3Triggers[0].archetype,
-        reason: tier3Triggers[0].reason,
-      };
+    if (feelGaps.length > 0) {
+      // Primary = first feel gap (most significant)
+      const primaryGap = feelGaps[0];
 
-      if (tier3Triggers.length > 1 && tier3Triggers[1].archetype !== tier3Triggers[0].archetype) {
+      // Check if they already have this archetype covered
+      let archetype = primaryGap.recommendedArchetype;
+      let reason = primaryGap.reason;
+
+      if (analysis.coveredArchetypes.includes(archetype)) {
+        // Adjust reason to clarify it's about feel variety within the archetype
+        reason = `Your rotation could use more feel variety. ${primaryGap.reason}`;
+      }
+
+      primary = { archetype, reason };
+
+      // Secondary = second feel gap if exists and different dimension
+      if (feelGaps.length > 1) {
+        const secondaryGap = feelGaps[1];
         secondary = {
-          archetype: tier3Triggers[1].archetype,
-          reason: tier3Triggers[1].reason,
+          archetype: secondaryGap.recommendedArchetype,
+          reason: secondaryGap.reason
         };
       }
     } else {
-      // Default for complete rotation with nothing to suggest
+      // No feel gaps detected - rotation has great variety
+      // Give a soft "you're all set" with optional exploration
       primary = {
         archetype: "daily_trainer",
-        reason: TIER_3_REASONS.complete_rotation,
+        reason: "Your rotation has great coverage and variety. If you ever want to experiment, a new daily trainer is always a safe way to try something different."
       };
+      secondary = undefined;
     }
 
-    const triggerNames = tier3Triggers.length > 0
-      ? tier3Triggers.map(t => t.triggerName).join(", ")
-      : "complete rotation";
+    const feelGapNames = feelGaps.length > 0
+      ? feelGaps.map(g => g.dimension).join(", ")
+      : "none";
 
     const result: TierClassification = {
       tier: 3,
       confidence: "soft",
       primary,
       secondary,
-      tierReason: `Tier 3: ${triggerNames}`,
+      tierReason: `Tier 3: Complete rotation. Feel gaps: ${feelGapNames}`,
     };
 
     console.log('[classifyRotationTier] Result:', {
@@ -485,6 +562,7 @@ export function classifyRotationTier(
       confidence: result.confidence,
       primary: result.primary.archetype,
       secondary: result.secondary?.archetype,
+      feelGaps: feelGapNames
     });
 
     return result;
@@ -593,86 +671,58 @@ export function classifyRotationTier(
   }
 
   // =========================================================================
-  // TIER 3: EXPLORATION
+  // TIER 3: EXPLORATION (based on feel gaps)
   // =========================================================================
 
-  const tier3Triggers: Array<{ archetype: ShoeArchetype; reason: string; triggerName: string }> = [];
+  console.log('[classifyRotationTier] Tier 3 - analyzing feel gaps');
+  const feelGaps = detectFeelGaps(currentShoes, catalogue);
 
-  const dropRange = getDropRange(currentShoes, catalogue);
-  const cushionRange = getCushionRange(currentShoes, catalogue);
-  const rockerRange = getRockerRange(currentShoes, catalogue);
-
-  // Check 1: No zero/low drop (all shoes >= 5mm)
-  if (dropRange.min > 4) {
-    tier3Triggers.push({
-      archetype: "workout_shoe", // Low drop often found in workout/race shoes
-      reason: TIER_3_REASONS.zero_drop,
-      triggerName: "zero_drop",
-    });
-  }
-
-  // Check 2: No high rocker (all shoes < 4 rocker)
-  if (rockerRange.max < 4) {
-    tier3Triggers.push({
-      archetype: "daily_trainer", // Many rocker shoes are daily trainers
-      reason: TIER_3_REASONS.high_rocker,
-      triggerName: "high_rocker",
-    });
-  }
-
-  // Check 3: No max cushion (no shoe with cushion === 5)
-  if (cushionRange.max < 5) {
-    tier3Triggers.push({
-      archetype: "recovery_shoe",
-      reason: TIER_3_REASONS.max_cushion,
-      triggerName: "max_cushion",
-    });
-  }
-
-  // Check 4: No firm/fast option (no shoe with cushion <= 2)
-  if (cushionRange.min > 2) {
-    tier3Triggers.push({
-      archetype: "race_shoe",
-      reason: TIER_3_REASONS.firm_option,
-      triggerName: "firm_option",
-    });
-  }
-
-  // Build Tier 3 result
+  // Build Tier 3 result based on feel gaps
   let primary: RecommendationSlot;
   let secondary: RecommendationSlot | undefined;
 
-  if (tier3Triggers.length > 0) {
-    primary = {
-      archetype: tier3Triggers[0].archetype,
-      reason: tier3Triggers[0].reason,
-    };
+  if (feelGaps.length > 0) {
+    // Primary = first feel gap (most significant)
+    const primaryGap = feelGaps[0];
 
-    if (tier3Triggers.length > 1 && tier3Triggers[1].archetype !== tier3Triggers[0].archetype) {
+    // Check if they already have this archetype covered
+    let archetype = primaryGap.recommendedArchetype;
+    let reason = primaryGap.reason;
+
+    if (analysis.coveredArchetypes.includes(archetype)) {
+      // Adjust reason to clarify it's about feel variety
+      reason = `Your rotation could use more feel variety. ${primaryGap.reason}`;
+    }
+
+    primary = { archetype, reason };
+
+    // Secondary = second feel gap if exists
+    if (feelGaps.length > 1) {
+      const secondaryGap = feelGaps[1];
       secondary = {
-        archetype: tier3Triggers[1].archetype,
-        reason: tier3Triggers[1].reason,
+        archetype: secondaryGap.recommendedArchetype,
+        reason: secondaryGap.reason
       };
     }
   } else {
-    // Default Tier 3: suggest exploration based on what they don't have
-    // If they have everything, suggest a daily trainer for variety
+    // No feel gaps detected - rotation has great variety
     primary = {
       archetype: "daily_trainer",
-      reason: "Your rotation is solid. A new daily trainer could add fresh variety.",
+      reason: "Your rotation is solid and varied. If you want to experiment, a new daily trainer is always a safe way to try something different."
     };
+    secondary = undefined;
   }
 
-  const triggerNames = tier3Triggers.length > 0
-    ? tier3Triggers.map(t => t.triggerName).join(", ")
-    : "complete rotation";
+  const feelGapNames = feelGaps.length > 0
+    ? feelGaps.map(g => g.dimension).join(", ")
+    : "none";
 
   const result: TierClassification = {
     tier: 3,
     confidence: "soft",
     primary,
     secondary,
-    tierReason: `Tier 3: ${triggerNames}`,
+    tierReason: `Tier 3: Feel gaps: ${feelGapNames}`,
   };
 
   console.log('[classifyRotationTier] Result:', {
@@ -680,6 +730,7 @@ export function classifyRotationTier(
     confidence: result.confidence,
     primary: result.primary.archetype,
     secondary: result.secondary?.archetype,
+    feelGaps: feelGapNames
   });
 
   return result;

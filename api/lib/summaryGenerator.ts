@@ -316,6 +316,13 @@ Complete rotation guidance (when coverage is 100% and Tier 3):
 - For improvements, prefer empty array or very soft suggestions like "If you want to explore..."
 - Never suggest they "need" something when coverage is 100%
 
+Feel-based Tier 3 recommendations:
+- For Tier 3 recommendations, the suggestion is based on FEEL variety, not missing archetypes
+- Reference the specific feel dimension when discussing exploration: "Your shoes are all high-drop" or "You don't have a max-cushion option"
+- The archetype is secondary - the feel exploration is the real recommendation
+- Keep it conversational: "A low-drop shoe could..." not "You need a low-drop shoe"
+- Possible feel dimensions: drop (heel-toe offset), cushion (soft vs firm), rocker (rolling vs flat), stability (neutral vs supportive)
+
 Respond with this exact JSON structure:
 {
   "prose": "string",
