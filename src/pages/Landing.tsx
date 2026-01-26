@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Lock } from "lucide-react";
 import { X } from "lucide-react";
 import cindaLogo from "@/assets/cinda-logo-grey.png";
 import OnboardingLayout from "@/components/OnboardingLayout";
@@ -188,16 +189,17 @@ const Landing = () => {
               <div className="flex flex-col sm:flex-row gap-3 w-full">
                 <Button
                   onClick={() => navigateWithTransition("/quick-match")}
-                  variant="outline"
-                  className="flex-1 min-h-[44px] text-sm lowercase bg-transparent border-primary text-card-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+                  variant="cta"
+                  className="flex-1 min-h-[44px] text-sm"
                 >
-                  quick match
+                  Quick match
                 </Button>
                 <Button
                   onClick={handleStartProfile}
-                  className="flex-1 min-h-[44px] text-sm lowercase bg-primary text-primary-foreground hover:bg-primary/90 transition-all"
+                  variant="cta"
+                  className="flex-1 min-h-[44px] text-sm bg-primary/10 border-primary/30 text-card-foreground hover:bg-primary/20 hover:border-primary/50 hover:shadow-[0_2px_20px_hsl(var(--primary)/0.25)]"
                 >
-                  cinda analysis 🔒
+                  Cinda analysis <Lock className="w-3.5 h-3.5 ml-1" />
                 </Button>
               </div>
             </div>
