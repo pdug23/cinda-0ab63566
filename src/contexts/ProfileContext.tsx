@@ -84,9 +84,35 @@ export interface FeelPreferences {
   brandPreference: BrandPreference;
 }
 
+// Feel gap from rotation analysis
+export interface FeelGapInfo {
+  dimension: 'cushion' | 'drop' | 'rocker' | 'stability';
+  suggestion: 'low' | 'high';
+  targetValue?: number;
+}
+
+// Contrast profile for variety recommendations
+export interface ContrastProfile {
+  cushion?: number;
+  stability?: number;
+  bounce?: number;
+  rocker?: number;
+  groundFeel?: number;
+}
+
+// Full recommendation slot from analysis
+export interface AnalysisRecommendation {
+  archetype: string;
+  reason: string;
+  feelGap?: FeelGapInfo;
+  contrastWith?: ContrastProfile;
+}
+
 export interface ShoeRequest {
   archetype: DiscoveryArchetype;
   feelPreferences: FeelPreferences;
+  feelGap?: FeelGapInfo;
+  contrastWith?: ContrastProfile;
 }
 
 export interface GapData {
@@ -147,6 +173,10 @@ export interface Step4Data {
   currentArchetypeIndex: number;
   shoeRequests: ShoeRequest[];
   gap: GapData | null;
+  analysisRecommendations?: {
+    primary: AnalysisRecommendation;
+    secondary?: AnalysisRecommendation;
+  };
 }
 
 export interface ProfileData {

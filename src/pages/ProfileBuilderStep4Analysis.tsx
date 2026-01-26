@@ -12,7 +12,7 @@ import {
 import AnimatedBackground from "@/components/AnimatedBackground";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
-import { useProfile, DiscoveryArchetype, GapData } from "@/contexts/ProfileContext";
+import { useProfile, DiscoveryArchetype, GapData, FeelGapInfo, ContrastProfile } from "@/contexts/ProfileContext";
 import { buildAPIRaceTimeFromPicker } from "@/utils/raceTime";
 import { saveGap } from "@/utils/storage";
 import { cn } from "@/lib/utils";
@@ -36,8 +36,18 @@ interface AnalysisData {
   recommendations: {
     tier: 1 | 2 | 3;
     confidence: "high" | "medium" | "soft";
-    primary: { archetype: string; reason: string };
-    secondary?: { archetype: string; reason: string };
+    primary: { 
+      archetype: string; 
+      reason: string;
+      feelGap?: FeelGapInfo;
+      contrastWith?: ContrastProfile;
+    };
+    secondary?: { 
+      archetype: string; 
+      reason: string;
+      feelGap?: FeelGapInfo;
+      contrastWith?: ContrastProfile;
+    };
   };
   health: Record<string, number>;
 }
@@ -193,6 +203,15 @@ const ProfileBuilderStep4Analysis = () => {
           archetypes.push(analysisData.recommendations.secondary.archetype);
         }
         setSelectedArchetypes(archetypes);
+        
+        // Store full recommendations including feelGap/contrastWith for Step 4b
+        updateStep4({
+          analysisRecommendations: {
+            primary: analysisData.recommendations.primary,
+            secondary: analysisData.recommendations.secondary,
+          }
+        });
+        
         // Also set gap for backwards compat
         if (detectedGap) {
           setGap(detectedGap);
