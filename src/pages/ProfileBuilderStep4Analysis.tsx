@@ -304,7 +304,7 @@ const ProfileBuilderStep4Analysis = () => {
     return (
       <div className="w-full mb-4">
         <div className="bg-card/80 rounded-lg p-4 border-2 border-slate-400">
-          <p className="text-white/90 leading-relaxed">
+          <p className="text-sm text-white/90 leading-relaxed">
             {prose}
           </p>
         </div>
