@@ -38,27 +38,27 @@ interface AnalysisData {
 
 const formatRoleLabel = (role: string): string => {
   const labels: Record<string, string> = {
-    daily: "daily training",
-    tempo: "tempo",
-    intervals: "intervals",
-    easy: "easy pace",
-    race: "races",
-    trail: "trail",
-    long_runs: "long runs",
-    recovery: "recovery",
+    daily: "Daily training",
+    tempo: "Tempo",
+    intervals: "Intervals",
+    easy: "Easy pace",
+    race: "Races",
+    trail: "Trail",
+    long_runs: "Long runs",
+    recovery: "Recovery",
   };
-  return labels[role] || role.toLowerCase().replace(/_/g, " ");
+  return labels[role] || role.replace(/_/g, " ").replace(/^\w/, c => c.toUpperCase());
 };
 
 const formatArchetypesToRunTypes = (archetypes: string[]): string => {
   if (!archetypes || archetypes.length === 0) return "";
 
   const runTypeMap: Record<string, string[]> = {
-    daily_trainer: ["recovery runs", "long runs at a comfortable pace"],
-    recovery_shoe: ["recovery runs"],
-    workout_shoe: ["workouts", "long runs with workout segments"],
-    race_shoe: ["races", "workouts", "long runs with workout segments"],
-    trail_shoe: ["trail"],
+    daily_trainer: ["Recovery runs", "Long runs at a comfortable pace"],
+    recovery_shoe: ["Recovery runs"],
+    workout_shoe: ["Workouts", "Long runs with workout segments"],
+    race_shoe: ["Races", "Workouts", "Long runs with workout segments"],
+    trail_shoe: ["Trail"],
   };
 
   const allRunTypes: string[] = [];
@@ -67,15 +67,15 @@ const formatArchetypesToRunTypes = (archetypes: string[]): string => {
     allRunTypes.push(...types);
   });
 
-  const hasComfortablePace = allRunTypes.includes("long runs at a comfortable pace");
-  const hasWorkoutSegments = allRunTypes.includes("long runs with workout segments");
+  const hasComfortablePace = allRunTypes.includes("Long runs at a comfortable pace");
+  const hasWorkoutSegments = allRunTypes.includes("Long runs with workout segments");
 
   let finalTypes: string[];
   if (hasComfortablePace && hasWorkoutSegments) {
     finalTypes = allRunTypes.filter(
-      (t) => t !== "long runs at a comfortable pace" && t !== "long runs with workout segments"
+      (t) => t !== "Long runs at a comfortable pace" && t !== "Long runs with workout segments"
     );
-    finalTypes.push("all long runs");
+    finalTypes.push("All long runs");
   } else {
     finalTypes = [...allRunTypes];
   }
@@ -86,20 +86,20 @@ const formatArchetypesToRunTypes = (archetypes: string[]): string => {
 
 const formatArchetype = (archetype: string): string => {
   const labels: Record<string, string> = {
-    daily_trainer: "daily trainer",
-    recovery_shoe: "recovery shoe",
-    workout_shoe: "workout shoe",
-    race_shoe: "race shoe",
-    trail_shoe: "trail shoe",
+    daily_trainer: "Daily trainer",
+    recovery_shoe: "Recovery shoe",
+    workout_shoe: "Workout shoe",
+    race_shoe: "Race shoe",
+    trail_shoe: "Trail shoe",
   };
-  return labels[archetype] || archetype.replace(/_/g, " ");
+  return labels[archetype] || archetype.replace(/_/g, " ").replace(/^\w/, c => c.toUpperCase());
 };
 
 // Tier config kept for potential future use but currently not shown
 const TIER_CONFIG = {
-  1: { label: "priority", className: "bg-red-500/20 text-red-400 border-red-500/40" },
-  2: { label: "recommended", className: "bg-amber-500/20 text-amber-400 border-amber-500/40" },
-  3: { label: "explore", className: "bg-teal-500/20 text-teal-400 border-teal-500/40" },
+  1: { label: "Priority", className: "bg-red-500/20 text-red-400 border-red-500/40" },
+  2: { label: "Recommended", className: "bg-amber-500/20 text-amber-400 border-amber-500/40" },
+  3: { label: "Explore", className: "bg-teal-500/20 text-teal-400 border-teal-500/40" },
 } as const;
 
 const ProfileBuilderStep4Analysis = () => {
@@ -230,12 +230,12 @@ const ProfileBuilderStep4Analysis = () => {
   const getCTAText = (): string => {
     // Tier 3 = exploration mode, softer language
     if (analysis?.recommendations.tier === 3) {
-      return "explore these options";
+      return "Explore these options";
     }
     if (selectedArchetypes.length === 2) {
-      return "set preferences for your new shoes";
+      return "Set preferences for your new shoes";
     }
-    return `set preferences for your new ${formatArchetype(selectedArchetypes[0])}`;
+    return `Set preferences for your new ${formatArchetype(selectedArchetypes[0]).toLowerCase()}`;
   };
 
   const handleSetPreferences = () => {
@@ -261,15 +261,15 @@ const ProfileBuilderStep4Analysis = () => {
 
     return (
       <div className="w-full mb-6">
-        <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
-          cinda's recommendation
+        <h3 className="text-sm font-medium text-slate-400 mb-4">
+          Cinda's recommendation
         </h3>
         <div
           className="relative bg-transparent rounded-lg p-4 border-2 border-slate-500 overflow-hidden"
           style={{ animation: "border-glisten 4s ease-in-out infinite" }}
         >
-          <p className="text-white mb-3 lowercase">
-            based on your rotation, you'd benefit from a{" "}
+          <p className="text-white mb-3">
+            Based on your rotation, you'd benefit from a{" "}
             <span
               className="font-bold"
               style={{
@@ -282,11 +282,11 @@ const ProfileBuilderStep4Analysis = () => {
                 animation: "text-glisten 3s ease-in-out infinite",
               }}
             >
-              {formatArchetype(gap.recommendedArchetype || "daily_trainer")}
+              {formatArchetype(gap.recommendedArchetype || "daily_trainer").toLowerCase()}
             </span>
           </p>
           {gap.reasoning && (
-            <p className="text-sm text-gray-300 lowercase relative z-10">
+            <p className="text-sm text-gray-300 relative z-10">
               {gap.reasoning}
             </p>
           )}
@@ -304,7 +304,7 @@ const ProfileBuilderStep4Analysis = () => {
     return (
       <div className="w-full mb-4">
         <div className="bg-card/80 rounded-lg p-4 border-2 border-slate-400">
-          <p className="text-white/90 leading-relaxed lowercase">
+          <p className="text-white/90 leading-relaxed">
             {prose}
           </p>
         </div>
@@ -332,7 +332,7 @@ const ProfileBuilderStep4Analysis = () => {
       if (tier === 3) {
         return (
           <>
-            if you're looking to experiment, you could explore a{" "}
+            If you're looking to experiment, you could explore a{" "}
             <span
               className="font-bold"
               style={{
@@ -345,14 +345,14 @@ const ProfileBuilderStep4Analysis = () => {
                 animation: "text-glisten 3s ease-in-out infinite",
               }}
             >
-              {formatArchetype(archetype)}
+              {formatArchetype(archetype).toLowerCase()}
             </span>
           </>
         );
       }
       return (
         <>
-          based on your rotation, you'd benefit from a{" "}
+          Based on your rotation, you'd benefit from a{" "}
           <span
             className="font-bold"
             style={{
@@ -365,7 +365,7 @@ const ProfileBuilderStep4Analysis = () => {
               animation: "text-glisten 3s ease-in-out infinite",
             }}
           >
-            {formatArchetype(archetype)}
+            {formatArchetype(archetype).toLowerCase()}
           </span>
         </>
       );
@@ -376,10 +376,10 @@ const ProfileBuilderStep4Analysis = () => {
       return (
         <div className="w-full mb-4">
           <div className="bg-card/80 rounded-lg p-4 border-2 border-slate-400">
-            <p className="text-white mb-3 lowercase">
+            <p className="text-white mb-3">
               {getIntroText(primary.archetype)}
             </p>
-            <p className="text-sm text-gray-300 lowercase">
+            <p className="text-sm text-gray-300">
               {primary.reason}
             </p>
           </div>
@@ -396,10 +396,10 @@ const ProfileBuilderStep4Analysis = () => {
             primaryIncluded ? "border-slate-400" : "border-slate-600/30 opacity-50"
           )}
         >
-          <p className="text-white mb-3 lowercase">
+          <p className="text-white mb-3">
             {getIntroText(primary.archetype)}
           </p>
-          <p className="text-sm text-gray-300 lowercase">{primary.reason}</p>
+          <p className="text-sm text-gray-300">{primary.reason}</p>
           <IncludeSkipPills
             isIncluded={primaryIncluded}
             onToggle={() => handleToggleArchetype(primary.archetype)}
@@ -412,10 +412,10 @@ const ProfileBuilderStep4Analysis = () => {
             secondaryIncluded ? "border-slate-400" : "border-slate-600/30 opacity-50"
           )}
         >
-          <p className="text-white mb-3 lowercase">
+          <p className="text-white mb-3">
             {getIntroText(secondary.archetype)}
           </p>
-          <p className="text-sm text-gray-300 lowercase">{secondary.reason}</p>
+          <p className="text-sm text-gray-300">{secondary.reason}</p>
           <IncludeSkipPills
             isIncluded={secondaryIncluded}
             onToggle={() => handleToggleArchetype(secondary.archetype)}
@@ -440,26 +440,26 @@ const ProfileBuilderStep4Analysis = () => {
       <button
         onClick={() => !isIncluded && onToggle()}
         className={cn(
-          "px-3 py-1 text-xs rounded-full border transition-all lowercase",
+          "px-3 py-1 text-xs rounded-full border transition-all",
           isIncluded
             ? "bg-slate-500/30 border-slate-400 text-white"
             : "bg-transparent border-slate-600 text-slate-400 hover:border-slate-500"
         )}
       >
-        include
+        Include
       </button>
       <button
         onClick={() => isIncluded && canSkip && onToggle()}
         disabled={!canSkip}
         className={cn(
-          "px-3 py-1 text-xs rounded-full border transition-all lowercase",
+          "px-3 py-1 text-xs rounded-full border transition-all",
           !isIncluded
             ? "bg-slate-500/30 border-slate-400 text-white"
             : "bg-transparent border-slate-600 text-slate-400 hover:border-slate-500",
           !canSkip && isIncluded && "opacity-40 cursor-not-allowed"
         )}
       >
-        skip
+        Skip
       </button>
     </div>
   );
@@ -471,8 +471,8 @@ const ProfileBuilderStep4Analysis = () => {
 
     return (
       <div className="w-full mb-6">
-        <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
-          your current rotation
+        <h3 className="text-sm font-medium text-slate-400 mb-4">
+          Your current rotation
         </h3>
         <div className="flex flex-col gap-2">
           {rotationSummary.map((item, index) => {
@@ -501,15 +501,15 @@ const ProfileBuilderStep4Analysis = () => {
                   
                   {/* Expanded content - hidden by default */}
                   <CollapsibleContent className="px-4 pb-4">
-                    <p className="text-sm text-gray-300 mb-1 lowercase">
-                      you use it for: {(item.userRunTypes || []).map(formatRoleLabel).join(", ")}
+                    <p className="text-sm text-gray-300 mb-1">
+                      You use it for: {(item.userRunTypes || []).map(formatRoleLabel).join(", ").toLowerCase()}
                     </p>
-                    <p className="text-sm text-gray-300 lowercase">
-                      best suited for: {formatArchetypesToRunTypes(item.archetypes || [])}
+                    <p className="text-sm text-gray-300">
+                      Best suited for: {formatArchetypesToRunTypes(item.archetypes || []).toLowerCase()}
                     </p>
                     {isSevere && item.misuseMessage && (
                       <div className="mt-3 p-2 bg-red-500/15 border border-red-500/30 rounded-md">
-                        <p className="text-sm text-red-400 lowercase">{item.misuseMessage}</p>
+                        <p className="text-sm text-red-400">{item.misuseMessage}</p>
                       </div>
                     )}
                   </CollapsibleContent>
@@ -553,7 +553,7 @@ const ProfileBuilderStep4Analysis = () => {
               className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              back
+              Back
             </button>
           </header>
           <div className="w-full max-w-md mx-auto flex flex-col flex-1 min-h-0 px-6 md:px-8">
@@ -588,9 +588,9 @@ const ProfileBuilderStep4Analysis = () => {
                   {analysis.recommendations.tier === 3 && (
                     <button
                       onClick={handleHappyWithRotation}
-                      className="mt-4 text-sm text-slate-400 hover:text-slate-300 underline underline-offset-4 decoration-dotted lowercase"
+                      className="mt-4 text-sm text-slate-400 hover:text-slate-300 underline underline-offset-4 decoration-dotted"
                     >
-                      i'm happy with my rotation
+                      I'm happy with my rotation
                     </button>
                   )}
                 </div>
@@ -620,7 +620,7 @@ const ProfileBuilderStep4Analysis = () => {
                     variant="cta"
                     className="w-full min-h-[44px] text-sm"
                   >
-                    set preferences for your new {formatArchetype(gap.recommendedArchetype || "daily_trainer")}
+                    Set preferences for your new {formatArchetype(gap.recommendedArchetype || "daily_trainer").toLowerCase()}
                   </Button>
                 </div>
               </div>
@@ -634,8 +634,8 @@ const ProfileBuilderStep4Analysis = () => {
                   style={{ WebkitOverflowScrolling: "touch" }}
                 >
                   <div className="w-full mb-6">
-                    <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
-                      cinda's recommendation
+                    <h3 className="text-sm font-medium text-slate-400 mb-4">
+                      Cinda's recommendation
                     </h3>
                     <div className="relative bg-white/10 rounded-lg p-4 border border-slate-500/30 overflow-hidden">
                       <div
@@ -646,8 +646,8 @@ const ProfileBuilderStep4Analysis = () => {
                           animation: "shimmer-diagonal 3s ease-in-out infinite",
                         }}
                       />
-                      <p className="text-white lowercase relative z-10">
-                        your rotation looks great! no obvious gaps found.
+                      <p className="text-white relative z-10">
+                        Your rotation looks great! No obvious gaps found.
                       </p>
                     </div>
                   </div>
@@ -659,7 +659,7 @@ const ProfileBuilderStep4Analysis = () => {
                     variant="cta"
                     className="w-full min-h-[44px] text-sm"
                   >
-                    choose specific shoes
+                    Choose specific shoes
                   </Button>
                 </div>
               </div>
@@ -669,11 +669,11 @@ const ProfileBuilderStep4Analysis = () => {
             {status === "error" && (
               <div className="flex flex-col items-center justify-center gap-6 animate-in fade-in duration-300 flex-1">
                 <div className="text-center">
-                  <h2 className="text-lg font-medium text-foreground mb-4 lowercase">
-                    something went wrong
+                  <h2 className="text-lg font-medium text-foreground mb-4">
+                    Something went wrong
                   </h2>
-                  <p className="text-sm text-muted-foreground mb-8 lowercase">
-                    couldn't analyse your rotation. try again or choose specific shoes instead.
+                  <p className="text-sm text-muted-foreground mb-8">
+                    Couldn't analyse your rotation. Try again or choose specific shoes instead.
                   </p>
                 </div>
                 <div className="flex flex-col gap-3 w-full">
@@ -682,14 +682,14 @@ const ProfileBuilderStep4Analysis = () => {
                     variant="default"
                     className="w-full min-h-[44px] text-sm"
                   >
-                    try again
+                    Try again
                   </Button>
                   <Button
                     onClick={handleChooseSpecific}
                     variant="outline"
                     className="w-full min-h-[44px] text-sm"
                   >
-                    choose specific shoes
+                    Choose specific shoes
                   </Button>
                 </div>
               </div>
