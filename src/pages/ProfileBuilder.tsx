@@ -17,13 +17,6 @@ const OptionalBadge = () => (
   </span>
 );
 
-// Field explanation component
-const FieldExplanation = ({ question, answer }: { question: string; answer: string }) => (
-  <p className="mt-2 text-[13px]">
-    <span className="italic text-orange-500">{question}</span>{" "}
-    <span className="text-muted-foreground">{answer}</span>
-  </p>
-);
 
 // Unit toggle component
 const UnitToggle = ({ 
@@ -350,10 +343,6 @@ const ProfileBuilder = () => {
                   onChange={handleHeightUnitChange}
                 />
               </div>
-              <FieldExplanation
-                question="why height?"
-                answer="height affects stride mechanics and how forces travel through the shoe."
-              />
             </div>
 
             {/* Weight - Optional */}
@@ -385,10 +374,6 @@ const ProfileBuilder = () => {
                   onChange={handleWeightUnitChange}
                 />
               </div>
-              <FieldExplanation
-                question="why weight?"
-                answer="weight affects how much a shoe compresses and how stable it feels underfoot."
-              />
             </div>
 
             {/* Experience Level - Required */}
