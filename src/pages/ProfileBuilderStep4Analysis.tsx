@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
-import TypewriterText from "@/components/TypewriterText";
 import { useProfile, DiscoveryArchetype, GapData } from "@/contexts/ProfileContext";
 import { buildAPIRaceTimeFromPicker } from "@/utils/raceTime";
 import { saveGap } from "@/utils/storage";
@@ -96,6 +95,7 @@ const formatArchetype = (archetype: string): string => {
   return labels[archetype] || archetype.replace(/_/g, " ");
 };
 
+// Tier config kept for potential future use but currently not shown
 const TIER_CONFIG = {
   1: { label: "priority", className: "bg-red-500/20 text-red-400 border-red-500/40" },
   2: { label: "recommended", className: "bg-amber-500/20 text-amber-400 border-amber-500/40" },
@@ -295,43 +295,131 @@ const ProfileBuilderStep4Analysis = () => {
     );
   };
 
-  // New rotation prose section with typing animation
-  const RotationProseSection = () => {
+  // Analysis summary section (static text, no typing animation)
+  const AnalysisSummarySection = () => {
     if (!analysis?.rotationSummary) return null;
 
     const { prose } = analysis.rotationSummary;
 
     return (
       <div className="w-full mb-4">
-        {/* Prose card with Cinda logo and premium shimmer background */}
-        <div 
-          className="relative rounded-lg p-5 overflow-hidden"
-          style={{
-            background: "linear-gradient(135deg, hsl(215 25% 20% / 0.6) 0%, hsl(220 20% 12% / 0.8) 50%, hsl(215 25% 20% / 0.6) 100%)"
-          }}
-        >
-          {/* Soft shimmer overlay */}
-          <div 
-            className="absolute inset-0 pointer-events-none"
+        <div className="bg-card/80 rounded-lg p-4 border-2 border-slate-400">
+          <p className="text-white/90 leading-relaxed lowercase">
+            {prose}
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  // Recommendation box with tier-aware phrasing (first box on page)
+  const RecommendationBoxSection = () => {
+    if (!analysis?.recommendations) return null;
+
+    const { tier, primary, secondary } = analysis.recommendations;
+    const hasSecondary = !!secondary;
+
+    const primaryIncluded = selectedArchetypes.includes(primary.archetype);
+    const secondaryIncluded = secondary
+      ? selectedArchetypes.includes(secondary.archetype)
+      : false;
+
+    const canSkipPrimary = secondaryIncluded;
+    const canSkipSecondary = primaryIncluded;
+
+    // Tier-aware intro text
+    const getIntroText = (archetype: string) => {
+      if (tier === 3) {
+        return (
+          <>
+            if you're looking to experiment, you could explore a{" "}
+            <span
+              className="font-bold"
+              style={{
+                background:
+                  "linear-gradient(90deg, #94a3b8 0%, #94a3b8 30%, #ffffff 50%, #94a3b8 70%, #94a3b8 100%)",
+                backgroundSize: "200% auto",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                animation: "text-glisten 3s ease-in-out infinite",
+              }}
+            >
+              {formatArchetype(archetype)}
+            </span>
+          </>
+        );
+      }
+      return (
+        <>
+          based on your rotation, you'd benefit from a{" "}
+          <span
+            className="font-bold"
             style={{
-              background: "linear-gradient(110deg, transparent 20%, hsl(215 20% 60% / 0.04) 40%, hsl(215 20% 80% / 0.08) 50%, hsl(215 20% 60% / 0.04) 60%, transparent 80%)",
-              backgroundSize: "200% 100%",
-              animation: "shimmer-diagonal 4s ease-in-out infinite"
+              background:
+                "linear-gradient(90deg, #94a3b8 0%, #94a3b8 30%, #ffffff 50%, #94a3b8 70%, #94a3b8 100%)",
+              backgroundSize: "200% auto",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              animation: "text-glisten 3s ease-in-out infinite",
             }}
+          >
+            {formatArchetype(archetype)}
+          </span>
+        </>
+      );
+    };
+
+    // Single recommendation (no pills needed)
+    if (!hasSecondary) {
+      return (
+        <div className="w-full mb-4">
+          <div className="bg-card/80 rounded-lg p-4 border-2 border-slate-400">
+            <p className="text-white mb-3 lowercase">
+              {getIntroText(primary.archetype)}
+            </p>
+            <p className="text-sm text-gray-300 lowercase">
+              {primary.reason}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    // Two recommendations with include/skip pills
+    return (
+      <div className="w-full mb-4 flex flex-col gap-3">
+        <div
+          className={cn(
+            "bg-card/80 rounded-lg p-4 border-2 transition-all",
+            primaryIncluded ? "border-slate-400" : "border-slate-600/30 opacity-50"
+          )}
+        >
+          <p className="text-white mb-3 lowercase">
+            {getIntroText(primary.archetype)}
+          </p>
+          <p className="text-sm text-gray-300 lowercase">{primary.reason}</p>
+          <IncludeSkipPills
+            isIncluded={primaryIncluded}
+            onToggle={() => handleToggleArchetype(primary.archetype)}
+            canSkip={canSkipPrimary}
           />
-          
-          {/* Cinda logo with spin animation */}
-          <img 
-            src={cindaLogo}
-            alt=""
-            className="w-6 h-6 mb-3 opacity-50 animate-spin-once"
-          />
-          
-          {/* Prose content */}
-          <TypewriterText
-            text={prose}
-            speed={40}
-            className="text-white/90 leading-relaxed relative z-10"
+        </div>
+        <div
+          className={cn(
+            "bg-card/80 rounded-lg p-4 border-2 transition-all",
+            secondaryIncluded ? "border-slate-400" : "border-slate-600/30 opacity-50"
+          )}
+        >
+          <p className="text-white mb-3 lowercase">
+            {getIntroText(secondary.archetype)}
+          </p>
+          <p className="text-sm text-gray-300 lowercase">{secondary.reason}</p>
+          <IncludeSkipPills
+            isIncluded={secondaryIncluded}
+            onToggle={() => handleToggleArchetype(secondary.archetype)}
+            canSkip={canSkipSecondary}
           />
         </div>
       </div>
@@ -376,134 +464,7 @@ const ProfileBuilderStep4Analysis = () => {
     </div>
   );
 
-  // Recommendation card component
-  const RecommendationCard = ({
-    recommendation,
-    isIncluded,
-    showPills,
-    showTierBadge,
-    tier,
-    canSkip,
-    onToggle,
-  }: {
-    recommendation: { archetype: string; reason: string };
-    isIncluded: boolean;
-    showPills: boolean;
-    showTierBadge: boolean;
-    tier: 1 | 2 | 3;
-    canSkip: boolean;
-    onToggle: () => void;
-  }) => {
-    const config = TIER_CONFIG[tier];
-
-    return (
-      <div
-        className={cn(
-          "relative rounded-lg p-4 border-2 transition-all",
-          isIncluded
-            ? "bg-card/80 border-slate-400/50"
-            : "bg-transparent border-slate-600/30 opacity-50"
-        )}
-      >
-        {/* Tier badge (top right) - only if showTierBadge */}
-        {showTierBadge && (
-          <span
-            className={cn(
-              "absolute right-4 top-4 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border",
-              config.className
-            )}
-          >
-            {config.label}
-          </span>
-        )}
-
-        {/* Content */}
-        <div>
-          <p
-            className="font-bold mb-1 pr-20 lowercase"
-            style={{
-              background:
-                "linear-gradient(90deg, #94a3b8 0%, #94a3b8 30%, #ffffff 50%, #94a3b8 70%, #94a3b8 100%)",
-              backgroundSize: "200% auto",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              animation: isIncluded ? "text-glisten 3s ease-in-out infinite" : "none",
-            }}
-          >
-            {formatArchetype(recommendation.archetype)}
-          </p>
-          <p className="text-sm text-gray-400 lowercase">{recommendation.reason}</p>
-        </div>
-
-        {/* Include/Skip pills */}
-        {showPills && (
-          <IncludeSkipPills isIncluded={isIncluded} onToggle={onToggle} canSkip={canSkip} />
-        )}
-      </div>
-    );
-  };
-
-  // New recommendations section
-  const RecommendationsSection = () => {
-    if (!analysis?.recommendations) return null;
-
-    const { tier, primary, secondary } = analysis.recommendations;
-    const hasSecondary = !!secondary;
-
-    // Only show tier badges if there are 2 recommendations with different tiers
-    // Since we have a single tier for the recommendations object, we only show badge if there's a secondary
-    // and they could theoretically differ (for future-proofing). For now, hide if single or same tier.
-    const showTierBadges = false; // Both share same tier in current API structure
-
-    const primaryIncluded = selectedArchetypes.includes(primary.archetype);
-    const secondaryIncluded = secondary
-      ? selectedArchetypes.includes(secondary.archetype)
-      : false;
-
-    // Can skip primary only if secondary is included, and vice versa
-    const canSkipPrimary = secondaryIncluded;
-    const canSkipSecondary = primaryIncluded;
-
-    return (
-      <div className="w-full mb-6">
-        <h3 className="text-sm font-medium text-slate-400 mb-4 lowercase">
-          cinda recommends
-        </h3>
-
-        {/* Tier 3 intro text */}
-        {tier === 3 && (
-          <p className="text-sm text-gray-400 mb-4 lowercase">
-            your rotation is solid! if you're looking to experiment:
-          </p>
-        )}
-
-        {/* Recommendation cards */}
-        <div className="flex flex-col gap-3">
-          <RecommendationCard
-            recommendation={primary}
-            isIncluded={primaryIncluded}
-            showPills={hasSecondary}
-            showTierBadge={showTierBadges}
-            tier={tier}
-            canSkip={canSkipPrimary}
-            onToggle={() => handleToggleArchetype(primary.archetype)}
-          />
-          {secondary && (
-            <RecommendationCard
-              recommendation={secondary}
-              isIncluded={secondaryIncluded}
-              showPills={hasSecondary}
-              showTierBadge={showTierBadges}
-              tier={tier}
-              canSkip={canSkipSecondary}
-              onToggle={() => handleToggleArchetype(secondary.archetype)}
-            />
-          )}
-        </div>
-      </div>
-    );
-  };
+  // Note: Old RecommendationCard and RecommendationsSection removed - now using RecommendationBoxSection
 
   const CurrentRotationSection = () => {
     if (!rotationSummary || rotationSummary.length === 0) return null;
@@ -551,16 +512,21 @@ const ProfileBuilderStep4Analysis = () => {
     );
   };
 
-  // Loading skeleton
+  // Loading skeleton matching new layout: logo → recommendation → summary → rotation
   const LoadingSkeleton = () => (
     <div className="space-y-4 animate-pulse">
-      {/* Prose skeleton - no header, matches new design */}
-      <div className="h-28 bg-card-foreground/10 rounded-lg" />
-      {/* Recommendations skeleton */}
+      {/* Logo skeleton */}
+      <div className="flex justify-center">
+        <div className="w-8 h-8 bg-card-foreground/10 rounded-full" />
+      </div>
+      {/* Recommendation box skeleton */}
+      <div className="h-24 bg-card-foreground/10 rounded-lg" />
+      {/* Summary box skeleton */}
+      <div className="h-20 bg-card-foreground/10 rounded-lg" />
+      {/* Rotation header + cards skeleton */}
       <div>
         <div className="h-4 w-32 bg-card-foreground/10 rounded mb-4" />
         <div className="space-y-3">
-          <div className="h-24 bg-card-foreground/10 rounded-lg" />
           <div className="h-24 bg-card-foreground/10 rounded-lg" />
         </div>
       </div>
@@ -598,8 +564,17 @@ const ProfileBuilderStep4Analysis = () => {
                   className="flex-1 min-h-0 overflow-y-auto pb-6 pr-2 scrollbar-styled touch-pan-y"
                   style={{ WebkitOverflowScrolling: "touch" }}
                 >
-                  <RotationProseSection />
-                  <RecommendationsSection />
+                  {/* Cinda logo at top */}
+                  <div className="flex justify-center mb-4">
+                    <img 
+                      src={cindaLogo}
+                      alt=""
+                      className="w-8 h-8 opacity-40 animate-spin-once"
+                    />
+                  </div>
+                  {/* New order: Recommendation → Summary → Current Rotation */}
+                  <RecommendationBoxSection />
+                  <AnalysisSummarySection />
                   <CurrentRotationSection />
                 </div>
                 <div className="flex flex-col items-center pt-4 pb-4 flex-shrink-0">
