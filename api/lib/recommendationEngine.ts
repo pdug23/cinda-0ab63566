@@ -768,6 +768,7 @@ export async function generateDiscoveryRecommendations(
     archetypes: [request.archetype],
     archetypeContext: request.archetype,
     feelPreferences: request.feelPreferences,
+    feelGap: request.feelGap, // Pass feel gap from rotation analysis for cinda_decides scoring
     excludeShoeIds: currentShoes.map(s => s.shoeId),
     profile: profile,
     currentShoes: currentShoes, // For love/dislike tag modifiers

@@ -12,6 +12,7 @@ import type {
   CurrentShoe,
   Shoe,
   ShoeArchetype,
+  FeelGapInfo,
 } from '../types.js';
 
 // ============================================================================
@@ -248,6 +249,39 @@ function detectFeelGaps(
   console.log('[detectFeelGaps] Gaps found (sorted by priority):', gaps.map(g => `${g.dimension} (p${g.priority})`));
 
   return gaps;
+}
+
+/**
+ * Convert internal FeelGap to FeelGapInfo for API response
+ */
+function toFeelGapInfo(gap: FeelGap): FeelGapInfo {
+  // Map dimension and suggestion to target values
+  let targetValue: number;
+
+  switch (gap.dimension) {
+    case 'cushion':
+      targetValue = gap.suggestion === 'high' ? 5 : 1;
+      break;
+    case 'rocker':
+      targetValue = gap.suggestion === 'high' ? 5 : 2;
+      break;
+    case 'stability':
+      targetValue = gap.suggestion === 'high' ? 4 : 1;
+      break;
+    case 'drop':
+      // For drop, we use mm values that will be mapped to buckets
+      // low drop = 0-4mm, high drop = 8-10mm
+      targetValue = gap.suggestion === 'low' ? 4 : 10;
+      break;
+    default:
+      targetValue = 3;
+  }
+
+  return {
+    dimension: gap.dimension,
+    suggestion: gap.suggestion,
+    targetValue
+  };
 }
 
 // ============================================================================
@@ -531,14 +565,19 @@ export function classifyRotationTier(
         reason = `Your rotation could use more feel variety. ${primaryGap.reason}`;
       }
 
-      primary = { archetype, reason };
+      primary = {
+        archetype,
+        reason,
+        feelGap: toFeelGapInfo(primaryGap)  // Include feel gap info for recommendation engine
+      };
 
       // Secondary = second feel gap if exists and different dimension
       if (feelGaps.length > 1) {
         const secondaryGap = feelGaps[1];
         secondary = {
           archetype: secondaryGap.recommendedArchetype,
-          reason: secondaryGap.reason
+          reason: secondaryGap.reason,
+          feelGap: toFeelGapInfo(secondaryGap)
         };
       }
     } else {
@@ -558,7 +597,8 @@ export function classifyRotationTier(
       if (primary.archetype === 'recovery_shoe') {
         primary = {
           archetype: 'daily_trainer',
-          reason: "A second daily trainer with a different feel could add variety and share the load."
+          reason: "A second daily trainer with a different feel could add variety and share the load.",
+          feelGap: primary.feelGap  // Preserve the feel gap info
         };
       }
     }
@@ -712,14 +752,19 @@ export function classifyRotationTier(
       reason = `Your rotation could use more feel variety. ${primaryGap.reason}`;
     }
 
-    primary = { archetype, reason };
+    primary = {
+      archetype,
+      reason,
+      feelGap: toFeelGapInfo(primaryGap)  // Include feel gap info for recommendation engine
+    };
 
     // Secondary = second feel gap if exists
     if (feelGaps.length > 1) {
       const secondaryGap = feelGaps[1];
       secondary = {
         archetype: secondaryGap.recommendedArchetype,
-        reason: secondaryGap.reason
+        reason: secondaryGap.reason,
+        feelGap: toFeelGapInfo(secondaryGap)
       };
     }
   } else {
@@ -738,7 +783,8 @@ export function classifyRotationTier(
     if (primary.archetype === 'recovery_shoe') {
       primary = {
         archetype: 'daily_trainer',
-        reason: "A second daily trainer with a different feel could add variety and share the load."
+        reason: "A second daily trainer with a different feel could add variety and share the load.",
+        feelGap: primary.feelGap  // Preserve the feel gap info
       };
     }
   }

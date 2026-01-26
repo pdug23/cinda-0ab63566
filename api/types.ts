@@ -295,11 +295,22 @@ export type RecommendationTier = 1 | 2 | 3;
 export type RecommendationConfidence = "high" | "medium" | "soft";
 
 /**
+ * Feel gap detected in rotation analysis
+ * Used to override "Let Cinda decide" preferences with smart defaults
+ */
+export interface FeelGapInfo {
+  dimension: 'cushion' | 'drop' | 'rocker' | 'stability';
+  suggestion: 'low' | 'high';
+  targetValue: number;  // Target value for this dimension (e.g., 5 for max cushion)
+}
+
+/**
  * A single recommendation slot (primary or secondary)
  */
 export interface RecommendationSlot {
   archetype: ShoeArchetype;
   reason: string;  // Why this archetype is recommended
+  feelGap?: FeelGapInfo;  // Optional: feel gap that drove this recommendation
 }
 
 /**
@@ -662,6 +673,7 @@ export interface FeelPreferences {
 export interface ShoeRequest {
   archetype: ShoeArchetype;
   feelPreferences: FeelPreferences;
+  feelGap?: FeelGapInfo; // Optional: feel gap from rotation analysis to guide "cinda_decides" preferences
 }
 
 /**

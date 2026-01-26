@@ -13,7 +13,8 @@ import type {
   HeelDropPreference,
   RunnerProfile,
   CurrentShoe,
-  ChatContext
+  ChatContext,
+  FeelGapInfo
 } from '../types.js';
 import {
   shoeHasArchetype,
@@ -30,6 +31,7 @@ export interface RetrievalConstraints {
   archetypeContext?: ShoeArchetype; // Current archetype context for cinda_decides mode
   stabilityNeed?: "neutral" | "stability" | "stable_feel";
   feelPreferences?: FeelPreferences;
+  feelGap?: FeelGapInfo; // Feel gap from rotation analysis - overrides cinda_decides defaults
   excludeShoeIds?: string[];
   profile?: RunnerProfile; // For brand preferences and other profile-based filtering
   currentShoes?: CurrentShoe[]; // For love/dislike tag modifiers
@@ -268,7 +270,8 @@ export function getHeelDropRangeDistance(
 export function scoreFeelMatch(
   shoe: Shoe,
   prefs?: FeelPreferences,
-  archetypeContext?: ShoeArchetype
+  archetypeContext?: ShoeArchetype,
+  feelGap?: FeelGapInfo
 ): number {
   if (!prefs) {
     return 0; // No preferences, no score contribution
@@ -294,8 +297,27 @@ export function scoreFeelMatch(
       if (distance === 2) return -15;  // Off by 2
       return -25;                      // Off by 3+
     } else {
-      // CINDA DECIDES: Softer penalties per spec
-      const targetValue = getArchetypeDefault(dimension, archetypeContext);
+      // CINDA DECIDES: Use feelGap if it matches this dimension, otherwise archetype defaults
+      let targetValue: number;
+
+      // Map dimension names to feelGap dimension names
+      const dimensionToFeelGap: Record<string, FeelGapInfo['dimension']> = {
+        'cushion': 'cushion',
+        'stability': 'stability',
+        'rocker': 'rocker',
+        // bounce and groundFeel don't have feelGap equivalents
+      };
+
+      const feelGapDimension = dimensionToFeelGap[dimension];
+
+      if (feelGap && feelGapDimension && feelGap.dimension === feelGapDimension) {
+        // Use feelGap targetValue - this is the rotation analysis override
+        targetValue = feelGap.targetValue;
+      } else {
+        // Fall back to archetype defaults
+        targetValue = getArchetypeDefault(dimension, archetypeContext);
+      }
+
       const distance = Math.abs(shoeValue - targetValue);
       if (distance === 0) return 5;    // Perfect match
       if (distance === 1) return -2;   // Off by 1
@@ -1175,7 +1197,7 @@ export function scoreShoe(
 
   // Base scores
   const archetypeScore = scoreArchetypeMatch(shoe, constraints.archetypes);
-  const feelScore = scoreFeelMatch(shoe, constraints.feelPreferences, constraints.archetypeContext);
+  const feelScore = scoreFeelMatch(shoe, constraints.feelPreferences, constraints.archetypeContext, constraints.feelGap);
   const heelDropScore = scoreHeelDropMatch(shoe, constraints.feelPreferences);
   const stabilityBonus = scoreStabilityBonus(shoe, constraints.stabilityNeed);
   const availabilityBonus = scoreAvailability(shoe);
