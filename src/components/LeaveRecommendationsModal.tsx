@@ -31,13 +31,13 @@ export const LeaveRecommendationsModal = ({
             <X className="w-4 h-4" />
           </button>
           <DialogTitle className="text-lg font-semibold text-card-foreground">
-            leave recommendations?
+            Leave recommendations?
           </DialogTitle>
         </DialogHeader>
 
         <div className="px-4 pt-4 pb-6">
           <p className="text-sm text-card-foreground/70">
-            any shoes you haven't shortlisted will be lost. you can always run cinda again to get new recommendations.
+            Any shoes you haven't shortlisted will be lost. You can always run Cinda again to get new recommendations.
           </p>
         </div>
 
@@ -47,14 +47,14 @@ export const LeaveRecommendationsModal = ({
             variant="outline"
             className="flex-1 min-h-[44px] text-sm bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5"
           >
-            leave
+            Leave
           </Button>
           <Button
             onClick={handleClose}
             variant="outline"
             className="flex-1 min-h-[44px] text-sm bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5"
           >
-            stay
+            Stay
           </Button>
         </div>
       </DialogContent>

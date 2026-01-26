@@ -17,14 +17,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const CINDA_GREETING = "👋 hey, cinda here.";
+const CINDA_GREETING = "👋 Hey, Cinda here.";
 
 const CINDA_FOLLOWUPS = [
-  "you've told me the basics, but running's personal. past injuries, shoes that didn't work out, weird fit issues, weather you run in... if there's anything else that might help, let me know.",
-  "thanks for the info so far. before i find your shoes — anything else i should know? injuries, fit quirks, shoes you've loved or hated, or the weather you usually run in?",
-  "almost there. if there's anything the questions didn't cover — past injuries, brands that don't work for you, wet or hot conditions, that kind of thing — now's the time.",
-  "one more thing before i get your recommendations. anything else that might affect your shoe choice? injuries, fit issues, weather conditions, specific needs?",
-  "got the basics. if there's anything personal that might help — an old injury, a shoe that never worked, wide feet, rainy climate — feel free to share.",
+  "You've told me the basics, but running's personal. Past injuries, shoes that didn't work out, weird fit issues, weather you run in... if there's anything else that might help, let me know.",
+  "Thanks for the info so far. Before I find your shoes — anything else I should know? Injuries, fit quirks, shoes you've loved or hated, or the weather you usually run in?",
+  "Almost there. If there's anything the questions didn't cover — past injuries, brands that don't work for you, wet or hot conditions, that kind of thing — now's the time.",
+  "One more thing before I get your recommendations. Anything else that might affect your shoe choice? Injuries, fit issues, weather conditions, specific needs?",
+  "Got the basics. If there's anything personal that might help — an old injury, a shoe that never worked, wide feet, rainy climate — feel free to share.",
 ];
 
 const getRandomFollowup = () => CINDA_FOLLOWUPS[Math.floor(Math.random() * CINDA_FOLLOWUPS.length)];
@@ -186,7 +186,7 @@ const ProfileBuilderStep3b = () => {
       // Create Cinda's response message
       const cindaResponse: ChatMessage = {
         role: 'assistant',
-        content: data.response || data.message || "thanks, I'll keep that in mind.",
+        content: data.response || data.message || "Thanks, I'll keep that in mind.",
         timestamp: new Date(),
       };
 
@@ -206,7 +206,7 @@ const ProfileBuilderStep3b = () => {
       // Show error message with same typing animation
       const errorMessage: ChatMessage = {
         role: 'assistant',
-        content: "hmm, something went wrong. try again?",
+        content: "Hmm, something went wrong. Try again?",
         timestamp: new Date(),
       };
 
@@ -257,14 +257,14 @@ const ProfileBuilderStep3b = () => {
               className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              back
+              Back
             </button>
             <button
               type="button"
               onClick={handleContinue}
               className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
             >
-              {hasUserSentMessage ? 'continue' : 'skip'}
+              {hasUserSentMessage ? 'Continue' : 'Skip'}
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </header>
@@ -346,7 +346,7 @@ const ProfileBuilderStep3b = () => {
                     e.target.style.height = `${Math.min(e.target.scrollHeight, 96)}px`;
                   }}
                   onKeyDown={handleKeyDown}
-                  placeholder="reply..."
+                  placeholder="Reply..."
                   rows={1}
                   disabled={isTyping || introPhase !== 'done'}
                   className={cn(
@@ -403,12 +403,12 @@ const ProfileBuilderStep3b = () => {
               <X className="w-4 h-4" />
             </button>
             <DialogTitle className="text-lg font-semibold text-card-foreground">
-              ready to move on?
+              Ready to move on?
             </DialogTitle>
           </DialogHeader>
           <div className="px-4 pt-4 pb-6">
             <p className="text-sm text-card-foreground/70">
-              cinda will use what you've shared to personalise your recommendations.
+              Cinda will use what you've shared to personalise your recommendations.
             </p>
           </div>
           <div className="flex flex-col gap-3 p-4 pt-0">
@@ -417,14 +417,14 @@ const ProfileBuilderStep3b = () => {
               variant="outline"
               className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
             >
-              yes, find my shoes
+              Yes, find my shoes
             </Button>
             <Button 
               onClick={() => setConfirmLeaveOpen(false)} 
               variant="outline"
               className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
             >
-              keep chatting
+              Keep chatting
             </Button>
           </div>
         </DialogContent>

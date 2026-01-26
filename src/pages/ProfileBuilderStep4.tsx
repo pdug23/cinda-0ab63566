@@ -223,7 +223,7 @@ const ProfileBuilderStep4 = () => {
               className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              back
+              Back
             </button>
           </header>
 
@@ -231,25 +231,25 @@ const ProfileBuilderStep4 = () => {
           <div className="flex flex-col px-6 md:px-8 pb-6 md:pb-8">
             {/* Heading - gray/white to match other steps */}
             <p className="text-sm text-card-foreground/90 mb-6 text-left">
-              profile complete. now, how can cinda help you?
+              Profile complete. Now, how can Cinda help you?
             </p>
 
             {/* Mode cards - stacked vertically, full width */}
             <div className="flex flex-col gap-4">
               <ModeCard
                 icon={<CrosshairIcon className="w-6 h-6" />}
-                label="find a specific shoe"
-                description="know what type of shoe you're after? cinda works with you to find the shoe you need"
+                label="Find a specific shoe"
+                description="Know what type of shoe you're after? Cinda works with you to find the shoe you need"
                 onClick={handleShoppingMode}
               />
               <ModeCard
                 icon={<RotationIcon className="w-6 h-6" />}
-                label="check my rotation"
-                description="not sure what you're missing? cinda reviews your current rotation and identifies what's missing"
+                label="Check my rotation"
+                description="Not sure what you're missing? Cinda reviews your current rotation and identifies what's missing"
                 disabled={!hasShoes}
                 disabledReason={
                   !hasShoes
-                    ? "to analyse your rotation, you need to add at least one shoe first"
+                    ? "To analyse your rotation, you need to add at least one shoe first"
                     : undefined
                 }
                 onClick={handleAnalysisMode}

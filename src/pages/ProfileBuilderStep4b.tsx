@@ -143,12 +143,12 @@ const AdaptiveTooltip = ({
 
 // Archetype display names
 const ARCHETYPE_LABELS: Record<DiscoveryArchetype, string> = {
-  daily_trainer: "daily trainer",
-  recovery_shoe: "recovery shoe",
-  workout_shoe: "workout shoe",
-  race_shoe: "race shoe",
-  trail_shoe: "trail shoe",
-  not_sure: "shoe",
+  daily_trainer: "Daily trainer",
+  recovery_shoe: "Recovery shoe",
+  workout_shoe: "Workout shoe",
+  race_shoe: "Race shoe",
+  trail_shoe: "Trail shoe",
+  not_sure: "Shoe",
 };
 
 // Slider configuration
@@ -207,9 +207,9 @@ const ModeSelector = ({
   onChange: (mode: PreferenceMode) => void;
 }) => {
   const modes: { value: PreferenceMode; label: string }[] = [
-    { value: "cinda_decides", label: "let cinda decide" },
-    { value: "user_set", label: "i have a preference" },
-    { value: "wildcard", label: "i don't mind" },
+    { value: "cinda_decides", label: "Let Cinda decide" },
+    { value: "user_set", label: "I have a preference" },
+    { value: "wildcard", label: "I don't mind" },
   ];
 
   return (
@@ -752,7 +752,7 @@ const ProfileBuilderStep4b = () => {
               className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              back
+              Back
             </button>
           </header>
 
@@ -819,7 +819,7 @@ const ProfileBuilderStep4b = () => {
               className="w-full min-h-[44px] text-sm"
               disabled={!isValid()}
             >
-              next
+              Next
             </Button>
           </footer>
         </PageTransition>

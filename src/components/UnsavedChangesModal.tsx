@@ -31,13 +31,13 @@ export const UnsavedChangesModal = ({
             <X className="w-4 h-4" />
           </button>
           <DialogTitle className="text-lg font-semibold text-card-foreground">
-            leave this step?
+            Leave this step?
           </DialogTitle>
         </DialogHeader>
 
         <div className="px-4 pt-4 pb-6">
           <p className="text-sm text-card-foreground/70">
-            you've entered some info. if you go back now, it won't be saved.
+            You've entered some info. If you go back now, it won't be saved.
           </p>
         </div>
 
@@ -47,14 +47,14 @@ export const UnsavedChangesModal = ({
             variant="outline"
             className="flex-1 min-h-[44px] text-sm bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5"
           >
-            discard
+            Discard
           </Button>
           <Button
             onClick={handleClose}
             variant="outline"
             className="flex-1 min-h-[44px] text-sm bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5"
           >
-            stay
+            Stay
           </Button>
         </div>
       </DialogContent>

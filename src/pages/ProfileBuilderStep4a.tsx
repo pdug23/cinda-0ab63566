@@ -10,11 +10,11 @@ import { toast } from "sonner";
 
 
 const ARCHETYPE_OPTIONS: { value: DiscoveryArchetype; label: string; description: string }[] = [
-  { value: "daily_trainer", label: "daily trainer", description: "a versatile shoe that handles most runs well" },
-  { value: "recovery_shoe", label: "recovery shoe", description: "maximum comfort for easy and tired days" },
-  { value: "workout_shoe", label: "workout shoe", description: "light and responsive for faster sessions" },
-  { value: "race_shoe", label: "race shoe", description: "built for race day speed and efficiency" },
-  { value: "trail_shoe", label: "trail shoe", description: "grip and protection for off-road running" },
+  { value: "daily_trainer", label: "Daily trainer", description: "A versatile shoe that handles most runs well" },
+  { value: "recovery_shoe", label: "Recovery shoe", description: "Maximum comfort for easy and tired days" },
+  { value: "workout_shoe", label: "Workout shoe", description: "Light and responsive for faster sessions" },
+  { value: "race_shoe", label: "Race shoe", description: "Built for race day speed and efficiency" },
+  { value: "trail_shoe", label: "Trail shoe", description: "Grip and protection for off-road running" },
 ];
 
 const ProfileBuilderStep4a = () => {
@@ -35,7 +35,7 @@ const ProfileBuilderStep4a = () => {
     } else {
       // Check max limit
       if (selectedArchetypes.length >= 3) {
-        toast.error("you can select up to 3 types");
+        toast.error("You can select up to 3 types");
         return;
       }
       // Add archetype
@@ -71,7 +71,7 @@ const ProfileBuilderStep4a = () => {
               className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              back
+              Back
             </button>
           </header>
 
@@ -82,12 +82,12 @@ const ProfileBuilderStep4a = () => {
           >
             {/* Heading */}
             <p className="text-sm text-card-foreground/90 mb-2">
-              what type of shoes are you looking for?
+              What type of shoes are you looking for?
             </p>
             
             {/* Helper text */}
             <p className="text-xs text-card-foreground/40 mb-4">
-              select 1-3 types
+              Select 1-3 types
             </p>
 
             {/* Archetype options */}
@@ -109,10 +109,10 @@ const ProfileBuilderStep4a = () => {
                 className="w-full min-h-[56px] p-4 rounded-lg text-left transition-all duration-200 bg-slate-500/5 border border-slate-500/30 hover:border-slate-400/50 hover:bg-slate-500/10 hover:shadow-[0_0_20px_rgba(100,116,139,0.15)]"
               >
                 <span className="block text-sm font-medium text-slate-400 italic">
-                  not sure
+                  Not sure
                 </span>
                 <span className="block text-xs text-slate-500/70 mt-1">
-                  analyse my rotation instead
+                  Analyse my rotation instead
                 </span>
               </button>
             </div>
@@ -133,7 +133,7 @@ const ProfileBuilderStep4a = () => {
               className="w-full min-h-[44px] text-sm"
               disabled={!isNextEnabled}
             >
-              next
+              Next
             </Button>
           </footer>
         </PageTransition>
