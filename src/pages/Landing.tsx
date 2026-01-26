@@ -85,14 +85,16 @@ const Landing = () => {
       {(viewState === "orientation" || isExiting) && <FloatingJargon />}
 
       <OnboardingLayout centerContent transparent>
-        {/* Persistent Logo - always visible, spins on transition */}
-        <img 
-          src={cindaLogo} 
-          alt="Cinda" 
-          className={`h-[80px] absolute top-[60px] left-1/2 -translate-x-1/2 z-20 ${
-            isExiting ? "animate-spin-settle" : ""
-          }`}
-        />
+        {/* Logo - only visible on landing, spins on transition */}
+        {viewState === "landing" && (
+          <img 
+            src={cindaLogo} 
+            alt="Cinda" 
+            className={`h-[80px] absolute top-[60px] left-1/2 -translate-x-1/2 z-20 ${
+              isExiting ? "animate-spin-settle" : ""
+            }`}
+          />
+        )}
 
         {viewState === "landing" && (
           <PageTransition className="absolute inset-0 flex flex-col items-center text-center px-6 z-10">
@@ -186,21 +188,27 @@ const Landing = () => {
                 showCta ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               }`}
             >
-              <div className="flex flex-col sm:flex-row gap-3 w-full">
-                <Button
-                  onClick={handleStartProfile}
-                  variant="cta"
-                  className="flex-1 min-h-[44px] text-sm bg-primary/10 border-primary/30 text-card-foreground hover:bg-primary/20 hover:border-primary/50 hover:shadow-[0_2px_20px_hsl(var(--primary)/0.25)]"
-                >
-                  Full analysis <LogIn className="w-3.5 h-3.5 ml-1" />
-                </Button>
-                <Button
-                  onClick={() => navigateWithTransition("/quick-match")}
-                  variant="cta"
-                  className="flex-1 min-h-[44px] text-sm"
-                >
-                  Quick match
-                </Button>
+              <div className="flex flex-col sm:flex-row gap-4 w-full">
+                <div className="flex-1 flex flex-col items-center gap-1.5">
+                  <Button
+                    onClick={handleStartProfile}
+                    variant="cta"
+                    className="w-full min-h-[44px] text-sm bg-primary/10 border-primary/30 text-card-foreground hover:bg-primary/20 hover:border-primary/50 hover:shadow-[0_2px_20px_hsl(var(--primary)/0.25)]"
+                  >
+                    Full analysis <LogIn className="w-3.5 h-3.5 ml-1" />
+                  </Button>
+                  <span className="text-xs text-muted-foreground/60">~5 minutes</span>
+                </div>
+                <div className="flex-1 flex flex-col items-center gap-1.5">
+                  <Button
+                    onClick={() => navigateWithTransition("/quick-match")}
+                    variant="cta"
+                    className="w-full min-h-[44px] text-sm"
+                  >
+                    Quick match
+                  </Button>
+                  <span className="text-xs text-muted-foreground/60">~1 minute</span>
+                </div>
               </div>
             </div>
           </PageTransition>
