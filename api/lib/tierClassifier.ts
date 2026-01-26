@@ -407,7 +407,7 @@ export function classifyRotationTier(
   }
 
   // Check 3: Volume spread (70+ km/week and fewer than 3 shoes)
-  const volumeKm = getVolumeKm(profile);
+  // volumeKm already calculated above in Tier 1 section
   if (volumeKm >= 70 && currentShoes.length < 3) {
     tier2Triggers.push({
       archetype: "daily_trainer",
