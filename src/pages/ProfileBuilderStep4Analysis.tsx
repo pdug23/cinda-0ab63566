@@ -332,7 +332,7 @@ const ProfileBuilderStep4Analysis = () => {
       if (tier === 3) {
         return (
           <>
-            If you're looking to experiment, you could explore a{" "}
+            You could explore a{" "}
             <span
               className="font-bold"
               style={{
@@ -352,7 +352,7 @@ const ProfileBuilderStep4Analysis = () => {
       }
       return (
         <>
-          Based on your rotation, you'd benefit from a{" "}
+          You'd benefit from a{" "}
           <span
             className="font-bold"
             style={{
@@ -387,7 +387,7 @@ const ProfileBuilderStep4Analysis = () => {
       );
     }
 
-    // Two recommendations with include/skip pills
+    // Two recommendations with "Not for me" toggle
     return (
       <div className="w-full mb-4 flex flex-col gap-3">
         <div
@@ -396,15 +396,17 @@ const ProfileBuilderStep4Analysis = () => {
             primaryIncluded ? "border-slate-400" : "border-slate-600/30 opacity-50"
           )}
         >
-          <p className="text-white mb-3">
-            {getIntroText(primary.archetype)}
-          </p>
-          <p className="text-sm text-gray-300">{primary.reason}</p>
-          <IncludeSkipPills
-            isIncluded={primaryIncluded}
-            onToggle={() => handleToggleArchetype(primary.archetype)}
-            canSkip={canSkipPrimary}
-          />
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-white">
+              {getIntroText(primary.archetype)}
+            </p>
+            <NotForMeToggle
+              isSkipped={!primaryIncluded}
+              onToggle={() => handleToggleArchetype(primary.archetype)}
+              canSkip={canSkipPrimary}
+            />
+          </div>
+          <p className="text-sm text-gray-300 mt-3">{primary.reason}</p>
         </div>
         <div
           className={cn(
@@ -412,56 +414,45 @@ const ProfileBuilderStep4Analysis = () => {
             secondaryIncluded ? "border-slate-400" : "border-slate-600/30 opacity-50"
           )}
         >
-          <p className="text-white mb-3">
-            {getIntroText(secondary.archetype)}
-          </p>
-          <p className="text-sm text-gray-300">{secondary.reason}</p>
-          <IncludeSkipPills
-            isIncluded={secondaryIncluded}
-            onToggle={() => handleToggleArchetype(secondary.archetype)}
-            canSkip={canSkipSecondary}
-          />
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-white">
+              {getIntroText(secondary.archetype)}
+            </p>
+            <NotForMeToggle
+              isSkipped={!secondaryIncluded}
+              onToggle={() => handleToggleArchetype(secondary.archetype)}
+              canSkip={canSkipSecondary}
+            />
+          </div>
+          <p className="text-sm text-gray-300 mt-3">{secondary.reason}</p>
         </div>
       </div>
     );
   };
 
-  // Include/Skip pill buttons
-  const IncludeSkipPills = ({
-    isIncluded,
+  // "Not for me" toggle button
+  const NotForMeToggle = ({
+    isSkipped,
     onToggle,
     canSkip,
   }: {
-    isIncluded: boolean;
+    isSkipped: boolean;
     onToggle: () => void;
     canSkip: boolean;
   }) => (
-    <div className="flex gap-2 mt-3">
-      <button
-        onClick={() => !isIncluded && onToggle()}
-        className={cn(
-          "px-3 py-1 text-xs rounded-full border transition-all",
-          isIncluded
-            ? "bg-slate-500/30 border-slate-400 text-white"
-            : "bg-transparent border-slate-600 text-slate-400 hover:border-slate-500"
-        )}
-      >
-        Include
-      </button>
-      <button
-        onClick={() => isIncluded && canSkip && onToggle()}
-        disabled={!canSkip}
-        className={cn(
-          "px-3 py-1 text-xs rounded-full border transition-all",
-          !isIncluded
-            ? "bg-slate-500/30 border-slate-400 text-white"
-            : "bg-transparent border-slate-600 text-slate-400 hover:border-slate-500",
-          !canSkip && isIncluded && "opacity-40 cursor-not-allowed"
-        )}
-      >
-        Skip
-      </button>
-    </div>
+    <button
+      onClick={() => canSkip && onToggle()}
+      disabled={!canSkip && !isSkipped}
+      className={cn(
+        "px-3 py-1 text-xs rounded-full border transition-all whitespace-nowrap flex-shrink-0",
+        isSkipped
+          ? "bg-slate-500/30 border-slate-400 text-white"
+          : "bg-transparent border-slate-600 text-slate-400 hover:border-slate-500",
+        !canSkip && !isSkipped && "opacity-40 cursor-not-allowed"
+      )}
+    >
+      Not for me
+    </button>
   );
 
   // Note: Old RecommendationCard and RecommendationsSection removed - now using RecommendationBoxSection
