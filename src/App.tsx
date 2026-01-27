@@ -15,6 +15,7 @@ import ProfileBuilderStep4a from "./pages/ProfileBuilderStep4a";
 import ProfileBuilderStep4Analysis from "./pages/ProfileBuilderStep4Analysis";
 import ProfileBuilderStep4b from "./pages/ProfileBuilderStep4b";
 import Recommendations from "./pages/Recommendations";
+import QuickMatch from "./pages/QuickMatch";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/profile/step4-analysis" element={<ProfileBuilderStep4Analysis />} />
             <Route path="/profile/step4b" element={<ProfileBuilderStep4b />} />
             <Route path="/recommendations" element={<Recommendations />} />
+            <Route path="/quick-match" element={<QuickMatch />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
