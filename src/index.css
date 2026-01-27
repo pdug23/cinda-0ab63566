@@ -159,11 +159,7 @@ All colors MUST be HSL.
   }
 
   html {
-    background: 
-      var(--gradient-nebula-overlay),
-      var(--gradient-warm);
-    background-color: hsl(0 0% 12%);
-    background-attachment: fixed;
+    background-color: #1e1e1e;
   }
 
   body {
