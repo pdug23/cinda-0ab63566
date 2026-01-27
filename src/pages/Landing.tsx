@@ -96,13 +96,13 @@ const Landing = () => {
 
         {viewState === "landing" && (
           <PageTransition className="absolute inset-0 flex flex-col items-center text-center px-6 z-10">
-            {/* Landing content with exit animation */}
+            {/* Landing content - centered tagline */}
             <div
-              className={`flex flex-col items-center transition-all ${
+              className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all ${
                 prefersReducedMotion ? "" : "duration-300"
-              } ${isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100"} mt-[120px]`}
+              } ${isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
             >
-              <AnimatedTagline className="text-card-foreground/90 max-w-md leading-tight italic text-center" />
+              <AnimatedTagline className="text-card-foreground/90 max-w-md leading-tight text-center" />
             </div>
 
             {/* Button fixed above bottom link */}

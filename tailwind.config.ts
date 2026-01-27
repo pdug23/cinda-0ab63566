@@ -109,6 +109,14 @@ export default {
 				'100%': {
 					transform: 'rotate(360deg)'
 				}
+			},
+			'float-wave': {
+				'0%, 100%': {
+					transform: 'translateY(0px)'
+				},
+				'50%': {
+					transform: 'translateY(-6px)'
+				}
 			}
   		},
   		animation: {
@@ -116,7 +124,8 @@ export default {
   			'accordion-up': 'accordion-up 0.2s ease-out',
   			'glow-pulse': 'glow-pulse 8s ease-in-out infinite',
   			'spin-settle': 'spin-settle 0.6s ease-out',
-  			'spin-once': 'spin-once 0.6s ease-out'
+  			'spin-once': 'spin-once 0.6s ease-out',
+  			'float-wave': 'float-wave 3s ease-in-out infinite'
   		},
 		fontFamily: {
 			sans: [
