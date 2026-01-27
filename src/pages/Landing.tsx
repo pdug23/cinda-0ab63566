@@ -100,9 +100,9 @@ const Landing = () => {
             <div
               className={`flex flex-col items-center transition-all ${
                 prefersReducedMotion ? "" : "duration-300"
-              } ${isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100"} mt-[100px]`}
+              } ${isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100"} mt-[120px]`}
             >
-              <AnimatedTagline className="text-card-foreground/90 text-center" />
+              <AnimatedTagline className="text-card-foreground/90 max-w-md leading-tight italic text-center" />
             </div>
 
             {/* Button fixed above bottom link */}

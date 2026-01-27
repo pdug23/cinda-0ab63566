@@ -10,60 +10,44 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
   const prefersReducedMotion = typeof window !== "undefined" && 
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const lines = [
-    "Every",
-    "runner",
-    "deserves",
-    "to find",
-    "their",
-    "perfect",
-    "fit."
-  ];
+  const words = "Every runner deserves to find their perfect fit.".split(" ");
 
   useEffect(() => {
+    // Small delay to ensure component is mounted before animation starts
     const timer = setTimeout(() => setShouldAnimate(true), 50);
     return () => clearTimeout(timer);
   }, []);
 
   if (prefersReducedMotion) {
     return (
-      <h1 className={`flex flex-col items-center gap-1 ${className}`}>
-        {lines.map((line, i) => (
-          <span
-            key={i}
-            style={{ 
-              fontSize: "36px", 
-              fontWeight: 900, 
-              fontStyle: "italic",
-              fontVariantLigatures: "none"
-            }}
-          >
-            {line}
-          </span>
-        ))}
+      <h1 
+        className={className}
+        style={{ fontVariantLigatures: "none", fontSize: "24px", fontWeight: 900 }}
+      >
+        Every runner deserves to find their perfect fit.
       </h1>
     );
   }
 
   return (
-    <h1 className={`flex flex-col items-center gap-1 ${className}`}>
-      {lines.map((line, i) => (
+    <h1 
+      className={className}
+      style={{ fontVariantLigatures: "none", fontSize: "24px", fontWeight: 900 }}
+    >
+      {words.map((word, i) => (
         <span
           key={i}
-          className={`block transition-all duration-500 ease-out ${
+          className={`inline-block transition-all duration-500 ease-out ${
             shouldAnimate 
               ? "opacity-100 translate-y-0" 
-              : "opacity-0 translate-y-4"
+              : "opacity-0 translate-y-3"
           }`}
           style={{ 
-            transitionDelay: `${i * 120}ms`,
-            fontSize: "36px",
-            fontWeight: 900,
-            fontStyle: "italic",
-            fontVariantLigatures: "none"
+            transitionDelay: `${i * 150}ms`,
+            marginRight: i < words.length - 1 ? "0.3em" : 0
           }}
         >
-          {line}
+          {word}
         </span>
       ))}
     </h1>
