@@ -16,6 +16,15 @@ interface OnboardingLayoutProps {
   bottomText?: string | null;
 }
 
+// Detect if running as installed PWA (standalone mode)
+const isStandalone = () => {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as unknown as { standalone?: boolean }).standalone === true
+  );
+};
+
 const OnboardingLayout = ({
   children,
   scrollable = false,
@@ -85,7 +94,8 @@ const OnboardingLayout = ({
             }`}
           style={{
             height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px)",
-            maxHeight: "844px",
+            // In standalone PWA mode, allow full height; in browser, cap at 844px to avoid URL bar overlap
+            maxHeight: isStandalone() ? "none" : "844px",
             minHeight: "540px",
           }}
         >
