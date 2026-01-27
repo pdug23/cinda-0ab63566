@@ -12,6 +12,8 @@ interface OnboardingLayoutProps {
   transparentBackground?: boolean;
   /** Whether to allow content to overflow (for glow effects) */
   allowOverflow?: boolean;
+  /** Whether to remove all visual styling (bg, border, shadow, max-width) */
+  invisible?: boolean;
 }
 
 const OnboardingLayout = ({
@@ -20,7 +22,8 @@ const OnboardingLayout = ({
   centerContent = false,
   transparent = false,
   transparentBackground = false,
-  allowOverflow = false
+  allowOverflow = false,
+  invisible = false
 }: OnboardingLayoutProps) => {
   const [showContainer, setShowContainer] = useState(!transparent);
 
@@ -53,11 +56,13 @@ const OnboardingLayout = ({
     return () => window.removeEventListener("reveal-container", handleReveal);
   }, [transparent]);
 
-  const containerClasses = transparent && !showContainer
-    ? "bg-transparent border-transparent shadow-none"
-    : transparentBackground
-      ? "bg-transparent border-border/20 shadow-xl"
-      : "bg-card border-border/20 shadow-xl";
+  const containerClasses = invisible
+    ? "bg-transparent border-transparent shadow-none rounded-none"
+    : transparent && !showContainer
+      ? "bg-transparent border-transparent shadow-none"
+      : transparentBackground
+        ? "bg-transparent border-border/20 shadow-xl"
+        : "bg-card border-border/20 shadow-xl";
 
   return (
     <div
@@ -69,11 +74,11 @@ const OnboardingLayout = ({
     >
       <main className="h-full flex flex-col items-center justify-center px-4 md:px-6">
         <div
-          className={`w-full max-w-lg flex flex-col rounded-2xl border ${allowOverflow ? 'overflow-x-hidden overflow-y-visible' : 'overflow-hidden'} relative z-10 transition-all duration-300 ease-out ${containerClasses} ${centerContent ? 'justify-center' : ''
+          className={`w-full ${invisible ? '' : 'max-w-lg'} flex flex-col ${invisible ? '' : 'rounded-2xl'} border ${allowOverflow ? 'overflow-x-hidden overflow-y-visible' : 'overflow-hidden'} relative z-10 transition-all duration-300 ease-out ${containerClasses} ${centerContent ? 'justify-center' : ''
             }`}
           style={{
             height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px)",
-            maxHeight: "768px",
+            maxHeight: invisible ? "none" : "768px",
             minHeight: "540px",
           }}
         >

@@ -665,7 +665,7 @@ export default function RecommendationsPage() {
   return (
     <>
       <AnimatedBackground />
-      <OnboardingLayout scrollable={!loading} allowOverflow={!loading}>
+      <OnboardingLayout scrollable={!loading} allowOverflow={!loading} invisible>
         {/* Header - transparent */}
         <header className="w-full px-6 md:px-8 pt-4 md:pt-6 pb-2 flex items-center justify-between flex-shrink-0">
           <BackButton onClick={goBack} />
