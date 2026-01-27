@@ -242,9 +242,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         style={{
           background: "rgba(26, 26, 30, 0.95)",
           border: "2px solid rgba(255, 255, 255, 0.5)",
-          height: "100%",
-          minHeight: "480px",
-          maxHeight: "600px",
+          height: "520px",
         }}
       >
         {/* Brand Logo */}
