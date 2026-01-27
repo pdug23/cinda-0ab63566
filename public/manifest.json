@@ -4,8 +4,8 @@
   "description": "Find your perfect running shoe",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1e1e1e",
-  "theme_color": "#1e1e1e",
+  "background_color": "#1f1f1f",
+  "theme_color": "#1f1f1f",
   "icons": [
     {
       "src": "/icon-192-v2.png",
