@@ -371,7 +371,16 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
           </span>
         </div>
 
-        {/* Divider after badges */}
+        {/* Shoe Image */}
+        <div className="flex justify-center items-center py-3">
+          <img
+            src="/shoes/PLACEHOLDER.png"
+            alt={`${shoe.brand} ${shoe.model} ${shoe.version}`}
+            className="h-[120px] w-auto max-w-full object-contain"
+          />
+        </div>
+
+        {/* Divider after image */}
         <div className="h-px my-3" style={{ backgroundColor: dividerColor }} />
 
         {/* Match Reasons - Three Bullet Points */}
