@@ -736,10 +736,10 @@ const ProfileBuilderStep3 = () => {
             </button>
             <button
               type="button"
-              onClick={handleSkipClick}
+              onClick={hasCompletedShoe ? handleNextClick : handleSkipClick}
               className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
             >
-              {hasCompletedShoe ? 'Continue' : 'Skip'}
+              {hasCompletedShoe ? 'NEXT' : 'Skip'}
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </header>
