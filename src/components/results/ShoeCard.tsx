@@ -265,7 +265,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </div>
 
         {/* Model Name */}
-        <h2 className={`text-2xl font-bold text-center mb-2 text-shimmer-${position}`}>
+        <h2 className={`text-2xl font-bold text-center mb-4 text-shimmer-${position}`}>
           {shoe.model} {shoe.version}
         </h2>
 
@@ -317,7 +317,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         <div className="h-px my-3" style={{ backgroundColor: dividerColor }} />
 
         {/* Match Reasons - Three Bullet Points */}
-        <div className="space-y-1.5 mb-2 flex-1">
+        <div className="space-y-1.5 mb-0 flex-1">
           {shoe.matchReason.slice(0, 3).map((reason, idx) => (
             <div key={idx} className="flex items-start gap-2">
               <Check 
