@@ -1,39 +1,60 @@
 
-# Compact Action Buttons & Smaller Badges
+
+# Update Action Button Labels & Styling
 
 ## Overview
-Make the top corner buttons smaller and visually integrated with the card, plus reduce badge sizes to improve the overall visual balance.
+Change button labels from "Shortlist" to "SAVE" and "Buy now" to "BUY", match button curvature to the card, and equalise spacing.
 
 ---
 
 ## Changes
 
-### 1. Compact Action Buttons
-
 **File:** `src/components/results/ShoeCard.tsx`
 
-**Current (lines 252-304):**
-- Buttons are `h-11 px-3` with full text labels
-- Background is `rgba(0, 0, 0, 0.4)` (darker than card)
+### 1. Update Button Labels
 
-**Change to:**
-- Reduce height: `h-8` (32px, still above 44px touch target with padding)
-- Reduce horizontal padding: `px-2.5`
-- Smaller text: `text-[10px]`
-- Smaller icons: `w-3.5 h-3.5`
-- Match card background: `rgba(26, 26, 30, 0.95)` with `border: 1px solid rgba(255, 255, 255, 0.15)`
-- Position higher: `top-3` instead of `top-4`
+| Current | New |
+|---------|-----|
+| Shortlist | Save |
+| Buy now | Buy |
 
-### 2. Smaller Badges
+### 2. Match Button Curvature to Card
 
-**Current (lines 331-372):**
-- Badges use `text-xs px-3 py-1.5 gap-3`
+The card uses `rounded-2xl` (16px radius). Change buttons from `rounded-full` to `rounded-xl` (12px) for a more harmonious look that echoes the card's corners.
 
-**Ideas for smaller badges:**
-- Reduce padding: `px-2 py-1`
-- Reduce font: `text-[10px]` instead of `text-xs`
-- Reduce gap between badges: `gap-2` instead of `gap-3`
-- This creates a more compact, refined look
+### 3. Equalise Spacing
+
+Current positioning:
+- Top: `top-3` (12px)
+- Left/Right: `left-4` / `right-4` (16px)
+
+Change to equal spacing:
+- Top: `top-4` (16px)
+- Left/Right: `left-4` / `right-4` (16px)
+
+This creates consistent 16px inset from all edges.
+
+---
+
+## Technical Details
+
+**SAVE button (lines 254, 280):**
+```text
+Current: "absolute top-3 left-4 ... rounded-full"
+Change to: "absolute top-4 left-4 ... rounded-xl"
+
+Current text: "Shortlist"
+Change to: "Save"
+```
+
+**BUY button (lines 294, 302):**
+```text
+Current: "absolute top-3 right-4 ... rounded-full"
+Change to: "absolute top-4 right-4 ... rounded-xl"
+
+Current text: "Buy now"
+Change to: "Buy"
+```
 
 ---
 
@@ -41,11 +62,11 @@ Make the top corner buttons smaller and visually integrated with the card, plus 
 
 | Element | Before | After |
 |---------|--------|-------|
-| Button height | 44px (h-11) | 32px (h-8) |
-| Button text | text-xs | text-[10px] |
-| Button background | Black overlay | Card background color |
-| Badge padding | px-3 py-1.5 | px-2 py-1 |
-| Badge text | text-xs | text-[10px] |
-| Gap between badges | 12px (gap-3) | 8px (gap-2) |
+| Save button text | Shortlist | Save |
+| Buy button text | Buy now | Buy |
+| Button radius | rounded-full (9999px) | rounded-xl (12px) |
+| Top spacing | 12px (top-3) | 16px (top-4) |
+| Side spacing | 16px (left-4/right-4) | 16px (unchanged) |
 
-The buttons will blend seamlessly with the card while remaining visible, and badges will take up less vertical space while still being readable.
+The buttons will now have consistent 16px spacing from all edges and a softer corner radius that complements the card's `rounded-2xl` styling.
+
