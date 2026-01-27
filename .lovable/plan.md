@@ -1,60 +1,58 @@
 
 
-## Plan: Restore Logo on Orientation View
+## Plan: Fix CTA Buttons to Be Side-by-Side on Mobile
 
 ### The Problem
 
-When implementing the previous plan, the logo was accidentally hidden on the orientation view by adding this condition:
+The "FULL ANALYSIS" and "QUICK MATCH" buttons are currently stacked vertically on mobile because of `flex-col sm:flex-row` on line 191. This causes layout issues where text may be clipped or the buttons take too much vertical space.
 
+### The Solution
+
+Change the button layout to always be side-by-side and make them taller to compensate for the reduced width. This gives each button enough height for a good tap target while fitting both on one row.
+
+---
+
+### Changes to `src/pages/Landing.tsx`
+
+**Line 187**: Reduce horizontal padding to give buttons more room
 ```tsx
-{viewState === "landing" && (
-  <img src={cindaLogo} ... />
-)}
+// Before
+className={`absolute bottom-20 left-1/2 -translate-x-1/2 w-full max-w-xs px-6 ...
+
+// After  
+className={`absolute bottom-20 left-1/2 -translate-x-1/2 w-full max-w-xs px-4 ...
 ```
 
-This means the logo only shows on the landing view, not on orientation.
-
-### The Fix
-
-Change the condition so the logo is visible on **both** the landing and orientation views:
-
-**File: `src/pages/Landing.tsx` (line 89)**
-
-From:
+**Line 191**: Change from stacked to always side-by-side with tighter gap
 ```tsx
-{viewState === "landing" && (
-  <img 
-    src={cindaLogo} 
-    alt="Cinda" 
-    className={`h-[80px] absolute top-[60px] left-1/2 -translate-x-1/2 z-20 ${
-      isExiting ? "animate-spin-settle" : ""
-    }`}
-  />
-)}
+// Before
+<div className="flex flex-col sm:flex-row gap-4 w-full">
+
+// After
+<div className="flex flex-row gap-3 w-full">
 ```
 
-To:
+**Lines 196 & 206**: Make buttons taller to compensate for narrower width
 ```tsx
-<img 
-  src={cindaLogo} 
-  alt="Cinda" 
-  className={`h-[80px] absolute top-[60px] left-1/2 -translate-x-1/2 z-20 ${
-    isExiting ? "animate-spin-settle" : ""
-  }`}
-/>
+// Before (both buttons)
+className="w-full min-h-[44px] text-xs uppercase ..."
+
+// After (both buttons)
+className="w-full min-h-[56px] text-xs uppercase ..."
 ```
 
-Simply remove the conditional wrapper so the logo is always visible (on both landing and orientation).
+---
+
+### Summary of Changes
+
+| Change | Before | After |
+|--------|--------|-------|
+| Layout | `flex-col sm:flex-row` (stacked on mobile) | `flex-row` (always side-by-side) |
+| Button gap | `gap-4` | `gap-3` (tighter) |
+| Container padding | `px-6` | `px-4` (more room for buttons) |
+| Button height | `min-h-[44px]` | `min-h-[56px]` (taller for tap target) |
 
 ### Result
 
-- Logo appears at `top-[60px]` on landing page
-- When user clicks "FIND YOURS", the logo performs the spin-settle animation
-- Logo remains in place on the orientation page
-
-### Files Modified
-
-| File | Change |
-|------|--------|
-| `src/pages/Landing.tsx` | Remove the `viewState === "landing"` condition from the logo |
+Both buttons will always display side-by-side, each taking 50% width. The increased height (56px vs 44px) compensates for the narrower width and maintains excellent tap targets. The reduced padding and gap give the buttons more horizontal space to comfortably fit their text.
 
