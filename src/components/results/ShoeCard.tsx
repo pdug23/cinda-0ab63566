@@ -251,15 +251,15 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
             <TooltipTrigger asChild>
               <button
                 className={cn(
-                  "absolute top-4 left-4 h-11 px-3 flex items-center justify-center gap-1.5 rounded-full transition-all z-10",
+                  "absolute top-3 left-4 h-8 px-2.5 flex items-center justify-center gap-1 rounded-full transition-all z-10",
                   isShortlisted && "bg-primary/20 border-primary/30"
                 )}
                 style={isShortlisted ? {
                   backgroundColor: "hsl(var(--primary) / 0.2)",
                   border: "1px solid hsl(var(--primary) / 0.4)",
                 } : {
-                  backgroundColor: "rgba(0, 0, 0, 0.4)",
-                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  backgroundColor: "rgba(26, 26, 30, 0.95)",
+                  border: "1px solid rgba(255, 255, 255, 0.15)",
                 }}
                 onClick={() => {
                   onShortlist?.();
@@ -269,12 +269,12 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
               >
                 <Heart 
                   className={cn(
-                    "w-4 h-4 transition-all",
+                    "w-3.5 h-3.5 transition-all",
                     isShortlisted ? "fill-primary text-primary" : "text-white/70"
                   )} 
                 />
                 <span className={cn(
-                  "text-xs font-medium uppercase tracking-wide",
+                  "text-[10px] font-medium uppercase tracking-wide",
                   isShortlisted ? "text-primary" : "text-white/70"
                 )}>
                   Shortlist
@@ -291,16 +291,16 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </TooltipProvider>
 
         <button
-          className="absolute top-4 right-4 h-11 px-3 flex items-center justify-center gap-1.5 rounded-full transition-all z-10"
+          className="absolute top-3 right-4 h-8 px-2.5 flex items-center justify-center gap-1 rounded-full transition-all z-10"
           style={{
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
+            backgroundColor: "rgba(26, 26, 30, 0.95)",
+            border: "1px solid rgba(255, 255, 255, 0.15)",
           }}
           onClick={() => setBuyModalOpen(true)}
           aria-label="Buy now"
         >
-          <span className="text-xs font-medium uppercase tracking-wide text-white/70">Buy now</span>
-          <ExternalLink className="w-4 h-4 text-white/70" />
+          <span className="text-[10px] font-medium uppercase tracking-wide text-white/70">Buy now</span>
+          <ExternalLink className="w-3.5 h-3.5 text-white/70" />
         </button>
 
         {/* Brand Logo */}
@@ -328,12 +328,12 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </h2>
 
         {/* Badge(s) */}
-        <div className="flex justify-center gap-3 mb-2">
+        <div className="flex justify-center gap-2 mb-2">
           {showRoleBadge && roleBadgeLabel && (
             <Popover>
               <PopoverTrigger asChild>
                 <button
-                  className="text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
+                  className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-md font-medium flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity"
                   style={{
                     backgroundColor: "rgba(148, 163, 184, 0.15)",
                     border: "1px solid rgba(148, 163, 184, 0.4)",
@@ -343,7 +343,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
                   }}
                 >
                   {roleBadgeLabel}
-                  <Info className="w-3 h-3 opacity-70" />
+                  <Info className="w-2.5 h-2.5 opacity-70" />
                 </button>
               </PopoverTrigger>
               <PopoverContent 
@@ -358,7 +358,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
             </Popover>
           )}
           <span
-            className="text-xs uppercase tracking-wide px-3 py-1.5 rounded-md font-medium"
+            className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-md font-medium"
             style={{
               backgroundColor: `${badgeConfig.color}26`,
               border: `1px solid ${badgeConfig.color}66`,
