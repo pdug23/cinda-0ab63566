@@ -113,7 +113,7 @@ SPECS (for context, DO NOT output these as numbers):
 AVOID IF:
 ${params.avoidIf}
 
-Write exactly 3 bullets. Each bullet MUST be 13 words or fewer (HARD LIMIT). If you reach 13 words, STOP IMMEDIATELY.
+Write exactly 3 bullets. Each bullet MUST be 11 words or fewer (HARD LIMIT). If you reach 11 words, STOP IMMEDIATELY. Prefer short, punchy words over long technical terms.
 
 1. MIDSOLE/RIDE: Name the specific foam or plate tech ONCE here (this is the ONLY bullet that should name the tech). Explain what it does to the ride.
 2. DIFFERENTIATOR: What makes this shoe unique. Be concrete and specific. DO NOT repeat the tech name from bullet 1 - use pronouns or descriptive phrases instead (e.g., 'this setup', 'the midsole', 'dual-density design').
@@ -163,7 +163,8 @@ RULES:
 - Start each bullet with the tech or feature, not "The" or "This"
 - CRITICAL: Vary your phrasing. Don't start all bullets the same way
 - Avoid repeating 'suits X, Y, and Z' or 'good for [list]' patterns
-- Use British English spelling (e.g., 'optimised' not 'optimized')`;
+- Use British English spelling (e.g., 'optimised' not 'optimized')
+- Use short, punchy words: 'smooth' not 'smooths transitions', 'stable' not 'stability-focused', 'soft' not 'plush cushioning'`;
 
   try {
     const response = await openaiClient.responses.create({
@@ -196,12 +197,12 @@ RULES:
       // Ensure consistent punctuation - remove trailing periods
       const normalizedLines = lines.map(line => line.replace(/\.$/, ''));
 
-      // Enforce 13-word limit (hard truncation if LLM exceeds)
+      // Enforce 11-word limit (hard truncation if LLM exceeds)
       const enforceWordLimit = (bullet: string): string => {
         const words = bullet.trim().split(/\s+/);
-        if (words.length > 13) {
-          console.log(`[generateMatchDescription] Truncating bullet from ${words.length} to 13 words`);
-          return words.slice(0, 13).join(' ');
+        if (words.length > 11) {
+          console.log(`[generateMatchDescription] Truncating bullet from ${words.length} to 11 words`);
+          return words.slice(0, 11).join(' ');
         }
         return bullet;
       };
