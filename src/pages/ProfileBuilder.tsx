@@ -222,19 +222,10 @@ const ProfileBuilder = () => {
   // Can proceed if name is filled and experience is selected
   const canProceed = firstName.trim() !== "" && experience !== null;
 
-  // Calculate if all optional fields are filled
-  const hasAge = age.trim() !== "";
-  const hasHeight = heightCm !== null;
-  const hasWeight = weightKg !== null;
-  const allOptionalsFilled = hasAge && hasHeight && hasWeight;
-
   return (
     <>
       <AnimatedBackground />
-      <OnboardingLayout 
-        scrollable 
-        bottomText={allOptionalsFilled ? null : "Completing optional fields will help Cinda better recommend shoes for how you run."}
-      >
+      <OnboardingLayout scrollable>
         <PageTransition className="flex flex-col flex-1 min-h-0">
         {/* Card header (fixed) */}
         <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-start flex-shrink-0">
