@@ -113,19 +113,32 @@ SPECS (for context, DO NOT output these as numbers):
 AVOID IF:
 ${params.avoidIf}
 
-Write exactly 3 bullets. Each bullet MUST be 13 words or fewer (hard limit). Count carefully.
+Write exactly 3 bullets. Each bullet MUST be 13 words or fewer (HARD LIMIT). If you reach 13 words, STOP IMMEDIATELY.
 
-1. MIDSOLE/RIDE: How the foam or plate tech affects the ride. Name specific tech from the data.
-2. DIFFERENTIATOR: What makes this shoe stand out. Be concrete and specific.
-3. VERSATILITY/FIT: If the shoe supports MULTIPLE archetypes in 'WHAT THIS SHOE ACTUALLY IS', start by reinforcing the RECOMMENDED FOR use case, then mention ONE other use it handles. If it only supports ONE archetype, mention who it suits best (heavier runners, neutral runners, etc.). DO NOT call it something it's not.
+1. MIDSOLE/RIDE: Name the specific foam or plate tech ONCE here (this is the ONLY bullet that should name the tech). Explain what it does to the ride.
+2. DIFFERENTIATOR: What makes this shoe unique. Be concrete and specific. DO NOT repeat the tech name from bullet 1 - use pronouns or descriptive phrases instead (e.g., 'this setup', 'the midsole', 'dual-density design').
+3. VERSATILITY/FIT: If the shoe supports MULTIPLE archetypes, start by reinforcing the RECOMMENDED FOR use case, then mention ONE other use it handles. If it only supports ONE archetype, mention who it suits best. DO NOT call it something it's not. DO NOT repeat the tech name from bullet 1.
 
-Good bullet 3 examples:
-- If recommended for 'workout' and shoe is 'workout, recovery': "Built for tempo efforts, also serves as a bouncy recovery option"
-- If recommended for 'daily' and shoe is 'daily only': "Suits neutral runners seeking versatile mileage for varied paces"
-- If recommended for 'race' and shoe is 'workout, race': "Race-ready geometry also handles tempo sessions and faster training"
+GOOD EXAMPLES:
+
+Cloudmonster 2:
+- CloudTec elements provide taller softer pods and moderate rocker (9 words, names tech)
+- Speedboard creates pronounced rolling, rocker-driven feel (6 words, no repetition)
+- Daily trainer versatility also handles easy recovery miles (8 words, no repetition)
+
+FuelCell Rebel v5:
+- FuelCell midsole compresses easily for soft, responsive ride (8 words, names tech)
+- Ultra-light build plus lower guidance creates agile, connected feel (9 words, no repetition)
+- Daily trainer also handles tempo workouts with playful rebound (9 words, no repetition)
+
+BAD EXAMPLES (DO NOT DO THIS):
+- Bullet 1: CloudTec elements provide...
+- Bullet 2: CloudTec pods create... (REPETITION - use 'the pods' or 'this setup')
+- Bullet 3: CloudTec pods make it... (REPETITION)
 
 RULES:
-- Use tech names from the data (foam names, plate names, plate material)
+- CRITICAL: Mention each tech/foam name ONCE ONLY across all 3 bullets (in bullet 1). Use pronouns or descriptive phrases in bullets 2-3
+- Use tech names from the data (foam names, plate names, plate material) - but only in bullet 1
 - Say what it DOES, not vague feelings
 - No marketing fluff or clever hooks
 - No em dashes
