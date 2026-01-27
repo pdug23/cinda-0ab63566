@@ -153,7 +153,13 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
-  html, body, #root {
+  /* Explicit html background prevents iOS grey bar fallback */
+  html {
+    background-color: hsl(0 0% 12%);
+    min-height: 100%;
+  }
+
+  body, #root {
     min-height: 100%;
   }
 
@@ -164,7 +170,7 @@ All colors MUST be HSL.
       var(--gradient-nebula-overlay),
       var(--gradient-warm);
     background-color: hsl(0 0% 12%);
-    background-attachment: fixed;
+    /* Removed background-attachment: fixed - causes iOS painting bugs */
     color: hsl(var(--foreground));
   }
 
