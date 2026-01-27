@@ -56,6 +56,12 @@ interface MatchDescriptionParams {
   bounce_1to5: number;
   stability_1to5: number;
   rocker_1to5: number;
+  // Actual shoe archetype flags (what this shoe IS)
+  is_daily_trainer: boolean;
+  is_recovery_shoe: boolean;
+  is_workout_shoe: boolean;
+  is_race_shoe: boolean;
+  is_trail_shoe: boolean;
 }
 
 /**
@@ -66,6 +72,15 @@ async function generateMatchDescription(params: MatchDescriptionParams): Promise
   console.log('[generateMatchDescription] Called with params:', JSON.stringify(params, null, 2));
 
   const archetypeLabel = params.archetype.replace('_', ' ');
+
+  // Build actual archetype flags string (what this shoe IS)
+  const archetypeFlags = [
+    params.is_daily_trainer && 'daily trainer',
+    params.is_recovery_shoe && 'recovery shoe',
+    params.is_workout_shoe && 'workout shoe',
+    params.is_race_shoe && 'race shoe',
+    params.is_trail_shoe && 'trail shoe'
+  ].filter(Boolean).join(', ') || 'general running shoe';
 
   // Build descriptive context from specs
   const cushionDesc = params.cushion_1to5 <= 2 ? 'firm' : params.cushion_1to5 >= 4 ? 'soft' : 'moderate';
@@ -78,7 +93,8 @@ async function generateMatchDescription(params: MatchDescriptionParams): Promise
   const prompt = `You're writing shoe card bullets for runners choosing shoes.
 
 SHOE: ${params.fullName}
-USE CASE: ${archetypeLabel}
+WHAT THIS SHOE ACTUALLY IS: ${archetypeFlags}
+RECOMMENDED FOR: ${archetypeLabel}
 
 TECH & FEEL:
 ${params.whyItFeelsThisWay}
@@ -97,11 +113,11 @@ SPECS (for context, DO NOT output these as numbers):
 AVOID IF:
 ${params.avoidIf}
 
-Write exactly 3 bullets (max 13 words each):
+Write exactly 3 bullets. Each bullet MUST be 13 words or fewer (hard limit). Count carefully.
 
 1. MIDSOLE/RIDE: How the foam or plate tech affects the ride. Name specific tech from the data.
 2. DIFFERENTIATOR: What makes this shoe stand out. Be concrete and specific.
-3. VERSATILITY: What else it's good for beyond the primary use case, or who it suits best. Reference other archetypes if applicable (e.g., "doubles as a race shoe" or "can handle easy days too").
+3. VERSATILITY/FIT: Based on 'WHAT THIS SHOE ACTUALLY IS' above, mention ONE additional use case it's built for, OR who it suits best (heavier runners, neutral runners, etc.). DO NOT call it something it's not (e.g., don't call a workout shoe a 'race shoe' unless is_race_shoe is true).
 
 RULES:
 - Use tech names from the data (foam names, plate names, plate material)
@@ -110,7 +126,10 @@ RULES:
 - No em dashes
 - NEVER include specific weight (g) or drop (mm) numbers — these are shown elsewhere
 - You can say "lightweight" or "low drop" but not "254g" or "6mm"
-- Start each bullet with the tech or feature, not "The" or "This"`;
+- Start each bullet with the tech or feature, not "The" or "This"
+- CRITICAL: Vary your phrasing. Don't start all bullets the same way
+- Avoid repeating 'suits X, Y, and Z' or 'good for [list]' patterns
+- Use British English spelling (e.g., 'optimised' not 'optimized')`;
 
   try {
     const response = await openaiClient.responses.create({
@@ -143,18 +162,29 @@ RULES:
       // Ensure consistent punctuation - remove trailing periods
       const normalizedLines = lines.map(line => line.replace(/\.$/, ''));
 
-      console.log('[generateMatchDescription] Parsed lines:', normalizedLines);
+      // Enforce 13-word limit (hard truncation if LLM exceeds)
+      const enforceWordLimit = (bullet: string): string => {
+        const words = bullet.trim().split(/\s+/);
+        if (words.length > 13) {
+          console.log(`[generateMatchDescription] Truncating bullet from ${words.length} to 13 words`);
+          return words.slice(0, 13).join(' ');
+        }
+        return bullet;
+      };
 
-      if (normalizedLines.length >= 3) {
-        const result = [normalizedLines[0], normalizedLines[1], normalizedLines[2]];
+      const truncatedLines = normalizedLines.map(enforceWordLimit);
+      console.log('[generateMatchDescription] Parsed lines:', truncatedLines);
+
+      if (truncatedLines.length >= 3) {
+        const result = [truncatedLines[0], truncatedLines[1], truncatedLines[2]];
         console.log('[generateMatchDescription] Returning 3 bullets:', result);
         return result;
-      } else if (normalizedLines.length === 2) {
-        const result = [normalizedLines[0], normalizedLines[1], params.notableDetail.replace(/\.$/, '')];
+      } else if (truncatedLines.length === 2) {
+        const result = [truncatedLines[0], truncatedLines[1], enforceWordLimit(params.notableDetail.replace(/\.$/, ''))];
         console.log('[generateMatchDescription] Only 2 lines, adding fallback. Returning:', result);
         return result;
-      } else if (normalizedLines.length === 1) {
-        const result = [normalizedLines[0], params.notableDetail.replace(/\.$/, ''), params.whyItFeelsThisWay.slice(0, 80).replace(/\.$/, '')];
+      } else if (truncatedLines.length === 1) {
+        const result = [truncatedLines[0], enforceWordLimit(params.notableDetail.replace(/\.$/, '')), enforceWordLimit(params.whyItFeelsThisWay.slice(0, 80).replace(/\.$/, ''))];
         console.log('[generateMatchDescription] Only 1 line, adding fallbacks. Returning:', result);
         return result;
       }
@@ -699,6 +729,7 @@ async function buildRecommendedShoe(
   position: RecommendationPosition
 ): Promise<RecommendedShoe> {
   // Generate match description using LLM (with fallback)
+  // Note: archetype flags in shoebase.json are strings "TRUE"/"FALSE", convert to boolean
   const matchReason = await generateMatchDescription({
     fullName: shoe.full_name,
     archetype: archetypeLabel,
@@ -713,7 +744,13 @@ async function buildRecommendedShoe(
     cushion_1to5: shoe.cushion_softness_1to5,
     bounce_1to5: shoe.bounce_1to5,
     stability_1to5: shoe.stability_1to5,
-    rocker_1to5: shoe.rocker_1to5
+    rocker_1to5: shoe.rocker_1to5,
+    // Actual shoe archetype flags (what this shoe IS)
+    is_daily_trainer: shoe.is_daily_trainer === "TRUE",
+    is_recovery_shoe: shoe.is_recovery_shoe === "TRUE",
+    is_workout_shoe: shoe.is_workout_shoe === "TRUE",
+    is_race_shoe: shoe.is_race_shoe === "TRUE",
+    is_trail_shoe: shoe.is_trail_shoe === "TRUE",
   });
 
   // Build gap object for strength extraction
