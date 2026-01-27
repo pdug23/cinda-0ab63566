@@ -226,15 +226,6 @@ function ProfileButton({ onClick }: { onClick: () => void }) {
   );
 }
 
-function PageHeader() {
-  return (
-    <div className="text-center py-0 px-5">
-      <h1 className="text-xl font-bold text-card-foreground/90">
-        Cinda's recommendations
-      </h1>
-    </div>
-  );
-}
 
 
 // Helper to format archetype for display
@@ -699,7 +690,6 @@ export default function RecommendationsPage() {
 
           {!loading && !error && !isEmpty && mode === "analysis" && analysisResult && gap && (
             <div className="flex-1 flex flex-col min-h-0 overflow-visible">
-              <PageHeader />
               {/* Show AnalysisSummaryView if no recommendations but has rotationSummary */}
               {(!analysisResult.recommendations || analysisResult.recommendations.length === 0) && 
                analysisResult.rotationSummary && analysisResult.rotationSummary.length > 0 ? (
@@ -725,7 +715,7 @@ export default function RecommendationsPage() {
 
           {!loading && !error && !isEmpty && mode === "discovery" && discoveryResult && (
             <div className="flex-1 flex flex-col min-h-0 overflow-visible">
-              <PageHeader />
+              
               <div className="flex-1 flex items-center min-h-0 overflow-visible">
                 <DiscoveryModeResults 
                   result={discoveryResult}
