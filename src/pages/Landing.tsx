@@ -182,16 +182,16 @@ const Landing = () => {
 
             {/* CTA buttons fixed above bottom link */}
             <div
-              className={`absolute bottom-20 left-1/2 -translate-x-1/2 w-full max-w-xs px-6 transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
+              className={`absolute bottom-20 left-1/2 -translate-x-1/2 w-full max-w-xs px-4 transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
                 showCta ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               }`}
             >
-              <div className="flex flex-col sm:flex-row gap-4 w-full">
+              <div className="flex flex-row gap-3 w-full">
                 <div className="flex-1 flex flex-col items-center gap-1.5">
                   <Button
                     onClick={handleStartProfile}
                     variant="cta"
-                    className="w-full min-h-[44px] text-xs uppercase bg-primary/10 border-primary/30 text-card-foreground hover:bg-primary/20 hover:border-primary/50 hover:shadow-[0_2px_20px_hsl(var(--primary)/0.25)]"
+                    className="w-full min-h-[52px] text-xs uppercase bg-primary/10 border-primary/30 text-card-foreground hover:bg-primary/20 hover:border-primary/50 hover:shadow-[0_2px_20px_hsl(var(--primary)/0.25)]"
                   >
                     Full analysis
                   </Button>
@@ -201,7 +201,7 @@ const Landing = () => {
                   <Button
                     onClick={() => navigateWithTransition("/quick-match")}
                     variant="cta"
-                    className="w-full min-h-[44px] text-xs uppercase"
+                    className="w-full min-h-[52px] text-xs uppercase"
                   >
                     Quick match
                   </Button>
