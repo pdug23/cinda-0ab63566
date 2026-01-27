@@ -147,13 +147,18 @@ BAD bullet 3 examples (weak, generic - DO NOT DO THIS):
 - Suits neutral runners wanting versatility (vague, no feeling)
 - Works for easy days and faster efforts (generic, uninspiring)
 
-BAD EXAMPLES - TECH REPETITION (DO NOT DO THIS):
-- Bullet 1: CloudTec elements provide...
-- Bullet 2: CloudTec pods create... (REPETITION - use 'the pods' or 'this setup')
-- Bullet 3: CloudTec pods make it... (REPETITION)
+BAD EXAMPLES - ANY REPETITION (DO NOT DO THIS):
+- Bullet 1: 'CloudTec pods with moderate rocker'
+- Bullet 2: 'Oversized pods create rocker-driven feel' ← REPEATS 'pods' AND 'rocker'
+- Bullet 3: 'CloudTec pods make it...' ← REPEATS 'pods' again
+
+GOOD EXAMPLE - NO REPETITION:
+- Bullet 1: 'CloudTec pods with moderate rocker for smooth transitions' (names tech)
+- Bullet 2: 'Internal Speedboard creates pronounced rolling feel' (different feature)
+- Bullet 3: 'Cushioned comfort aids recovery and daily durability' (different angle)
 
 RULES:
-- CRITICAL: Mention each tech/foam name ONCE ONLY across all 3 bullets (in bullet 1). Use pronouns or descriptive phrases in bullets 2-3
+- CRITICAL: Do NOT repeat ANY key words or features across bullets. Mention tech names, features, and descriptive terms ONCE ONLY. After introducing a concept (e.g., 'pods', 'rocker', 'plate', 'foam'), use different language in subsequent bullets. Each bullet should focus on a DIFFERENT aspect of the shoe
 - Use tech names from the data (foam names, plate names, plate material) - but only in bullet 1
 - Say what it DOES, not vague feelings
 - No marketing fluff or clever hooks
