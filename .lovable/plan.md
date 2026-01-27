@@ -1,107 +1,123 @@
 
-## Plan: Fix Mobile Space Utilization
+## Plan: Fix Grey Bar at Bottom of Screen
 
-### The Problem
+### Understanding the Problem
 
-The container is not utilizing the full screen height on mobile devices. This is caused by:
+There are two separate issues causing the grey bar:
 
-1. **`maxHeight: 720px`** - Caps the container well below modern iPhone heights (812px-932px)
-2. **Fixed 16px padding** on top and bottom (32px total beyond safe areas)
-3. **Bottom spacer always reserves 32px** via `min-h-[32px]`, even when there's no disclaimer text
+**Issue 1: Browser Mode (Safari)**
+The grey bar behind Safari's URL bar doesn't match the app background. Safari uses the `<meta name="theme-color">` to color this area.
 
-### The Solution
-
-Make three targeted changes to `OnboardingLayout.tsx`:
+**Issue 2: PWA/Standalone Mode**
+The container is still capped at `maxHeight: 844px` even in standalone mode because the `isStandalone()` check is being evaluated at the wrong time or returning `false` incorrectly.
 
 ---
 
-### Change 1: Increase maxHeight
+### Solution
 
-**File:** `src/components/OnboardingLayout.tsx` (line 88)
+#### Fix 1: Match the theme-color to the background
 
-```tsx
-// Before
-maxHeight: "720px",
+Update the `theme-color` meta tag to use the exact same color as the body background.
 
-// After  
-maxHeight: "844px",
+**File: `index.html` (line 21)**
+
+```html
+<!-- Before -->
+<meta name="theme-color" content="#1f1f1f" />
+
+<!-- After - exact match for hsl(0, 0%, 12%) -->
+<meta name="theme-color" content="#1e1e1e" />
 ```
 
-This allows the container to grow taller on modern phones (iPhone 14 Pro Max is 932px, iPhone 12/13/14 is 844px).
+Also update the body inline style to use the same hex value for consistency:
 
----
+**File: `index.html` (line 34)**
 
-### Change 2: Reduce outer padding
+```html
+<!-- Before -->
+<body style="background-color: hsl(0, 0%, 12%);">
 
-**File:** `src/components/OnboardingLayout.tsx` (lines 78-79)
-
-```tsx
-// Before
-paddingTop: "calc(env(safe-area-inset-top) + 16px)",
-paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
-
-// After
-paddingTop: "calc(env(safe-area-inset-top) + 8px)",
-paddingBottom: "calc(env(safe-area-inset-bottom) + 8px)",
+<!-- After -->
+<body style="background-color: #1e1e1e;">
 ```
 
-And update the height calculation on line 87:
+---
+
+#### Fix 2: Make PWA detection reactive with useState
+
+Move the standalone detection inside the component and use `useState` so it evaluates correctly on the client.
+
+**File: `src/components/OnboardingLayout.tsx`**
 
 ```tsx
-// Before
-height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 32px)",
+// Before - function defined at module level
+const isStandalone = () => {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as unknown as { standalone?: boolean }).standalone === true
+  );
+};
 
-// After
-height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px)",
+const OnboardingLayout = ({ ... }) => {
+  // ...
+  style={{
+    maxHeight: isStandalone() ? "none" : "844px",
+  }}
+}
 ```
-
-This reclaims 16px of vertical space while still respecting safe areas.
-
----
-
-### Change 3: Make bottom spacer conditional
-
-**File:** `src/components/OnboardingLayout.tsx` (lines 95-102)
 
 ```tsx
-// Before - always reserves 32px
-<div className="mt-4 min-h-[32px] flex items-start justify-center">
-  {bottomText && (
-    <p className="text-xs italic text-orange-400/50 ...">
-      {bottomText}
-    </p>
-  )}
-</div>
+// After - detection happens inside component with useState
+const OnboardingLayout = ({ ... }) => {
+  const [isStandalone, setIsStandalone] = useState(false);
 
-// After - only renders when bottomText exists
-{bottomText && (
-  <div className="mt-2 flex items-start justify-center">
-    <p className="text-xs italic text-orange-400/50 text-center max-w-md px-4 transition-opacity duration-200">
-      {bottomText}
-    </p>
-  </div>
-)}
+  useEffect(() => {
+    // Check if running as installed PWA
+    const standalone = 
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as unknown as { standalone?: boolean }).standalone === true;
+    setIsStandalone(standalone);
+  }, []);
+
+  // ...
+  style={{
+    maxHeight: isStandalone ? "none" : "844px",
+  }}
+}
 ```
 
-When there's no disclaimer text, no space is reserved. When there is text, it takes only the space it needs.
+This ensures the detection runs on the client after the component mounts.
 
 ---
 
-### Result
+#### Fix 3: Update CSS to use consistent colors
 
-| Metric | Before | After |
-|--------|--------|-------|
-| Max container height | 720px | 844px |
-| Outer padding (beyond safe areas) | 32px | 16px |
-| Bottom spacer when no text | 32px | 0px |
-| **Total space reclaimed** | - | **up to 80px** |
+**File: `src/index.css` (line 162)**
 
-The container will now fill more of the available screen on modern phones, with the disclaimer text only taking space when it's actually displayed.
+```css
+/* Before */
+html {
+  background-color: hsl(0 0% 12%);
+}
+
+/* After */
+html {
+  background-color: #1e1e1e;
+}
+```
 
 ---
 
-### Files Modified
+### Summary of Changes
 
-| File | Changes |
-|------|---------|
-| `src/components/OnboardingLayout.tsx` | Increase maxHeight, reduce padding, conditional bottom spacer |
+| File | Change |
+|------|--------|
+| `index.html` | Update `theme-color` to `#1e1e1e`, update body background to match |
+| `src/components/OnboardingLayout.tsx` | Make `isStandalone` detection reactive using `useState` and `useEffect` |
+| `src/index.css` | Update html background to `#1e1e1e` for consistency |
+
+### Expected Result
+
+- **Browser mode**: Safari's URL bar area will blend with the app background (no grey bar visible)
+- **PWA mode**: Container will extend to full height with no wasted space at bottom
