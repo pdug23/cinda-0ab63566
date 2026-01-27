@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import OnboardingLayout from "@/components/OnboardingLayout";
@@ -208,7 +208,20 @@ function BackButton({ onClick }: { onClick: () => void }) {
       aria-label="Try again"
     >
       <ArrowLeft className="w-3.5 h-3.5" />
-      try again
+      TRY AGAIN
+    </button>
+  );
+}
+
+function ProfileButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
+      aria-label="Go to profile"
+    >
+      PROFILE
+      <ArrowRight className="w-3.5 h-3.5" />
     </button>
   );
 }
@@ -216,8 +229,8 @@ function BackButton({ onClick }: { onClick: () => void }) {
 function PageHeader() {
   return (
     <div className="text-center py-1 px-5">
-      <h1 className="text-xl font-bold text-card-foreground/90 lowercase">
-        cinda's recommendations
+      <h1 className="text-xl font-bold text-card-foreground/90">
+        Cinda's recommendations
       </h1>
     </div>
   );
@@ -326,7 +339,7 @@ function AnalysisSummaryView({
         variant="cta"
         className="w-full min-h-[48px] mt-2"
       >
-        set preferences
+        Set preferences
       </Button>
     </div>
   );
@@ -426,10 +439,10 @@ export default function RecommendationsPage() {
   const handleShortlist = useCallback((shoeId: string) => {
     setShortlistedShoes(prev => {
       if (prev.includes(shoeId)) {
-        toast.success("removed from shortlist");
+        toast.success("Removed from shortlist");
         return prev.filter(id => id !== shoeId);
       } else {
-        toast.success("added to shortlist");
+        toast.success("Added to shortlist");
         return [...prev, shoeId];
       }
     });
@@ -663,8 +676,9 @@ export default function RecommendationsPage() {
       <AnimatedBackground />
       <OnboardingLayout scrollable={!loading} allowOverflow={!loading}>
         {/* Header - transparent */}
-        <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-start flex-shrink-0">
+        <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between flex-shrink-0">
           <BackButton onClick={goBack} />
+          <ProfileButton onClick={handleGoToProfile} />
         </header>
 
         {/* Content */}
@@ -723,18 +737,6 @@ export default function RecommendationsPage() {
           )}
         </div>
 
-        {/* Footer */}
-        {!loading && !error && !isEmpty && (
-          <footer className="px-6 md:px-8 pb-4 pt-2 flex-shrink-0">
-            <Button
-              onClick={handleGoToProfile}
-              variant="cta"
-              className="w-full min-h-[44px] text-sm"
-            >
-              go to my profile
-            </Button>
-          </footer>
-        )}
       </OnboardingLayout>
 
       {/* Leave confirmation modal */}
