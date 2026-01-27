@@ -228,7 +228,7 @@ function ProfileButton({ onClick }: { onClick: () => void }) {
 
 function PageHeader() {
   return (
-    <div className="text-center py-1 px-5">
+    <div className="text-center py-0 px-5">
       <h1 className="text-xl font-bold text-card-foreground/90">
         Cinda's recommendations
       </h1>
@@ -676,7 +676,7 @@ export default function RecommendationsPage() {
       <AnimatedBackground />
       <OnboardingLayout scrollable={!loading} allowOverflow={!loading}>
         {/* Header - transparent */}
-        <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between flex-shrink-0">
+        <header className="w-full px-6 md:px-8 pt-4 md:pt-6 pb-2 flex items-center justify-between flex-shrink-0">
           <BackButton onClick={goBack} />
           <ProfileButton onClick={handleGoToProfile} />
         </header>

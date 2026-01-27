@@ -100,7 +100,7 @@ export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onS
     const shoe = recommendations[0];
     const shoeId = shoe.shoeId || shoe.fullName;
     return (
-      <div className="flex flex-col items-center py-2 px-4">
+      <div className="flex flex-col items-center py-1 px-4 h-full">
         <ShoeCard 
           shoe={shoe} 
           role={role} 
@@ -114,7 +114,7 @@ export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onS
   }
 
   return (
-    <div className="shoe-carousel w-full py-6">
+    <div className="shoe-carousel w-full py-2">
       <Swiper
         modules={[Keyboard]}
         spaceBetween={32}
@@ -160,7 +160,7 @@ export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onS
               key={`${shoeId}-${index}`}
               aria-label={`Shoe ${index + 1} of ${totalSlides}: ${shoe.fullName}`}
             >
-              <div className="flex justify-center">
+              <div className="flex justify-center h-full">
                 <ShoeCard 
                   shoe={shoe} 
                   role={role} 
