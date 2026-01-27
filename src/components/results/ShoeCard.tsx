@@ -251,7 +251,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
             <TooltipTrigger asChild>
               <button
                 className={cn(
-                  "absolute top-4 left-4 w-11 h-11 flex items-center justify-center rounded-full transition-all z-10",
+                  "absolute top-4 left-4 h-11 px-3 flex items-center justify-center gap-1.5 rounded-full transition-all z-10",
                   isShortlisted && "bg-primary/20 border-primary/30"
                 )}
                 style={isShortlisted ? {
@@ -269,10 +269,16 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
               >
                 <Heart 
                   className={cn(
-                    "w-5 h-5 transition-all",
+                    "w-4 h-4 transition-all",
                     isShortlisted ? "fill-primary text-primary" : "text-white/70"
                   )} 
                 />
+                <span className={cn(
+                  "text-xs font-medium uppercase tracking-wide",
+                  isShortlisted ? "text-primary" : "text-white/70"
+                )}>
+                  Shortlist
+                </span>
               </button>
             </TooltipTrigger>
             <TooltipContent 
@@ -285,7 +291,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </TooltipProvider>
 
         <button
-          className="absolute top-4 right-4 w-11 h-11 flex items-center justify-center rounded-full transition-all z-10"
+          className="absolute top-4 right-4 h-11 px-3 flex items-center justify-center gap-1.5 rounded-full transition-all z-10"
           style={{
             backgroundColor: "rgba(0, 0, 0, 0.4)",
             border: "1px solid rgba(255, 255, 255, 0.2)",
@@ -293,7 +299,8 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
           onClick={() => setBuyModalOpen(true)}
           aria-label="Buy now"
         >
-          <ExternalLink className="w-5 h-5 text-white/70" />
+          <span className="text-xs font-medium uppercase tracking-wide text-white/70">Buy now</span>
+          <ExternalLink className="w-4 h-4 text-white/70" />
         </button>
 
         {/* Brand Logo */}
