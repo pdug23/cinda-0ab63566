@@ -155,11 +155,6 @@ All colors MUST be HSL.
 
   html, body, #root {
     min-height: 100%;
-    min-height: 100dvh;
-  }
-
-  html {
-    background-color: #1e1e1e;
   }
 
   body {

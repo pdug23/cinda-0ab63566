@@ -26,15 +26,6 @@ const OnboardingLayout = ({
   bottomText = null
 }: OnboardingLayoutProps) => {
   const [showContainer, setShowContainer] = useState(!transparent);
-  const [isStandalone, setIsStandalone] = useState(false);
-
-  // Detect if running as installed PWA (standalone mode)
-  useEffect(() => {
-    const standalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as unknown as { standalone?: boolean }).standalone === true;
-    setIsStandalone(standalone);
-  }, []);
 
   // Lock body scroll when this layout is mounted
   useEffect(() => {
@@ -84,8 +75,8 @@ const OnboardingLayout = ({
     <div
       className={`fixed inset-0 ${allowOverflow ? 'overflow-x-hidden overflow-y-visible' : 'overflow-hidden'}`}
       style={{
-        paddingTop: "calc(env(safe-area-inset-top) + 8px)",
-        paddingBottom: "calc(env(safe-area-inset-bottom) + 8px)",
+        paddingTop: "calc(env(safe-area-inset-top) + 16px)",
+        paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
       }}
     >
       <main className="h-full flex flex-col items-center justify-center px-4 md:px-6">
@@ -93,23 +84,22 @@ const OnboardingLayout = ({
           className={`w-full max-w-lg flex flex-col rounded-2xl border ${allowOverflow ? 'overflow-x-hidden overflow-y-visible' : 'overflow-hidden'} relative z-10 transition-all duration-300 ease-out ${containerClasses} ${centerContent ? 'justify-center' : ''
             }`}
           style={{
-            height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px)",
-            // In standalone PWA mode, allow full height; in browser, cap at 844px to avoid URL bar overlap
-            maxHeight: isStandalone ? "none" : "844px",
+            height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 32px)",
+            maxHeight: "720px",
             minHeight: "540px",
           }}
         >
           {children}
         </div>
         
-        {/* Bottom spacer - only render when bottomText exists */}
-        {bottomText && (
-          <div className="mt-2 flex items-start justify-center">
+        {/* Bottom spacer - always present for consistent layout */}
+        <div className="mt-4 min-h-[32px] flex items-start justify-center">
+          {bottomText && (
             <p className="text-xs italic text-orange-400/50 text-center max-w-md px-4 transition-opacity duration-200">
               {bottomText}
             </p>
-          </div>
-        )}
+          )}
+        </div>
       </main>
     </div>
   );
