@@ -117,7 +117,12 @@ Write exactly 3 bullets. Each bullet MUST be 13 words or fewer (hard limit). Cou
 
 1. MIDSOLE/RIDE: How the foam or plate tech affects the ride. Name specific tech from the data.
 2. DIFFERENTIATOR: What makes this shoe stand out. Be concrete and specific.
-3. VERSATILITY/FIT: Based on 'WHAT THIS SHOE ACTUALLY IS' above, mention ONE additional use case it's built for, OR who it suits best (heavier runners, neutral runners, etc.). DO NOT call it something it's not (e.g., don't call a workout shoe a 'race shoe' unless is_race_shoe is true).
+3. VERSATILITY/FIT: If the shoe supports MULTIPLE archetypes in 'WHAT THIS SHOE ACTUALLY IS', start by reinforcing the RECOMMENDED FOR use case, then mention ONE other use it handles. If it only supports ONE archetype, mention who it suits best (heavier runners, neutral runners, etc.). DO NOT call it something it's not.
+
+Good bullet 3 examples:
+- If recommended for 'workout' and shoe is 'workout, recovery': "Built for tempo efforts, also serves as a bouncy recovery option"
+- If recommended for 'daily' and shoe is 'daily only': "Suits neutral runners seeking versatile mileage for varied paces"
+- If recommended for 'race' and shoe is 'workout, race': "Race-ready geometry also handles tempo sessions and faster training"
 
 RULES:
 - Use tech names from the data (foam names, plate names, plate material)
