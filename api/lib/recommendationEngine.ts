@@ -113,63 +113,16 @@ SPECS (for context, DO NOT output these as numbers):
 AVOID IF:
 ${params.avoidIf}
 
-Write exactly 3 bullets. Each bullet MUST be 11 words or fewer (HARD LIMIT). If you reach 11 words, STOP IMMEDIATELY. Prefer short, punchy words over long technical terms.
+Write exactly 3 bullets. Max 11 words each.
 
-1. MIDSOLE/RIDE: Name the specific foam or plate tech ONCE here (this is the ONLY bullet that should name the tech). Explain what it does to the ride.
-2. DIFFERENTIATOR: What makes this shoe unique. Be concrete and specific. DO NOT repeat the tech name from bullet 1 - use pronouns or descriptive phrases instead (e.g., 'this setup', 'the midsole', 'dual-density design').
-3. EMOTIONAL + PRACTICAL CLOSER: Combine how the shoe feels or the experience it delivers (emotional) with a practical capability or benefit. This is the compelling reason to choose THIS shoe. Start with the feeling/experience, then add the practical payoff. DO NOT repeat the tech name from bullet 1.
-
-GOOD EXAMPLES:
-
-Cloudmonster 2:
-- CloudTec elements provide taller softer pods and moderate rocker (9 words, names tech)
-- Speedboard creates pronounced rolling, rocker-driven feel (6 words, no repetition)
-- Cushioned comfort makes long runs enjoyable, handles high mileage effortlessly (10 words, emotional + practical)
-
-FuelCell Rebel v5:
-- FuelCell midsole compresses easily for soft, responsive ride (8 words, names tech)
-- Ultra-light build plus lower guidance creates agile, connected feel (9 words, no repetition)
-- Energetic bounce makes running feel lighter, versatile for easy to tempo (12 words, emotional + practical)
-
-Vaporfly Next% 4:
-- ZoomX foam with carbon plate delivers explosive, propulsive energy return (10 words, names tech)
-- Aggressive rocker geometry rolls you forward with minimal effort (9 words, no repetition)
-- Race-day confidence with explosive propulsion, lightweight feel maximises marathon speed (10 words, emotional + practical)
-
-GOOD bullet 3 examples (emotional + practical pattern):
-- Disappears underfoot for effortless miles, handles easy to tempo paces daily
-- Confidence-inspiring guidance without stiffness, perfect daily trainer with tempo capability
-- Plush protection feels luxurious underfoot, suits heavier runners needing recovery focus
-- Energetic bounce makes running feel lighter, versatile across easy and uptempo efforts
-
-BAD bullet 3 examples (weak, generic - DO NOT DO THIS):
-- Daily trainer also handles tempo workouts (boring, no emotion)
-- Suits neutral runners wanting versatility (vague, no feeling)
-- Works for easy days and faster efforts (generic, uninspiring)
-
-BAD EXAMPLES - ANY REPETITION (DO NOT DO THIS):
-- Bullet 1: 'CloudTec pods with moderate rocker'
-- Bullet 2: 'Oversized pods create rocker-driven feel' ← REPEATS 'pods' AND 'rocker'
-- Bullet 3: 'CloudTec pods make it...' ← REPEATS 'pods' again
-
-GOOD EXAMPLE - NO REPETITION:
-- Bullet 1: 'CloudTec pods with moderate rocker for smooth transitions' (names tech)
-- Bullet 2: 'Internal Speedboard creates pronounced rolling feel' (different feature)
-- Bullet 3: 'Cushioned comfort aids recovery and daily durability' (different angle)
+1. TECH: Name the foam/plate tech. What it does to the ride.
+2. DIFFERENTIATOR: What makes it unique. No tech name repetition.
+3. CLOSER: Emotional feel + practical benefit. The reason to buy.
 
 RULES:
-- CRITICAL: Do NOT repeat ANY key words or features across bullets. Mention tech names, features, and descriptive terms ONCE ONLY. After introducing a concept (e.g., 'pods', 'rocker', 'plate', 'foam'), use different language in subsequent bullets. Each bullet should focus on a DIFFERENT aspect of the shoe
-- Use tech names from the data (foam names, plate names, plate material) - but only in bullet 1
-- Say what it DOES, not vague feelings
-- No marketing fluff or clever hooks
-- No em dashes
-- NEVER include specific weight (g) or drop (mm) numbers — these are shown elsewhere
-- You can say "lightweight" or "low drop" but not "254g" or "6mm"
-- Start each bullet with the tech or feature, not "The" or "This"
-- CRITICAL: Vary your phrasing. Don't start all bullets the same way
-- Avoid repeating 'suits X, Y, and Z' or 'good for [list]' patterns
-- Use British English spelling (e.g., 'optimised' not 'optimized')
-- Use short, punchy words: 'smooth' not 'smooths transitions', 'stable' not 'stability-focused', 'soft' not 'plush cushioning'`;
+- Tech name in bullet 1 ONLY. No repetition of ANY words across bullets.
+- No weight/drop numbers, no em dashes, no "The" or "This" starts.
+- British spelling. Short punchy words.`;
 
   try {
     const response = await openaiClient.responses.create({
