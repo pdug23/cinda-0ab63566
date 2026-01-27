@@ -159,17 +159,17 @@ All colors MUST be HSL.
   }
 
   html {
-    background-color: #1e1e1e;
-  }
-
-  body {
-    min-height: 100dvh;
-    overflow-x: hidden;
     background: 
       var(--gradient-nebula-overlay),
       var(--gradient-warm);
     background-color: hsl(0 0% 12%);
     background-attachment: fixed;
+  }
+
+  body {
+    min-height: 100dvh;
+    overflow-x: hidden;
+    background: transparent;
     color: hsl(var(--foreground));
   }
 
