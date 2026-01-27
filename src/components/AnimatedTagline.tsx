@@ -43,7 +43,7 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
               fontSize: "40px", 
               fontWeight: 900,
               fontStyle: "italic",
-              WebkitTextStroke: "0.5px white"
+              WebkitTextStroke: "0.5px currentColor"
             }}
           >
             {line}
@@ -76,7 +76,7 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
               fontSize: "40px",
               fontWeight: 900,
               fontStyle: "italic",
-              WebkitTextStroke: "0.5px white"
+              WebkitTextStroke: "0.5px currentColor"
             }}
           >
             {line}
