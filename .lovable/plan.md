@@ -1,134 +1,114 @@
 
-## Fix: iOS Safari/PWA Grey Bar at Home Indicator Region
 
-### Root Cause Analysis
+## Plan: Remove Disclaimer and Extend Container
 
-The grey bar appears **only in Safari and iOS PWA** (both use WebKit) because:
-
-1. The `AnimatedBackground` layers use `calc(-1 * env(safe-area-inset-bottom))` to extend into the safe area
-2. WebKit has inconsistent behavior with negative positioning on fixed elements extending beyond safe areas
-3. When the extension fails, the `html` element's background (`hsl(0 0% 12%)` - a grey-ish color) shows through in the home indicator region
-4. Chrome/Edge use Blink which handles this differently, plus they have their own browser UI that covers this area
-
-### Solution Strategy
-
-Rather than fighting WebKit's safe area handling, we'll use a **two-pronged approach**:
-
-1. **Match the fallback color**: Ensure `html`, `body`, `theme-color`, and `manifest.json` all use the same dark base color as the AnimatedBackground's gradient endpoint
-2. **Add legacy iOS fallback**: Include `constant()` fallback for older iOS versions
-3. **Use height extension instead of negative bottom**: Extend height to `calc(100% + env(safe-area-inset-bottom))` which is more reliable in WebKit
+### Summary
+Remove the disclaimer text from Profile Step 1 and Step 2 pages, and reclaim the vertical space by removing the reserved spacer from `OnboardingLayout`.
 
 ---
 
 ### Technical Changes
 
-#### File: `src/components/AnimatedBackground.tsx`
+#### 1. Remove `bottomText` from ProfileBuilder.tsx (Step 1)
 
-Change the positioning strategy from negative bottom to explicit height extension:
+**File: `src/pages/ProfileBuilder.tsx`**
 
+Line 236 currently passes `bottomText` to the layout:
 ```tsx
-// Current approach (unreliable in WebKit)
-style={{
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: "calc(-1 * env(safe-area-inset-bottom, 0px))",
-  ...
-}}
-
-// New approach (more reliable)
-style={{
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  // Extend height to cover safe area
-  height: "calc(100% + constant(safe-area-inset-bottom))",  // iOS < 11.2
-  height: "calc(100% + env(safe-area-inset-bottom, 0px))",  // iOS >= 11.2
-  ...
-}}
+<OnboardingLayout 
+  scrollable 
+  bottomText={allOptionalsFilled ? null : "Completing optional fields will help Cinda better recommend shoes for how you run."}
+>
 ```
 
-Apply this to all three layers (gradient, grain, vignette).
-
----
-
-#### File: `src/index.css`
-
-Update the html/body backgrounds to use the **exact same color** as the AnimatedBackground's darkest gradient point (`hsl(0 0% 10%)`):
-
-```css
-/* Explicit html background - matches AnimatedBackground base */
-html {
-  background-color: hsl(0, 0%, 10%);  /* Matches gradient endpoint */
-  min-height: 100%;
-}
+Change to:
+```tsx
+<OnboardingLayout scrollable>
 ```
 
-Also update the `body::before` grain overlay to extend into safe areas:
-
-```css
-body::before {
-  ...
-  height: 100%;
-  height: calc(100% + constant(safe-area-inset-bottom));
-  height: calc(100% + env(safe-area-inset-bottom, 0px));
-  ...
-}
+Also remove the related variable calculation (lines 226-229):
+```tsx
+const hasAge = age.trim() !== "";
+const hasHeight = heightCm !== null;
+const hasWeight = weightKg !== null;
+const allOptionalsFilled = hasAge && hasHeight && hasWeight;
 ```
 
 ---
 
-#### File: `index.html`
+#### 2. Remove `bottomText` from ProfileBuilderStep2.tsx (Step 2)
 
-Update the theme-color to match:
+**File: `src/pages/ProfileBuilderStep2.tsx`**
 
-```html
-<meta name="theme-color" content="#1a1a1a" />
-<!-- #1a1a1a = hsl(0 0% 10%) -->
+Line 237 currently passes `bottomText`:
+```tsx
+<OnboardingLayout 
+  scrollable
+  bottomText={allOptionalsFilled ? null : "Completing optional fields will help Cinda better recommend shoes for how you run."}
+>
+```
+
+Change to:
+```tsx
+<OnboardingLayout scrollable>
+```
+
+Also remove the related variable calculation (lines 227-230):
+```tsx
+const hasVolume = volumeInput.trim() !== "";
+const hasRaceTime = raceTime !== null;
+const allOptionalsFilled = isBeginner || (hasVolume && hasRaceTime);
 ```
 
 ---
 
-#### File: `public/manifest.json`
+#### 3. Update OnboardingLayout to Extend Container
 
-Update colors to match:
+**File: `src/components/OnboardingLayout.tsx`**
 
-```json
-{
-  "background_color": "#1a1a1a",
-  "theme_color": "#1a1a1a"
-}
+Remove the `bottomText` prop and the bottom spacer div (lines 86-93):
+```tsx
+{/* Bottom spacer - always present for consistent layout */}
+<div className="mt-4 min-h-[32px] flex items-start justify-center">
+  {bottomText && (
+    <p className="text-xs italic text-orange-400/50 text-center max-w-md px-4 transition-opacity duration-200">
+      {bottomText}
+    </p>
+  )}
+</div>
 ```
 
----
+Update the container height calculation to reclaim the 48px (32px spacer + 16px margin):
+```tsx
+// Before
+height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 32px)"
 
-### Summary of Changes
+// After (32px → ~0px, reclaiming ~48px total)
+height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px)"
+```
 
-| File | Change | Purpose |
-|------|--------|---------|
-| `src/components/AnimatedBackground.tsx` | Use `height: calc(100% + env())` instead of negative `bottom` | More reliable WebKit extension |
-| `src/components/AnimatedBackground.tsx` | Add `constant()` fallback for each layer | Support iOS less than 11.2 |
-| `src/index.css` | Change `html` background to `hsl(0, 0%, 10%)` | Match AnimatedBackground's base |
-| `src/index.css` | Extend `body::before` height into safe area | Grain covers home indicator |
-| `index.html` | Update `theme-color` to `#1a1a1a` | Match PWA status bar color |
-| `public/manifest.json` | Update `background_color` and `theme_color` to `#1a1a1a` | Match PWA splash and status bar |
+Also update maxHeight from 720px to accommodate the extra space:
+```tsx
+maxHeight: "768px"
+```
 
----
-
-### Why This Should Work
-
-1. **Color synchronization**: Even if the AnimatedBackground fails to extend in some edge case, the `html` background is now the same color as the gradient's base, making any gap invisible
-2. **Height extension**: Using `height: calc(100% + env())` is a more standard approach that WebKit handles better than negative positioning
-3. **Legacy support**: The `constant()` fallback ensures older iOS devices are covered
-4. **PWA consistency**: Matching manifest colors ensures the PWA splash and status bar blend seamlessly
+Remove the `bottomText` prop from the interface (line 16).
 
 ---
 
-### Testing Checklist
+### Files Changed
 
-After implementation:
-1. **Safari browser**: Pull down to rubber-band scroll - no visible seam at bottom
-2. **iOS PWA**: Delete and re-add to home screen, verify no grey bar at home indicator
-3. **Animation visible**: Confirm the gradient still drifts (20s cycle)
-4. **Other browsers**: Verify no regression in Chrome/Edge
+| File | Change |
+|------|--------|
+| `src/pages/ProfileBuilder.tsx` | Remove `bottomText` prop and `allOptionalsFilled` calculation |
+| `src/pages/ProfileBuilderStep2.tsx` | Remove `bottomText` prop and `allOptionalsFilled` calculation |
+| `src/components/OnboardingLayout.tsx` | Remove `bottomText` prop, delete spacer div, extend container height |
+
+---
+
+### Visual Result
+
+- The container will be taller on mobile (additional ~48px reclaimed)
+- No disclaimer text appears below the card on either Step 1 or Step 2
+- More space available for form content without scrolling
+
