@@ -166,11 +166,7 @@ All colors MUST be HSL.
   body {
     min-height: 100dvh;
     overflow-x: hidden;
-    background: 
-      var(--gradient-nebula-overlay),
-      var(--gradient-warm);
-    background-color: hsl(0 0% 12%);
-    /* Removed background-attachment: fixed - causes iOS painting bugs */
+    background: transparent;
     color: hsl(var(--foreground));
   }
 
