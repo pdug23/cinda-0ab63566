@@ -1,23 +1,14 @@
 
 
-## Plan: Vertical Stacked Tagline Animation
+## Plan: Two-Line Floating Wave Tagline
 
 ### Concept
 
-Transform the tagline from horizontal inline text to a vertically stacked layout with larger typography. Each line animates in sequentially, filling the space between the logo and the button.
+Display the tagline across two lines, centred vertically between the logo and the button, with a gentle floating wave animation.
 
 ```text
-Current (horizontal, 24px):
-"Every runner deserves to find their perfect fit."
-
-New (vertical stack, larger font):
-Every
-runner
-deserves
-to find
-their
-perfect
-fit.
+Line 1: "Every runner deserves"
+Line 2: "to find their perfect fit."
 ```
 
 ---
@@ -25,101 +16,98 @@ fit.
 ### Visual Layout
 
 ```text
-┌─────────────────────────┐
-│        [LOGO]           │  top-8
-│                         │
-│         Every           │  ← fade in first
-│        runner           │  ← fade in 150ms later
-│       deserves          │  ← fade in 300ms later
-│        to find          │  ← ...
-│         their           │
-│        perfect          │
-│          fit.           │  ← fade in last
-│                         │
-│     [FIND YOURS]        │  bottom-16
-│   How does Cinda work?  │  bottom-6
-└─────────────────────────┘
+┌─────────────────────────────────┐
+│           [LOGO]                │  ← top-8 (fixed)
+│                                 │
+│                                 │
+│                                 │
+│     Every runner deserves       │  ← wave phase 0°
+│   to find their perfect fit.    │  ← wave phase 180°
+│                                 │
+│                                 │
+│                                 │
+│        [FIND YOURS]             │  ← bottom-16 (fixed)
+│    How does Cinda work?         │  ← bottom-6 (fixed)
+└─────────────────────────────────┘
 ```
+
+---
+
+### Animation Details
+
+**Initial Reveal:** Each line fades in with a staggered delay
+
+**Continuous Wave:** After reveal, both lines float gently:
+- Each line moves ~6px up and down
+- Animation duration: 3 seconds per cycle
+- Lines are offset by half a phase (180°), creating a see-saw wave effect
+- Subtle, hypnotic, premium feel
 
 ---
 
 ### Technical Changes
 
-#### Update `AnimatedTagline.tsx`
+#### 1. Add Wave Keyframes to `tailwind.config.ts`
 
-**File: `src/components/AnimatedTagline.tsx`**
+```ts
+keyframes: {
+  'float-wave': {
+    '0%, 100%': { transform: 'translateY(0px)' },
+    '50%': { transform: 'translateY(-6px)' }
+  }
+}
 
-1. Change from word-by-word to line-by-line grouping
-2. Stack lines vertically with `flex-col`
-3. Increase font size to ~36-40px
-4. Each line fades and floats up with stagger
-
-```tsx
-const lines = [
-  "Every",
-  "runner", 
-  "deserves",
-  "to find",
-  "their",
-  "perfect",
-  "fit."
-];
-
-return (
-  <h1 className="flex flex-col items-center gap-1">
-    {lines.map((line, i) => (
-      <span
-        key={i}
-        className={`block transition-all duration-500 ease-out ${
-          shouldAnimate 
-            ? "opacity-100 translate-y-0" 
-            : "opacity-0 translate-y-4"
-        }`}
-        style={{ 
-          transitionDelay: `${i * 120}ms`,
-          fontSize: "36px",
-          fontWeight: 900,
-          fontStyle: "italic",
-          fontVariantLigatures: "none"
-        }}
-      >
-        {line}
-      </span>
-    ))}
-  </h1>
-);
+animation: {
+  'float-wave': 'float-wave 3s ease-in-out infinite'
+}
 ```
 
 ---
 
-#### Update `Landing.tsx`
+#### 2. Update `AnimatedTagline.tsx`
 
-**File: `src/pages/Landing.tsx`**
-
-Adjust the container positioning - reduce top margin since the stacked text takes more vertical space:
+**Changes:**
+- Split tagline into two lines instead of individual words
+- Use larger font (~28-32px)
+- Stack lines vertically with `flex-col`
+- Two-phase animation: fade-in reveal, then continuous wave
+- Each line has a different wave phase offset
 
 ```tsx
-// Line 103: Change mt-[120px] to mt-[100px] or similar
-<div className={`... mt-[100px]`}>
-  <AnimatedTagline className="text-card-foreground/90 text-center" />
-</div>
+const lines = [
+  "Every runner deserves",
+  "to find their perfect fit."
+];
+
+// Phase 1: Fade in
+// Phase 2: Wave animation with offset delays
+<span
+  className={`block ${waveActive ? "animate-float-wave" : "..."}`}
+  style={{ 
+    animationDelay: waveActive ? `${i * 1.5}s` : `${i * 200}ms`
+  }}
+>
+  {line}
+</span>
 ```
+
+---
+
+#### 3. Update `Landing.tsx` Positioning
+
+**Changes:**
+- Centre tagline container absolutely between logo and button
+- Use `absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2`
 
 ---
 
 ### Animation Timeline
 
-| Line | Delay | Appears at |
-|------|-------|------------|
-| Every | 0ms | 0.0s |
-| runner | 120ms | 0.12s |
-| deserves | 240ms | 0.24s |
-| to find | 360ms | 0.36s |
-| their | 480ms | 0.48s |
-| perfect | 600ms | 0.60s |
-| fit. | 720ms | 0.72s |
-
-Total animation completes in ~1.2 seconds (720ms delay + 500ms transition).
+| Phase | Time | Effect |
+|-------|------|--------|
+| Reveal | 0-0.7s | Lines fade in (200ms stagger) |
+| Pause | 0.7-1.2s | Brief pause |
+| Wave | 1.2s+ | Continuous floating wave |
 
 ---
 
@@ -127,16 +115,16 @@ Total animation completes in ~1.2 seconds (720ms delay + 500ms transition).
 
 | File | Change |
 |------|--------|
-| `src/components/AnimatedTagline.tsx` | Switch to vertical layout with larger font, line-by-line animation |
-| `src/pages/Landing.tsx` | Adjust top margin for stacked layout |
+| `tailwind.config.ts` | Add `float-wave` keyframe and animation |
+| `src/components/AnimatedTagline.tsx` | Two-line layout, wave animation |
+| `src/pages/Landing.tsx` | Centre tagline vertically |
 
 ---
 
 ### Visual Result
 
-- The tagline fills the vertical space between logo and button
-- Each line animates in sequentially, creating a cascading reveal effect
-- Larger 36px font makes the statement bold and impactful
-- Maintains the italic, extra-bold branding style
-- Respects reduced motion preferences (instant display)
+- Tagline centred between logo and button on two lines
+- Lines fade in sequentially on load
+- After reveal, text gently waves with a subtle see-saw motion
+- Creates a floating, premium feel that draws the eye
 
