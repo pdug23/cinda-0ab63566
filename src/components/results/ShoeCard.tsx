@@ -2,8 +2,10 @@ import { useState } from "react";
 import { Check, Heart, ExternalLink, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { BuyNowModal } from "./BuyNowModal";
+import { ShortlistAuthModal } from "./ShortlistAuthModal";
 interface ShoeCardProps {
   shoe: {
     brand: string;
@@ -188,6 +190,7 @@ const getBrandLogoPath = (brand: string): string => {
 
 export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onShortlist, showRoleBadge = false }: ShoeCardProps) {
   const [buyModalOpen, setBuyModalOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const badgeConfig = getBadgeConfig(shoe.recommendationType, shoe.badge);
   // Use badge color for glow/shimmer to create visual coherence
   const shimmer = badgeConfig.color;
@@ -358,35 +361,50 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
 
         {/* Action Buttons */}
         <div className="flex gap-2 w-full">
-          <Button
-            variant="outline"
-            className={cn(
-              "flex-1 min-w-0 gap-1.5 py-2.5 px-3 h-auto text-xs font-medium lowercase transition-all",
-              isShortlisted && "bg-primary/20 border-primary/30"
-            )}
-            style={isShortlisted ? {
-              backgroundColor: "hsl(var(--primary) / 0.2)",
-              borderColor: "hsl(var(--primary) / 0.4)",
-            } : {
-              backgroundColor: "rgba(0, 0, 0, 0.3)",
-              borderColor: "rgba(255, 255, 255, 0.2)",
-              color: textColorMuted,
-            }}
-            onClick={onShortlist}
-          >
-            <Heart 
-              className={cn(
-                "w-3.5 h-3.5 shrink-0 transition-all",
-                isShortlisted && "fill-primary text-primary"
-              )} 
-            />
-            <span className={cn(
-              "truncate",
-              isShortlisted ? "text-primary" : ""
-            )}>
-              {isShortlisted ? "shortlisted" : "shortlist"}
-            </span>
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "flex-1 min-w-0 gap-1.5 py-2.5 px-3 h-auto text-xs font-medium lowercase transition-all",
+                    isShortlisted && "bg-primary/20 border-primary/30"
+                  )}
+                  style={isShortlisted ? {
+                    backgroundColor: "hsl(var(--primary) / 0.2)",
+                    borderColor: "hsl(var(--primary) / 0.4)",
+                  } : {
+                    backgroundColor: "rgba(0, 0, 0, 0.3)",
+                    borderColor: "rgba(255, 255, 255, 0.2)",
+                    color: textColorMuted,
+                  }}
+                  onClick={() => {
+                    onShortlist?.();
+                    setAuthModalOpen(true);
+                  }}
+                >
+                  <Heart 
+                    className={cn(
+                      "w-3.5 h-3.5 shrink-0 transition-all",
+                      isShortlisted && "fill-primary text-primary"
+                    )} 
+                  />
+                  <span className={cn(
+                    "truncate",
+                    isShortlisted ? "text-primary" : ""
+                  )}>
+                    {isShortlisted ? "shortlisted" : "shortlist"}
+                  </span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent 
+                side="top" 
+                className="bg-card border-border/40 text-card-foreground text-xs"
+              >
+                Sign in to save
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <Button
             variant="outline"
             className="flex-1 min-w-0 gap-1.5 py-2.5 px-3 h-auto text-xs font-medium lowercase"
@@ -400,7 +418,12 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
             <ExternalLink className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate">buy now</span>
           </Button>
-          </div>
+        </div>
+
+        <ShortlistAuthModal 
+          open={authModalOpen} 
+          onOpenChange={setAuthModalOpen} 
+        />
         </div>
 
         <BuyNowModal
