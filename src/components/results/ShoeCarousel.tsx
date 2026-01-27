@@ -45,8 +45,8 @@ interface ShoeCarouselProps {
 export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onShortlist, showRoleBadges = false }: ShoeCarouselProps) {
   const swiperRef = useRef<SwiperType | null>(null);
   const totalSlides = recommendations.length;
-  // Start on first card (index 0) for Shopping Mode with many cards, or center for 3-card Analysis Mode
-  const initialSlideIndex = showRoleBadges ? 0 : (totalSlides >= 3 ? 1 : 0);
+  // Always start on middle card (index 1) when there are 3+ slides
+  const initialSlideIndex = totalSlides >= 3 ? 1 : 0;
   const [activeIndex, setActiveIndex] = useState(initialSlideIndex);
 
   useEffect(() => {
