@@ -1,56 +1,35 @@
 
 
-# Reduce Spacing Between Shoe Image and Bullets
+# Reduce Shoe Image Size by 20%
 
 ## Overview
-Tighten the vertical spacing between the shoe image and the bullet points section to create a more compact, balanced layout.
+Make the shoe placeholder image 20% smaller to save vertical space on the ShoeCard.
 
 ---
 
-## Current Spacing Analysis
+## Calculation
 
-| Element | Current Class | Spacing |
-|---------|--------------|---------|
-| Image container | `py-3` | 12px top + 12px bottom = 24px |
-| Divider | `my-3` | 12px top + 12px bottom = 24px |
-| **Total gap** | | ~36px between image and bullets |
+| Dimension | Current | New (20% smaller) |
+|-----------|---------|-------------------|
+| Height | 120px | 96px |
 
 ---
 
-## Proposed Changes
+## Change
 
 **File:** `src/components/results/ShoeCard.tsx`
 
-### 1. Reduce Image Container Bottom Padding
-
-Change the image container from `py-3` to `pt-3 pb-1` to reduce bottom padding:
+### Update Image Height Class
 
 ```text
-Line 375:
-Current: className="flex justify-center items-center py-3"
-New:     className="flex justify-center items-center pt-3 pb-1"
-```
-
-### 2. Reduce Divider Top Margin
-
-Change the divider from `my-3` to `mt-1 mb-3` to reduce top margin:
-
-```text
-Line 384:
-Current: className="h-px my-3"
-New:     className="h-px mt-1 mb-3"
+Line 377:
+Current: className="h-[120px] w-auto max-w-full object-contain"
+New:     className="h-[96px] w-auto max-w-full object-contain"
 ```
 
 ---
 
-## Visual Result
+## Space Savings
 
-| Element | Before | After |
-|---------|--------|-------|
-| Image bottom padding | 12px | 4px |
-| Divider top margin | 12px | 4px |
-| Divider bottom margin | 12px | 12px (unchanged) |
-| **Total gap** | ~36px | ~20px |
-
-This will bring the bullet points closer to the shoe image while maintaining appropriate breathing room.
+This will save approximately **24px** of vertical height, which combined with the earlier spacing adjustments should give you a more compact card layout.
 
