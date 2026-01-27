@@ -40,9 +40,10 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
             key={i}
             className="block"
             style={{ 
-              fontSize: "28px", 
+              fontSize: "40px", 
               fontWeight: 900,
-              fontStyle: "italic"
+              fontStyle: "italic",
+              WebkitTextStroke: "0.5px white"
             }}
           >
             {line}
@@ -72,9 +73,10 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
             }`}
             style={{ 
               transitionDelay: `${i * 200}ms`,
-              fontSize: "28px",
+              fontSize: "40px",
               fontWeight: 900,
-              fontStyle: "italic"
+              fontStyle: "italic",
+              WebkitTextStroke: "0.5px white"
             }}
           >
             {line}
