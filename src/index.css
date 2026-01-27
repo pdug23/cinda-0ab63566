@@ -159,7 +159,7 @@ All colors MUST be HSL.
   }
 
   html {
-    background-color: hsl(0 0% 12%);
+    background-color: #1e1e1e;
   }
 
   body {
