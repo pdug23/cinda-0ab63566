@@ -1,92 +1,163 @@
 
 
-## Fix: Orientation Screen Layout - Logo, Spacing, and Button Overlap
+## Plan: Animate the Landing Tagline
 
-### Issues Identified
+### The Challenge
+The splash screen has significant blank space between the logo (at `top-8`) and the tagline (at `mt-[120px]`), with more space below the tagline before the "Find yours" button at `bottom-16`.
 
-Looking at your screenshot, I can see three problems:
+### Animation Options
 
-1. **Logo is missing** - The logo only renders when `viewState === "landing"`, so it disappears after you click "Find yours"
-2. **Too much wasted space at the top** - Content starts at `mt-[170px]` (170px from top), which leaves a large empty gap
-3. **Text clipping buttons** - The steps content extends into the button area because the buttons are positioned at `bottom-20` (80px from bottom)
+Here are three approaches, ranked by visual impact and complexity:
 
 ---
 
-### Solution
+### Option A: Word-by-Word Fade-In with Stagger (Recommended)
 
-#### 1. Show Logo on Orientation View
+Each word fades and floats up individually with a staggered delay, creating an elegant reveal that takes about 2-3 seconds to complete.
 
-**File: `src/pages/Landing.tsx`**
+**Visual effect:**
+- Words appear one at a time, each fading in while moving upward slightly
+- Creates a "building" sensation that fills the space with motion
+- Feels premium and intentional
 
-Move the logo outside the `viewState === "landing"` condition so it shows on both views:
+**Implementation:**
+1. Split the tagline into individual words
+2. Render each word as a `<span>` with its own animation
+3. Use CSS animations with `animation-delay` for stagger timing
+4. Add new keyframes for `fade-up-word` animation
+
+```text
+Timeline:
+  "Every"    ████░░░░░░░░░░░░░░░░
+  "runner"   ░░░░████░░░░░░░░░░░░
+  "deserves" ░░░░░░░░████░░░░░░░░
+  ...etc
+```
+
+---
+
+### Option B: Typewriter with Blinking Cursor
+
+Use the existing `TypewriterText` component with a visible cursor, giving an "AI writing" feel.
+
+**Visual effect:**
+- Text appears word by word (already have this component)
+- Add a blinking cursor at the end during typing
+- Cursor fades out after completion
+
+**Trade-offs:**
+- Simpler to implement (component exists)
+- Less visually "filling" - just text appearing in place
+- May feel too similar to the Chat step's typewriter
+
+---
+
+### Option C: Scale + Fade with Line Breaks
+
+Display the tagline across multiple lines, with each line animating in sequence.
+
+**Visual effect:**
+```text
+Line 1: "Every runner"        [scales in]
+Line 2: "deserves to find"    [scales in after delay]
+Line 3: "their perfect fit."  [scales in after delay]
+```
+
+**Trade-offs:**
+- Fills vertical space more naturally
+- Changes the typography layout
+- May feel too dramatic for the minimalist aesthetic
+
+---
+
+### Recommended: Option A (Word-by-Word Fade-In)
+
+This approach fills the space with motion while keeping the single-line typography intact.
+
+---
+
+### Technical Changes
+
+#### 1. Add new keyframes to `tailwind.config.ts`
+
+```ts
+// New keyframe
+'fade-up-word': {
+  '0%': {
+    opacity: '0',
+    transform: 'translateY(12px)'
+  },
+  '100%': {
+    opacity: '1',
+    transform: 'translateY(0)'
+  }
+}
+
+// New animation
+'fade-up-word': 'fade-up-word 0.5s ease-out forwards'
+```
+
+---
+
+#### 2. Create `AnimatedTagline` component
+
+**File: `src/components/AnimatedTagline.tsx`**
+
+A new component that:
+- Splits the tagline into words
+- Renders each word with staggered `animation-delay`
+- Respects `prefers-reduced-motion` (shows all words instantly)
 
 ```tsx
-// Current (lines 88-97) - only shows on landing
-{viewState === "landing" && (
-  <img src={cindaLogo} ... />
-)}
+const words = "Every runner deserves to find their perfect fit.".split(" ");
 
-// New - show on both landing AND orientation (always visible)
-<img 
-  src={cindaLogo} 
-  alt="Cinda" 
-  className={`h-[80px] absolute top-8 left-1/2 -translate-x-1/2 z-20 ${
-    isExiting ? "animate-spin-settle" : ""
-  }`}
+// Each word gets increasing delay: 0ms, 150ms, 300ms, etc.
+{words.map((word, i) => (
+  <span
+    key={i}
+    className="inline-block opacity-0 animate-fade-up-word"
+    style={{ animationDelay: `${i * 150}ms` }}
+  >
+    {word}
+  </span>
+))}
+```
+
+---
+
+#### 3. Update `Landing.tsx`
+
+Replace the static `<h1>` with the new `AnimatedTagline` component:
+
+```tsx
+// Before (line 105-110)
+<h1 className="text-card-foreground/90 ...">
+  Every runner deserves to find their perfect fit.
+</h1>
+
+// After
+<AnimatedTagline 
+  className="text-card-foreground/90 max-w-md leading-tight italic text-center"
 />
 ```
-
-Also change `top-[60px]` to `top-8` (32px) to reduce top spacing.
-
----
-
-#### 2. Reduce Content Top Margin
-
-**File: `src/pages/Landing.tsx`**
-
-Change the orientation content's top margin from `mt-[170px]` to `mt-[120px]`:
-
-| Location | Current | New |
-|----------|---------|-----|
-| Line 134 (orientation container) | `mt-[170px]` | `mt-[120px]` |
-| Line 105 (landing content) | `mt-[170px]` | `mt-[120px]` |
-
-This moves the text up by 50px, giving more room for the buttons.
-
----
-
-#### 3. Move Buttons Up
-
-**File: `src/pages/Landing.tsx`**
-
-Change the CTA buttons position from `bottom-20` (80px) to `bottom-16` (64px):
-
-```tsx
-// Line 187 - change bottom-20 to bottom-16
-className={`absolute bottom-16 left-1/2 ...`}
-```
-
-Also adjust the orientation bottom link from `bottom-6` to `bottom-5` to keep visual balance.
 
 ---
 
 ### Summary of Changes
 
-| Line | Element | Current | New |
-|------|---------|---------|-----|
-| 89-97 | Logo condition | `viewState === "landing"` | Always visible (no condition) |
-| 93 | Logo position | `top-[60px]` | `top-8` |
-| 105 | Landing content margin | `mt-[170px]` | `mt-[120px]` |
-| 134 | Orientation content margin | `mt-[170px]` | `mt-[120px]` |
-| 187 | CTA buttons position | `bottom-20` | `bottom-16` |
-| 231 | A2HS link position | `bottom-6` | `bottom-5` |
+| File | Change |
+|------|--------|
+| `tailwind.config.ts` | Add `fade-up-word` keyframe and animation |
+| `src/components/AnimatedTagline.tsx` | New component for word-by-word reveal |
+| `src/pages/Landing.tsx` | Replace static h1 with AnimatedTagline |
 
 ---
 
 ### Visual Result
 
-- Logo appears at the top on both splash and orientation screens
-- Text content is positioned higher, closer to the logo
-- Buttons have more breathing room and don't overlap with the numbered steps
-- Bottom link stays visible below the buttons
+- The tagline animates word-by-word over ~1.2 seconds
+- Each word floats up slightly as it fades in
+- The animation fills the "dead time" when users first land on the page
+- Respects reduced motion preferences (instant display)
+- Maintains the minimalist aesthetic while adding polish
 
