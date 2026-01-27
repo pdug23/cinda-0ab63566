@@ -85,16 +85,14 @@ const Landing = () => {
       {(viewState === "orientation" || isExiting) && <FloatingJargon />}
 
       <OnboardingLayout centerContent transparent>
-        {/* Logo - only visible on landing, spins on transition */}
-        {viewState === "landing" && (
-          <img 
-            src={cindaLogo} 
-            alt="Cinda" 
-            className={`h-[80px] absolute top-[60px] left-1/2 -translate-x-1/2 z-20 ${
-              isExiting ? "animate-spin-settle" : ""
-            }`}
-          />
-        )}
+        {/* Logo - visible on both landing and orientation, spins on transition */}
+        <img 
+          src={cindaLogo} 
+          alt="Cinda" 
+          className={`h-[80px] absolute top-8 left-1/2 -translate-x-1/2 z-20 ${
+            isExiting ? "animate-spin-settle" : ""
+          }`}
+        />
 
         {viewState === "landing" && (
           <PageTransition className="absolute inset-0 flex flex-col items-center text-center px-6 z-10">
@@ -102,7 +100,7 @@ const Landing = () => {
             <div
               className={`flex flex-col items-center transition-all ${
                 prefersReducedMotion ? "" : "duration-300"
-              } ${isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100"} mt-[170px]`}
+              } ${isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100"} mt-[120px]`}
             >
               <h1
                 className="text-card-foreground/90 max-w-md leading-tight italic text-center"
@@ -114,7 +112,7 @@ const Landing = () => {
 
             {/* Button fixed above bottom link */}
             <div
-              className={`absolute bottom-20 left-1/2 -translate-x-1/2 transition-all ${
+              className={`absolute bottom-16 left-1/2 -translate-x-1/2 transition-all ${
                 prefersReducedMotion ? "" : "duration-300"
               } ${isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
             >
@@ -131,7 +129,7 @@ const Landing = () => {
 
         {viewState === "orientation" && (
           <PageTransition className="absolute inset-0 flex flex-col items-center text-center px-6 z-10">
-            <div className="flex flex-col items-center max-w-md mt-[170px]">
+            <div className="flex flex-col items-center max-w-md mt-[120px]">
               {/* Headline and subheading */}
               <div
                 className={`transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
@@ -184,7 +182,7 @@ const Landing = () => {
 
             {/* CTA buttons fixed above bottom link */}
             <div
-              className={`absolute bottom-20 left-1/2 -translate-x-1/2 w-full max-w-xs px-4 transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
+              className={`absolute bottom-16 left-1/2 -translate-x-1/2 w-full max-w-xs px-4 transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
                 showCta ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               }`}
             >
@@ -228,7 +226,7 @@ const Landing = () => {
         {viewState === "orientation" && !isExiting && (
           <button
             onClick={() => setShowA2HSModal(true)}
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/50 hover:text-muted-foreground/70 transition-all cursor-pointer z-10 underline underline-offset-2 decoration-dotted decoration-muted-foreground/30 hover:decoration-solid hover:decoration-muted-foreground/50"
+            className="absolute bottom-5 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/50 hover:text-muted-foreground/70 transition-all cursor-pointer z-10 underline underline-offset-2 decoration-dotted decoration-muted-foreground/30 hover:decoration-solid hover:decoration-muted-foreground/50"
           >
             Add Cinda to your home screen
           </button>
