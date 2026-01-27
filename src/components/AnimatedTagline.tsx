@@ -62,8 +62,8 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
         style={{ 
           fontVariantLigatures: "none",
           lineHeight: 1.2,
-          transformOrigin: "top left",
-          ...(rippleActive ? { animation: "ripple-wave 8s ease-in-out infinite" } : {})
+          transformOrigin: "center center",
+          ...(rippleActive ? { animation: "subtle-shimmer 6s ease-in-out infinite" } : {})
         }}
       >
         {lines.map((line, i) => (
@@ -87,35 +87,21 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
         ))}
       </h1>
 
-      {/* Ripple wave keyframes - stone dropped in water effect from top-left */}
+      {/* Subtle shimmer/wobble - barely perceptible but alive */}
       <style>{`
-        @keyframes ripple-wave {
+        @keyframes subtle-shimmer {
           0%, 100% {
-            transform: scale(1) skew(0deg, 0deg);
+            transform: scale(1) skew(0deg, 0deg) translateY(0);
           }
-          /* Initial ripple from top-left */
-          8% {
-            transform: scale(1.008) skew(0.3deg, 0.2deg);
-          }
-          16% {
-            transform: scale(0.997) skew(-0.2deg, -0.1deg);
-          }
-          /* Wave reaches bottom-right, starts refraction */
-          30% {
-            transform: scale(1) skew(0deg, 0deg);
-          }
-          /* Refraction wave coming back */
-          42% {
-            transform: scale(1.005) skew(-0.2deg, -0.15deg);
+          25% {
+            transform: scale(1.002) skew(0.08deg, 0.04deg) translateY(-0.3px);
           }
           50% {
-            transform: scale(0.998) skew(0.15deg, 0.1deg);
+            transform: scale(0.998) skew(-0.06deg, -0.03deg) translateY(0.3px);
           }
-          /* Settle */
-          65% {
-            transform: scale(1) skew(0deg, 0deg);
+          75% {
+            transform: scale(1.001) skew(0.04deg, 0.02deg) translateY(-0.15px);
           }
-          /* Pause until next ripple */
         }
       `}</style>
     </>
