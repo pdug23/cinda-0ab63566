@@ -1,123 +1,58 @@
 
-## Plan: Fix Grey Bar at Bottom of Screen
 
-### Understanding the Problem
+## Plan: Fix CTA Buttons Layout on Mobile
 
-There are two separate issues causing the grey bar:
+### The Problem
 
-**Issue 1: Browser Mode (Safari)**
-The grey bar behind Safari's URL bar doesn't match the app background. Safari uses the `<meta name="theme-color">` to color this area.
+The "FULL ANALYSIS" and "QUICK MATCH" buttons are currently stacked vertically on mobile (using `flex-col sm:flex-row`). This causes the buttons to overlap with the steps list above them, as shown in the screenshot.
 
-**Issue 2: PWA/Standalone Mode**
-The container is still capped at `maxHeight: 844px` even in standalone mode because the `isStandalone()` check is being evaluated at the wrong time or returning `false` incorrectly.
+### The Solution
 
----
-
-### Solution
-
-#### Fix 1: Match the theme-color to the background
-
-Update the `theme-color` meta tag to use the exact same color as the body background.
-
-**File: `index.html` (line 21)**
-
-```html
-<!-- Before -->
-<meta name="theme-color" content="#1f1f1f" />
-
-<!-- After - exact match for hsl(0, 0%, 12%) -->
-<meta name="theme-color" content="#1e1e1e" />
-```
-
-Also update the body inline style to use the same hex value for consistency:
-
-**File: `index.html` (line 34)**
-
-```html
-<!-- Before -->
-<body style="background-color: hsl(0, 0%, 12%);">
-
-<!-- After -->
-<body style="background-color: #1e1e1e;">
-```
+Change the button layout to always be side-by-side (even on mobile) and make them taller but narrower.
 
 ---
 
-#### Fix 2: Make PWA detection reactive with useState
+### Changes to `src/pages/Landing.tsx`
 
-Move the standalone detection inside the component and use `useState` so it evaluates correctly on the client.
-
-**File: `src/components/OnboardingLayout.tsx`**
-
+**Line 185**: Reduce horizontal padding to give buttons more room
 ```tsx
-// Before - function defined at module level
-const isStandalone = () => {
-  if (typeof window === 'undefined') return false;
-  return (
-    window.matchMedia('(display-mode: standalone)').matches ||
-    (window.navigator as unknown as { standalone?: boolean }).standalone === true
-  );
-};
+// Before
+className={`absolute bottom-20 left-1/2 -translate-x-1/2 w-full max-w-xs px-6 ...
 
-const OnboardingLayout = ({ ... }) => {
-  // ...
-  style={{
-    maxHeight: isStandalone() ? "none" : "844px",
-  }}
-}
+// After
+className={`absolute bottom-20 left-1/2 -translate-x-1/2 w-full max-w-xs px-4 ...
 ```
 
+**Line 189**: Change from stacked to always side-by-side
 ```tsx
-// After - detection happens inside component with useState
-const OnboardingLayout = ({ ... }) => {
-  const [isStandalone, setIsStandalone] = useState(false);
+// Before
+<div className="flex flex-col sm:flex-row gap-4 w-full">
 
-  useEffect(() => {
-    // Check if running as installed PWA
-    const standalone = 
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as unknown as { standalone?: boolean }).standalone === true;
-    setIsStandalone(standalone);
-  }, []);
-
-  // ...
-  style={{
-    maxHeight: isStandalone ? "none" : "844px",
-  }}
-}
+// After
+<div className="flex flex-row gap-3 w-full">
 ```
 
-This ensures the detection runs on the client after the component mounts.
+**Lines 191-198 & 201-208**: Make buttons taller to compensate for narrower width
+```tsx
+// Before (both buttons)
+className="w-full min-h-[44px] text-xs uppercase ..."
 
----
-
-#### Fix 3: Update CSS to use consistent colors
-
-**File: `src/index.css` (line 162)**
-
-```css
-/* Before */
-html {
-  background-color: hsl(0 0% 12%);
-}
-
-/* After */
-html {
-  background-color: #1e1e1e;
-}
+// After (both buttons)  
+className="w-full min-h-[52px] text-xs uppercase ..."
 ```
 
 ---
 
-### Summary of Changes
+### Summary
 
-| File | Change |
-|------|--------|
-| `index.html` | Update `theme-color` to `#1e1e1e`, update body background to match |
-| `src/components/OnboardingLayout.tsx` | Make `isStandalone` detection reactive using `useState` and `useEffect` |
-| `src/index.css` | Update html background to `#1e1e1e` for consistency |
+| Change | Before | After |
+|--------|--------|-------|
+| Layout | `flex-col sm:flex-row` (stacked on mobile) | `flex-row` (always side-by-side) |
+| Button gap | `gap-4` | `gap-3` (slightly tighter) |
+| Container padding | `px-6` | `px-4` (more room for buttons) |
+| Button height | `min-h-[44px]` | `min-h-[52px]` (taller for tap target) |
 
-### Expected Result
+### Result
 
-- **Browser mode**: Safari's URL bar area will blend with the app background (no grey bar visible)
-- **PWA mode**: Container will extend to full height with no wasted space at bottom
+The buttons will always display side-by-side, each taking 50% width. The taller height compensates for the narrower width and maintains good tap targets. The reduced padding and gap give the buttons more horizontal space to fit their text.
+
