@@ -1,35 +1,72 @@
 
-# Fix: Consistent Shoe Card Height
 
-## Problem
-When bullet points span fewer lines, the card shrinks to fit the content. All shoe cards should maintain the same height regardless of bullet content length.
+# Update Action Button Labels & Styling
 
-## Root Cause
-The card currently uses `height: "100%"` which allows it to shrink based on content. Even though the bullet section has `flex-1` to expand and fill space, the parent card itself has no fixed height to create that space.
+## Overview
+Change button labels from "Shortlist" to "SAVE" and "Buy now" to "BUY", match button curvature to the card, and equalise spacing.
 
-## Solution
-Change the card from `height: 100%` to a fixed height value. This ensures all cards are identical in size, and the `flex-1` on the bullet section will create blank space when bullets are shorter.
+---
 
-## Implementation
+## Changes
 
 **File:** `src/components/results/ShoeCard.tsx`
 
-**Change:** Update line 245 from flexible to fixed height:
+### 1. Update Button Labels
 
+| Current | New |
+|---------|-----|
+| Shortlist | Save |
+| Buy now | Buy |
+
+### 2. Match Button Curvature to Card
+
+The card uses `rounded-2xl` (16px radius). Change buttons from `rounded-full` to `rounded-xl` (12px) for a more harmonious look that echoes the card's corners.
+
+### 3. Equalise Spacing
+
+Current positioning:
+- Top: `top-3` (12px)
+- Left/Right: `left-4` / `right-4` (16px)
+
+Change to equal spacing:
+- Top: `top-4` (16px)
+- Left/Right: `left-4` / `right-4` (16px)
+
+This creates consistent 16px inset from all edges.
+
+---
+
+## Technical Details
+
+**SAVE button (lines 254, 280):**
 ```text
-Current:
-  height: "100%",
-  minHeight: "480px",
-  maxHeight: "600px",
+Current: "absolute top-3 left-4 ... rounded-full"
+Change to: "absolute top-4 left-4 ... rounded-xl"
 
-Change to:
-  height: "520px",
+Current text: "Shortlist"
+Change to: "Save"
 ```
 
-This sets a consistent fixed height of 520px for all cards. The bullet section already has `flex-1` applied, so when bullets take up less space, the extra room will appear as blank space below the bullets (before the specs section).
+**BUY button (lines 294, 302):**
+```text
+Current: "absolute top-3 right-4 ... rounded-full"
+Change to: "absolute top-4 right-4 ... rounded-xl"
 
-## Result
-- All shoe cards will be exactly 520px tall
-- Cards with shorter bullets will have extra whitespace in the bullet section
-- Cards with longer bullets will display normally
-- Consistent, polished appearance across all recommendations
+Current text: "Buy now"
+Change to: "Buy"
+```
+
+---
+
+## Visual Result
+
+| Element | Before | After |
+|---------|--------|-------|
+| Save button text | Shortlist | Save |
+| Buy button text | Buy now | Buy |
+| Button radius | rounded-full (9999px) | rounded-xl (12px) |
+| Top spacing | 12px (top-3) | 16px (top-4) |
+| Side spacing | 16px (left-4/right-4) | 16px (unchanged) |
+
+The buttons will now have consistent 16px spacing from all edges and a softer corner radius that complements the card's `rounded-2xl` styling.
+
