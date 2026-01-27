@@ -376,7 +376,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
           <img
             src="/shoes/PLACEHOLDER.png"
             alt={`${shoe.brand} ${shoe.model} ${shoe.version}`}
-            className="h-[120px] w-auto max-w-full object-contain"
+            className="h-[96px] w-auto max-w-full object-contain"
           />
         </div>
 
