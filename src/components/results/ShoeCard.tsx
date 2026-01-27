@@ -242,7 +242,9 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         style={{
           background: "rgba(26, 26, 30, 0.95)",
           border: "2px solid rgba(255, 255, 255, 0.5)",
-          height: "480px",
+          height: "100%",
+          minHeight: "480px",
+          maxHeight: "600px",
         }}
       >
         {/* Brand Logo */}
@@ -270,7 +272,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </h2>
 
         {/* Badge(s) */}
-        <div className="flex justify-center gap-2 mb-2">
+        <div className="flex justify-center gap-3 mb-2">
           {showRoleBadge && roleBadgeLabel && (
             <Popover>
               <PopoverTrigger asChild>
@@ -313,11 +315,11 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
           </span>
         </div>
 
-        {/* Divider */}
+        {/* Divider after badges */}
         <div className="h-px my-3" style={{ backgroundColor: dividerColor }} />
 
         {/* Match Reasons - Three Bullet Points */}
-        <div className="space-y-1.5 mb-2">
+        <div className="space-y-1.5 mb-2 flex-1">
           {shoe.matchReason.slice(0, 3).map((reason, idx) => (
             <div key={idx} className="flex items-start gap-2">
               <Check 
@@ -326,8 +328,8 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
                 aria-hidden="true" 
               />
               <span 
-                className="text-sm leading-snug"
-                style={{ color: textColorMuted }}
+                className="text-sm"
+                style={{ color: textColorMuted, lineHeight: "1.6" }}
               >
                 {reason}
               </span>
@@ -360,7 +362,10 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
           <div className="h-px my-3" style={{ backgroundColor: dividerColor }} />
 
         {/* Action Buttons */}
-        <div className="flex gap-2 w-full">
+        <div 
+          className="flex gap-2 w-full"
+          style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+        >
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
