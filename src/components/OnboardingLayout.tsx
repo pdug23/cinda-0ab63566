@@ -36,23 +36,29 @@ const OnboardingLayout = ({
     setIsStandalone(standalone);
   }, []);
 
-  // Lock body scroll when this layout is mounted (without forcing height which causes iOS issues)
+  // Lock body scroll when this layout is mounted
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
 
-    // Store original overflow styles only
+    // Store original styles
     const originalHtmlOverflow = html.style.overflow;
     const originalBodyOverflow = body.style.overflow;
+    const originalHtmlHeight = html.style.height;
+    const originalBodyHeight = body.style.height;
 
-    // Lock scroll without setting height (avoids iOS viewport painting issues)
+    // Lock scroll
     html.style.overflow = "hidden";
+    html.style.height = "100%";
     body.style.overflow = "hidden";
+    body.style.height = "100%";
 
     return () => {
       // Restore original styles on unmount
       html.style.overflow = originalHtmlOverflow;
+      html.style.height = originalHtmlHeight;
       body.style.overflow = originalBodyOverflow;
+      body.style.height = originalBodyHeight;
     };
   }, []);
 

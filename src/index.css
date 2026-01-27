@@ -165,7 +165,11 @@ All colors MUST be HSL.
   body {
     min-height: 100dvh;
     overflow-x: hidden;
-    background: transparent;
+    background: 
+      var(--gradient-nebula-overlay),
+      var(--gradient-warm);
+    background-color: hsl(0 0% 12%);
+    background-attachment: fixed;
     color: hsl(var(--foreground));
   }
 
