@@ -1,114 +1,92 @@
 
 
-## Plan: Remove Disclaimer and Extend Container
+## Fix: Orientation Screen Layout - Logo, Spacing, and Button Overlap
 
-### Summary
-Remove the disclaimer text from Profile Step 1 and Step 2 pages, and reclaim the vertical space by removing the reserved spacer from `OnboardingLayout`.
+### Issues Identified
 
----
+Looking at your screenshot, I can see three problems:
 
-### Technical Changes
-
-#### 1. Remove `bottomText` from ProfileBuilder.tsx (Step 1)
-
-**File: `src/pages/ProfileBuilder.tsx`**
-
-Line 236 currently passes `bottomText` to the layout:
-```tsx
-<OnboardingLayout 
-  scrollable 
-  bottomText={allOptionalsFilled ? null : "Completing optional fields will help Cinda better recommend shoes for how you run."}
->
-```
-
-Change to:
-```tsx
-<OnboardingLayout scrollable>
-```
-
-Also remove the related variable calculation (lines 226-229):
-```tsx
-const hasAge = age.trim() !== "";
-const hasHeight = heightCm !== null;
-const hasWeight = weightKg !== null;
-const allOptionalsFilled = hasAge && hasHeight && hasWeight;
-```
+1. **Logo is missing** - The logo only renders when `viewState === "landing"`, so it disappears after you click "Find yours"
+2. **Too much wasted space at the top** - Content starts at `mt-[170px]` (170px from top), which leaves a large empty gap
+3. **Text clipping buttons** - The steps content extends into the button area because the buttons are positioned at `bottom-20` (80px from bottom)
 
 ---
 
-#### 2. Remove `bottomText` from ProfileBuilderStep2.tsx (Step 2)
+### Solution
 
-**File: `src/pages/ProfileBuilderStep2.tsx`**
+#### 1. Show Logo on Orientation View
 
-Line 237 currently passes `bottomText`:
+**File: `src/pages/Landing.tsx`**
+
+Move the logo outside the `viewState === "landing"` condition so it shows on both views:
+
 ```tsx
-<OnboardingLayout 
-  scrollable
-  bottomText={allOptionalsFilled ? null : "Completing optional fields will help Cinda better recommend shoes for how you run."}
->
+// Current (lines 88-97) - only shows on landing
+{viewState === "landing" && (
+  <img src={cindaLogo} ... />
+)}
+
+// New - show on both landing AND orientation (always visible)
+<img 
+  src={cindaLogo} 
+  alt="Cinda" 
+  className={`h-[80px] absolute top-8 left-1/2 -translate-x-1/2 z-20 ${
+    isExiting ? "animate-spin-settle" : ""
+  }`}
+/>
 ```
 
-Change to:
-```tsx
-<OnboardingLayout scrollable>
-```
-
-Also remove the related variable calculation (lines 227-230):
-```tsx
-const hasVolume = volumeInput.trim() !== "";
-const hasRaceTime = raceTime !== null;
-const allOptionalsFilled = isBeginner || (hasVolume && hasRaceTime);
-```
+Also change `top-[60px]` to `top-8` (32px) to reduce top spacing.
 
 ---
 
-#### 3. Update OnboardingLayout to Extend Container
+#### 2. Reduce Content Top Margin
 
-**File: `src/components/OnboardingLayout.tsx`**
+**File: `src/pages/Landing.tsx`**
 
-Remove the `bottomText` prop and the bottom spacer div (lines 86-93):
-```tsx
-{/* Bottom spacer - always present for consistent layout */}
-<div className="mt-4 min-h-[32px] flex items-start justify-center">
-  {bottomText && (
-    <p className="text-xs italic text-orange-400/50 text-center max-w-md px-4 transition-opacity duration-200">
-      {bottomText}
-    </p>
-  )}
-</div>
-```
+Change the orientation content's top margin from `mt-[170px]` to `mt-[120px]`:
 
-Update the container height calculation to reclaim the 48px (32px spacer + 16px margin):
-```tsx
-// Before
-height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 32px)"
+| Location | Current | New |
+|----------|---------|-----|
+| Line 134 (orientation container) | `mt-[170px]` | `mt-[120px]` |
+| Line 105 (landing content) | `mt-[170px]` | `mt-[120px]` |
 
-// After (32px → ~0px, reclaiming ~48px total)
-height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px)"
-```
-
-Also update maxHeight from 720px to accommodate the extra space:
-```tsx
-maxHeight: "768px"
-```
-
-Remove the `bottomText` prop from the interface (line 16).
+This moves the text up by 50px, giving more room for the buttons.
 
 ---
 
-### Files Changed
+#### 3. Move Buttons Up
 
-| File | Change |
-|------|--------|
-| `src/pages/ProfileBuilder.tsx` | Remove `bottomText` prop and `allOptionalsFilled` calculation |
-| `src/pages/ProfileBuilderStep2.tsx` | Remove `bottomText` prop and `allOptionalsFilled` calculation |
-| `src/components/OnboardingLayout.tsx` | Remove `bottomText` prop, delete spacer div, extend container height |
+**File: `src/pages/Landing.tsx`**
+
+Change the CTA buttons position from `bottom-20` (80px) to `bottom-16` (64px):
+
+```tsx
+// Line 187 - change bottom-20 to bottom-16
+className={`absolute bottom-16 left-1/2 ...`}
+```
+
+Also adjust the orientation bottom link from `bottom-6` to `bottom-5` to keep visual balance.
+
+---
+
+### Summary of Changes
+
+| Line | Element | Current | New |
+|------|---------|---------|-----|
+| 89-97 | Logo condition | `viewState === "landing"` | Always visible (no condition) |
+| 93 | Logo position | `top-[60px]` | `top-8` |
+| 105 | Landing content margin | `mt-[170px]` | `mt-[120px]` |
+| 134 | Orientation content margin | `mt-[170px]` | `mt-[120px]` |
+| 187 | CTA buttons position | `bottom-20` | `bottom-16` |
+| 231 | A2HS link position | `bottom-6` | `bottom-5` |
 
 ---
 
 ### Visual Result
 
-- The container will be taller on mobile (additional ~48px reclaimed)
-- No disclaimer text appears below the card on either Step 1 or Step 2
-- More space available for form content without scrolling
+- Logo appears at the top on both splash and orientation screens
+- Text content is positioned higher, closer to the logo
+- Buttons have more breathing room and don't overlap with the numbered steps
+- Bottom link stays visible below the buttons
 
