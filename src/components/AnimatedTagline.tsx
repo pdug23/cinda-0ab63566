@@ -6,7 +6,7 @@ interface AnimatedTaglineProps {
 
 const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
   const [shouldAnimate, setShouldAnimate] = useState(false);
-  const [driftActive, setDriftActive] = useState(false);
+  const [rippleActive, setRippleActive] = useState(false);
   
   const prefersReducedMotion = typeof window !== "undefined" && 
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -23,12 +23,12 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Start drift animation after fade-in completes
+  // Start ripple animation after fade-in completes
   useEffect(() => {
     if (!shouldAnimate || prefersReducedMotion) return;
     
-    const driftTimer = setTimeout(() => setDriftActive(true), 1000);
-    return () => clearTimeout(driftTimer);
+    const rippleTimer = setTimeout(() => setRippleActive(true), 1000);
+    return () => clearTimeout(rippleTimer);
   }, [shouldAnimate, prefersReducedMotion]);
 
   if (prefersReducedMotion) {
@@ -62,7 +62,8 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
         style={{ 
           fontVariantLigatures: "none",
           lineHeight: 1.2,
-          ...(driftActive ? { animation: "drift-gentle 20s ease-in-out infinite" } : {})
+          transformOrigin: "top left",
+          ...(rippleActive ? { animation: "ripple-wave 8s ease-in-out infinite" } : {})
         }}
       >
         {lines.map((line, i) => (
@@ -86,24 +87,35 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
         ))}
       </h1>
 
-      {/* Drift keyframes - slow, organic, multi-directional movement */}
+      {/* Ripple wave keyframes - stone dropped in water effect from top-left */}
       <style>{`
-        @keyframes drift-gentle {
+        @keyframes ripple-wave {
           0%, 100% {
-            transform: translate(0px, 0px);
+            transform: scale(1) skew(0deg, 0deg);
           }
-          20% {
-            transform: translate(3px, -4px);
+          /* Initial ripple from top-left */
+          8% {
+            transform: scale(1.008) skew(0.3deg, 0.2deg);
           }
-          40% {
-            transform: translate(-2px, -2px);
+          16% {
+            transform: scale(0.997) skew(-0.2deg, -0.1deg);
           }
-          60% {
-            transform: translate(-4px, 3px);
+          /* Wave reaches bottom-right, starts refraction */
+          30% {
+            transform: scale(1) skew(0deg, 0deg);
           }
-          80% {
-            transform: translate(2px, 2px);
+          /* Refraction wave coming back */
+          42% {
+            transform: scale(1.005) skew(-0.2deg, -0.15deg);
           }
+          50% {
+            transform: scale(0.998) skew(0.15deg, 0.1deg);
+          }
+          /* Settle */
+          65% {
+            transform: scale(1) skew(0deg, 0deg);
+          }
+          /* Pause until next ripple */
         }
       `}</style>
     </>
