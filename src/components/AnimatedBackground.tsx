@@ -23,12 +23,21 @@ const LandingBackground = () => {
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
+  // CSS to extend into iOS safe areas (prevents grey bar at bottom)
+  const safeAreaExtend = {
+    top: "calc(-1 * env(safe-area-inset-top, 0px))",
+    left: "calc(-1 * env(safe-area-inset-left, 0px))",
+    right: "calc(-1 * env(safe-area-inset-right, 0px))",
+    bottom: "calc(-1 * env(safe-area-inset-bottom, 0px))",
+  };
+
   return (
     <>
       {/* Animated gradient layer */}
       <div
-        className="fixed inset-0 pointer-events-none -z-30"
+        className="fixed pointer-events-none -z-30"
         style={{
+          ...safeAreaExtend,
           background: `
             radial-gradient(ellipse 90% 70% at 20% 25%, hsl(24 80% 45% / 0.5) 0%, hsl(28 75% 50% / 0.25) 35%, transparent 60%),
             radial-gradient(ellipse 65% 55% at 45% 55%, hsl(32 70% 55% / 0.2) 0%, transparent 50%),
@@ -44,8 +53,9 @@ const LandingBackground = () => {
 
       {/* Animated grain overlay */}
       <div
-        className="fixed inset-0 pointer-events-none -z-20"
+        className="fixed pointer-events-none -z-20"
         style={{
+          ...safeAreaExtend,
           opacity: 0.04,
           mixBlendMode: "overlay",
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
@@ -55,8 +65,9 @@ const LandingBackground = () => {
 
       {/* Vignette overlay for edge darkening */}
       <div
-        className="fixed inset-0 pointer-events-none -z-10"
+        className="fixed pointer-events-none -z-10"
         style={{
+          ...safeAreaExtend,
           background: `
             radial-gradient(ellipse 70% 60% at 50% 50%, transparent 0%, transparent 50%, hsl(0 0% 0% / 0.35) 100%)
           `,
