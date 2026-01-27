@@ -28,28 +28,19 @@ const OnboardingLayout = ({
   const [showContainer, setShowContainer] = useState(!transparent);
 
   // Lock body scroll when this layout is mounted
+  // Note: Removed height: 100% forcing on html/body - causes iOS grey bar painting bugs
   useEffect(() => {
-    const html = document.documentElement;
     const body = document.body;
 
-    // Store original styles
-    const originalHtmlOverflow = html.style.overflow;
+    // Store original overflow
     const originalBodyOverflow = body.style.overflow;
-    const originalHtmlHeight = html.style.height;
-    const originalBodyHeight = body.style.height;
 
-    // Lock scroll
-    html.style.overflow = "hidden";
-    html.style.height = "100%";
+    // Lock scroll (minimal approach to avoid iOS painting issues)
     body.style.overflow = "hidden";
-    body.style.height = "100%";
 
     return () => {
-      // Restore original styles on unmount
-      html.style.overflow = originalHtmlOverflow;
-      html.style.height = originalHtmlHeight;
+      // Restore original overflow on unmount
       body.style.overflow = originalBodyOverflow;
-      body.style.height = originalBodyHeight;
     };
   }, []);
 
