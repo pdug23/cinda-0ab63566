@@ -12,8 +12,10 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const lines = [
-    "Every runner deserves",
-    "to find their perfect fit."
+    "Every runner",
+    "deserves",
+    "to find their",
+    "perfect fit."
   ];
 
   useEffect(() => {
@@ -38,9 +40,9 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
         {lines.map((line, i) => (
           <span
             key={i}
-            className="block"
+            className="block whitespace-nowrap"
             style={{ 
-              fontSize: "40px", 
+              fontSize: "clamp(28px, 8vw, 40px)", 
               fontWeight: 900,
               fontStyle: "italic",
               WebkitTextStroke: "0.5px currentColor"
@@ -66,14 +68,14 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
         {lines.map((line, i) => (
           <span
             key={i}
-            className={`block transition-all duration-700 ease-out ${
+            className={`block whitespace-nowrap transition-all duration-700 ease-out ${
               shouldAnimate 
                 ? "opacity-100 translate-y-0" 
                 : "opacity-0 translate-y-4"
             }`}
             style={{ 
               transitionDelay: `${i * 200}ms`,
-              fontSize: "40px",
+              fontSize: "clamp(28px, 8vw, 40px)",
               fontWeight: 900,
               fontStyle: "italic",
               WebkitTextStroke: "0.5px currentColor"
