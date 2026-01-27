@@ -1,185 +1,86 @@
 
 
-## Plan: Create /quick-match Route
+## Plan: Fix Mobile Tagline Typography
 
-### Summary
+### Problem
 
-A single-page form with two sections: Archetype Selection (always visible) and Feel Preferences + Brand Picker (appears after archetype is selected). Uses local component state and routes to `/recommendations` on submit.
+The tagline "Every runner deserves to find their perfect fit." displays beautifully on desktop (4 lines, tight grouping) but looks spread out on mobile (7+ lines, one word per line) because:
+
+1. The font size is fixed at 40px regardless of screen width
+2. On narrow screens, each word wraps to its own line
+3. The italic bold style with 40px is too large for mobile widths
+
+### Visual Comparison
+
+| Desktop (Great) | Mobile (Current - Bad) |
+|-----------------|------------------------|
+| Every runner | Every |
+| deserves | runner |
+| to find their | deserves |
+| perfect fit. | to find |
+| | their |
+| | perfect |
+| | fit. |
 
 ---
 
-### New File
+### Solution
 
-**`src/pages/QuickMatch.tsx`**
+Use responsive typography that scales with viewport width, ensuring the tagline displays in approximately 4 lines on both desktop and mobile.
+
+**Approach:** Use `clamp()` CSS function for fluid typography that smoothly scales between mobile and desktop sizes.
 
 ---
 
-### Route Registration
+### Technical Changes
 
-**`src/App.tsx`** - Add route:
+**File:** `src/components/AnimatedTagline.tsx`
+
+1. **Change lines array to 4 lines** (matching the desktop visual):
 ```tsx
-import QuickMatch from "./pages/QuickMatch";
-// ...
-<Route path="/quick-match" element={<QuickMatch />} />
+const lines = [
+  "Every runner",
+  "deserves",
+  "to find their",
+  "perfect fit."
+];
 ```
 
----
-
-### Page Structure
-
-```text
-+------------------------------------------+
-|  [BACK button - optional]                |
-+------------------------------------------+
-|                                          |
-|  Section 1: Archetype Selection          |
-|  "What type of shoe are you looking for?"|
-|                                          |
-|  [ Daily trainer      ]                  |
-|  [ Recovery shoe      ]                  |
-|  [ Workout shoe       ]                  |
-|  [ Race shoe          ]                  |
-|  [ Trail shoe         ]                  |
-|                                          |
-+------------------------------------------+
-|  Section 2: Feel Preferences             |  <- Fades in after
-|  (appears after archetype selected)      |     archetype selected
-|                                          |
-|  "How do you want your [archetype]       |
-|   to feel?"                              |
-|                                          |
-|  Cushion amount    [----o----] Balanced  |
-|  Stability amount  [----o----] Balanced  |
-|  Energy return     [----o----] Balanced  |
-|  Rocker            [----o----] Balanced  |
-|  Heel drop         [0mm][1-4][5-8]...    |
-|                                          |
-|  Brand preference  [Showing all brands]  |
-|                                          |
-+------------------------------------------+
-|                                          |
-|  [  GET RECOMMENDATIONS  ]  <- disabled  |
-|                         until archetype  |
-+------------------------------------------+
-```
-
----
-
-### Technical Implementation
-
-**1. Component State (NOT localStorage)**
+2. **Use responsive font sizing with clamp()**:
 ```tsx
-interface QuickMatchState {
-  selectedArchetype: DiscoveryArchetype | null;
-  feelPreferences: {
-    cushionAmount: number;      // 1-5, default 3
-    stabilityAmount: number;    // 1-5, default 3
-    energyReturn: number;       // 1-5, default 3
-    rocker: number;             // 1-5, default 3
-    heelDropValues: string[];   // e.g., ["5-8mm", "9-12mm"]
-  };
-  brandPreference: BrandPreference;
-}
+// Instead of fixed 40px, use fluid sizing
+fontSize: "clamp(28px, 8vw, 40px)"
 ```
 
-**2. Section 1: Archetype Selector**
-- Copy `ARCHETYPE_OPTIONS` from Step4a
-- Copy `SelectionButton` usage pattern
-- Single-select only (clicking a new option replaces the previous)
-- NO "Not sure" option
+This creates:
+- Minimum: 28px (on very small screens)
+- Preferred: 8vw (scales with viewport)
+- Maximum: 40px (capped on larger screens)
 
-**3. Section 2: Feel Preferences**
-- Fades in with `animate-fade-in` when archetype is selected
-- Show sliders directly (no 3-mode selector)
-- All sliders default to 3 (middle)
-- Reuse slider styling from Step4b
-- Reuse `HeelDropPreferenceCard` pattern (checkboxes)
-- Reuse `BrandPreferenceCard` component pattern
-
-**4. Submit Button**
-- Text: "GET RECOMMENDATIONS" (uppercase, matches NEXT button style)
-- Disabled until archetype is selected
-- Same pill-shaped styling as other pages
-
-**5. On Submit**
-- Build a minimal profile with defaults for required fields
-- Save to localStorage using `saveShoeRequests()` with constructed ShoeRequest
-- Clear any existing gap data with `clearGap()`
-- Navigate to `/recommendations`
-
----
-
-### Key Components to Reuse
-
-From `ProfileBuilderStep4a.tsx`:
-- `ARCHETYPE_OPTIONS` array
-- `SelectionButton` component
-- Header/layout patterns
-
-From `ProfileBuilderStep4b.tsx`:
-- `SLIDERS` config array
-- Slider styling classes
-- `HEEL_DROP_OPTIONS` array
-- `BrandPreferenceCard` component (copy inline)
-- `AdaptiveTooltip` component (copy inline)
-
-From shared:
-- `OnboardingLayout`
-- `PageTransition`
-- `AnimatedBackground`
-- `Slider` component
-
----
-
-### Data Flow on Submit
-
-```text
-1. Build ShoeRequest object:
-   {
-     archetype: selectedArchetype,
-     feelPreferences: {
-       cushionAmount: { mode: "user_set", value: state.cushionAmount },
-       stabilityAmount: { mode: "user_set", value: state.stabilityAmount },
-       energyReturn: { mode: "user_set", value: state.energyReturn },
-       rocker: { mode: "user_set", value: state.rocker },
-       heelDropPreference: { 
-         mode: state.heelDropValues.length > 0 ? "user_set" : "cinda_decides",
-         values: state.heelDropValues 
-       },
-       brandPreference: state.brandPreference
-     }
-   }
-
-2. Create minimal profile for API:
-   - firstName: "Quick Match"
-   - experience: "intermediate" (default)
-   - primaryGoal: "general_fitness" (default)
-
-3. Save to localStorage:
-   - saveProfile(minimalProfile)
-   - saveShoeRequests([shoeRequest])
-   - clearShoes() // No rotation data
-   - clearGap() // Discovery mode
-
-4. Navigate to /recommendations
+3. **Add `whitespace-nowrap`** to each line span to prevent individual lines from breaking:
+```tsx
+<span className="block whitespace-nowrap">
+  {line}
+</span>
 ```
 
 ---
 
-### Styling Details
+### Result
 
-- Use `OnboardingLayout scrollable` for the container
-- Header matches existing pages (no BACK button needed for this standalone flow, but can include one that goes to `/`)
-- Section 2 uses `animate-fade-in` class for smooth appearance
-- All spacing, padding, and touch targets match existing profile pages
-- Mobile sticky footer with submit button
+| Screen | Font Size | Lines |
+|--------|-----------|-------|
+| Mobile (375px) | ~30px | 4 lines |
+| Tablet (768px) | ~40px | 4 lines |
+| Desktop (1024px+) | 40px | 4 lines |
+
+The tagline will always display as 4 tight lines, matching the premium desktop aesthetic on all devices.
 
 ---
 
-### Files to Create/Modify
+### Files to Modify
 
-| File | Action |
+| File | Change |
 |------|--------|
-| `src/pages/QuickMatch.tsx` | **CREATE** - Main page component (~400 lines) |
-| `src/App.tsx` | **MODIFY** - Add route (2 lines) |
+| `src/components/AnimatedTagline.tsx` | Update lines array + responsive font sizing |
 
