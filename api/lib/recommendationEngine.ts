@@ -117,21 +117,37 @@ Write exactly 3 bullets. Each bullet MUST be 13 words or fewer (HARD LIMIT). If 
 
 1. MIDSOLE/RIDE: Name the specific foam or plate tech ONCE here (this is the ONLY bullet that should name the tech). Explain what it does to the ride.
 2. DIFFERENTIATOR: What makes this shoe unique. Be concrete and specific. DO NOT repeat the tech name from bullet 1 - use pronouns or descriptive phrases instead (e.g., 'this setup', 'the midsole', 'dual-density design').
-3. VERSATILITY/FIT: If the shoe supports MULTIPLE archetypes, start by reinforcing the RECOMMENDED FOR use case, then mention ONE other use it handles. If it only supports ONE archetype, mention who it suits best. DO NOT call it something it's not. DO NOT repeat the tech name from bullet 1.
+3. EMOTIONAL + PRACTICAL CLOSER: Combine how the shoe feels or the experience it delivers (emotional) with a practical capability or benefit. This is the compelling reason to choose THIS shoe. Start with the feeling/experience, then add the practical payoff. DO NOT repeat the tech name from bullet 1.
 
 GOOD EXAMPLES:
 
 Cloudmonster 2:
 - CloudTec elements provide taller softer pods and moderate rocker (9 words, names tech)
 - Speedboard creates pronounced rolling, rocker-driven feel (6 words, no repetition)
-- Daily trainer versatility also handles easy recovery miles (8 words, no repetition)
+- Cushioned comfort makes long runs enjoyable, handles high mileage effortlessly (10 words, emotional + practical)
 
 FuelCell Rebel v5:
 - FuelCell midsole compresses easily for soft, responsive ride (8 words, names tech)
 - Ultra-light build plus lower guidance creates agile, connected feel (9 words, no repetition)
-- Daily trainer also handles tempo workouts with playful rebound (9 words, no repetition)
+- Energetic bounce makes running feel lighter, versatile for easy to tempo (12 words, emotional + practical)
 
-BAD EXAMPLES (DO NOT DO THIS):
+Vaporfly Next% 4:
+- ZoomX foam with carbon plate delivers explosive, propulsive energy return (10 words, names tech)
+- Aggressive rocker geometry rolls you forward with minimal effort (9 words, no repetition)
+- Race-day confidence with explosive propulsion, lightweight feel maximises marathon speed (10 words, emotional + practical)
+
+GOOD bullet 3 examples (emotional + practical pattern):
+- Disappears underfoot for effortless miles, handles easy to tempo paces daily
+- Confidence-inspiring guidance without stiffness, perfect daily trainer with tempo capability
+- Plush protection feels luxurious underfoot, suits heavier runners needing recovery focus
+- Energetic bounce makes running feel lighter, versatile across easy and uptempo efforts
+
+BAD bullet 3 examples (weak, generic - DO NOT DO THIS):
+- Daily trainer also handles tempo workouts (boring, no emotion)
+- Suits neutral runners wanting versatility (vague, no feeling)
+- Works for easy days and faster efforts (generic, uninspiring)
+
+BAD EXAMPLES - TECH REPETITION (DO NOT DO THIS):
 - Bullet 1: CloudTec elements provide...
 - Bullet 2: CloudTec pods create... (REPETITION - use 'the pods' or 'this setup')
 - Bullet 3: CloudTec pods make it... (REPETITION)
