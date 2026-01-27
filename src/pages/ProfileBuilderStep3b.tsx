@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, ArrowUp, Mic, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUp, Mic, MicOff, X } from "lucide-react";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import TypewriterText from "@/components/TypewriterText";
 import { useProfile, ChatMessage, ChatContext } from "@/contexts/ProfileContext";
+import { useSpeechToText } from "@/hooks/useSpeechToText";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import cindaLogoGrey from "@/assets/cinda-logo-grey.png";
 import {
@@ -32,6 +34,7 @@ const getRandomFollowup = () => CINDA_FOLLOWUPS[Math.floor(Math.random() * CINDA
 const ProfileBuilderStep3b = () => {
   const navigate = useNavigate();
   const { profileData, updateChatHistory, updateChatContext } = useProfile();
+  const { toast } = useToast();
   
   // Track if we've shown the initial typing animation
   const [showInitialTyping, setShowInitialTyping] = useState(() => {
@@ -54,6 +57,39 @@ const ProfileBuilderStep3b = () => {
   const [confirmLeaveOpen, setConfirmLeaveOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Speech-to-text hook
+  const {
+    isListening,
+    isSupported: isSpeechSupported,
+    startListening,
+    stopListening,
+    transcript: speechTranscript,
+  } = useSpeechToText({
+    language: "en-GB",
+    onResult: (text) => {
+      // Append transcribed text to input
+      setInputValue((prev) => {
+        const separator = prev.trim() ? " " : "";
+        return prev + separator + text;
+      });
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Voice input error",
+        description: error,
+      });
+    },
+  });
+
+  const handleMicClick = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
 
   // Track which phase of the intro we're in
   const [introPhase, setIntroPhase] = useState<'typing1' | 'message1' | 'pause' | 'typing2' | 'message2' | 'done'>(() => {
@@ -359,19 +395,24 @@ const ProfileBuilderStep3b = () => {
                   style={{ minHeight: "24px", maxHeight: "96px" }}
                 />
                 <div className="flex items-center gap-1.5 flex-shrink-0 pb-0.5">
-                  <button
-                    type="button"
-                    disabled={isTyping || introPhase !== 'done'}
-                    className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center",
-                      "bg-card-foreground/10 text-card-foreground/50",
-                      "hover:bg-card-foreground/15 hover:text-card-foreground/70",
-                      "disabled:opacity-30 disabled:cursor-not-allowed",
-                      "transition-colors"
-                    )}
-                  >
-                    <Mic className="w-4 h-4" />
-                  </button>
+                  {isSpeechSupported && (
+                    <button
+                      type="button"
+                      onClick={handleMicClick}
+                      disabled={isTyping || introPhase !== 'done'}
+                      className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center",
+                        "transition-colors",
+                        isListening
+                          ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                          : "bg-card-foreground/10 text-card-foreground/50 hover:bg-card-foreground/15 hover:text-card-foreground/70",
+                        "disabled:opacity-30 disabled:cursor-not-allowed"
+                      )}
+                      title={isListening ? "Stop recording" : "Start voice input"}
+                    >
+                      {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                    </button>
+                  )}
                   <button
                     onClick={handleSend}
                     disabled={!inputValue.trim() || isTyping || introPhase !== 'done'}
