@@ -27,7 +27,7 @@ const LandingBackground = () => {
     <>
       {/* Animated gradient layer */}
       <div
-        className="fixed pointer-events-none -z-30"
+        className="fixed pointer-events-none z-0"
         style={{
           top: 0,
           left: 0,
@@ -48,7 +48,7 @@ const LandingBackground = () => {
 
       {/* Animated grain overlay */}
       <div
-        className="fixed pointer-events-none -z-20"
+        className="fixed pointer-events-none z-[1]"
         style={{
           top: 0,
           left: 0,
@@ -63,7 +63,7 @@ const LandingBackground = () => {
 
       {/* Vignette overlay for edge darkening */}
       <div
-        className="fixed pointer-events-none -z-10"
+        className="fixed pointer-events-none z-[2]"
         style={{
           top: 0,
           left: 0,
