@@ -372,7 +372,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </div>
 
         {/* Shoe Image */}
-        <div className="flex justify-center items-center py-3">
+        <div className="flex justify-center items-center pt-3 pb-1">
           <img
             src="/shoes/PLACEHOLDER.png"
             alt={`${shoe.brand} ${shoe.model} ${shoe.version}`}
@@ -381,7 +381,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </div>
 
         {/* Divider after image */}
-        <div className="h-px my-3" style={{ backgroundColor: dividerColor }} />
+        <div className="h-px mt-1 mb-3" style={{ backgroundColor: dividerColor }} />
 
         {/* Match Reasons - Three Bullet Points */}
         <div className="space-y-1.5 mb-0 flex-1">
