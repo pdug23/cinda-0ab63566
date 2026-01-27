@@ -1,75 +1,61 @@
 
-## Plan: Redesign Next Buttons to Match Back Button Styling
 
-### Summary
+## Plan: Fix Grain Overlay Covering the Container
 
-Transform all "Next" buttons across the profile builder pages to match the styling of the "BACK" buttons: same font size (10px), font family, uppercase text ("NEXT"), and pill-shaped appearance.
+### Problem
+
+The noise/grain texture is appearing over the main UI container instead of just the background. This is caused by a **duplicate grain implementation** in `src/index.css` that sits on top of everything.
 
 ---
 
-### Files to Update
+### Root Cause
 
-| File | Location |
-|------|----------|
-| `src/pages/ProfileBuilder.tsx` | Lines 398-405 |
-| `src/pages/ProfileBuilderStep2.tsx` | Lines 399-408 |
-| `src/pages/ProfileBuilderStep3.tsx` | Lines 832-839 |
-| `src/pages/ProfileBuilderStep4a.tsx` | Lines 129-138 |
-| `src/pages/ProfileBuilderStep4b.tsx` | Lines 838-846 |
+There are two separate grain overlays:
+
+| Location | Type | Z-Index | Opacity |
+|----------|------|---------|---------|
+| `src/components/AnimatedBackground.tsx` | Animated grain | `z-[1]` | 0.04 |
+| `src/index.css` (body::before) | Static grain | `z-index: 3` | 0.06 |
+
+The `body::before` pseudo-element uses `position: fixed` which creates a stacking context that overlays the entire viewport, including the container (even though the container has `z-10`).
+
+---
+
+### Solution
+
+**Remove the duplicate static grain from `src/index.css`**.
+
+The `AnimatedBackground.tsx` already provides a premium animated grain effect that properly sits behind the container. Removing the static duplicate will:
+- Fix the overlay issue
+- Eliminate code duplication
+- Keep the animated grain (which looks better)
 
 ---
 
 ### Technical Changes
 
-Replace the current `<Button>` component with a styled `<button>` element that matches the BACK button exactly.
+**File:** `src/index.css`
 
-**Current styling:**
-```tsx
-<Button
-  onClick={handleNext}
-  variant="cta"
-  className="w-full min-h-[44px] text-sm"
-  disabled={!canProceed}
->
-  Next
-</Button>
+Remove the `body::before` pseudo-element block (approximately lines 35-53):
+
+```css
+/* DELETE THIS ENTIRE BLOCK */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -100%;
+  z-index: 3;
+  opacity: 0.06;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,...");
+}
 ```
-
-**New styling:**
-```tsx
-<button
-  type="button"
-  onClick={handleNext}
-  disabled={!canProceed}
-  className="w-full h-10 flex items-center justify-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors disabled:pointer-events-none disabled:opacity-50"
->
-  NEXT
-  <ArrowRight className="w-3.5 h-3.5" />
-</button>
-```
-
-**Key style properties (matching BACK button):**
-- `text-[10px]` - 10px font size
-- `font-medium` - medium weight
-- `tracking-wider` - wider letter spacing  
-- `uppercase` - all caps display
-- `rounded-full` - pill shape
-- Full-width with centered content
-- Arrow icon on the right (mirroring BACK's left arrow)
 
 ---
 
-### Visual Result
+### Result
 
-The NEXT buttons will:
-- Use 10px uppercase text ("NEXT") matching BACK
-- Have the same pill-shaped border style
-- Include a right arrow icon (opposite of BACK's left arrow)
-- Maintain full width but with matching visual weight
-- Keep the same disabled state handling
+- Grain texture stays on the background only
+- Container and all UI elements remain clean and unobstructed
+- Single source of truth for the grain effect (AnimatedBackground.tsx)
 
----
-
-### Import Requirements
-
-Each file will need `ArrowRight` imported from `lucide-react` (some already have it, others will need it added).
