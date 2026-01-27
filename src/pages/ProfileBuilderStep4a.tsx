@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
@@ -127,14 +127,15 @@ const ProfileBuilderStep4a = () => {
 
           {/* Footer with next button */}
           <footer className="px-6 md:px-8 pb-4 pt-2 flex-shrink-0">
-            <Button
+            <button
+              type="button"
               onClick={handleNext}
-              variant="cta"
-              className="w-full min-h-[44px] text-sm"
               disabled={!isNextEnabled}
+              className="w-full h-10 flex items-center justify-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors disabled:pointer-events-none disabled:opacity-50"
             >
-              Next
-            </Button>
+              NEXT
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </footer>
         </PageTransition>
       </OnboardingLayout>

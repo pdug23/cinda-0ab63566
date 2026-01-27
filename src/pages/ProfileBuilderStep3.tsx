@@ -829,14 +829,15 @@ const ProfileBuilderStep3 = () => {
 
           {/* Card footer */}
           <footer className="flex flex-col items-center px-6 md:px-8 pt-4 pb-4 flex-shrink-0 gap-3">
-            <Button
+            <button
+              type="button"
               onClick={handleNextClick}
-              variant="cta"
-              className="w-full min-h-[44px] text-sm"
               disabled={!allShoesComplete || currentShoes.length === 0}
+              className="w-full h-10 flex items-center justify-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors disabled:pointer-events-none disabled:opacity-50"
             >
-              Next
-            </Button>
+              NEXT
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </footer>
 
           <UnsavedChangesModal

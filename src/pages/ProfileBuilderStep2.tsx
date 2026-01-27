@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { SelectionButton } from "@/components/SelectionButton";
 import { UnsavedChangesModal } from "@/components/UnsavedChangesModal";
 import OnboardingLayout from "@/components/OnboardingLayout";
@@ -397,14 +397,15 @@ const ProfileBuilderStep2 = () => {
 
         {/* Card footer (fixed) */}
         <footer className="flex flex-col items-center px-6 md:px-8 pt-3 pb-4 flex-shrink-0">
-          <Button
+          <button
+            type="button"
             onClick={handleNext}
-            variant="cta"
-            className="w-full min-h-[44px] text-sm"
             disabled={!canProceed}
+            className="w-full h-10 flex items-center justify-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors disabled:pointer-events-none disabled:opacity-50"
           >
-            Next
-          </Button>
+            NEXT
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </footer>
 
         <RaceTimePickerModal
