@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { LogIn } from "lucide-react";
 import { X } from "lucide-react";
 import cindaLogo from "@/assets/cinda-logo-grey.png";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import FloatingJargon from "@/components/FloatingJargon";
+import AnimatedTagline from "@/components/AnimatedTagline";
 import { usePageNavigation } from "@/hooks/usePageNavigation";
 import { AddToHomeScreenModal } from "@/components/AddToHomeScreenModal";
 import {
@@ -102,12 +102,7 @@ const Landing = () => {
                 prefersReducedMotion ? "" : "duration-300"
               } ${isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100"} mt-[120px]`}
             >
-              <h1
-                className="text-card-foreground/90 max-w-md leading-tight italic text-center"
-                style={{ fontVariantLigatures: "none", fontSize: "24px", fontWeight: 900 }}
-              >
-                Every runner deserves to find their perfect fit.
-              </h1>
+              <AnimatedTagline className="text-card-foreground/90 max-w-md leading-tight italic text-center" />
             </div>
 
             {/* Button fixed above bottom link */}
