@@ -52,17 +52,14 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
     );
   }
 
-  // Different drift animations for each line - organic, asynchronous movement
-  const driftStyles = [
-    { animation: "drift-gentle-1 18s ease-in-out infinite" },
-    { animation: "drift-gentle-2 22s ease-in-out infinite" }
-  ];
-
   return (
     <>
       <h1 
         className={`flex flex-col items-center gap-2 ${className}`}
-        style={{ fontVariantLigatures: "none" }}
+        style={{ 
+          fontVariantLigatures: "none",
+          ...(driftActive ? { animation: "drift-gentle 20s ease-in-out infinite" } : {})
+        }}
       >
         {lines.map((line, i) => (
           <span
@@ -76,8 +73,7 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
               transitionDelay: `${i * 200}ms`,
               fontSize: "28px",
               fontWeight: 900,
-              fontStyle: "italic",
-              ...(driftActive ? driftStyles[i] : {})
+              fontStyle: "italic"
             }}
           >
             {line}
@@ -87,7 +83,7 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
 
       {/* Drift keyframes - slow, organic, multi-directional movement */}
       <style>{`
-        @keyframes drift-gentle-1 {
+        @keyframes drift-gentle {
           0%, 100% {
             transform: translate(0px, 0px);
           }
@@ -102,21 +98,6 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
           }
           80% {
             transform: translate(2px, 2px);
-          }
-        }
-
-        @keyframes drift-gentle-2 {
-          0%, 100% {
-            transform: translate(0px, 0px);
-          }
-          25% {
-            transform: translate(-3px, 3px);
-          }
-          50% {
-            transform: translate(4px, -2px);
-          }
-          75% {
-            transform: translate(-2px, -3px);
           }
         }
       `}</style>
