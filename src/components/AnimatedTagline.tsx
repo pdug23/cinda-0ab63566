@@ -32,8 +32,8 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
   if (prefersReducedMotion) {
     return (
       <h1 
-        className={`flex flex-col items-center gap-2 ${className}`}
-        style={{ fontVariantLigatures: "none" }}
+        className={`flex flex-col items-center ${className}`}
+        style={{ fontVariantLigatures: "none", lineHeight: 1.2 }}
       >
         {lines.map((line, i) => (
           <span
@@ -55,9 +55,10 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
   return (
     <>
       <h1 
-        className={`flex flex-col items-center gap-2 ${className}`}
+        className={`flex flex-col items-center ${className}`}
         style={{ 
           fontVariantLigatures: "none",
+          lineHeight: 1.2,
           ...(driftActive ? { animation: "drift-gentle 20s ease-in-out infinite" } : {})
         }}
       >
