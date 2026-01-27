@@ -251,7 +251,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
             <TooltipTrigger asChild>
               <button
                 className={cn(
-                  "absolute top-3 left-4 h-8 px-2.5 flex items-center justify-center gap-1 rounded-full transition-all z-10",
+                  "absolute top-4 left-4 h-8 px-2.5 flex items-center justify-center gap-1 rounded-xl transition-all z-10",
                   isShortlisted && "bg-primary/20 border-primary/30"
                 )}
                 style={isShortlisted ? {
@@ -277,7 +277,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
                   "text-[10px] font-medium uppercase tracking-wide",
                   isShortlisted ? "text-primary" : "text-white/70"
                 )}>
-                  Shortlist
+                  Save
                 </span>
               </button>
             </TooltipTrigger>
@@ -291,7 +291,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </TooltipProvider>
 
         <button
-          className="absolute top-3 right-4 h-8 px-2.5 flex items-center justify-center gap-1 rounded-full transition-all z-10"
+          className="absolute top-4 right-4 h-8 px-2.5 flex items-center justify-center gap-1 rounded-xl transition-all z-10"
           style={{
             backgroundColor: "rgba(26, 26, 30, 0.95)",
             border: "1px solid rgba(255, 255, 255, 0.15)",
@@ -299,7 +299,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
           onClick={() => setBuyModalOpen(true)}
           aria-label="Buy now"
         >
-          <span className="text-[10px] font-medium uppercase tracking-wide text-white/70">Buy now</span>
+          <span className="text-[10px] font-medium uppercase tracking-wide text-white/70">Buy</span>
           <ExternalLink className="w-3.5 h-3.5 text-white/70" />
         </button>
 
