@@ -245,6 +245,57 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
           height: "560px",
         }}
       >
+        {/* Top Corner Action Buttons */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                className={cn(
+                  "absolute top-4 left-4 w-11 h-11 flex items-center justify-center rounded-full transition-all z-10",
+                  isShortlisted && "bg-primary/20 border-primary/30"
+                )}
+                style={isShortlisted ? {
+                  backgroundColor: "hsl(var(--primary) / 0.2)",
+                  border: "1px solid hsl(var(--primary) / 0.4)",
+                } : {
+                  backgroundColor: "rgba(0, 0, 0, 0.4)",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                }}
+                onClick={() => {
+                  onShortlist?.();
+                  setAuthModalOpen(true);
+                }}
+                aria-label={isShortlisted ? "Remove from shortlist" : "Add to shortlist"}
+              >
+                <Heart 
+                  className={cn(
+                    "w-5 h-5 transition-all",
+                    isShortlisted ? "fill-primary text-primary" : "text-white/70"
+                  )} 
+                />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent 
+              side="bottom" 
+              className="bg-card border-border/40 text-card-foreground text-xs"
+            >
+              Sign in to save
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        <button
+          className="absolute top-4 right-4 w-11 h-11 flex items-center justify-center rounded-full transition-all z-10"
+          style={{
+            backgroundColor: "rgba(0, 0, 0, 0.4)",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+          }}
+          onClick={() => setBuyModalOpen(true)}
+          aria-label="Buy now"
+        >
+          <ExternalLink className="w-5 h-5 text-white/70" />
+        </button>
+
         {/* Brand Logo */}
         <div className="flex justify-center mb-2 pt-1">
           {getBrandLogoPath(shoe.brand) ? (
@@ -352,82 +403,15 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
             </div>
             <div className="text-center">
               <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Plate</span>
-              <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{plateLabel}</span>
+            <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{plateLabel}</span>
             </div>
           </div>
-
-          {/* Divider */}
-          <div className="h-px my-3" style={{ backgroundColor: dividerColor }} />
-
-        {/* Action Buttons */}
-        <div 
-          className="flex gap-2 w-full"
-          style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-        >
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "flex-1 min-w-0 gap-1.5 py-2.5 px-3 h-auto text-xs font-medium lowercase transition-all",
-                    isShortlisted && "bg-primary/20 border-primary/30"
-                  )}
-                  style={isShortlisted ? {
-                    backgroundColor: "hsl(var(--primary) / 0.2)",
-                    borderColor: "hsl(var(--primary) / 0.4)",
-                  } : {
-                    backgroundColor: "rgba(0, 0, 0, 0.3)",
-                    borderColor: "rgba(255, 255, 255, 0.2)",
-                    color: textColorMuted,
-                  }}
-                  onClick={() => {
-                    onShortlist?.();
-                    setAuthModalOpen(true);
-                  }}
-                >
-                  <Heart 
-                    className={cn(
-                      "w-3.5 h-3.5 shrink-0 transition-all",
-                      isShortlisted && "fill-primary text-primary"
-                    )} 
-                  />
-                  <span className={cn(
-                    "truncate",
-                    isShortlisted ? "text-primary" : ""
-                  )}>
-                    {isShortlisted ? "shortlisted" : "shortlist"}
-                  </span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent 
-                side="top" 
-                className="bg-card border-border/40 text-card-foreground text-xs"
-              >
-                Sign in to save
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <Button
-            variant="outline"
-            className="flex-1 min-w-0 gap-1.5 py-2.5 px-3 h-auto text-xs font-medium lowercase"
-            style={{
-              backgroundColor: "rgba(0, 0, 0, 0.3)",
-              borderColor: "rgba(255, 255, 255, 0.2)",
-              color: textColorMuted,
-            }}
-            onClick={() => setBuyModalOpen(true)}
-          >
-            <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">buy now</span>
-          </Button>
         </div>
 
         <ShortlistAuthModal 
           open={authModalOpen} 
           onOpenChange={setAuthModalOpen} 
         />
-        </div>
 
         <BuyNowModal
           open={buyModalOpen}
