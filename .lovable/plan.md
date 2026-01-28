@@ -1,152 +1,128 @@
 
-# Update Loading Pages with Cinda Logo Animation
+# Fix Glow Clipping and Add Pagination Dots
 
 ## Overview
 
-Replace the current loading animations on both the Rotation Analysis and Recommendations pages with a centered Cinda logo that has a "spin, stop, spin, stop" animation cycle. The Recommendations page will retain its rotating text messages but with updated typography.
+Two issues need to be addressed on the Recommendations page:
+
+1. **Glow Clipping**: The card's glowing border effect is being cut off by overflow constraints, creating a visible "edge" where the glow stops abruptly
+2. **Missing Pagination Indicator**: Users have no visual indication of how many cards exist or which one is currently active
 
 ---
 
-## Changes
+## Issue 1: Glow Effect Being Clipped
 
-### 1. Create New Animation: `spin-stop-cycle`
+### Root Cause
 
-Add a new keyframe animation to `tailwind.config.ts` that creates a repeating spin-pause cycle:
+The `OnboardingLayout` component uses `overflow-x-hidden` even when `allowOverflow` is true (line 69):
 
-- Spin 360° over 0.6 seconds
-- Pause for 0.8 seconds
-- Repeat
-
-```text
-Timeline:
-|--spin--|--pause--|--spin--|--pause--|
-   0.6s     0.8s     0.6s     0.8s   ...
+```typescript
+className={`fixed inset-0 ${allowOverflow ? 'overflow-x-hidden overflow-y-visible' : 'overflow-hidden'}`}
 ```
 
-Total cycle duration: 2.8 seconds (0.6s spin + 0.8s pause × 2)
+This horizontally clips the glow effect from the shoe cards. Additionally, the inner container div also uses the same conditional overflow logic.
+
+### Solution
+
+When `allowOverflow` is true AND `invisible` is true (which is the case for the Recommendations page), remove all overflow restrictions to allow the glow to bleed naturally into the background.
+
+**Changes to OnboardingLayout.tsx:**
+- When both `invisible` and `allowOverflow` are true, use `overflow-visible` on both the outer container and inner card div
+- This allows the animated glow from ShoeCard to extend beyond the card boundaries without hitting a clipping edge
 
 ---
 
-### 2. Create Shared Logo Loader Component
+## Issue 2: Adding Pagination Dots
 
-Create a new component `src/components/CindaLogoLoader.tsx` that:
-- Displays the Cinda logo centered
-- Applies the spin-stop-cycle animation
-- Respects `prefers-reduced-motion`
+### Solution
+
+Add a simple pagination indicator below the carousel showing dots for each card. The active card's dot will be filled in.
+
+**Visual Design:**
+```
+     ●  ○  ○     (first card active)
+     ○  ●  ○     (second card active)  
+     ○  ○  ●     (third card active)
+```
+
+- Dots are subtle and match the existing muted color palette
+- Active dot uses the theme's foreground color
+- Inactive dots use a muted/transparent variant
+- Spacing between dots is minimal for a clean look
+
+**Changes to ShoeCarousel.tsx:**
+- Add pagination dots container below the Swiper component
+- Use the existing `activeIndex` state to determine which dot is filled
+- Style dots consistently with the dark aesthetic
 
 ---
 
-### 3. Update Rotation Analysis Loading State
-
-In `src/pages/ProfileBuilderStep4Analysis.tsx`:
-- Replace the `LoadingSkeleton` component with the new `CindaLogoLoader`
-- Center the loader in the available space
-
----
-
-### 4. Update Recommendations Loading State
-
-In `src/pages/Recommendations.tsx`:
-- Replace `LiquidMetalLoader` with `CindaLogoLoader` in the `LoadingState` function
-- Keep the rotating text messages
-- Update text styling from `font-light italic tracking-wide` to use the app's standard typography (Plus Jakarta Sans, regular weight, consistent sizing)
-
----
-
-## File Changes Summary
+## File Changes
 
 | File | Change |
 |------|--------|
-| `tailwind.config.ts` | Add `spin-stop-cycle` keyframes and animation |
-| `src/components/CindaLogoLoader.tsx` | New file - reusable logo loader with spin animation |
-| `src/pages/ProfileBuilderStep4Analysis.tsx` | Replace `LoadingSkeleton` with `CindaLogoLoader` |
-| `src/pages/Recommendations.tsx` | Replace `LiquidMetalLoader` with `CindaLogoLoader`, update text styling |
+| `src/components/OnboardingLayout.tsx` | Fix overflow handling when `invisible` + `allowOverflow` are both true |
+| `src/components/results/ShoeCarousel.tsx` | Add pagination dots indicator below carousel |
 
 ---
 
 ## Technical Details
 
-### New Animation Keyframes (tailwind.config.ts)
+### OnboardingLayout.tsx Changes
+
+Update line 69 to check for both `invisible` and `allowOverflow`:
 
 ```typescript
-'spin-stop-cycle': {
-  '0%': { transform: 'rotate(0deg)' },
-  '21.4%': { transform: 'rotate(360deg)' },  // 0.6s of 2.8s total = spin complete
-  '50%': { transform: 'rotate(360deg)' },     // pause
-  '71.4%': { transform: 'rotate(720deg)' },   // second spin complete
-  '100%': { transform: 'rotate(720deg)' }     // pause
-}
+// Outer container overflow logic
+const outerOverflow = (invisible && allowOverflow) 
+  ? 'overflow-visible' 
+  : allowOverflow 
+    ? 'overflow-x-hidden overflow-y-visible' 
+    : 'overflow-hidden';
+
+// Inner container overflow logic  
+const innerOverflow = (invisible && allowOverflow)
+  ? 'overflow-visible'
+  : allowOverflow 
+    ? 'overflow-x-hidden overflow-y-visible' 
+    : 'overflow-hidden';
 ```
 
-Animation: `'spin-stop-cycle': 'spin-stop-cycle 2.8s ease-out infinite'`
+### ShoeCarousel.tsx Changes
 
-### CindaLogoLoader Component
+Add pagination dots after the Swiper component:
 
 ```typescript
-import { useEffect, useState } from "react";
-import cindaLogo from "@/assets/cinda-logo-grey.png";
-
-export function CindaLogoLoader() {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setPrefersReducedMotion(
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      );
-    }
-  }, []);
-
-  return (
-    <div className="flex items-center justify-center">
-      <img 
-        src={cindaLogo} 
-        alt="Loading..." 
-        className={`h-20 ${prefersReducedMotion ? "" : "animate-spin-stop-cycle"}`}
+{/* Pagination Dots */}
+{totalSlides > 1 && (
+  <div className="flex justify-center items-center gap-2 mt-4">
+    {recommendations.map((_, index) => (
+      <button
+        key={index}
+        onClick={() => swiperRef.current?.slideTo(index)}
+        className={cn(
+          "w-2 h-2 rounded-full transition-all duration-200",
+          index === activeIndex 
+            ? "bg-white/80 scale-110" 
+            : "bg-white/30 hover:bg-white/50"
+        )}
+        aria-label={`Go to slide ${index + 1}`}
       />
-    </div>
-  );
-}
-```
-
-### Updated LoadingState in Recommendations.tsx
-
-```typescript
-function LoadingState() {
-  const [messageIndex, setMessageIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMessageIndex(prev => (prev + 1) % loadingMessages.length);
-    }, 2500);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="flex-1 flex flex-col items-center justify-center gap-12 px-4">
-      {/* Cinda Logo Animation */}
-      <CindaLogoLoader />
-
-      {/* Rotating loading messages - updated typography */}
-      <p 
-        key={messageIndex}
-        className="text-base text-muted-foreground/70 animate-fade-in"
-      >
-        {loadingMessages[messageIndex]}
-      </p>
-    </div>
-  );
-}
-```
-
-### Updated Loading State in ProfileBuilderStep4Analysis.tsx
-
-Replace `LoadingSkeleton` usage with:
-
-```typescript
-{status === "loading" && (
-  <div className="flex flex-col items-center justify-center animate-in fade-in duration-300 flex-1">
-    <CindaLogoLoader />
+    ))}
   </div>
 )}
 ```
+
+The dots are:
+- Interactive (clicking navigates to that slide)
+- Visually distinct between active and inactive states
+- Consistent with the dark aesthetic using white with varying opacity
+- Accessible with proper aria-labels
+
+---
+
+## Expected Result
+
+After these changes:
+1. The glow effect from shoe cards will extend smoothly into the background without any visible clipping edge
+2. Users will see pagination dots at the bottom of the carousel, clearly indicating the number of cards and which one is currently displayed
