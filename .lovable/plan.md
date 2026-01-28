@@ -1,102 +1,79 @@
 
-# Fix Archetype Tooltip Logic
+
+# Promote Cinda as a Web App
 
 ## Overview
 
-Fix two issues with the archetype badge tooltip:
-1. The primary archetype in the tooltip doesn't match the recommended archetype
-2. The info icon and tooltip should only appear when a shoe has multiple archetypes
+Update both landing page views to push the web app installation message more prominently, replacing the existing bottom links with a unified "Cinda is best as a web app" message that opens the installation modal.
 
 ---
 
-## Problem Analysis
+## Current State
 
-**Current behaviour:**
+| Page | Current Link Text | Opens |
+|------|------------------|-------|
+| Landing (initial) | "How does Cinda work?" | Explanation modal |
+| Orientation | "Add Cinda to your home screen" | A2HS installation modal |
 
-The tooltip uses `archetypes[0]` as the primary archetype, but this is just the first archetype in the shoe's capability list, not the archetype it's being recommended for.
+---
 
-For example, the Mach 6:
-- Being recommended as: `WORKOUT` (shown as `shoe.archetype` or `shoe.role`)
-- `archetypes` array: `["daily_trainer", "workout_shoe"]` 
-- Tooltip incorrectly says: "Cinda recommends this shoe as a daily trainer"
+## Proposed Changes
 
-**Correct behaviour:**
+### Wording Options
 
-- Use `shoe.archetype` or `shoe.role` as the primary (what Cinda is recommending it for)
-- Secondary archetypes = all other archetypes from the `archetypes` array that aren't the primary
-- Only show the info icon if the shoe has additional archetypes beyond the primary
+Here are some options for the link text - all using sentence case:
+
+1. **"Cinda is best as a web app"** — Your suggestion
+2. **"Cinda works best as a web app"** — Slightly softer
+3. **"Get the best experience — install Cinda"** — Action-oriented
+
+I'll use option 1 as requested. The modal title and description should also be updated to match this stronger messaging.
 
 ---
 
 ## Technical Changes
 
-### File: `src/components/results/ShoeCard.tsx`
+### File 1: `src/pages/Landing.tsx`
 
-**1. Update `buildArchetypePopoverContent` function signature**
+**1. Remove the "How it works" modal** (lines 230-258)
+- Delete the Dialog component that explains how Cinda works
+- Remove the `showModal` state variable
 
-Change it to accept both the recommended archetype and the full archetypes list:
+**2. Update the landing page bottom link** (lines 211-218)
+- Change text from "How does Cinda work?" to "Cinda is best as a web app"
+- Change onClick to open `setShowA2HSModal(true)` instead of `setShowModal(true)`
 
-```text
-const buildArchetypePopoverContent = (recommendedArchetype: string, allArchetypes: string[])
-```
-
-**2. Fix the logic inside `buildArchetypePopoverContent`**
-
-- Use `recommendedArchetype` as the primary
-- Filter out the recommended archetype from `allArchetypes` to get secondary archetypes
-- Only show the second paragraph if there are secondary archetypes
-
-**3. Update the badge rendering logic**
-
-Only render the role badge with info icon if:
-- `showRoleBadge` is true
-- `roleBadgeLabel` exists
-- The shoe has more than one archetype (i.e., there are secondary archetypes to explain)
-
-If a shoe only has one archetype, just show the badge without the info icon and without the popover.
+**3. Update the orientation page bottom link** (lines 221-228)
+- Change text from "Add Cinda to your home screen" to "Cinda is best as a web app"
 
 ---
 
-## Updated Code Structure
+### File 2: `src/components/AddToHomeScreenModal.tsx`
+
+**Update modal header to match stronger messaging** (lines 60-67)
 
 ```text
-// Determine what archetypes to work with
-const recommendedArchetype = shoe.archetype || shoe.role || "daily_trainer";
-const allArchetypes = shoe.archetypes || [recommendedArchetype];
+Before:
+- Title: "add cinda to your home screen"
+- Description: "install cinda for quick access — just like a real app."
 
-// Get secondary archetypes (excluding the recommended one)
-const secondaryArchetypes = allArchetypes.filter(a => a !== recommendedArchetype);
-const hasMultipleArchetypes = secondaryArchetypes.length > 0;
-
-// Badge rendering:
-if (hasMultipleArchetypes) {
-  // Show badge with (i) icon and popover
-} else {
-  // Show badge without (i) icon, no popover
-}
+After:
+- Title: "Cinda is best as a web app"  
+- Description: "Install Cinda to your home screen for the full experience — fast, offline-ready, and always one tap away."
 ```
-
----
-
-## Updated Tooltip Content
-
-**Single archetype (no tooltip needed):**
-
-No tooltip - just the badge label.
-
-**Multiple archetypes:**
-
-> Cinda recommends this shoe as a [recommended archetype].
->
-> This shoe is also considered a [other archetypes list], meaning it's good for [run types].
 
 ---
 
 ## Summary of Changes
 
-| Location | Change |
-|----------|--------|
-| Lines 131-169 | Update `buildArchetypePopoverContent` to accept `recommendedArchetype` and `allArchetypes` parameters, use recommended archetype as primary |
-| Lines 332-358 | Add logic to only show info icon and popover when shoe has multiple archetypes; show plain badge otherwise |
+| File | Change |
+|------|--------|
+| `src/pages/Landing.tsx` | Replace both bottom links with "Cinda is best as a web app", both triggering A2HS modal; remove old "How it works" modal |
+| `src/components/AddToHomeScreenModal.tsx` | Update title and description to match stronger messaging |
 
-**File to edit:** `src/components/results/ShoeCard.tsx`
+---
+
+## Result
+
+Both landing views will have the same message: **"Cinda is best as a web app"** — encouraging users to install Cinda before they start the onboarding flow.
+
