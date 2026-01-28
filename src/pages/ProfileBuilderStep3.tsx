@@ -874,16 +874,16 @@ const ProfileBuilderStep3 = () => {
                 <Button
                   onClick={handleConfirmNext}
                   variant="outline"
-                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
+                  className="w-full h-9 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 hover:border-primary/60 hover:text-primary transition-colors"
                 >
-                  Looks good
+                  LOOKS GOOD
                 </Button>
                 <Button
                   onClick={() => setConfirmShoesModalOpen(false)}
                   variant="outline"
-                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
+                  className="w-full h-9 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 hover:border-primary/60 hover:text-primary transition-colors"
                 >
-                  Go back
+                  GO BACK
                 </Button>
               </div>
             </DialogContent>
@@ -912,16 +912,16 @@ const ProfileBuilderStep3 = () => {
                 <Button
                   onClick={handleConfirmSkip}
                   variant="outline"
-                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
+                  className="w-full h-9 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 hover:border-primary/60 hover:text-primary transition-colors"
                 >
-                  Skip anyway
+                  SKIP
                 </Button>
                 <Button
                   onClick={() => setConfirmSkipModalOpen(false)}
                   variant="outline"
-                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
+                  className="w-full h-9 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 hover:border-primary/60 hover:text-primary transition-colors"
                 >
-                  Go back
+                  GO BACK
                 </Button>
               </div>
             </DialogContent>
