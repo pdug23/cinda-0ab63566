@@ -1,70 +1,171 @@
 
-# Fix Modal Width and Button Styling
+# Enhance "Confirm your rotation" Modal
 
-## Problem
-The modals (`LeaveRecommendationsModal`, `UnsavedChangesModal`) are:
-1. Too wide on phone screens (using `max-w-sm` which is 384px)
-2. Using sentence case "Leave" / "Stay" instead of CAPS
-3. Not matching the BACK/SKIP button aesthetic
-
-## Solution
-
-### 1. Fix Modal Width
-Change from `max-w-sm` to `w-[calc(100%-48px)] max-w-[320px]` to match other modals in the app (ProfileBuilderStep3, Chat restart dialog, etc.). This ensures 24px padding on each side of the phone screen.
-
-### 2. Update Button Styling to Match BACK/SKIP Aesthetic
-
-Current BACK/SKIP button style (the target):
+## Current State
+The modal currently displays shoes as a plain text list:
 ```
-h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium 
-tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground 
-bg-card-foreground/[0.03] hover:bg-card-foreground/10 border 
-border-card-foreground/20 transition-colors
+Nike Vaporfly Next% 4
+HOKA Clifton 10
 ```
 
-Adapt for modal buttons:
-- Pill shape (`rounded-full`)
-- Uppercase text (`uppercase`)
-- 10px font (`text-[10px]`)
-- Wider tracking (`tracking-wider`)
-- Same hover effect with orange glow
+This is minimal and doesn't confirm the details the user entered.
 
-### Files to Update
+---
 
-| File | Changes |
-|------|---------|
-| `src/components/LeaveRecommendationsModal.tsx` | Width fix, button styling for "LEAVE" and "STAY" |
-| `src/components/UnsavedChangesModal.tsx` | Width fix, button styling for "DISCARD" and "STAY" |
+## Proposed Design
 
-### Button Style Change
-```tsx
-// From
-className="flex-1 min-h-[44px] text-sm bg-transparent border-border/40 
-text-muted-foreground hover:border-primary/60 hover:text-primary 
-hover:bg-primary/5"
+Transform each shoe into a small, informative card showing:
+1. **Brand logo** (small, 16-20px height) - reuse the `getBrandLogoPath` pattern from ShoeCard
+2. **Model name** (without brand, since logo shows it)
+3. **Run types** as small text or pill badges
+4. **Sentiment icon** (Heart/Meh/ThumbsDown) in the appropriate color
 
-// To
-className="flex-1 h-9 rounded-full text-[10px] font-medium tracking-wider 
-uppercase text-card-foreground/60 hover:text-card-foreground 
-bg-card-foreground/[0.03] hover:bg-card-foreground/10 border 
-border-card-foreground/20 hover:border-primary/60 hover:text-primary 
-transition-colors"
+### Visual Layout
+
+```text
+┌─────────────────────────────────────────────────┐
+│  Confirm your rotation                      ✕   │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│  ┌───────────────────────────────────────────┐  │
+│  │ [Nike logo]  Vaporfly Next% 4       ❤️    │  │
+│  │ Races • Workouts                          │  │
+│  └───────────────────────────────────────────┘  │
+│                                                 │
+│  ┌───────────────────────────────────────────┐  │
+│  │ [HOKA logo]  Clifton 10             😐    │  │
+│  │ Recovery • Long runs                      │  │
+│  └───────────────────────────────────────────┘  │
+│                                                 │
+│  ┌─────────────────────────────────────────┐    │
+│  │            LOOKS GOOD                   │    │
+│  └─────────────────────────────────────────┘    │
+│  ┌─────────────────────────────────────────┐    │
+│  │             GO BACK                     │    │
+│  └─────────────────────────────────────────┘    │
+│                                                 │
+└─────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Technical Details
+## Implementation Details
 
-### DialogContent Width Update
+### File: `src/pages/ProfileBuilderStep3.tsx`
+
+**1. Add brand logo helper function** (reuse the same mapping from ShoeCard)
+
 ```tsx
-// From
-<DialogContent className="max-w-sm bg-card border-border/20 p-0 gap-0">
-
-// To  
-<DialogContent className="w-[calc(100%-48px)] max-w-[320px] bg-card border-border/20 p-0 gap-0">
+const getBrandLogoPath = (brand: string): string => {
+  const brandMap: Record<string, string> = {
+    "Adidas": "/logos/adidas-logo.png",
+    "Altra": "/logos/altra-logo.png",
+    "ASICS": "/logos/asics-logo.png",
+    "Brooks": "/logos/brooks-logo.png",
+    "HOKA": "/logos/hoka-logo.png",
+    "Mizuno": "/logos/mizuno-logo.png",
+    "New Balance": "/logos/newbalance-logo.png",
+    "Nike": "/logos/nike-logo.png",
+    "On": "/logos/on-logo.png",
+    "PUMA": "/logos/puma-logo.png",
+    "Salomon": "/logos/salomon-logo.png",
+    "Saucony": "/logos/saucony-logo.png",
+    "Skechers": "/logos/skechers-logo.png",
+    "Topo Athletic": "/logos/topo-logo.png",
+  };
+  return brandMap[brand] || "";
+};
 ```
 
-This matches the pattern used in:
-- ProfileBuilderStep3 modals
-- ProfileBuilderStep3b confirmation modal
-- Chat restart dialog
+**2. Add helper to format run types for display**
+
+```tsx
+const formatRunTypesForDisplay = (runTypes: RunType[]): string => {
+  // If "all_my_runs" is selected, just show "All runs"
+  if (runTypes.includes("all_my_runs")) {
+    const hasTrail = runTypes.includes("trail");
+    return hasTrail ? "All runs + Trail" : "All runs";
+  }
+  
+  // Otherwise show individual types
+  const labels: Record<RunType, string> = {
+    all_my_runs: "All runs",
+    recovery: "Recovery",
+    long_runs: "Long runs",
+    workouts: "Workouts",
+    races: "Races",
+    trail: "Trail",
+  };
+  
+  return runTypes.map(rt => labels[rt]).join(" • ");
+};
+```
+
+**3. Add sentiment icon helper**
+
+```tsx
+const getSentimentIcon = (sentiment: ShoeSentiment | null) => {
+  switch (sentiment) {
+    case "love": return <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400" />;
+    case "neutral": return <Meh className="w-3.5 h-3.5 text-amber-400" />;
+    case "dislike": return <ThumbsDown className="w-3.5 h-3.5 text-slate-400" />;
+    default: return null;
+  }
+};
+```
+
+**4. Update the modal content** (lines 864-872)
+
+Replace the simple `<ul>` list with styled shoe cards:
+
+```tsx
+<div className="px-4 pt-4 pb-6 space-y-2">
+  {currentShoes.map((item) => {
+    const logoPath = getBrandLogoPath(item.shoe.brand);
+    const modelDisplay = `${item.shoe.model} ${item.shoe.version}`.trim();
+    
+    return (
+      <div 
+        key={item.shoe.shoe_id} 
+        className="flex items-start gap-3 p-3 rounded-lg bg-card-foreground/[0.03] border border-card-foreground/10"
+      >
+        {/* Brand logo */}
+        {logoPath && (
+          <img 
+            src={logoPath} 
+            alt={item.shoe.brand}
+            className="h-4 w-auto opacity-60 mt-0.5 flex-shrink-0"
+          />
+        )}
+        
+        {/* Shoe info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-card-foreground font-medium truncate">
+              {modelDisplay}
+            </span>
+            {getSentimentIcon(item.sentiment)}
+          </div>
+          <p className="text-xs text-card-foreground/50 mt-0.5">
+            {formatRunTypesForDisplay(item.runTypes)}
+          </p>
+        </div>
+      </div>
+    );
+  })}
+</div>
+```
+
+---
+
+## Summary
+
+| Element | Display |
+|---------|---------|
+| **Brand** | Small logo (16px height, 60% opacity) |
+| **Model** | Model + version (e.g., "Vaporfly Next% 4") |
+| **Sentiment** | Colored icon (Heart/Meh/ThumbsDown) |
+| **Run types** | Compact text with bullet separators |
+| **Card style** | Subtle background, rounded corners, matches app aesthetic |
+
+This gives users a clear visual confirmation of what they've entered before proceeding.
