@@ -1,68 +1,83 @@
 
 
-# Update PWA Installation Text
+# Fix Conditional Back Navigation from Recommendations
 
-## Overview
+## Problem
 
-Update three pieces of copy related to the PWA installation experience to be more accurate and include Safari-specific instructions for iPhone users.
+When a user enters via **Quick Match** and lands on `/recommendations`, clicking "Try Again" incorrectly sends them to `/profile/step4` (a page they never visited). The back button should return them to `/quick-match`.
+
+Users coming from the **full profile flow** should continue going back to `/profile/step4`.
+
+## Solution
+
+Pass the origin route as navigation state when navigating to `/recommendations`, then use that state to determine where the back button should go.
 
 ---
 
 ## Changes
 
-### 1. Landing Page Link Text
+### 1. QuickMatch.tsx — Pass origin state
 
-**File:** `src/pages/Landing.tsx` (line 213)
+**File:** `src/pages/QuickMatch.tsx` (line 418)
 
-| Before | After |
-|--------|-------|
-| "Cinda is best as a web app" | "Add Cinda as a web app for an optimal experience" |
+```tsx
+// Before
+navigate("/recommendations");
 
----
-
-### 2. Modal Title
-
-**File:** `src/components/AddToHomeScreenModal.tsx` (line 81)
-
-| Before | After |
-|--------|-------|
-| "Cinda is best as a web app" | "Add Cinda as a web app" |
+// After
+navigate("/recommendations", { state: { from: "/quick-match" } });
+```
 
 ---
 
-### 3. Modal Description
+### 2. ProfileBuilderStep4b.tsx — Pass origin state
 
-**File:** `src/components/AddToHomeScreenModal.tsx` (line 84)
+**File:** `src/pages/ProfileBuilderStep4b.tsx` (lines 753 and 756)
 
-| Before | After |
-|--------|-------|
-| "Install Cinda to your home screen for the full experience — fast, offline-ready, and always one tap away." | "Install Cinda to your home screen for the full experience." |
+```tsx
+// Before
+navigate("/recommendations");
+
+// After
+navigate("/recommendations", { state: { from: "/profile/step4" } });
+```
 
 ---
 
-### 4. iOS Tab Instructions - Add Safari Requirement
+### 3. Recommendations.tsx — Read state and conditionally navigate
 
-**File:** `src/components/AddToHomeScreenModal.tsx` (lines 113-143)
+**File:** `src/pages/Recommendations.tsx`
 
-Add a note at the top of the iOS instructions to clarify Safari is required:
+**Step A:** Import `useLocation` from react-router-dom (line 2)
 
-```jsx
-<TabsContent value="ios" className="px-5 pb-5 pt-4">
-  <p className="text-xs text-muted-foreground/70 mb-3 italic">
-    This only works in Safari
-  </p>
-  <div className="space-y-4">
-    {/* existing steps remain unchanged */}
-  </div>
-</TabsContent>
+```tsx
+import { useNavigate, useLocation } from "react-router-dom";
+```
+
+**Step B:** Read the navigation state at the top of the component (around line 406)
+
+```tsx
+const location = useLocation();
+const fromRoute = (location.state as { from?: string } | null)?.from || "/profile/step4";
+```
+
+**Step C:** Update the `goBack` function to use the dynamic route (lines 426-428)
+
+```tsx
+const goBack = useCallback(() => {
+  handleNavigationAttempt(fromRoute);
+}, [handleNavigationAttempt, fromRoute]);
 ```
 
 ---
 
 ## Summary
 
-| File | Changes |
-|------|---------|
-| `src/pages/Landing.tsx` | Update link text to "Add Cinda as a web app for an optimal experience" |
-| `src/components/AddToHomeScreenModal.tsx` | Update modal title, remove "offline-ready" claim, add Safari note for iOS |
+| File | Change |
+|------|--------|
+| `src/pages/QuickMatch.tsx` | Pass `{ state: { from: "/quick-match" } }` when navigating |
+| `src/pages/ProfileBuilderStep4b.tsx` | Pass `{ state: { from: "/profile/step4" } }` when navigating |
+| `src/pages/Recommendations.tsx` | Read the `from` state and use it for back navigation |
+
+This ensures the back button respects the user's actual entry point while maintaining the existing behavior for full-flow users.
 
