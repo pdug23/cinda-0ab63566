@@ -22,7 +22,7 @@ export const LeaveRecommendationsModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm bg-card border-border/20 p-0 gap-0">
+      <DialogContent className="w-[calc(100%-48px)] max-w-[320px] bg-card border-border/20 p-0 gap-0">
         <DialogHeader className="p-4 pb-0 relative">
           <button
             onClick={handleClose}
@@ -45,16 +45,16 @@ export const LeaveRecommendationsModal = ({
           <Button
             onClick={onLeave}
             variant="outline"
-            className="flex-1 min-h-[44px] text-sm bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5"
+            className="flex-1 h-9 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 hover:border-primary/60 hover:text-primary transition-colors"
           >
-            Leave
+            LEAVE
           </Button>
           <Button
             onClick={handleClose}
             variant="outline"
-            className="flex-1 min-h-[44px] text-sm bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5"
+            className="flex-1 h-9 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 hover:border-primary/60 hover:text-primary transition-colors"
           >
-            Stay
+            STAY
           </Button>
         </div>
       </DialogContent>
