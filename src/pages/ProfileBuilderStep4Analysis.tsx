@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AlertTriangle, Check, ArrowLeft, ChevronDown, X, Plus } from "lucide-react";
-import { UserMenu } from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
@@ -616,7 +615,7 @@ const ProfileBuilderStep4Analysis = () => {
       <OnboardingLayout scrollable invisible>
         <PageTransition className="flex flex-col flex-1 min-h-0">
           {/* Card header with back button */}
-          <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between flex-shrink-0">
+          <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-start flex-shrink-0">
             <button
               type="button"
               onClick={() => navigate("/profile/step4")}
@@ -625,8 +624,6 @@ const ProfileBuilderStep4Analysis = () => {
               <ArrowLeft className="w-3.5 h-3.5" />
               Back
             </button>
-            <UserMenu />
-            <div className="w-16" /> {/* Spacer for balance */}
           </header>
           <div className="w-full max-w-md mx-auto flex flex-col flex-1 min-h-0 px-6 md:px-8">
             {/* Loading State */}

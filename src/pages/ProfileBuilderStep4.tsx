@@ -7,7 +7,6 @@ import { useProfile, FeelPreferences, ShoeRequest } from "@/contexts/ProfileCont
 import { usePageNavigation } from "@/hooks/usePageNavigation";
 import { saveShoeRequests, clearGap } from "@/utils/storage";
 import { cn } from "@/lib/utils";
-import { UserMenu } from "@/components/UserMenu";
 
 // Custom Sparkle Icon for "Recommend me a shoe"
 const SparkleIcon = ({ className }: { className?: string }) => (
@@ -267,7 +266,7 @@ const ProfileBuilderStep4 = () => {
       <OnboardingLayout>
         <PageTransition className="flex flex-col flex-1 min-h-0">
           {/* Card header */}
-          <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between flex-shrink-0">
+          <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-start flex-shrink-0">
             <button
               type="button"
               onClick={handleBack}
@@ -276,8 +275,6 @@ const ProfileBuilderStep4 = () => {
               <ArrowLeft className="w-3.5 h-3.5" />
               Back
             </button>
-            <UserMenu />
-            <div className="w-16" /> {/* Spacer for balance */}
           </header>
 
           {/* Content */}

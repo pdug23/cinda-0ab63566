@@ -8,19 +8,14 @@ import FloatingJargon from "@/components/FloatingJargon";
 import AnimatedTagline from "@/components/AnimatedTagline";
 import { usePageNavigation } from "@/hooks/usePageNavigation";
 import { AddToHomeScreenModal } from "@/components/AddToHomeScreenModal";
-import { AuthModal } from "@/components/AuthModal";
-import { useAuth } from "@/contexts/AuthContext";
 import { analytics } from "@/lib/analytics";
-import { UserMenu } from "@/components/UserMenu";
 
 type ViewState = "landing" | "orientation";
 
 const Landing = () => {
   const { navigateWithTransition } = usePageNavigation();
-  const { user } = useAuth();
   
   const [showA2HSModal, setShowA2HSModal] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [viewState, setViewState] = useState<ViewState>("landing");
   const [isExiting, setIsExiting] = useState(false);
   
@@ -49,21 +44,6 @@ const Landing = () => {
     setTimeout(() => {
       navigateWithTransition("/profile");
     }, 150);
-  };
-
-  const handleFullAnalysisClick = () => {
-    if (user) {
-      // Already signed in, proceed directly
-      handleStartProfile();
-    } else {
-      // Not signed in, show auth modal
-      setShowAuthModal(true);
-    }
-  };
-
-  const handleAuthSuccess = () => {
-    // After successful sign-in, proceed to profile
-    handleStartProfile();
   };
 
   // Stagger orientation content appearance
@@ -107,13 +87,6 @@ const Landing = () => {
             isExiting ? "animate-spin-settle" : ""
           }`}
         />
-
-        {/* User menu - only shows when signed in, positioned top-right */}
-        {viewState === "orientation" && (
-          <div className="absolute top-8 right-6 z-20">
-            <UserMenu />
-          </div>
-        )}
 
         {viewState === "landing" && (
           <PageTransition className="absolute inset-0 flex flex-col items-center text-center px-6 z-10">
@@ -202,10 +175,10 @@ const Landing = () => {
                 showCta ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               }`}
             >
-                <div className="flex flex-row gap-3 w-full">
+              <div className="flex flex-row gap-3 w-full">
                 <div className="flex-1 flex flex-col items-center gap-1.5">
                   <Button
-                    onClick={handleFullAnalysisClick}
+                    onClick={handleStartProfile}
                     variant="cta"
                     className="w-full min-h-[56px] text-xs uppercase bg-primary/10 border-primary/30 text-card-foreground hover:bg-primary/20 hover:border-primary/50 hover:shadow-[0_2px_20px_hsl(var(--primary)/0.25)]"
                   >
@@ -244,12 +217,6 @@ const Landing = () => {
         <AddToHomeScreenModal 
           open={showA2HSModal} 
           onOpenChange={setShowA2HSModal} 
-        />
-
-        <AuthModal
-          open={showAuthModal}
-          onOpenChange={setShowAuthModal}
-          onSuccess={handleAuthSuccess}
         />
       </OnboardingLayout>
     </>

@@ -11,7 +11,6 @@ import { loadProfile, loadShoes, loadShoeRequests, loadGap, loadChatContext } fr
 import { normalizeStoredRaceTimeForApi } from "@/utils/raceTime";
 import type { FeelPreferences as APIFeelPreferences, CurrentShoe as APICurrentShoe } from "../../api/types";
 import { CindaLogoLoader } from "@/components/CindaLogoLoader";
-import { UserMenu } from "@/components/UserMenu";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -672,7 +671,6 @@ export default function RecommendationsPage() {
         {/* Header - transparent */}
         <header className="w-full px-6 md:px-8 pt-4 md:pt-6 pb-2 flex items-center justify-between flex-shrink-0">
           <BackButton onClick={goBack} />
-          <UserMenu />
           <ProfileButton onClick={handleGoToProfile} />
         </header>
 

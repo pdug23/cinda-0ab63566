@@ -3,7 +3,6 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Keyboard } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import { ShoeCard } from "./ShoeCard";
-import { cn } from "@/lib/utils";
 
 import "swiper/css";
 
@@ -115,7 +114,7 @@ export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onS
   }
 
   return (
-    <div className="shoe-carousel w-full py-2 flex flex-col" style={{ minHeight: '580px' }}>
+    <div className="shoe-carousel w-full py-2">
       <Swiper
         modules={[Keyboard]}
         spaceBetween={32}
@@ -175,25 +174,6 @@ export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onS
           );
         })}
       </Swiper>
-
-      {/* Pagination Dots */}
-      {totalSlides > 1 && (
-        <div className="flex justify-center items-center gap-2 mt-4">
-          {recommendations.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => swiperRef.current?.slideTo(index)}
-              className={cn(
-                "w-2 h-2 rounded-full transition-all duration-200",
-                index === activeIndex 
-                  ? "bg-foreground/80 scale-110" 
-                  : "bg-foreground/30 hover:bg-foreground/50"
-              )}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

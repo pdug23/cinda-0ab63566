@@ -10,7 +10,6 @@ import AnimatedBackground from "@/components/AnimatedBackground";
 import { useProfile, PrimaryGoal, RunningPattern, TrailRunning, WeeklyVolume, FootStrike, RaceTime } from "@/contexts/ProfileContext";
 import { RaceTimePickerModal, formatRaceTime } from "@/components/RaceTimePickerModal";
 import { Input } from "@/components/ui/input";
-import { UserMenu } from "@/components/UserMenu";
 
 // Optional badge component
 const OptionalBadge = () => (
@@ -231,7 +230,7 @@ const ProfileBuilderStep2 = () => {
       <OnboardingLayout scrollable>
         <PageTransition className="flex flex-col flex-1 min-h-0">
         {/* Card header (fixed) */}
-        <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between flex-shrink-0">
+        <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-start flex-shrink-0">
           <button
             type="button"
             onClick={handleBack}
@@ -240,8 +239,6 @@ const ProfileBuilderStep2 = () => {
             <ArrowLeft className="w-3.5 h-3.5" />
             Back
           </button>
-          <UserMenu />
-          <div className="w-16" /> {/* Spacer for balance */}
         </header>
 
         {/* Scrollable form area */}

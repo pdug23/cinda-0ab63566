@@ -1,100 +1,152 @@
 
-# Fix Shoe Cards Not Rendering in Carousel
+# Update Loading Pages with Cinda Logo Animation
 
-## Root Cause
+## Overview
 
-The carousel height changes made earlier are conflicting with the flex layout structure on the Recommendations page. Specifically:
-
-1. The carousel is wrapped in: `flex-1 flex items-center min-h-0 overflow-visible`
-2. `min-h-0` allows the flex container to shrink below its content size
-3. The explicit heights I added (`height: '560px'`) on both Swiper and slide containers don't work well with this flex structure
-4. The result is the Swiper container collapses because flex height isn't propagating correctly
-
-**Before my changes:** The cards worked because Swiper sized naturally based on its children (ShoeCard has `height: 560px`).
-
-**After my changes:** Explicit heights on Swiper create conflicts with `flex-1 min-h-0` which can collapse.
+Replace the current loading animations on both the Rotation Analysis and Recommendations pages with a centered Cinda logo that has a "spin, stop, spin, stop" animation cycle. The Recommendations page will retain its rotating text messages but with updated typography.
 
 ---
 
-## Solution
+## Changes
 
-Revert the height changes to ShoeCarousel and instead ensure the parent containers properly size themselves. The key insight is:
+### 1. Create New Animation: `spin-stop-cycle`
 
-1. **Remove explicit heights from Swiper** - Let it size based on content
-2. **Keep the slide container with `h-full`** - Original behavior
-3. **Add `min-h-[580px]` to the outer wrapper** - Ensures minimum space
-4. **Keep the pagination dots** - They work fine
+Add a new keyframe animation to `tailwind.config.ts` that creates a repeating spin-pause cycle:
 
----
+- Spin 360° over 0.6 seconds
+- Pause for 0.8 seconds
+- Repeat
 
-## Changes to `src/components/results/ShoeCarousel.tsx`
-
-### Line 118: Keep minHeight on outer container (optional, but safe)
-```tsx
-<div className="shoe-carousel w-full py-2 flex flex-col" style={{ minHeight: '580px' }}>
+```text
+Timeline:
+|--spin--|--pause--|--spin--|--pause--|
+   0.6s     0.8s     0.6s     0.8s   ...
 ```
 
-### Line 129: Remove `style={{ height: '560px' }}` from Swiper
-```tsx
-// Before
-<Swiper style={{ height: '560px' }} ...>
+Total cycle duration: 2.8 seconds (0.6s spin + 0.8s pause × 2)
 
-// After  
-<Swiper ...>  // Remove the style prop entirely
+---
+
+### 2. Create Shared Logo Loader Component
+
+Create a new component `src/components/CindaLogoLoader.tsx` that:
+- Displays the Cinda logo centered
+- Applies the spin-stop-cycle animation
+- Respects `prefers-reduced-motion`
+
+---
+
+### 3. Update Rotation Analysis Loading State
+
+In `src/pages/ProfileBuilderStep4Analysis.tsx`:
+- Replace the `LoadingSkeleton` component with the new `CindaLogoLoader`
+- Center the loader in the available space
+
+---
+
+### 4. Update Recommendations Loading State
+
+In `src/pages/Recommendations.tsx`:
+- Replace `LiquidMetalLoader` with `CindaLogoLoader` in the `LoadingState` function
+- Keep the rotating text messages
+- Update text styling from `font-light italic tracking-wide` to use the app's standard typography (Plus Jakarta Sans, regular weight, consistent sizing)
+
+---
+
+## File Changes Summary
+
+| File | Change |
+|------|--------|
+| `tailwind.config.ts` | Add `spin-stop-cycle` keyframes and animation |
+| `src/components/CindaLogoLoader.tsx` | New file - reusable logo loader with spin animation |
+| `src/pages/ProfileBuilderStep4Analysis.tsx` | Replace `LoadingSkeleton` with `CindaLogoLoader` |
+| `src/pages/Recommendations.tsx` | Replace `LiquidMetalLoader` with `CindaLogoLoader`, update text styling |
+
+---
+
+## Technical Details
+
+### New Animation Keyframes (tailwind.config.ts)
+
+```typescript
+'spin-stop-cycle': {
+  '0%': { transform: 'rotate(0deg)' },
+  '21.4%': { transform: 'rotate(360deg)' },  // 0.6s of 2.8s total = spin complete
+  '50%': { transform: 'rotate(360deg)' },     // pause
+  '71.4%': { transform: 'rotate(720deg)' },   // second spin complete
+  '100%': { transform: 'rotate(720deg)' }     // pause
+}
 ```
 
-### Line 165: Revert slide container back to `h-full`
-```tsx
-// Before
-<div className="flex justify-center items-center" style={{ height: '560px' }}>
+Animation: `'spin-stop-cycle': 'spin-stop-cycle 2.8s ease-out infinite'`
 
-// After
-<div className="flex justify-center h-full">
+### CindaLogoLoader Component
+
+```typescript
+import { useEffect, useState } from "react";
+import cindaLogo from "@/assets/cinda-logo-grey.png";
+
+export function CindaLogoLoader() {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setPrefersReducedMotion(
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      );
+    }
+  }, []);
+
+  return (
+    <div className="flex items-center justify-center">
+      <img 
+        src={cindaLogo} 
+        alt="Loading..." 
+        className={`h-20 ${prefersReducedMotion ? "" : "animate-spin-stop-cycle"}`}
+      />
+    </div>
+  );
+}
 ```
 
----
+### Updated LoadingState in Recommendations.tsx
 
-## Also: Fix Pagination Dot Colors
+```typescript
+function LoadingState() {
+  const [messageIndex, setMessageIndex] = useState(0);
 
-Per the original spec, change back to muted white:
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMessageIndex(prev => (prev + 1) % loadingMessages.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
 
-### Lines 189-191:
-```tsx
-// Before
-index === activeIndex 
-  ? "bg-primary scale-110" 
-  : "bg-card-foreground/40 hover:bg-card-foreground/60"
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center gap-12 px-4">
+      {/* Cinda Logo Animation */}
+      <CindaLogoLoader />
 
-// After
-index === activeIndex 
-  ? "bg-foreground/80 scale-110" 
-  : "bg-foreground/30 hover:bg-foreground/50"
+      {/* Rotating loading messages - updated typography */}
+      <p 
+        key={messageIndex}
+        className="text-base text-muted-foreground/70 animate-fade-in"
+      >
+        {loadingMessages[messageIndex]}
+      </p>
+    </div>
+  );
+}
 ```
 
----
+### Updated Loading State in ProfileBuilderStep4Analysis.tsx
 
-## Summary of Changes
+Replace `LoadingSkeleton` usage with:
 
-| Location | Change |
-|----------|--------|
-| Line 129 | Remove `style={{ height: '560px' }}` from `<Swiper>` |
-| Line 165 | Change `style={{ height: '560px' }}` back to `h-full` |
-| Lines 189-191 | Revert pagination dot colors to muted white |
-
----
-
-## Why This Fixes It
-
-- The ShoeCard already has a fixed `height: 560px` (line 244 in ShoeCard.tsx)
-- When Swiper has no explicit height, it sizes based on its children (the ShoeCards)
-- The `h-full` on the slide container allows it to fill available space
-- The `minHeight: 580px` on the outer wrapper ensures the carousel area never fully collapses
-- This matches the working behavior before the glow/dots changes
-
----
-
-## What Stays
-
-- Pagination dots (the new feature) - just with corrected colors
-- Overflow visible settings in OnboardingLayout - for glow effects
-- The `minHeight: 580px` on the outer carousel div - as a safety net
+```typescript
+{status === "loading" && (
+  <div className="flex flex-col items-center justify-center animate-in fade-in duration-300 flex-1">
+    <CindaLogoLoader />
+  </div>
+)}
+```

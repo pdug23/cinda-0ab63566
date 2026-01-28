@@ -9,7 +9,6 @@ import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { useProfile, CurrentShoe, RunType, ShoeSentiment } from "@/contexts/ProfileContext";
 import { cn } from "@/lib/utils";
-import { UserMenu } from "@/components/UserMenu";
 import shoebaseData from "@/data/shoebase.json";
 import {
   Dialog,
@@ -785,7 +784,6 @@ const ProfileBuilderStep3 = () => {
               <ArrowLeft className="w-3.5 h-3.5" />
               Back
             </button>
-            <UserMenu />
             <button
               type="button"
               onClick={hasCompletedShoe ? handleNextClick : handleSkipClick}
