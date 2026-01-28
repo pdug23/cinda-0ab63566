@@ -127,43 +127,43 @@ const archetypeRunTypes: Record<string, string> = {
   trail_shoe: "trail runs",
 };
 
-// Inline badge component for archetype display in popover
-const ArchetypeBadge = ({ archetype }: { archetype: string }) => (
-  <span
-    className="text-xs uppercase tracking-wide px-1.5 py-0.5 rounded font-medium mx-0.5 inline-block align-middle"
-    style={{
-      backgroundColor: "rgba(148, 163, 184, 0.15)",
-      border: "1px solid rgba(148, 163, 184, 0.4)",
-      color: "#94a3b8",
-    }}
-  >
-    {archetypeLabels[archetype] || archetype}
-  </span>
-);
-
 // Build the popover content based on archetypes
 const buildArchetypePopoverContent = (archetypes: string[]) => {
   if (!archetypes || archetypes.length === 0) return null;
   
   const primary = archetypes[0];
-  const secondary = archetypes.length > 1 ? archetypes.slice(1) : [];
+  const secondary = archetypes.slice(1);
+  
+  // Get full archetype name (e.g., "workout shoe", "daily trainer")
+  const getFullArchetypeName = (arch: string) => {
+    const label = archetypeLabels[arch] || arch;
+    const noun = archetypeNoun[arch] || "shoe";
+    return `${label} ${noun}`;
+  };
   
   if (secondary.length === 0) {
-    // Single archetype
     return (
       <p className="text-sm text-white/80 leading-relaxed">
-        this shoe is considered a<ArchetypeBadge archetype={primary} />{archetypeNoun[primary] || "shoe"} and cinda recommends using it for your {archetypeRunTypes[primary] || "runs"}
+        Cinda recommends this shoe as a {getFullArchetypeName(primary)}.
       </p>
     );
   } else {
-    // Multiple archetypes
-    const primaryRunTypes = archetypeRunTypes[primary] || "runs";
-    const secondaryRunTypes = secondary.map(a => archetypeRunTypes[a] || "runs").join(", and ");
+    // Build secondary archetypes list
+    const secondaryNames = secondary.map(a => getFullArchetypeName(a));
+    const secondaryList = secondaryNames.length === 1 
+      ? secondaryNames[0] 
+      : secondaryNames.slice(0, -1).join(", ") + " and " + secondaryNames[secondaryNames.length - 1];
+    const secondaryRunTypesText = secondary.map(a => archetypeRunTypes[a] || "runs").join(" and ");
     
     return (
-      <p className="text-sm text-white/80 leading-relaxed">
-        this shoe is considered both a<ArchetypeBadge archetype={primary} />{archetypeNoun[primary] || "shoe"} and a<ArchetypeBadge archetype={secondary[0]} />{archetypeNoun[secondary[0]] || "shoe"}. cinda recommends using it for your {primaryRunTypes}, but it can also be used for {secondaryRunTypes}.
-      </p>
+      <div className="space-y-2">
+        <p className="text-sm text-white/80 leading-relaxed">
+          Cinda recommends this shoe as a {getFullArchetypeName(primary)}.
+        </p>
+        <p className="text-sm text-white/80 leading-relaxed">
+          This shoe is also considered a {secondaryList}, meaning it's good for {secondaryRunTypesText}.
+        </p>
+      </div>
     );
   }
 };
