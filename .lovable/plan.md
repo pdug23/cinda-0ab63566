@@ -1,29 +1,30 @@
 
-# Gate Full Analysis Behind Google/Apple Sign-In
+# User Icon Menu with Sign-Out Option
 
 ## Overview
 
-When users click "Full Analysis" on landing page 2, a sign-in modal will appear offering Google and Apple authentication options. After signing in, users continue to the profile builder flow. User preferences and recommendations will be saved to their profile for future visits.
+Add a circular user icon to the header that appears when users are signed in. Clicking the icon reveals a dropdown menu showing the user's display name (or email) and a "Sign out" option. This provides a consistent way for authenticated users to manage their session across the app.
 
 ---
 
 ## User Flow
 
 ```text
-User clicks "Full Analysis"
-         ↓
-┌─────────────────────────────┐
-│   Sign In Modal Appears     │
-│                             │
-│   [Sign in with Google]     │
-│   [Sign in with Apple]      │
-│                             │
-│      Maybe later            │
-└─────────────────────────────┘
-         ↓
-   (on successful sign-in)
-         ↓
-   Continue to /profile
+User is signed in
+       ↓
+┌─────────────────────────────────────────┐
+│  BACK    [👤]           SKIP/NEXT       │
+│           ↓                             │
+│    ┌─────────────┐                      │
+│    │ John Smith  │  ← display name      │
+│    │─────────────│                      │
+│    │  Sign out   │  ← clickable         │
+│    └─────────────┘                      │
+└─────────────────────────────────────────┘
+       ↓
+   (on sign out)
+       ↓
+   Icon disappears, user returns to landing
 ```
 
 ---
@@ -32,158 +33,161 @@ User clicks "Full Analysis"
 
 | File | Change |
 |------|--------|
-| `src/integrations/lovable/` | **New** - Generated via configure-social-auth tool for Google & Apple OAuth |
-| `src/components/AuthModal.tsx` | **New** - Shared sign-in modal with Google/Apple buttons |
-| `src/contexts/AuthContext.tsx` | **New** - Auth state management (user, loading, signOut) |
-| `src/pages/Landing.tsx` | Show AuthModal when "Full Analysis" clicked; check auth state |
-| `src/App.tsx` | Wrap app with AuthProvider |
-| Database | **New** `profiles` table to store user preferences |
+| `src/components/UserMenu.tsx` | **New** - Reusable user icon with dropdown menu |
+| `src/components/OnboardingLayout.tsx` | Add UserMenu between back and skip/next buttons |
+| `src/pages/Recommendations.tsx` | Add UserMenu to header |
+| `src/pages/Landing.tsx` | Add UserMenu to landing page 2 header (optional) |
 
 ---
 
 ## Technical Implementation
 
-### 1. Configure OAuth Providers
+### 1. UserMenu Component
 
-Use Lovable Cloud's managed OAuth solution to enable:
-- Google Sign-In
-- Apple Sign-In
-
-This generates the `src/integrations/lovable/` module with the `lovable.auth.signInWithOAuth()` function.
-
-### 2. Create Profiles Table
-
-```sql
-CREATE TABLE public.profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email TEXT,
-  display_name TEXT,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
--- Enable RLS
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-
--- Users can read their own profile
-CREATE POLICY "Users can view own profile" 
-  ON public.profiles FOR SELECT 
-  USING (auth.uid() = id);
-
--- Users can update their own profile
-CREATE POLICY "Users can update own profile" 
-  ON public.profiles FOR UPDATE 
-  USING (auth.uid() = id);
-
--- Auto-create profile on signup
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.profiles (id, email, display_name)
-  VALUES (
-    NEW.id, 
-    NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', '')
-  );
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-```
-
-### 3. Auth Context
+Create a new reusable component that handles the user icon and dropdown:
 
 ```typescript
-// src/contexts/AuthContext.tsx
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  signOut: () => Promise<void>;
+// src/components/UserMenu.tsx
+interface UserMenuProps {
+  className?: string;
 }
-```
 
-- Listen to `onAuthStateChange` for session updates
-- Provide user state across the app
-- Handle sign out functionality
+export const UserMenu = ({ className }: UserMenuProps) => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  
+  if (!user) return null; // Only show when signed in
+  
+  const displayName = user.user_metadata?.full_name 
+    || user.user_metadata?.name 
+    || user.email;
 
-### 4. Auth Modal Component
-
-```typescript
-// src/components/AuthModal.tsx
-- Dark aesthetic matching existing modals
-- "Sign in to unlock Full Analysis" heading
-- Two buttons: Google and Apple (with brand icons)
-- "Maybe later" link to close
-- On success: close modal and navigate to /profile
-```
-
-**Button styling:**
-- Google: White background with Google "G" icon
-- Apple: Black background with Apple logo
-
-### 5. Landing Page Changes
-
-```typescript
-// src/pages/Landing.tsx
-const [showAuthModal, setShowAuthModal] = useState(false);
-const { user } = useAuth();
-
-const handleFullAnalysis = () => {
-  if (user) {
-    // Already signed in, proceed directly
-    handleStartProfile();
-  } else {
-    // Not signed in, show auth modal
-    setShowAuthModal(true);
-  }
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+  
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger>
+        {/* Circular user icon */}
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuLabel>{displayName}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleSignOut}>
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 };
-
-// In the modal's onSuccess callback:
-// Navigate to /profile after successful sign-in
 ```
 
-### 6. App.tsx Updates
+**Design details:**
+- Circular icon (h-7 w-7 to match header height)
+- Subtle border matching card-foreground/20
+- User silhouette icon (lucide-react `User` icon)
+- Dropdown has dark background matching modal design system
+- Display name in muted grey, "Sign out" with hover effect
+
+### 2. OnboardingLayout Integration
+
+The OnboardingLayout header currently has:
+- Left: Back button (optional)
+- Right: Skip/Next button (optional)
+
+We'll add the UserMenu in the center:
 
 ```typescript
-// Wrap with AuthProvider
-<QueryClientProvider client={queryClient}>
-  <AuthProvider>
-    <TooltipProvider>
-      <ProfileProvider>
-        {/* ... rest of app */}
-      </ProfileProvider>
-    </TooltipProvider>
-  </AuthProvider>
-</QueryClientProvider>
+// src/components/OnboardingLayout.tsx
+<div className="flex items-center justify-between ...">
+  {/* Left - Back button */}
+  <div className="w-16">
+    {showBack && <Button>BACK</Button>}
+  </div>
+  
+  {/* Center - User Menu */}
+  <UserMenu />
+  
+  {/* Right - Skip/Next button */}
+  <div className="w-16">
+    {showSkip && <Button>SKIP</Button>}
+  </div>
+</div>
+```
+
+### 3. Recommendations Page Integration
+
+The Recommendations page has its own header structure. We'll add the UserMenu in a similar position:
+
+```typescript
+// src/pages/Recommendations.tsx header section
+<div className="flex items-center justify-between ...">
+  <Button onClick={handleBack}>BACK</Button>
+  <UserMenu />
+  <div className="w-16" /> {/* Spacer for balance */}
+</div>
+```
+
+### 4. Landing Page (Optional)
+
+On landing page 2 (after clicking "Find yours"), we could show the UserMenu if the user is already signed in. This gives them visibility that they're logged in before proceeding.
+
+---
+
+## Dropdown Menu Styling
+
+Following the modal design system:
+
+```typescript
+<DropdownMenuContent className="bg-card border-border/40 min-w-[160px]">
+  <DropdownMenuLabel className="text-card-foreground/70 font-normal text-sm">
+    {displayName}
+  </DropdownMenuLabel>
+  <DropdownMenuSeparator className="bg-border/40" />
+  <DropdownMenuItem 
+    className="text-muted-foreground hover:text-primary hover:bg-primary/5 cursor-pointer"
+    onClick={handleSignOut}
+  >
+    <LogOut className="mr-2 h-4 w-4" />
+    Sign out
+  </DropdownMenuItem>
+</DropdownMenuContent>
 ```
 
 ---
 
-## Additional Considerations
+## Quick Match Consideration
 
-### Future Enhancements (Not in this implementation)
-1. **Saving recommendations**: Once auth is working, we can add a `saved_recommendations` table to persist user's shortlisted shoes
-2. **Profile persistence**: Save the `ProfileContext` data to the `profiles` table so returning users don't have to re-enter information
-3. **Sign out**: Add a sign-out option somewhere in the app (settings, menu, etc.)
-
-### What about Quick Match?
-- Quick Match remains ungated - users can still get quick recommendations without signing in
-- This gives users a taste of the app before committing to the full flow
-
-### Existing ShortlistAuthModal
-- The existing `ShortlistAuthModal` on the recommendations page can be updated to use the same auth logic once this is implemented
-- For now, we'll create a new `AuthModal` component that can be reused across the app
+Quick Match will **not** show the UserMenu since it's designed to be a completely ungated, open experience. Users can get quick recommendations without any authentication UI.
 
 ---
 
 ## Files to Create/Modify
 
-1. **Configure OAuth** (tool call) - Generates `src/integrations/lovable/`
-2. **Database migration** - Create `profiles` table with trigger
-3. **`src/contexts/AuthContext.tsx`** - New auth context
-4. **`src/components/AuthModal.tsx`** - New shared auth modal
-5. **`src/pages/Landing.tsx`** - Add auth gate to Full Analysis
-6. **`src/App.tsx`** - Add AuthProvider wrapper
+1. **`src/components/UserMenu.tsx`** (New)
+   - Reusable component with icon trigger and dropdown
+   - Conditionally renders only when user is signed in
+   - Handles sign out and navigation
+
+2. **`src/components/OnboardingLayout.tsx`**
+   - Import and add UserMenu to header between back/skip buttons
+   - Adjust header layout for center element
+
+3. **`src/pages/Recommendations.tsx`**
+   - Import and add UserMenu to header section
+
+4. **`src/pages/Landing.tsx`** (Optional)
+   - Add UserMenu to landing page 2 header for signed-in users
+
+---
+
+## Edge Cases
+
+| Scenario | Behavior |
+|----------|----------|
+| User not signed in | UserMenu component returns null (invisible) |
+| No display name available | Falls back to email address |
+| Sign out clicked | Clear session, navigate to landing page |
+| Long display name | Truncate with ellipsis in dropdown |
