@@ -117,6 +117,13 @@ export default {
 				'50%': {
 					transform: 'translateY(-6px)'
 				}
+			},
+			'spin-stop-cycle': {
+				'0%': { transform: 'rotate(0deg)' },
+				'21.4%': { transform: 'rotate(360deg)' },
+				'50%': { transform: 'rotate(360deg)' },
+				'71.4%': { transform: 'rotate(720deg)' },
+				'100%': { transform: 'rotate(720deg)' }
 			}
   		},
   		animation: {
@@ -125,7 +132,8 @@ export default {
   			'glow-pulse': 'glow-pulse 8s ease-in-out infinite',
   			'spin-settle': 'spin-settle 0.6s ease-out',
   			'spin-once': 'spin-once 0.6s ease-out',
-  			'float-wave': 'float-wave 3s ease-in-out infinite'
+  			'float-wave': 'float-wave 3s ease-in-out infinite',
+  			'spin-stop-cycle': 'spin-stop-cycle 2.8s ease-out infinite'
   		},
 		fontFamily: {
 			sans: [
