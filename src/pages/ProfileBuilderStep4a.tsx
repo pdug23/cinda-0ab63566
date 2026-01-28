@@ -7,6 +7,7 @@ import { useProfile, DiscoveryArchetype } from "@/contexts/ProfileContext";
 import { SelectionButton } from "@/components/SelectionButton";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { UserMenu } from "@/components/UserMenu";
 
 
 const ARCHETYPE_OPTIONS: { value: DiscoveryArchetype; label: string; description: string }[] = [
@@ -64,7 +65,7 @@ const ProfileBuilderStep4a = () => {
       <OnboardingLayout scrollable>
         <PageTransition className="flex flex-col flex-1 min-h-0">
           {/* Card header */}
-          <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-start flex-shrink-0">
+          <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between flex-shrink-0">
             <button
               type="button"
               onClick={handleBack}
@@ -73,6 +74,8 @@ const ProfileBuilderStep4a = () => {
               <ArrowLeft className="w-3.5 h-3.5" />
               Back
             </button>
+            <UserMenu />
+            <div className="w-16" /> {/* Spacer for balance */}
           </header>
 
           {/* Scrollable content */}

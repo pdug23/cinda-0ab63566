@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { UserMenu } from "@/components/UserMenu";
 
 const CINDA_GREETING = "Hey, Cinda here.";
 
@@ -295,6 +296,7 @@ const ProfileBuilderStep3b = () => {
               <ArrowLeft className="w-3.5 h-3.5" />
               Back
             </button>
+            <UserMenu />
             <button
               type="button"
               onClick={handleContinue}
