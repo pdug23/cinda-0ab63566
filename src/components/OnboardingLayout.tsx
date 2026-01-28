@@ -64,9 +64,22 @@ const OnboardingLayout = ({
         ? "bg-transparent border-border/20 shadow-xl"
         : "bg-card border-border/20 shadow-xl";
 
+  // When invisible and allowOverflow are both true, use overflow-visible to allow glow effects
+  const outerOverflow = (invisible && allowOverflow) 
+    ? 'overflow-visible' 
+    : allowOverflow 
+      ? 'overflow-x-hidden overflow-y-visible' 
+      : 'overflow-hidden';
+
+  const innerOverflow = (invisible && allowOverflow)
+    ? 'overflow-visible'
+    : allowOverflow 
+      ? 'overflow-x-hidden overflow-y-visible' 
+      : 'overflow-hidden';
+
   return (
     <div
-      className={`fixed inset-0 ${allowOverflow ? 'overflow-x-hidden overflow-y-visible' : 'overflow-hidden'}`}
+      className={`fixed inset-0 ${outerOverflow}`}
       style={{
         paddingTop: "calc(env(safe-area-inset-top) + 16px)",
         paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
@@ -74,7 +87,7 @@ const OnboardingLayout = ({
     >
       <main className="h-full flex flex-col items-center justify-center px-4 md:px-6">
         <div
-          className={`w-full ${invisible ? '' : 'max-w-lg'} flex flex-col ${invisible ? '' : 'rounded-2xl'} border ${allowOverflow ? 'overflow-x-hidden overflow-y-visible' : 'overflow-hidden'} relative z-10 transition-all duration-300 ease-out ${containerClasses} ${centerContent ? 'justify-center' : ''
+          className={`w-full ${invisible ? '' : 'max-w-lg'} flex flex-col ${invisible ? '' : 'rounded-2xl'} border ${innerOverflow} relative z-10 transition-all duration-300 ease-out ${containerClasses} ${centerContent ? 'justify-center' : ''
             }`}
           style={{
             height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px)",
