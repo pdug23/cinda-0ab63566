@@ -75,7 +75,6 @@ const AnimatedTagline = ({ className = "" }: AnimatedTaglineProps) => {
                 : "opacity-0 translate-y-4"
             }`}
             style={{ 
-              transitionDelay: `${i * 200}ms`,
               fontSize: "clamp(28px, 8vw, 40px)",
               fontWeight: 900,
               fontStyle: "italic",
