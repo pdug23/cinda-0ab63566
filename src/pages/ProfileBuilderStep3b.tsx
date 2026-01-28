@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const CINDA_GREETING = "👋\nHey, Cinda here.";
+const CINDA_GREETING = "Hey, Cinda here.";
 
 const CINDA_FOLLOWUPS = [
   "You've told me the basics, but running's personal. Past injuries, shoes that didn't work out, weird fit issues, weather you run in... if there's anything else that might help, let me know.",
