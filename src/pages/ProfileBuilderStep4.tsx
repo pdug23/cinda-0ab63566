@@ -239,7 +239,7 @@ const ProfileBuilderStep4 = () => {
               <ModeCard
                 icon={<CrosshairIcon className="w-6 h-6" />}
                 label="Find by shoe type"
-                description="Know what type of shoe you're after? Cinda works with you to find the shoe you need"
+                description="Cinda works with you to find the exact shoe you need"
                 onClick={handleShoppingMode}
               />
               <ModeCard
