@@ -414,8 +414,8 @@ const QuickMatch = () => {
     clearShoes();
     clearGap();
 
-    // Navigate to recommendations
-    navigate("/recommendations");
+    // Navigate to recommendations with origin state
+    navigate("/recommendations", { state: { from: "/quick-match" } });
   };
 
   const isSubmitEnabled = state.selectedArchetype !== null;

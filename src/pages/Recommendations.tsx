@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import AnimatedBackground from "@/components/AnimatedBackground";
@@ -404,6 +404,8 @@ function DiscoveryModeResults({
 
 export default function RecommendationsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromRoute = (location.state as { from?: string } | null)?.from || "/profile/step4";
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode | null>(null);
@@ -424,8 +426,8 @@ export default function RecommendationsPage() {
   }, [navigate, shortlistedShoes.length]);
 
   const goBack = useCallback(() => {
-    handleNavigationAttempt("/profile/step4");
-  }, [handleNavigationAttempt]);
+    handleNavigationAttempt(fromRoute);
+  }, [handleNavigationAttempt, fromRoute]);
 
   const handleShortlist = useCallback((shoeId: string) => {
     setShortlistedShoes(prev => {
