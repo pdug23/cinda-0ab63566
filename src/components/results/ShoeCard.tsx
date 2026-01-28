@@ -70,12 +70,12 @@ const getBadgeConfig = (
   const effectiveType = badge || type;
   
   if (effectiveType === "closest_match") {
-    return { text: "CLOSEST MATCH", color: "#F1F5F9" }; // Platinum white
+    return { text: "CLOSEST MATCH", color: "#7DD3FC" }; // Cyan/Sky blue
   }
   if (effectiveType === "trade_off_option" || effectiveType === "trade_off") {
     return { text: "TRADE-OFF", color: "#F97316" }; // Orange (unchanged)
   }
-  return { text: "CLOSE MATCH", color: "#7DD3FC" }; // Cyan/Sky blue
+  return { text: "CLOSE MATCH", color: "#F1F5F9" }; // Platinum white
 };
 
 const getRoleBadgeLabel = (roleOrArchetype: string): string => {
@@ -389,7 +389,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
             <div key={idx} className="flex items-start gap-2">
               <Check 
                 className="w-4 h-4 shrink-0 mt-0.5" 
-                style={{ color: "#10B981" }} 
+                style={{ color: shimmer }} 
                 aria-hidden="true" 
               />
               <span 
