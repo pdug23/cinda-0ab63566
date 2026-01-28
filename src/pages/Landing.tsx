@@ -8,6 +8,7 @@ import FloatingJargon from "@/components/FloatingJargon";
 import AnimatedTagline from "@/components/AnimatedTagline";
 import { usePageNavigation } from "@/hooks/usePageNavigation";
 import { AddToHomeScreenModal } from "@/components/AddToHomeScreenModal";
+import { analytics } from "@/lib/analytics";
 
 type ViewState = "landing" | "orientation";
 
@@ -203,7 +204,10 @@ const Landing = () => {
         {/* Web app promotion link - visible on both views */}
         {!isExiting && (
           <button
-            onClick={() => setShowA2HSModal(true)}
+            onClick={() => {
+              analytics.installLinkClicked(viewState);
+              setShowA2HSModal(true);
+            }}
             className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/50 hover:text-muted-foreground/70 transition-all cursor-pointer z-10 underline underline-offset-2 decoration-dotted decoration-muted-foreground/30 hover:decoration-solid hover:decoration-muted-foreground/50"
           >
             Cinda is best as a web app
