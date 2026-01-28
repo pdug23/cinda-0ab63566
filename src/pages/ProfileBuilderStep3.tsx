@@ -47,6 +47,56 @@ const RUN_TYPE_OPTIONS: { value: RunType; label: string }[] = [
   { value: "trail", label: "Trail" },
 ];
 
+// Brand logo path helper
+const getBrandLogoPath = (brand: string): string => {
+  const brandMap: Record<string, string> = {
+    "Adidas": "/logos/adidas-logo.png",
+    "Altra": "/logos/altra-logo.png",
+    "ASICS": "/logos/asics-logo.png",
+    "Brooks": "/logos/brooks-logo.png",
+    "HOKA": "/logos/hoka-logo.png",
+    "Mizuno": "/logos/mizuno-logo.png",
+    "New Balance": "/logos/newbalance-logo.png",
+    "Nike": "/logos/nike-logo.png",
+    "On": "/logos/on-logo.png",
+    "PUMA": "/logos/puma-logo.png",
+    "Salomon": "/logos/salomon-logo.png",
+    "Saucony": "/logos/saucony-logo.png",
+    "Skechers": "/logos/skechers-logo.png",
+    "Topo Athletic": "/logos/topo-logo.png",
+  };
+  return brandMap[brand] || "";
+};
+
+// Format run types for display
+const formatRunTypesForDisplay = (runTypes: RunType[]): string => {
+  if (runTypes.includes("all_my_runs")) {
+    const hasTrail = runTypes.includes("trail");
+    return hasTrail ? "All runs + Trail" : "All runs";
+  }
+  
+  const labels: Record<RunType, string> = {
+    all_my_runs: "All runs",
+    recovery: "Recovery",
+    long_runs: "Long runs",
+    workouts: "Workouts",
+    races: "Races",
+    trail: "Trail",
+  };
+  
+  return runTypes.map(rt => labels[rt]).join(" • ");
+};
+
+// Get sentiment icon for display
+const getSentimentIcon = (sentiment: ShoeSentiment | null) => {
+  switch (sentiment) {
+    case "love": return <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400" />;
+    case "neutral": return <Meh className="w-3.5 h-3.5 text-amber-400" />;
+    case "dislike": return <ThumbsDown className="w-3.5 h-3.5 text-slate-400" />;
+    default: return null;
+  }
+};
+
 // Run types that get auto-selected when "all my runs" is selected (trail excluded)
 const ALL_MY_RUNS_TYPES: RunType[] = ["recovery", "long_runs", "workouts", "races"];
 
@@ -861,14 +911,37 @@ const ProfileBuilderStep3 = () => {
                   Confirm your rotation
                 </DialogTitle>
               </DialogHeader>
-              <div className="px-4 pt-4 pb-6">
-                <ul className="space-y-1.5 text-sm text-card-foreground/70">
-                  {currentShoes.map((item) => (
-                    <li key={item.shoe.shoe_id} className="normal-case">
-                      {item.shoe.full_name}
-                    </li>
-                  ))}
-                </ul>
+              <div className="px-4 pt-4 pb-6 space-y-2">
+                {currentShoes.map((item) => {
+                  const logoPath = getBrandLogoPath(item.shoe.brand);
+                  const modelDisplay = `${item.shoe.model} ${item.shoe.version}`.trim();
+                  
+                  return (
+                    <div 
+                      key={item.shoe.shoe_id} 
+                      className="flex items-start gap-3 p-3 rounded-lg bg-card-foreground/[0.03] border border-card-foreground/10"
+                    >
+                      {logoPath && (
+                        <img 
+                          src={logoPath} 
+                          alt={item.shoe.brand}
+                          className="h-4 w-auto opacity-60 mt-0.5 flex-shrink-0 brightness-0 invert"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-card-foreground font-medium truncate">
+                            {modelDisplay}
+                          </span>
+                          {getSentimentIcon(item.sentiment)}
+                        </div>
+                        <p className="text-xs text-card-foreground/50 mt-0.5">
+                          {formatRunTypesForDisplay(item.runTypes)}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
               <div className="p-4 pt-0 flex flex-col gap-2">
                 <Button
