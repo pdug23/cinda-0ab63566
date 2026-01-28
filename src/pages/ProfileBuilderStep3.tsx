@@ -40,11 +40,11 @@ const shoes = shoebaseData as Shoe[];
 // Run type options
 const RUN_TYPE_OPTIONS: { value: RunType; label: string }[] = [
   { value: "all_my_runs", label: "All my runs" },
-  { value: "recovery", label: "Recovery" },
+  { value: "recovery", label: "Recovery runs" },
   { value: "long_runs", label: "Long runs" },
   { value: "workouts", label: "Workouts" },
   { value: "races", label: "Races" },
-  { value: "trail", label: "Trail" },
+  { value: "trail", label: "Trail runs" },
 ];
 
 // Brand logo path helper
