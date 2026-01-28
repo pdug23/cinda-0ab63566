@@ -118,7 +118,7 @@ const Landing = () => {
 
         {viewState === "orientation" && (
           <PageTransition className="absolute inset-0 flex flex-col items-center text-center px-6 z-10">
-            <div className="flex flex-col items-center max-w-md mt-[120px]">
+            <div className="flex flex-col items-center max-w-md mt-[150px]">
               {/* Headline and subheading */}
               <div
                 className={`transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
@@ -132,12 +132,12 @@ const Landing = () => {
                   Buying running shoes has never felt more overwhelming.
                 </h1>
                 <p 
-                  className="text-card-foreground leading-tight italic mt-4"
+                  className="text-card-foreground leading-tight italic mt-6"
                   style={{ fontVariantLigatures: "none", fontSize: "20px", fontWeight: 900 }}
                 >
                   Endless marketing. Infinite options. Zero clarity.
                 </p>
-                <p className="text-card-foreground/80 text-base mt-4">
+                <p className="text-card-foreground/80 text-base mt-6">
                   Cinda helps you cut through the noise.
                 </p>
               </div>
