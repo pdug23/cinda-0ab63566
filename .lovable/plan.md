@@ -1,89 +1,120 @@
 
-
-# Make Container Invisible on Loading and Recommendations Pages
+# Simplify Archetype Tooltip Content
 
 ## Overview
 
-Keep the `OnboardingLayout` container structure (for safe-area handling and scroll locking) but make it visually invisible on two specific pages:
-
-1. **ProfileBuilderStep4Analysis** (the loading/analysis page before recommendations)
-2. **Recommendations** (the shoe cards page)
-
-This preserves the functional benefits while letting the content appear to float on the animated background.
+Replace the cluttered badge-based tooltip with clean, sentence-case text that clearly communicates:
+1. What Cinda recommends this shoe as (the selected archetype)
+2. What other archetypes the shoe works for (if any)
+3. What run types those archetypes are suited for
 
 ---
 
-## Technical Approach
+## Current State
 
-Add a new prop `invisible` to `OnboardingLayout` that removes all visual styling (background, border, shadow, max-width constraints) while keeping the structural behaviour intact.
+The tooltip currently shows:
+- Inline badge components (DAILY, WORKOUT) styled with background colours
+- Mixed casing and awkward sentence flow
+- Visually busy and hard to read
 
 ---
 
-## Changes
+## Proposed Format
 
-### 1. Update OnboardingLayout Component
+**Single archetype:**
+> Cinda recommends this shoe as a workout shoe.
 
-**File:** `src/components/OnboardingLayout.tsx`
+**Multiple archetypes:**
+> Cinda recommends this shoe as a workout shoe.
+>
+> This shoe is also considered a daily trainer, meaning it's good for recovery runs and long runs at a comfortable pace.
 
-Add a new `invisible` prop that removes:
-- Background colour
-- Border
-- Shadow
-- Rounded corners
-- Max-width constraint (so content can use full width)
+---
+
+## Technical Changes
+
+### File: `src/components/results/ShoeCard.tsx`
+
+**1. Remove the `ArchetypeBadge` component** (lines 131-142)
+- Delete the entire component as it will no longer be used
+
+**2. Update `buildArchetypePopoverContent` function** (lines 145-169)
+
+Replace with cleaner text-only implementation:
 
 ```text
-Props to add:
-  invisible?: boolean  // Removes all visual styling
+Single archetype case:
+- "Cinda recommends this shoe as a [archetype label] [noun]."
 
-When invisible=true:
-- Container classes: bg-transparent border-transparent shadow-none rounded-none
-- Remove max-w-lg constraint
-- Keep height constraints and safe-area padding
+Multiple archetypes case:
+- "Cinda recommends this shoe as a [primary archetype label] [noun]."
+- Followed by a new paragraph:
+- "This shoe is also considered a [secondary archetype(s)], meaning it's good for [run types]."
 ```
 
-### 2. Update ProfileBuilderStep4Analysis
+**3. Update archetype labels for sentence case**
 
-**File:** `src/pages/ProfileBuilderStep4Analysis.tsx`
+The existing `archetypeLabels` object already uses lowercase, which works for sentence case. Combine with nouns to form:
+- "daily trainer"
+- "recovery shoe"  
+- "workout shoe"
+- "race shoe"
+- "trail shoe"
 
-Change the `OnboardingLayout` usage to include `invisible` prop:
+---
 
-```text
-Line 630:
-Current: <OnboardingLayout scrollable>
-New:     <OnboardingLayout scrollable invisible>
-```
-
-### 3. Update Recommendations Page
-
-**File:** `src/pages/Recommendations.tsx`
-
-Change the `OnboardingLayout` usage to include `invisible` prop:
+## Implementation Detail
 
 ```text
-Line 668:
-Current: <OnboardingLayout scrollable={!loading} allowOverflow={!loading}>
-New:     <OnboardingLayout scrollable={!loading} allowOverflow={!loading} invisible>
+const buildArchetypePopoverContent = (archetypes: string[]) => {
+  if (!archetypes || archetypes.length === 0) return null;
+  
+  const primary = archetypes[0];
+  const secondary = archetypes.slice(1);
+  
+  // Get full archetype name (e.g., "workout shoe", "daily trainer")
+  const getFullArchetypeName = (arch: string) => {
+    const label = archetypeLabels[arch] || arch;
+    const noun = archetypeNoun[arch] || "shoe";
+    return `${label} ${noun}`;
+  };
+  
+  if (secondary.length === 0) {
+    return (
+      <p>Cinda recommends this shoe as a {getFullArchetypeName(primary)}.</p>
+    );
+  } else {
+    // Build secondary archetypes list
+    const secondaryNames = secondary.map(a => getFullArchetypeName(a));
+    const secondaryList = secondaryNames.join(" and ");
+    const secondaryRunTypes = secondary.map(a => archetypeRunTypes[a]).join(" and ");
+    
+    return (
+      <>
+        <p>Cinda recommends this shoe as a {getFullArchetypeName(primary)}.</p>
+        <p>This shoe is also considered a {secondaryList}, meaning it's good for {secondaryRunTypes}.</p>
+      </>
+    );
+  }
+};
 ```
 
 ---
 
-## Visual Result
+## Styling
 
-| Page | Before | After |
-|------|--------|-------|
-| Analysis/Loading | Dark card container visible | Content floats on animated background |
-| Recommendations | Dark card container visible | Shoe cards appear directly on background |
-
-The shoe cards already have their own styling (borders, backgrounds, glows) so they will serve as their own visual containers.
+- Remove badge styling entirely
+- Use consistent `text-sm text-white/80 leading-relaxed` for all text
+- Add `space-y-2` wrapper for proper paragraph spacing when multiple paragraphs exist
+- Sentence case throughout (capital C for "Cinda", otherwise lowercase)
 
 ---
 
-## What's Preserved
+## Summary of Changes
 
-- Safe-area padding (iOS notch/home indicator)
-- Body scroll locking
-- Flex layout structure
-- Height constraints (prevents content from extending beyond viewport)
-- Transition timing for reveal animations
+| Line Range | Change |
+|------------|--------|
+| 131-142 | Delete `ArchetypeBadge` component |
+| 145-169 | Replace `buildArchetypePopoverContent` with clean text version |
 
+**Files to edit:** `src/components/results/ShoeCard.tsx`
