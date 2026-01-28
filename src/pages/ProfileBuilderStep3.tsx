@@ -920,13 +920,13 @@ const ProfileBuilderStep3 = () => {
                     return (
                       <div 
                         key={item.shoe.shoe_id} 
-                        className="flex items-start gap-3 p-3 rounded-lg bg-card-foreground/[0.03] border border-card-foreground/10"
+                        className="flex items-center gap-3 p-3 rounded-lg bg-card-foreground/[0.03] border border-card-foreground/10"
                       >
                         {logoPath && (
                           <img 
                             src={logoPath} 
                             alt={item.shoe.brand}
-                            className="h-4 w-auto opacity-60 mt-0.5 flex-shrink-0 brightness-0 invert"
+                            className="h-4 w-auto opacity-60 flex-shrink-0 brightness-0 invert"
                           />
                         )}
                         <div className="flex-1 min-w-0">
