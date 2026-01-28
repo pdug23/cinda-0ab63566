@@ -1,83 +1,70 @@
 
-
-# Fix Conditional Back Navigation from Recommendations
+# Fix Modal Width and Button Styling
 
 ## Problem
-
-When a user enters via **Quick Match** and lands on `/recommendations`, clicking "Try Again" incorrectly sends them to `/profile/step4` (a page they never visited). The back button should return them to `/quick-match`.
-
-Users coming from the **full profile flow** should continue going back to `/profile/step4`.
+The modals (`LeaveRecommendationsModal`, `UnsavedChangesModal`) are:
+1. Too wide on phone screens (using `max-w-sm` which is 384px)
+2. Using sentence case "Leave" / "Stay" instead of CAPS
+3. Not matching the BACK/SKIP button aesthetic
 
 ## Solution
 
-Pass the origin route as navigation state when navigating to `/recommendations`, then use that state to determine where the back button should go.
+### 1. Fix Modal Width
+Change from `max-w-sm` to `w-[calc(100%-48px)] max-w-[320px]` to match other modals in the app (ProfileBuilderStep3, Chat restart dialog, etc.). This ensures 24px padding on each side of the phone screen.
 
----
+### 2. Update Button Styling to Match BACK/SKIP Aesthetic
 
-## Changes
+Current BACK/SKIP button style (the target):
+```
+h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium 
+tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground 
+bg-card-foreground/[0.03] hover:bg-card-foreground/10 border 
+border-card-foreground/20 transition-colors
+```
 
-### 1. QuickMatch.tsx — Pass origin state
+Adapt for modal buttons:
+- Pill shape (`rounded-full`)
+- Uppercase text (`uppercase`)
+- 10px font (`text-[10px]`)
+- Wider tracking (`tracking-wider`)
+- Same hover effect with orange glow
 
-**File:** `src/pages/QuickMatch.tsx` (line 418)
+### Files to Update
 
+| File | Changes |
+|------|---------|
+| `src/components/LeaveRecommendationsModal.tsx` | Width fix, button styling for "LEAVE" and "STAY" |
+| `src/components/UnsavedChangesModal.tsx` | Width fix, button styling for "DISCARD" and "STAY" |
+
+### Button Style Change
 ```tsx
-// Before
-navigate("/recommendations");
+// From
+className="flex-1 min-h-[44px] text-sm bg-transparent border-border/40 
+text-muted-foreground hover:border-primary/60 hover:text-primary 
+hover:bg-primary/5"
 
-// After
-navigate("/recommendations", { state: { from: "/quick-match" } });
+// To
+className="flex-1 h-9 rounded-full text-[10px] font-medium tracking-wider 
+uppercase text-card-foreground/60 hover:text-card-foreground 
+bg-card-foreground/[0.03] hover:bg-card-foreground/10 border 
+border-card-foreground/20 hover:border-primary/60 hover:text-primary 
+transition-colors"
 ```
 
 ---
 
-### 2. ProfileBuilderStep4b.tsx — Pass origin state
+## Technical Details
 
-**File:** `src/pages/ProfileBuilderStep4b.tsx` (lines 753 and 756)
-
+### DialogContent Width Update
 ```tsx
-// Before
-navigate("/recommendations");
+// From
+<DialogContent className="max-w-sm bg-card border-border/20 p-0 gap-0">
 
-// After
-navigate("/recommendations", { state: { from: "/profile/step4" } });
+// To  
+<DialogContent className="w-[calc(100%-48px)] max-w-[320px] bg-card border-border/20 p-0 gap-0">
 ```
 
----
-
-### 3. Recommendations.tsx — Read state and conditionally navigate
-
-**File:** `src/pages/Recommendations.tsx`
-
-**Step A:** Import `useLocation` from react-router-dom (line 2)
-
-```tsx
-import { useNavigate, useLocation } from "react-router-dom";
-```
-
-**Step B:** Read the navigation state at the top of the component (around line 406)
-
-```tsx
-const location = useLocation();
-const fromRoute = (location.state as { from?: string } | null)?.from || "/profile/step4";
-```
-
-**Step C:** Update the `goBack` function to use the dynamic route (lines 426-428)
-
-```tsx
-const goBack = useCallback(() => {
-  handleNavigationAttempt(fromRoute);
-}, [handleNavigationAttempt, fromRoute]);
-```
-
----
-
-## Summary
-
-| File | Change |
-|------|--------|
-| `src/pages/QuickMatch.tsx` | Pass `{ state: { from: "/quick-match" } }` when navigating |
-| `src/pages/ProfileBuilderStep4b.tsx` | Pass `{ state: { from: "/profile/step4" } }` when navigating |
-| `src/pages/Recommendations.tsx` | Read the `from` state and use it for back navigation |
-
-This ensures the back button respects the user's actual entry point while maintaining the existing behavior for full-flow users.
-
+This matches the pattern used in:
+- ProfileBuilderStep3 modals
+- ProfileBuilderStep3b confirmation modal
+- Chat restart dialog
