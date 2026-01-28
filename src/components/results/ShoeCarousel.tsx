@@ -115,7 +115,7 @@ export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onS
   }
 
   return (
-    <div className="shoe-carousel w-full py-2 flex flex-col">
+    <div className="shoe-carousel w-full py-2 flex flex-col" style={{ minHeight: '580px' }}>
       <Swiper
         modules={[Keyboard]}
         spaceBetween={32}
@@ -126,6 +126,7 @@ export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onS
         watchSlidesProgress={true}
         keyboard={{ enabled: true }}
         grabCursor={true}
+        style={{ height: '560px' }}
         breakpoints={{
           320: {
             slidesPerView: 1.1,
@@ -161,7 +162,7 @@ export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onS
               key={`${shoeId}-${index}`}
               aria-label={`Shoe ${index + 1} of ${totalSlides}: ${shoe.fullName}`}
             >
-              <div className="flex justify-center h-full">
+              <div className="flex justify-center items-center" style={{ height: '560px' }}>
                 <ShoeCard 
                   shoe={shoe} 
                   role={role} 
@@ -186,8 +187,8 @@ export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onS
               className={cn(
                 "w-2 h-2 rounded-full transition-all duration-200",
                 index === activeIndex 
-                  ? "bg-foreground/80 scale-110" 
-                  : "bg-foreground/30 hover:bg-foreground/50"
+                  ? "bg-primary scale-110" 
+                  : "bg-card-foreground/40 hover:bg-card-foreground/60"
               )}
               aria-label={`Go to slide ${index + 1}`}
             />
