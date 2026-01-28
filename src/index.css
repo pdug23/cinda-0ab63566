@@ -215,6 +215,19 @@ All colors MUST be HSL.
   }
 }
 
+/* iOS PWA standalone mode: force minimal document scroll to claim safe-area */
+@media all and (display-mode: standalone) {
+  html, body {
+    overflow-y: auto !important;
+  }
+  
+  body::before {
+    content: "";
+    display: block;
+    height: 1px;
+  }
+}
+
 @layer utilities {
   /* Custom scrollbar styling */
   .scrollbar-styled {
