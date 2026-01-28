@@ -21,7 +21,7 @@ const OptionalBadge = () => (
 const GOAL_OPTIONS: { value: PrimaryGoal; label: string; description: string }[] = [
   { value: "general_fitness", label: "General fitness", description: "Stay healthy and active" },
   { value: "get_faster", label: "Get faster", description: "Improve times and efficiency" },
-  { value: "race_training", label: "Train for race", description: "Preparing for an event" },
+  { value: "race_training", label: "Train for a race", description: "Preparing for an event" },
   { value: "injury_comeback", label: "Injury comeback", description: "Returning to running safely" },
 ];
 
