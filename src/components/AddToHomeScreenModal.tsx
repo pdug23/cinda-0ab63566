@@ -59,10 +59,10 @@ export function AddToHomeScreenModal({
       >
         <DialogHeader className="px-5 pt-5 pb-2">
           <DialogTitle className="text-lg font-semibold text-card-foreground">
-            add cinda to your home screen
+            Cinda is best as a web app
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            install cinda for quick access — just like a real app.
+            Install Cinda to your home screen for the full experience — fast, offline-ready, and always one tap away.
           </DialogDescription>
         </DialogHeader>
 
