@@ -78,10 +78,10 @@ export function AddToHomeScreenModal({
       >
         <DialogHeader className="px-5 pt-5 pb-2">
           <DialogTitle className="text-lg font-semibold text-card-foreground">
-            Cinda is best as a web app
+            Add Cinda as a web app
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Install Cinda to your home screen for the full experience — fast, offline-ready, and always one tap away.
+            Install Cinda to your home screen for the full experience.
           </DialogDescription>
         </DialogHeader>
 
@@ -111,6 +111,9 @@ export function AddToHomeScreenModal({
           </TabsList>
 
           <TabsContent value="ios" className="px-5 pb-5 pt-4">
+            <p className="text-xs text-muted-foreground/70 mb-3 italic">
+              This only works in Safari
+            </p>
             <div className="space-y-4">
               <Step
                 number={1}
