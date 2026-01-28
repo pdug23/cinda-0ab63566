@@ -1,33 +1,30 @@
 
-# Simplify Archetype Tooltip Content
+# Fix Archetype Tooltip Logic
 
 ## Overview
 
-Replace the cluttered badge-based tooltip with clean, sentence-case text that clearly communicates:
-1. What Cinda recommends this shoe as (the selected archetype)
-2. What other archetypes the shoe works for (if any)
-3. What run types those archetypes are suited for
+Fix two issues with the archetype badge tooltip:
+1. The primary archetype in the tooltip doesn't match the recommended archetype
+2. The info icon and tooltip should only appear when a shoe has multiple archetypes
 
 ---
 
-## Current State
+## Problem Analysis
 
-The tooltip currently shows:
-- Inline badge components (DAILY, WORKOUT) styled with background colours
-- Mixed casing and awkward sentence flow
-- Visually busy and hard to read
+**Current behaviour:**
 
----
+The tooltip uses `archetypes[0]` as the primary archetype, but this is just the first archetype in the shoe's capability list, not the archetype it's being recommended for.
 
-## Proposed Format
+For example, the Mach 6:
+- Being recommended as: `WORKOUT` (shown as `shoe.archetype` or `shoe.role`)
+- `archetypes` array: `["daily_trainer", "workout_shoe"]` 
+- Tooltip incorrectly says: "Cinda recommends this shoe as a daily trainer"
 
-**Single archetype:**
-> Cinda recommends this shoe as a workout shoe.
+**Correct behaviour:**
 
-**Multiple archetypes:**
-> Cinda recommends this shoe as a workout shoe.
->
-> This shoe is also considered a daily trainer, meaning it's good for recovery runs and long runs at a comfortable pace.
+- Use `shoe.archetype` or `shoe.role` as the primary (what Cinda is recommending it for)
+- Secondary archetypes = all other archetypes from the `archetypes` array that aren't the primary
+- Only show the info icon if the shoe has additional archetypes beyond the primary
 
 ---
 
@@ -35,86 +32,71 @@ The tooltip currently shows:
 
 ### File: `src/components/results/ShoeCard.tsx`
 
-**1. Remove the `ArchetypeBadge` component** (lines 131-142)
-- Delete the entire component as it will no longer be used
+**1. Update `buildArchetypePopoverContent` function signature**
 
-**2. Update `buildArchetypePopoverContent` function** (lines 145-169)
-
-Replace with cleaner text-only implementation:
+Change it to accept both the recommended archetype and the full archetypes list:
 
 ```text
-Single archetype case:
-- "Cinda recommends this shoe as a [archetype label] [noun]."
-
-Multiple archetypes case:
-- "Cinda recommends this shoe as a [primary archetype label] [noun]."
-- Followed by a new paragraph:
-- "This shoe is also considered a [secondary archetype(s)], meaning it's good for [run types]."
+const buildArchetypePopoverContent = (recommendedArchetype: string, allArchetypes: string[])
 ```
 
-**3. Update archetype labels for sentence case**
+**2. Fix the logic inside `buildArchetypePopoverContent`**
 
-The existing `archetypeLabels` object already uses lowercase, which works for sentence case. Combine with nouns to form:
-- "daily trainer"
-- "recovery shoe"  
-- "workout shoe"
-- "race shoe"
-- "trail shoe"
+- Use `recommendedArchetype` as the primary
+- Filter out the recommended archetype from `allArchetypes` to get secondary archetypes
+- Only show the second paragraph if there are secondary archetypes
+
+**3. Update the badge rendering logic**
+
+Only render the role badge with info icon if:
+- `showRoleBadge` is true
+- `roleBadgeLabel` exists
+- The shoe has more than one archetype (i.e., there are secondary archetypes to explain)
+
+If a shoe only has one archetype, just show the badge without the info icon and without the popover.
 
 ---
 
-## Implementation Detail
+## Updated Code Structure
 
 ```text
-const buildArchetypePopoverContent = (archetypes: string[]) => {
-  if (!archetypes || archetypes.length === 0) return null;
-  
-  const primary = archetypes[0];
-  const secondary = archetypes.slice(1);
-  
-  // Get full archetype name (e.g., "workout shoe", "daily trainer")
-  const getFullArchetypeName = (arch: string) => {
-    const label = archetypeLabels[arch] || arch;
-    const noun = archetypeNoun[arch] || "shoe";
-    return `${label} ${noun}`;
-  };
-  
-  if (secondary.length === 0) {
-    return (
-      <p>Cinda recommends this shoe as a {getFullArchetypeName(primary)}.</p>
-    );
-  } else {
-    // Build secondary archetypes list
-    const secondaryNames = secondary.map(a => getFullArchetypeName(a));
-    const secondaryList = secondaryNames.join(" and ");
-    const secondaryRunTypes = secondary.map(a => archetypeRunTypes[a]).join(" and ");
-    
-    return (
-      <>
-        <p>Cinda recommends this shoe as a {getFullArchetypeName(primary)}.</p>
-        <p>This shoe is also considered a {secondaryList}, meaning it's good for {secondaryRunTypes}.</p>
-      </>
-    );
-  }
-};
+// Determine what archetypes to work with
+const recommendedArchetype = shoe.archetype || shoe.role || "daily_trainer";
+const allArchetypes = shoe.archetypes || [recommendedArchetype];
+
+// Get secondary archetypes (excluding the recommended one)
+const secondaryArchetypes = allArchetypes.filter(a => a !== recommendedArchetype);
+const hasMultipleArchetypes = secondaryArchetypes.length > 0;
+
+// Badge rendering:
+if (hasMultipleArchetypes) {
+  // Show badge with (i) icon and popover
+} else {
+  // Show badge without (i) icon, no popover
+}
 ```
 
 ---
 
-## Styling
+## Updated Tooltip Content
 
-- Remove badge styling entirely
-- Use consistent `text-sm text-white/80 leading-relaxed` for all text
-- Add `space-y-2` wrapper for proper paragraph spacing when multiple paragraphs exist
-- Sentence case throughout (capital C for "Cinda", otherwise lowercase)
+**Single archetype (no tooltip needed):**
+
+No tooltip - just the badge label.
+
+**Multiple archetypes:**
+
+> Cinda recommends this shoe as a [recommended archetype].
+>
+> This shoe is also considered a [other archetypes list], meaning it's good for [run types].
 
 ---
 
 ## Summary of Changes
 
-| Line Range | Change |
-|------------|--------|
-| 131-142 | Delete `ArchetypeBadge` component |
-| 145-169 | Replace `buildArchetypePopoverContent` with clean text version |
+| Location | Change |
+|----------|--------|
+| Lines 131-169 | Update `buildArchetypePopoverContent` to accept `recommendedArchetype` and `allArchetypes` parameters, use recommended archetype as primary |
+| Lines 332-358 | Add logic to only show info icon and popover when shoe has multiple archetypes; show plain badge otherwise |
 
-**Files to edit:** `src/components/results/ShoeCard.tsx`
+**File to edit:** `src/components/results/ShoeCard.tsx`
