@@ -70,12 +70,12 @@ const getBadgeConfig = (
   const effectiveType = badge || type;
   
   if (effectiveType === "closest_match") {
-    return { text: "CLOSEST MATCH", color: "#A855F7" }; // Premium purple
+    return { text: "CLOSEST MATCH", color: "#F1F5F9" }; // Platinum white
   }
   if (effectiveType === "trade_off_option" || effectiveType === "trade_off") {
-    return { text: "TRADE-OFF", color: "#F97316" };
+    return { text: "TRADE-OFF", color: "#F97316" }; // Orange (unchanged)
   }
-  return { text: "CLOSE MATCH", color: "#34D399" }; // Lighter lime-ish
+  return { text: "CLOSE MATCH", color: "#7DD3FC" }; // Cyan/Sky blue
 };
 
 const getRoleBadgeLabel = (roleOrArchetype: string): string => {
