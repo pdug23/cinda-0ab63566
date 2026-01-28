@@ -210,7 +210,7 @@ const Landing = () => {
             }}
             className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/50 hover:text-muted-foreground/70 transition-all cursor-pointer z-10 underline underline-offset-2 decoration-dotted decoration-muted-foreground/30 hover:decoration-solid hover:decoration-muted-foreground/50"
           >
-            Cinda is best as a web app
+            Add Cinda as a web app for an optimal experience
           </button>
         )}
 
