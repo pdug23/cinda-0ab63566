@@ -1,62 +1,82 @@
 
-# Update Step 3b Greeting Format
+# Fix Speech Recognition "Aborted" Error
 
-## Current State
-The greeting message is: `"👋 Hey, Cinda here."` - all on one line.
+## Root Cause
 
-The typing indicator uses `cinda-logo-grey.png` which is the current grey logo (there's no v2 grey version - only the white logo has a v2 variant).
-
----
-
-## Changes Needed
-
-### File: `src/pages/ProfileBuilderStep3b.tsx`
-
-**1. Split the greeting into two lines (line 22)**
+The `useSpeechToText` hook has a critical bug in its `useEffect` dependency array. The hook includes `onResult` and `onError` callbacks as dependencies:
 
 ```tsx
-// From
-const CINDA_GREETING = "👋 Hey, Cinda here.";
-
-// To
-const CINDA_GREETING = "👋\nHey, Cinda here.";
+useEffect(() => {
+  // ... creates recognition instance ...
+  return () => {
+    recognition.abort();  // ← This triggers "aborted" error
+  };
+}, [continuous, language, onResult, onError]);  // ← Problem!
 ```
 
-**2. Add whitespace-pre-line to preserve the newline (line 322)**
+When `ProfileBuilderStep3b` passes inline arrow functions for `onResult` and `onError`, these are **new function references on every render**. This causes the `useEffect` to re-run, which:
 
-The message paragraph needs to render the `\n` as an actual line break:
+1. Calls the cleanup function (`recognition.abort()`)
+2. The abort triggers the `onerror` handler with `error: "aborted"`
+3. The error handler calls `onError` which shows the toast
 
-```tsx
-// From
-<p className="text-sm leading-relaxed text-card-foreground/70">
+This happens immediately after the user grants microphone permission because granting permission triggers a re-render.
 
-// To
-<p className="text-sm leading-relaxed text-card-foreground/70 whitespace-pre-line">
+## Solution
+
+Stabilize the hook by removing callback dependencies from the `useEffect` and using refs to store the latest callback values. This is a standard React pattern for preventing stale closures while avoiding dependency issues.
+
+---
+
+## Technical Changes
+
+### File: `src/hooks/useSpeechToText.ts`
+
+**1. Add refs to store latest callbacks (after line 59)**
+
+```typescript
+const onResultRef = useRef(onResult);
+const onErrorRef = useRef(onError);
+```
+
+**2. Keep refs updated with latest values (after the refs)**
+
+```typescript
+useEffect(() => {
+  onResultRef.current = onResult;
+  onErrorRef.current = onError;
+}, [onResult, onError]);
+```
+
+**3. Update the main useEffect to use refs instead of direct callbacks**
+
+- Change `onError?.(errorMessage)` to `onErrorRef.current?.(errorMessage)`
+- Change `onResult?.(finalTranscript)` to `onResultRef.current?.(finalTranscript)`
+- Remove `onResult` and `onError` from the dependency array
+
+**4. (Optional) Handle "aborted" error gracefully**
+
+Add "aborted" to the error handler to silently ignore it, since it's often triggered by intentional cleanup:
+
+```typescript
+recognition.onerror = (event) => {
+  setIsListening(false);
+  
+  // Ignore aborted - this happens during cleanup
+  if (event.error === "aborted") return;
+  
+  // ... rest of error handling
+};
 ```
 
 ---
 
-## Logo Status
+## Summary of Changes
 
-The typing indicator uses `cinda-logo-grey.png`. Looking at the available assets:
-- `cinda-logo-grey.png` ✓ (currently used)
-- `cinda-logo-white-v2.png` (updated white version)
-- `cinda-logo-white.png` (old white)
-- `cinda-logo.png`
-
-There is no `cinda-logo-grey-v2.png`, so the current grey logo appears to be the correct one to use. No logo change needed.
-
----
-
-## Result
-
-The greeting will display as:
-```
-👋
-Hey, Cinda here.
-```
-
-Instead of:
-```
-👋 Hey, Cinda here.
-```
+| Change | Purpose |
+|--------|---------|
+| Add `onResultRef` and `onErrorRef` | Store stable references to callbacks |
+| Sync refs in separate useEffect | Keep refs current without triggering recreation |
+| Use refs in event handlers | Access latest callbacks without stale closure |
+| Remove callbacks from deps | Prevent unnecessary recreation of recognition |
+| Ignore "aborted" error | Silent cleanup without alarming users |
