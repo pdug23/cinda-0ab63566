@@ -208,7 +208,7 @@ const Landing = () => {
               analytics.installLinkClicked(viewState);
               setShowA2HSModal(true);
             }}
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/50 hover:text-muted-foreground/70 transition-all cursor-pointer z-10 underline underline-offset-2 decoration-dotted decoration-muted-foreground/30 hover:decoration-solid hover:decoration-muted-foreground/50"
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/40 hover:text-muted-foreground/60 transition-all cursor-pointer z-10 underline underline-offset-2 decoration-dotted decoration-muted-foreground/20 hover:decoration-solid hover:decoration-muted-foreground/40"
           >
             Add Cinda as a web app for an optimal experience
           </button>
