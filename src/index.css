@@ -166,42 +166,34 @@ All colors MUST be HSL.
   /* Explicit html background - matches AnimatedBackground's base gradient */
   html {
     background-color: var(--app-bg);
+    height: auto;
     min-height: 100%;
-    min-height: 100vh;
-    min-height: 100dvh;
-    min-height: -webkit-fill-available;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     margin: 0;
     padding: 0;
   }
 
   body {
     position: relative;
+    height: auto;
     min-height: 100%;
-    min-height: 100vh;
-    min-height: 100dvh;
-    min-height: -webkit-fill-available;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     background: var(--app-bg);
     color: hsl(var(--foreground));
     padding-left: var(--safe-area-left);
     padding-right: var(--safe-area-right);
-    -webkit-overflow-scrolling: touch;
   }
 
-  /* Safe-area paint shim - always present to prevent iOS grey strip */
+  /* Empty space at end of body to force document scrollability on iOS PWA */
   body::after {
-    content: '';
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: env(safe-area-inset-bottom, 34px);
-    background: var(--app-bg);
-    pointer-events: none;
-    z-index: 0;
+    content: "";
+    display: block;
+    height: 160px;
   }
 
   #root {
