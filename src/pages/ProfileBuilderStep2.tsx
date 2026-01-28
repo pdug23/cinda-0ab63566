@@ -296,7 +296,9 @@ const ProfileBuilderStep2 = () => {
               What about trail running?
             </label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {TRAIL_OPTIONS.map((option) => (
+              {TRAIL_OPTIONS
+                .filter((option) => !isBeginner || option.value === "want_to_start" || option.value === "no_trails")
+                .map((option) => (
                 <SelectionButton
                   key={option.value}
                   label={option.label}
