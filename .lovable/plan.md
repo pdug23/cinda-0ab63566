@@ -1,32 +1,62 @@
 
-# Center Logo Vertically in Rotation Confirmation Cards
+# Update Step 3b Greeting Format
 
-## Issue
-The brand logo is positioned near the top of its container rather than being vertically centered with the shoe name and run type text.
+## Current State
+The greeting message is: `"👋 Hey, Cinda here."` - all on one line.
 
-## Solution
+The typing indicator uses `cinda-logo-grey.png` which is the current grey logo (there's no v2 grey version - only the white logo has a v2 variant).
 
-### File: `src/pages/ProfileBuilderStep3.tsx`
+---
 
-**1. Change flex alignment (line 923)**
+## Changes Needed
 
-```tsx
-// From
-className="flex items-start gap-3 p-3 rounded-lg ..."
+### File: `src/pages/ProfileBuilderStep3b.tsx`
 
-// To  
-className="flex items-center gap-3 p-3 rounded-lg ..."
-```
-
-**2. Remove the top margin from the logo (line 929)**
+**1. Split the greeting into two lines (line 22)**
 
 ```tsx
 // From
-className="h-4 w-auto opacity-60 mt-0.5 flex-shrink-0 brightness-0 invert"
+const CINDA_GREETING = "👋 Hey, Cinda here.";
 
 // To
-className="h-4 w-auto opacity-60 flex-shrink-0 brightness-0 invert"
+const CINDA_GREETING = "👋\nHey, Cinda here.";
 ```
 
+**2. Add whitespace-pre-line to preserve the newline (line 322)**
+
+The message paragraph needs to render the `\n` as an actual line break:
+
+```tsx
+// From
+<p className="text-sm leading-relaxed text-card-foreground/70">
+
+// To
+<p className="text-sm leading-relaxed text-card-foreground/70 whitespace-pre-line">
+```
+
+---
+
+## Logo Status
+
+The typing indicator uses `cinda-logo-grey.png`. Looking at the available assets:
+- `cinda-logo-grey.png` ✓ (currently used)
+- `cinda-logo-white-v2.png` (updated white version)
+- `cinda-logo-white.png` (old white)
+- `cinda-logo.png`
+
+There is no `cinda-logo-grey-v2.png`, so the current grey logo appears to be the correct one to use. No logo change needed.
+
+---
+
 ## Result
-The logo will be vertically centered with the two-line text block (model name + run types).
+
+The greeting will display as:
+```
+👋
+Hey, Cinda here.
+```
+
+Instead of:
+```
+👋 Hey, Cinda here.
+```
