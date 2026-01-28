@@ -1,81 +1,68 @@
 
-# Step 1: Force Document Scrollability with 160px Bottom Space
 
-## Confirmation
+# Update PWA Installation Text
 
-**Yes, this applies globally to every page.** The `src/index.css` file is imported in `src/main.tsx` (the app entry point), so these styles affect:
-- Landing page
-- All ProfileBuilder steps
-- Chat page
-- Recommendations page
-- Any other routes
+## Overview
+
+Update three pieces of copy related to the PWA installation experience to be more accurate and include Safari-specific instructions for iPhone users.
 
 ---
 
-## Technical Changes
+## Changes
 
-### File: `src/index.css` (lines 167-205)
+### 1. Landing Page Link Text
 
-**Replace the existing html, body, and body::after blocks with:**
+**File:** `src/pages/Landing.tsx` (line 213)
 
-```css
-  html {
-    background-color: var(--app-bg);
-    height: auto;
-    min-height: 100%;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    margin: 0;
-    padding: 0;
-  }
+| Before | After |
+|--------|-------|
+| "Cinda is best as a web app" | "Add Cinda as a web app for an optimal experience" |
 
-  body {
-    position: relative;
-    height: auto;
-    min-height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    background: var(--app-bg);
-    color: hsl(var(--foreground));
-    padding-left: var(--safe-area-left);
-    padding-right: var(--safe-area-right);
-  }
+---
 
-  /* Empty space at end of body to force document scrollability on iOS PWA */
-  body::after {
-    content: "";
-    display: block;
-    height: 160px;
-  }
+### 2. Modal Title
+
+**File:** `src/components/AddToHomeScreenModal.tsx` (line 81)
+
+| Before | After |
+|--------|-------|
+| "Cinda is best as a web app" | "Add Cinda as a web app" |
+
+---
+
+### 3. Modal Description
+
+**File:** `src/components/AddToHomeScreenModal.tsx` (line 84)
+
+| Before | After |
+|--------|-------|
+| "Install Cinda to your home screen for the full experience — fast, offline-ready, and always one tap away." | "Install Cinda to your home screen for the full experience." |
+
+---
+
+### 4. iOS Tab Instructions - Add Safari Requirement
+
+**File:** `src/components/AddToHomeScreenModal.tsx` (lines 113-143)
+
+Add a note at the top of the iOS instructions to clarify Safari is required:
+
+```jsx
+<TabsContent value="ios" className="px-5 pb-5 pt-4">
+  <p className="text-xs text-muted-foreground/70 mb-3 italic">
+    This only works in Safari
+  </p>
+  <div className="space-y-4">
+    {/* existing steps remain unchanged */}
+  </div>
+</TabsContent>
 ```
 
 ---
 
-## What Changes
+## Summary
 
-| Before | After |
-|--------|-------|
-| `min-height: 100vh/100dvh/-webkit-fill-available` | `height: auto; min-height: 100%` |
-| Fixed-position safe-area shim | 160px block element for scroll space |
+| File | Changes |
+|------|---------|
+| `src/pages/Landing.tsx` | Update link text to "Add Cinda as a web app for an optimal experience" |
+| `src/components/AddToHomeScreenModal.tsx` | Update modal title, remove "offline-ready" claim, add Safari note for iOS |
 
----
-
-## What Stays Unchanged
-
-- `#root` styling
-- All CSS variables
-- Nested scroll containers
-- AnimatedBackground component
-- All other existing safe-area CSS variables
-
----
-
-## Testing After Implementation
-
-1. Remove existing Cinda app from home screen
-2. Re-add via Share → Add to Home Screen
-3. Verify the body is now scrollable (you should be able to scroll ~160px)
-4. Check if the grey bar is gone
