@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
 import cindaLogo from "@/assets/cinda-logo-grey.png";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
@@ -9,18 +8,13 @@ import FloatingJargon from "@/components/FloatingJargon";
 import AnimatedTagline from "@/components/AnimatedTagline";
 import { usePageNavigation } from "@/hooks/usePageNavigation";
 import { AddToHomeScreenModal } from "@/components/AddToHomeScreenModal";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { analytics } from "@/lib/analytics";
 
 type ViewState = "landing" | "orientation";
 
 const Landing = () => {
   const { navigateWithTransition } = usePageNavigation();
-  const [showModal, setShowModal] = useState(false);
+  
   const [showA2HSModal, setShowA2HSModal] = useState(false);
   const [viewState, setViewState] = useState<ViewState>("landing");
   const [isExiting, setIsExiting] = useState(false);
@@ -207,56 +201,18 @@ const Landing = () => {
           </PageTransition>
         )}
 
-        {/* How it works link - only on landing */}
-        {viewState === "landing" && !isExiting && (
+        {/* Web app promotion link - visible on both views */}
+        {!isExiting && (
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              analytics.installLinkClicked(viewState);
+              setShowA2HSModal(true);
+            }}
             className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/50 hover:text-muted-foreground/70 transition-all cursor-pointer z-10 underline underline-offset-2 decoration-dotted decoration-muted-foreground/30 hover:decoration-solid hover:decoration-muted-foreground/50"
           >
-            How does Cinda work?
+            Cinda is best as a web app
           </button>
         )}
-
-        {/* Add to home screen link - only on orientation */}
-        {viewState === "orientation" && !isExiting && (
-          <button
-            onClick={() => setShowA2HSModal(true)}
-            className="absolute bottom-5 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/50 hover:text-muted-foreground/70 transition-all cursor-pointer z-10 underline underline-offset-2 decoration-dotted decoration-muted-foreground/30 hover:decoration-solid hover:decoration-muted-foreground/50"
-          >
-            Add Cinda to your home screen
-          </button>
-        )}
-
-        <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogContent className="bg-card border-border/40 w-[calc(100%-48px)] max-w-[320px] p-0 gap-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:duration-150">
-            <DialogHeader className="p-4 pb-0 relative">
-              <button
-                onClick={() => setShowModal(false)}
-                className="absolute right-4 top-4 p-1 rounded-full text-card-foreground/50 hover:text-card-foreground hover:bg-card-foreground/10 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-              <DialogTitle className="text-lg font-semibold text-card-foreground">
-                How does Cinda work?
-              </DialogTitle>
-            </DialogHeader>
-            <div className="px-4 pt-4 pb-6">
-              <p className="text-sm text-card-foreground/70 space-y-3">
-                <span className="block">Cinda helps runners find shoes that suit how they actually run.</span>
-                <span className="block">Instead of guessing based on brand or hype, Cinda understands your preferences and looks at things like your body, pace and goals to find the right fit.</span>
-              </p>
-            </div>
-            <div className="p-4 pt-0">
-              <Button
-                onClick={() => setShowModal(false)}
-                variant="outline"
-                className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
-              >
-                Got it
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
 
         <AddToHomeScreenModal 
           open={showA2HSModal} 

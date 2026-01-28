@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Share, MoreVertical, Plus, Download, Bookmark, Monitor } from "lucide-react";
+import { analytics } from "@/lib/analytics";
 
 type Platform = "ios" | "android" | "macos" | "windows" | "desktop";
 
@@ -43,6 +45,23 @@ export function AddToHomeScreenModal({
 }: AddToHomeScreenModalProps) {
   const platform = detectPlatform();
   const defaultTab = getDefaultTab(platform);
+  const hasTrackedOpen = useRef(false);
+
+  // Track modal open
+  useEffect(() => {
+    if (open && !hasTrackedOpen.current) {
+      analytics.a2hsModalOpened();
+      analytics.a2hsInstructionsViewed(defaultTab);
+      hasTrackedOpen.current = true;
+    }
+    if (!open) {
+      hasTrackedOpen.current = false;
+    }
+  }, [open, defaultTab]);
+
+  const handleTabChange = (value: string) => {
+    analytics.a2hsInstructionsViewed(value as "ios" | "android" | "desktop");
+  };
 
   const handleOpenChange = (isOpen: boolean) => {
     onOpenChange?.(isOpen);
@@ -59,14 +78,14 @@ export function AddToHomeScreenModal({
       >
         <DialogHeader className="px-5 pt-5 pb-2">
           <DialogTitle className="text-lg font-semibold text-card-foreground">
-            add cinda to your home screen
+            Cinda is best as a web app
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            install cinda for quick access — just like a real app.
+            Install Cinda to your home screen for the full experience — fast, offline-ready, and always one tap away.
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue={defaultTab} className="w-full">
+        <Tabs defaultValue={defaultTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="mx-5 grid w-[calc(100%-40px)] grid-cols-3 bg-secondary/50">
             <TabsTrigger
               value="ios"

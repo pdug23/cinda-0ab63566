@@ -70,12 +70,12 @@ const getBadgeConfig = (
   const effectiveType = badge || type;
   
   if (effectiveType === "closest_match") {
-    return { text: "CLOSEST MATCH", color: "#A855F7" }; // Premium purple
+    return { text: "CLOSEST MATCH", color: "#7DD3FC" }; // Cyan/Sky blue
   }
   if (effectiveType === "trade_off_option" || effectiveType === "trade_off") {
-    return { text: "TRADE-OFF", color: "#F97316" };
+    return { text: "TRADE-OFF", color: "#F97316" }; // Orange (unchanged)
   }
-  return { text: "CLOSE MATCH", color: "#34D399" }; // Lighter lime-ish
+  return { text: "CLOSE MATCH", color: "#F1F5F9" }; // Platinum white
 };
 
 const getRoleBadgeLabel = (roleOrArchetype: string): string => {
@@ -127,45 +127,44 @@ const archetypeRunTypes: Record<string, string> = {
   trail_shoe: "trail runs",
 };
 
-// Inline badge component for archetype display in popover
-const ArchetypeBadge = ({ archetype }: { archetype: string }) => (
-  <span
-    className="text-xs uppercase tracking-wide px-1.5 py-0.5 rounded font-medium mx-0.5 inline-block align-middle"
-    style={{
-      backgroundColor: "rgba(148, 163, 184, 0.15)",
-      border: "1px solid rgba(148, 163, 184, 0.4)",
-      color: "#94a3b8",
-    }}
-  >
-    {archetypeLabels[archetype] || archetype}
-  </span>
-);
-
-// Build the popover content based on archetypes
-const buildArchetypePopoverContent = (archetypes: string[]) => {
-  if (!archetypes || archetypes.length === 0) return null;
+// Build the popover content based on recommended archetype and all archetypes
+const buildArchetypePopoverContent = (recommendedArchetype: string, allArchetypes: string[]) => {
+  // Get full archetype name (e.g., "workout shoe", "daily trainer")
+  const getFullArchetypeName = (arch: string) => {
+    const label = archetypeLabels[arch] || arch;
+    const noun = archetypeNoun[arch] || "shoe";
+    return `${label} ${noun}`;
+  };
   
-  const primary = archetypes[0];
-  const secondary = archetypes.length > 1 ? archetypes.slice(1) : [];
+  // Get secondary archetypes (excluding the recommended one)
+  const secondaryArchetypes = allArchetypes.filter(a => a !== recommendedArchetype);
   
-  if (secondary.length === 0) {
-    // Single archetype
+  if (secondaryArchetypes.length === 0) {
+    // Should not be called if no secondary archetypes, but handle gracefully
     return (
       <p className="text-sm text-white/80 leading-relaxed">
-        this shoe is considered a<ArchetypeBadge archetype={primary} />{archetypeNoun[primary] || "shoe"} and cinda recommends using it for your {archetypeRunTypes[primary] || "runs"}
-      </p>
-    );
-  } else {
-    // Multiple archetypes
-    const primaryRunTypes = archetypeRunTypes[primary] || "runs";
-    const secondaryRunTypes = secondary.map(a => archetypeRunTypes[a] || "runs").join(", and ");
-    
-    return (
-      <p className="text-sm text-white/80 leading-relaxed">
-        this shoe is considered both a<ArchetypeBadge archetype={primary} />{archetypeNoun[primary] || "shoe"} and a<ArchetypeBadge archetype={secondary[0]} />{archetypeNoun[secondary[0]] || "shoe"}. cinda recommends using it for your {primaryRunTypes}, but it can also be used for {secondaryRunTypes}.
+        Cinda recommends this shoe as a {getFullArchetypeName(recommendedArchetype)}.
       </p>
     );
   }
+  
+  // Build secondary archetypes list
+  const secondaryNames = secondaryArchetypes.map(a => getFullArchetypeName(a));
+  const secondaryList = secondaryNames.length === 1 
+    ? secondaryNames[0] 
+    : secondaryNames.slice(0, -1).join(", ") + " and " + secondaryNames[secondaryNames.length - 1];
+  const secondaryRunTypesText = secondaryArchetypes.map(a => archetypeRunTypes[a] || "runs").join(" and ");
+  
+  return (
+    <div className="space-y-2">
+      <p className="text-sm text-white/80 leading-relaxed">
+        Cinda recommends this shoe as a {getFullArchetypeName(recommendedArchetype)}.
+      </p>
+      <p className="text-sm text-white/80 leading-relaxed">
+        This shoe is also considered a {secondaryList}, meaning it's good for {secondaryRunTypesText}.
+      </p>
+    </div>
+  );
 };
 
 const getBrandLogoPath = (brand: string): string => {
@@ -329,11 +328,48 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
 
         {/* Badge(s) */}
         <div className="flex justify-center gap-2 mb-2">
-          {showRoleBadge && roleBadgeLabel && (
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-md font-medium flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity"
+          {showRoleBadge && roleBadgeLabel && (() => {
+            // Determine the recommended archetype and all archetypes
+            const recommendedArchetype = shoe.archetype || shoe.role || "daily_trainer";
+            const allArchetypes = shoe.archetypes || [recommendedArchetype];
+            const secondaryArchetypes = allArchetypes.filter(a => a !== recommendedArchetype);
+            const hasMultipleArchetypes = secondaryArchetypes.length > 0;
+            
+            if (hasMultipleArchetypes) {
+              // Show badge with (i) icon and popover
+              return (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-md font-medium flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity"
+                      style={{
+                        backgroundColor: "rgba(148, 163, 184, 0.15)",
+                        border: "1px solid rgba(148, 163, 184, 0.4)",
+                        color: "#94a3b8",
+                        letterSpacing: "0.5px",
+                        boxShadow: "0 0 8px rgba(148, 163, 184, 0.2)",
+                      }}
+                    >
+                      {roleBadgeLabel}
+                      <Info className="w-2.5 h-2.5 opacity-70" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent 
+                    className="w-72 p-4 z-50"
+                    style={{
+                      backgroundColor: "rgba(26, 26, 30, 0.98)",
+                      border: "1px solid rgba(255, 255, 255, 0.2)",
+                    }}
+                  >
+                    {buildArchetypePopoverContent(recommendedArchetype, allArchetypes)}
+                  </PopoverContent>
+                </Popover>
+              );
+            } else {
+              // Show badge without (i) icon, no popover
+              return (
+                <span
+                  className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-md font-medium"
                   style={{
                     backgroundColor: "rgba(148, 163, 184, 0.15)",
                     border: "1px solid rgba(148, 163, 184, 0.4)",
@@ -343,20 +379,10 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
                   }}
                 >
                   {roleBadgeLabel}
-                  <Info className="w-2.5 h-2.5 opacity-70" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent 
-                className="w-72 p-4 z-50"
-                style={{
-                  backgroundColor: "rgba(26, 26, 30, 0.98)",
-                  border: "1px solid rgba(255, 255, 255, 0.2)",
-                }}
-              >
-                {buildArchetypePopoverContent(shoe.archetypes || (shoe.archetype ? [shoe.archetype] : [shoe.role || "daily_trainer"]))}
-              </PopoverContent>
-            </Popover>
-          )}
+                </span>
+              );
+            }
+          })()}
           <span
             className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-md font-medium"
             style={{
@@ -389,7 +415,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
             <div key={idx} className="flex items-start gap-2">
               <Check 
                 className="w-4 h-4 shrink-0 mt-0.5" 
-                style={{ color: "#10B981" }} 
+                style={{ color: shimmer }} 
                 aria-hidden="true" 
               />
               <span 
