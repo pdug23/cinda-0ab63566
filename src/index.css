@@ -193,7 +193,7 @@ All colors MUST be HSL.
   body::after {
     content: "";
     display: block;
-    height: 160px;
+    height: 24px;
   }
 
   #root {
