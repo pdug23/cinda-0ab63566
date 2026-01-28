@@ -238,7 +238,7 @@ const ProfileBuilderStep4 = () => {
             <div className="flex flex-col gap-4">
               <ModeCard
                 icon={<CrosshairIcon className="w-6 h-6" />}
-                label="Find a specific shoe"
+                label="Find by shoe type"
                 description="Know what type of shoe you're after? Cinda works with you to find the shoe you need"
                 onClick={handleShoppingMode}
               />
