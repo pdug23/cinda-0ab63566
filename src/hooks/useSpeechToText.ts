@@ -57,6 +57,16 @@ export const useSpeechToText = ({
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  
+  // Store callbacks in refs to prevent useEffect re-runs
+  const onResultRef = useRef(onResult);
+  const onErrorRef = useRef(onError);
+
+  // Keep refs updated with latest callbacks
+  useEffect(() => {
+    onResultRef.current = onResult;
+    onErrorRef.current = onError;
+  }, [onResult, onError]);
 
   // Check browser support
   const isSupported = getSpeechRecognition() !== null;
@@ -82,13 +92,17 @@ export const useSpeechToText = ({
 
     recognition.onerror = (event) => {
       setIsListening(false);
+      
+      // Ignore aborted - this happens during cleanup
+      if (event.error === "aborted") return;
+      
       const errorMessage = event.error === "not-allowed" 
         ? "Microphone access denied. Please enable it in your browser settings."
         : event.error === "no-speech"
         ? "No speech detected. Try again."
         : `Speech recognition error: ${event.error}`;
       
-      onError?.(errorMessage);
+      onErrorRef.current?.(errorMessage);
     };
 
     recognition.onresult = (event) => {
@@ -109,7 +123,7 @@ export const useSpeechToText = ({
 
       // When we have a final result, call onResult
       if (finalTranscript) {
-        onResult?.(finalTranscript);
+        onResultRef.current?.(finalTranscript);
         setTranscript("");
       }
     };
@@ -119,7 +133,7 @@ export const useSpeechToText = ({
     return () => {
       recognition.abort();
     };
-  }, [continuous, language, onResult, onError]);
+  }, [continuous, language]);
 
   const startListening = useCallback(() => {
     if (!recognitionRef.current || isListening) return;
