@@ -11,6 +11,7 @@ import { AddToHomeScreenModal } from "@/components/AddToHomeScreenModal";
 import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { analytics } from "@/lib/analytics";
+import { UserMenu } from "@/components/UserMenu";
 
 type ViewState = "landing" | "orientation";
 
@@ -106,6 +107,13 @@ const Landing = () => {
             isExiting ? "animate-spin-settle" : ""
           }`}
         />
+
+        {/* User menu - only shows when signed in, positioned top-right */}
+        {viewState === "orientation" && (
+          <div className="absolute top-8 right-6 z-20">
+            <UserMenu />
+          </div>
+        )}
 
         {viewState === "landing" && (
           <PageTransition className="absolute inset-0 flex flex-col items-center text-center px-6 z-10">
