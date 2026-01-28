@@ -911,37 +911,36 @@ const ProfileBuilderStep3 = () => {
                   Confirm your rotation
                 </DialogTitle>
               </DialogHeader>
-              <div className="px-4 pt-4 pb-6 space-y-2">
-                {currentShoes.map((item) => {
-                  const logoPath = getBrandLogoPath(item.shoe.brand);
-                  const modelDisplay = `${item.shoe.model} ${item.shoe.version}`.trim();
-                  
-                  return (
-                    <div 
-                      key={item.shoe.shoe_id} 
-                      className="flex items-start gap-3 p-3 rounded-lg bg-card-foreground/[0.03] border border-card-foreground/10"
-                    >
-                      {logoPath && (
-                        <img 
-                          src={logoPath} 
-                          alt={item.shoe.brand}
-                          className="h-4 w-auto opacity-60 mt-0.5 flex-shrink-0 brightness-0 invert"
-                        />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-card-foreground font-medium truncate">
+              <div className="px-4 pt-4 pb-6">
+                <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
+                  {currentShoes.map((item) => {
+                    const logoPath = getBrandLogoPath(item.shoe.brand);
+                    const modelDisplay = [item.shoe.model, item.shoe.version].filter(Boolean).join(" ");
+                    
+                    return (
+                      <div 
+                        key={item.shoe.shoe_id} 
+                        className="flex items-start gap-3 p-3 rounded-lg bg-card-foreground/[0.03] border border-card-foreground/10"
+                      >
+                        {logoPath && (
+                          <img 
+                            src={logoPath} 
+                            alt={item.shoe.brand}
+                            className="h-4 w-auto opacity-60 mt-0.5 flex-shrink-0 brightness-0 invert"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm text-card-foreground font-medium truncate block">
                             {modelDisplay}
                           </span>
-                          {getSentimentIcon(item.sentiment)}
+                          <p className="text-xs text-card-foreground/50 mt-0.5">
+                            {formatRunTypesForDisplay(item.runTypes)}
+                          </p>
                         </div>
-                        <p className="text-xs text-card-foreground/50 mt-0.5">
-                          {formatRunTypesForDisplay(item.runTypes)}
-                        </p>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
               <div className="p-4 pt-0 flex flex-col gap-2">
                 <Button
