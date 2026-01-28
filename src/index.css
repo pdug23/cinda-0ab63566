@@ -14,6 +14,9 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* App background - matches darkest point of animated gradient */
+    --app-bg: #1a1a1a;
+    
     /* Safe area insets for iOS */
     --safe-area-top: env(safe-area-inset-top, 0px);
     --safe-area-bottom: env(safe-area-inset-bottom, 0px);
@@ -162,7 +165,7 @@ All colors MUST be HSL.
 
   /* Explicit html background - matches AnimatedBackground's base gradient */
   html {
-    background-color: hsl(0 0% 10%);
+    background-color: var(--app-bg);
     min-height: 100%;
     min-height: 100vh;
     min-height: 100dvh;
@@ -172,6 +175,7 @@ All colors MUST be HSL.
   }
 
   body {
+    position: relative;
     min-height: 100%;
     min-height: 100vh;
     min-height: 100dvh;
@@ -180,11 +184,24 @@ All colors MUST be HSL.
     padding: 0;
     overflow-x: hidden;
     overflow-y: auto;
-    background: hsl(0 0% 10%);
+    background: var(--app-bg);
     color: hsl(var(--foreground));
     padding-left: var(--safe-area-left);
     padding-right: var(--safe-area-right);
     -webkit-overflow-scrolling: touch;
+  }
+
+  /* Safe-area paint shim - always present to prevent iOS grey strip */
+  body::after {
+    content: '';
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: env(safe-area-inset-bottom, 34px);
+    background: var(--app-bg);
+    pointer-events: none;
+    z-index: 0;
   }
 
   #root {
@@ -192,30 +209,9 @@ All colors MUST be HSL.
     min-height: 100vh;
     min-height: 100dvh;
     min-height: -webkit-fill-available;
-    background: hsl(0 0% 10%);
+    background: var(--app-bg);
     display: flex;
     flex-direction: column;
-  }
-}
-
-/* PWA standalone mode - force background into safe area */
-@media all and (display-mode: standalone) {
-  html, body, #root {
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-  }
-  
-  /* Force background extension into bottom safe area */
-  body::after {
-    content: '';
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: var(--safe-area-bottom, 34px);
-    background: hsl(0 0% 10%);
-    z-index: -1;
-    pointer-events: none;
   }
 }
 
