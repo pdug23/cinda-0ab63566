@@ -411,11 +411,19 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </div>
 
         {/* Shoe Image */}
-        <div className="flex justify-center items-center pt-3 pb-1">
+        <div 
+          className="flex justify-center items-center pt-3 pb-1 relative"
+          style={{
+            background: `radial-gradient(ellipse 80% 60% at center, ${badgeConfig.color}10 0%, transparent 70%)`,
+          }}
+        >
           <img
             src={getShoeImagePath(shoe.model, shoe.version)}
             alt={`${shoe.brand} ${shoe.model} ${shoe.version}`}
-            className="h-[96px] w-auto max-w-full object-contain"
+            className="h-[96px] w-auto max-w-full object-contain relative z-10"
+            style={{
+              filter: "drop-shadow(0 8px 12px rgba(0, 0, 0, 0.4))",
+            }}
           />
         </div>
 
