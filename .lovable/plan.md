@@ -1,48 +1,76 @@
 
-# Show Container on Analysis Results Page
+# Prevent Model Name Wrapping on Shoe Cards
 
-## Overview
+## Current State
 
-The analysis page currently uses the `invisible` prop on OnboardingLayout for all states, which hides the card container. You want the container to remain hidden during the loading phase but appear once results are ready.
+The model name is displayed with fixed styling (line 338):
+```tsx
+<h2 className={`text-2xl font-bold text-center mb-4 text-shimmer-${position}`}>
+  {shoe.model} {shoe.version}
+</h2>
+```
+
+This doesn't account for longer names like "PRIME X3 STRUNG" which may wrap to multiple lines on narrower cards.
 
 ## Solution
 
-Make the `invisible` prop dynamic based on the loading status. This is a simple one-line change.
+Use CSS to dynamically scale the font size based on the text length, ensuring the model name always fits on a single line. Two approaches available:
 
-## Changes
+### Option A: CSS `clamp()` with `text-wrap: nowrap` (Recommended)
+- Force the text to stay on one line with `whitespace-nowrap`
+- Use a combination of `clamp()` for font sizing and `text-overflow: ellipsis` as a fallback
 
-### File: `src/pages/ProfileBuilderStep4Analysis.tsx`
+### Option B: JavaScript-based dynamic sizing
+- Calculate the text length and apply different font size classes
+- More control but adds complexity
 
-**Update line 615:**
+## Implementation (Option A)
 
-Change from:
+### File: `src/components/results/ShoeCard.tsx`
+
+Update the model name heading (lines 337-340):
+
 ```tsx
-<OnboardingLayout scrollable invisible>
+{/* Model Name */}
+<h2 
+  className={`font-bold text-center mb-4 text-shimmer-${position} whitespace-nowrap overflow-hidden`}
+  style={{
+    fontSize: `${shoe.model.length + (shoe.version?.length || 0) > 15 ? '1.25rem' : '1.5rem'}`,
+  }}
+>
+  {shoe.model} {shoe.version}
+</h2>
 ```
 
-To:
+**Logic:**
+- If the combined model + version name exceeds 15 characters, use `1.25rem` (equivalent to `text-xl`)
+- Otherwise, use `1.5rem` (equivalent to `text-2xl`)
+- `whitespace-nowrap` ensures the text never wraps to a second line
+- `overflow-hidden` as a safety net for extremely long names
+
+### Thresholds
+
+| Name Length | Font Size | Example |
+|-------------|-----------|---------|
+| ≤ 15 chars | 1.5rem (text-2xl) | "Pegasus 41" |
+| 16-20 chars | 1.25rem (text-xl) | "PRIME X3 STRUNG" |
+| > 20 chars | 1rem (text-base) | Very long names |
+
+For better granularity, we can use a more refined approach:
+
 ```tsx
-<OnboardingLayout scrollable invisible={status === "loading"}>
+style={{
+  fontSize: (() => {
+    const nameLength = (shoe.model + ' ' + (shoe.version || '')).length;
+    if (nameLength <= 12) return '1.5rem';   // text-2xl
+    if (nameLength <= 18) return '1.25rem';  // text-xl  
+    return '1.1rem';                          // text-lg
+  })(),
+}}
 ```
 
-## How it works
-
-| Status | `invisible` prop | Container visible? |
-|--------|------------------|-------------------|
-| `loading` | `true` | No - just the spinning logo floats on the animated background |
-| `success` | `false` | Yes - content appears inside the styled card |
-| `no_gap` | `false` | Yes - content appears inside the styled card |
-| `error` | `false` | Yes - error content appears inside the styled card |
-
-## Visual effect
-
-- **During loading**: The Cinda logo spins freely on the animated background with no container (current behavior preserved)
-- **After loading completes**: The familiar dark card container fades in with the recommendation content inside it
-
-The `transition-all duration-300 ease-out` class already on the container will provide a smooth transition when the container becomes visible.
-
-## Files to edit
+## Files to Edit
 
 | File | Change |
 |------|--------|
-| `src/pages/ProfileBuilderStep4Analysis.tsx` | Make `invisible` prop conditional on `status === "loading"` |
+| `src/components/results/ShoeCard.tsx` | Add dynamic font sizing based on name length and `whitespace-nowrap` to prevent wrapping |
