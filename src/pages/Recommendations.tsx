@@ -671,7 +671,7 @@ export default function RecommendationsPage() {
         {/* Header - transparent */}
         <header className="w-full px-6 md:px-8 pt-4 md:pt-6 pb-2 flex items-center justify-between flex-shrink-0">
           <BackButton onClick={goBack} />
-          <ProfileButton onClick={handleGoToProfile} />
+          {!loading && <ProfileButton onClick={handleGoToProfile} />}
         </header>
 
         {/* Content */}
