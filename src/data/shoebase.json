@@ -6,7 +6,8 @@
     "version": "9",
     "full_name": "HOKA Bondi 9",
     "alias_code": null,
-    "is_daily_trainer": "TRUE",
+    "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -37,7 +38,8 @@
     "why_it_feels_this_way": "The extremely thick EVA midsole heavily softens impact and isolates you from the ground, prioritising comfort and protection over agility. A mild rocker helps smooth transitions, but the focus is on stable, cushioned cruising rather than quick or nimble movement.",
     "avoid_if": "Avoid if you prefer a lighter, more agile max-cushion shoe, as the Bondi 9 still feels bulky despite refinements.",
     "similar_to": "Nike Vomero Plus, New Balance Fresh Foam X More v6, Brooks Glycerin Max",
-    "notable_detail": "Uses a high-stack supercritical EVA midsole that feels smoother and more controlled than earlier Bondis rather than overly soft."
+    "notable_detail": "Uses a high-stack supercritical EVA midsole that feels smoother and more controlled than earlier Bondis rather than overly soft.",
+    "common_issues": "weight:feels heavy for shorter runs | ride:feels flat at faster paces"
   },
   {
     "shoe_id": "shoe_0002",
@@ -47,6 +49,7 @@
     "full_name": "HOKA Clifton 10",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -77,7 +80,8 @@
     "why_it_feels_this_way": "Its tall EVA midsole and mild rocker smooth landings and transitions, creating a protective ride that feels comfortable and cruisy rather than springy",
     "avoid_if": "Avoid if you loved the Clifton’s historically lightweight, nimble feel, as this version is heavier and more cushioned.",
     "similar_to": "ASICS Gel Nimbus 27, Brooks Glycerin Max, New Balance Fresh Foam X 1080 v14",
-    "notable_detail": "The Clifton 10 pushes further into max-cushion territory with increased stack height and a more relaxed fit."
+    "notable_detail": "The Clifton 10 pushes further into max-cushion territory with increased stack height and a more relaxed fit.",
+    "common_issues": "stability:can feel unstable when fatigued | ride:lacks pop for uptempo running"
   },
   {
     "shoe_id": "shoe_0003",
@@ -86,7 +90,8 @@
     "version": null,
     "full_name": "Nike Vomero Plus",
     "alias_code": "Vomero +",
-    "is_daily_trainer": "TRUE",
+    "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -117,7 +122,8 @@
     "why_it_feels_this_way": "A full-length ZoomX midsole compresses deeply and rebounds quickly for soft cushioning with noticeable bounce, while the broad base keeps it more controlled than wobbly.",
     "avoid_if": "Avoid if you want something you can pick up the pace in, as the max stack and heavy feel make it better for easy cruising than faster work.",
     "similar_to": "HOKA Bondi 9, Saucony Triumph 23, PUMA MagMax NITRO",
-    "notable_detail": "Known for its ZoomX midsole that delivers a very soft, bouncy ride reminiscent of the original Invincible Run."
+    "notable_detail": "Known for its ZoomX midsole that delivers a very soft, bouncy ride reminiscent of the original Invincible Run.",
+    "common_issues": "weight:feels bulky compared to standard daily trainers | use_case:overbuilt for easy mileage only"
   },
   {
     "shoe_id": "shoe_0004",
@@ -126,7 +132,8 @@
     "version": null,
     "full_name": "Nike Vomero Premium",
     "alias_code": null,
-    "is_daily_trainer": "TRUE",
+    "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -157,7 +164,8 @@
     "why_it_feels_this_way": "The very high ZoomX stack plus Air units creates deep, springy cushioning and a pronounced rocker-driven roll, but the tall build can feel bulky and less stable.",
     "avoid_if": "Avoid if you dislike extremely tall, heavy shoes or need stability, as the massive stack can feel unwieldy.",
     "similar_to": "Saucony Triumph 23, Mizuno Neo Zen, New Balance Fresh Foam X More v6",
-    "notable_detail": "Features an extreme midsole height with layered ZoomX and Air units for an unusually trampoline-like feel."
+    "notable_detail": "Features an extreme midsole height with layered ZoomX and Air units for an unusually trampoline-like feel.",
+    "common_issues": "weight:heavy for daily use | use_case:too soft for faster sessions"
   },
   {
     "shoe_id": "shoe_0005",
@@ -166,7 +174,8 @@
     "version": "v6",
     "full_name": "New Balance Fresh Foam X More v6",
     "alias_code": null,
-    "is_daily_trainer": "TRUE",
+    "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -197,7 +206,8 @@
     "why_it_feels_this_way": "An oversized Fresh Foam X midsole on a broad platform spreads impact widely for ultra-soft cushioning with built-in stability, but the huge stack feels more cruiser than nimble.",
     "avoid_if": "Avoid if you want ground feel or a natural ride, as the towering, soft platform isolates you from the road.",
     "similar_to": "HOKA Bondi 9, Brooks Glycerin Max, Nike Vomero 18",
-    "notable_detail": "New Balance’s most cushioned trainer, built around an ultra-thick Fresh Foam X midsole tuned for comfort."
+    "notable_detail": "New Balance’s most cushioned trainer, built around an ultra-thick Fresh Foam X midsole tuned for comfort.",
+    "common_issues": "stability:wobbly on cambered roads | weight:feels cumbersome over distance"
   },
   {
     "shoe_id": "shoe_0006",
@@ -207,6 +217,7 @@
     "full_name": "ASICS Novablast 5",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "TRUE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "TRUE",
     "is_race_shoe": "FALSE",
@@ -237,7 +248,8 @@
     "why_it_feels_this_way": "The high-stack FF Blast MAX foam stores and releases energy effectively, creating a lively feel while maintaining a reasonably stable platform.",
     "avoid_if": "Avoid if you want a very planted, guidance-heavy ride, as the lively foam and higher stack can feel a bit free-moving, especially on corners or camber.",
     "similar_to": "Salomon Aero Glide 3, New Balance FuelCell Rebel v5, Adidas Adizero EVO SL",
-    "notable_detail": "Uses FF Blast Max foam for a softer, bouncier ride while maintaining the Novablast’s playful geometry."
+    "notable_detail": "Uses FF Blast Max foam for a softer, bouncier ride while maintaining the Novablast’s playful geometry.",
+    "common_issues": "stability:can feel unstable at slower paces | ride:too bouncy for runners wanting control"
   },
   {
     "shoe_id": "shoe_0007",
@@ -246,7 +258,8 @@
     "version": null,
     "full_name": "Brooks Glycerin Max",
     "alias_code": null,
-    "is_daily_trainer": "TRUE",
+    "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -277,7 +290,8 @@
     "why_it_feels_this_way": "A tall DNA Tuned midsole absorbs impact generously and uses a mild rocker plus wide base to guide a steady, controlled stride, feeling more damped than springy.",
     "avoid_if": "Avoid if you want a responsive or fast-feeling shoe, as the ride prioritises plushness over energy return.",
     "similar_to": "HOKA Bondi 9, New Balance Fresh Foam X More v6, Nike Vomero 18",
-    "notable_detail": "Brooks’ tallest shoe ever, designed as a pure comfort cruiser with a very soft, protective midsole."
+    "notable_detail": "Brooks’ tallest shoe ever, designed as a pure comfort cruiser with a very soft, protective midsole.",
+    "common_issues": "weight:feels heavy for daily mileage | ride:muted feel despite high stack"
   },
   {
     "shoe_id": "shoe_0008",
@@ -286,7 +300,8 @@
     "version": "v14",
     "full_name": "New Balance Fresh Foam X 1080 v14",
     "alias_code": "1080",
-    "is_daily_trainer": "TRUE",
+    "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -317,7 +332,8 @@
     "why_it_feels_this_way": "Its high Fresh Foam X stack and refined rocker dampen impact smoothly, leading to a cushioned ride that feels slightly muted rather than energetic.",
     "avoid_if": "Avoid if you dislike very soft, muted cushioning or prefer a roomy toe box.",
     "similar_to": "Nike Vomero Plus, ASICS Gel Nimbus 27, Saucony Triumph 23",
-    "notable_detail": "Updates the 1080 with more stack and softness, shifting it closer to a true max-cushion daily trainer."
+    "notable_detail": "Updates the 1080 with more stack and softness, shifting it closer to a true max-cushion daily trainer.",
+    "common_issues": "ride:too soft for heavier runners | stability:can feel unstable late in runs"
   },
   {
     "shoe_id": "shoe_0009",
@@ -327,7 +343,8 @@
     "full_name": "Nike Pegasus 41",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
-    "is_recovery_shoe": "FALSE",
+    "is_super_trainer": "FALSE",
+    "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
     "is_trail_shoe": "FALSE",
@@ -357,7 +374,8 @@
     "why_it_feels_this_way": "ReactX with Zoom Air gives a firmer, more connected ride with modest pop and a smooth transition, making it a steady all-rounder rather than a plush cruiser.",
     "avoid_if": "Avoid if you run frequently on wet surfaces, as outsole grip is limited.",
     "similar_to": "ASICS Gel Cumulus 27, Brooks Ghost 17, New Balance Fresh Foam 680 v8",
-    "notable_detail": "Introduces ReactX foam, making the Pegasus softer and more forgiving than previous versions."
+    "notable_detail": "Introduces ReactX foam, making the Pegasus softer and more forgiving than previous versions.",
+    "common_issues": "fit:snug forefoot for wider feet | ride:firm feel for easy runs"
   },
   {
     "shoe_id": "shoe_0010",
@@ -367,7 +385,8 @@
     "full_name": "Nike Vomero 18",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
-    "is_recovery_shoe": "FALSE",
+    "is_super_trainer": "FALSE",
+    "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
     "is_trail_shoe": "FALSE",
@@ -397,7 +416,8 @@
     "why_it_feels_this_way": "The layered ZoomX-over-ReactX setup softens landings and adds stability, with a modest amount of rebound rather than strong pop.",
     "avoid_if": "Avoid if you want a lightweight daily trainer, as this version is noticeably heavier.",
     "similar_to": "Brooks Glycerin Max, Saucony Triumph 23, New Balance Fresh Foam X 1080 v14",
-    "notable_detail": "Combines ZoomX over ReactX for a soft-yet-durable ride aimed at long, steady mileage."
+    "notable_detail": "Combines ZoomX over ReactX for a soft-yet-durable ride aimed at long, steady mileage.",
+    "common_issues": "weight:heavier than typical daily trainers | ride:lacks energy return for uptempo work"
   },
   {
     "shoe_id": "shoe_0011",
@@ -407,8 +427,9 @@
     "full_name": "Nike Pegasus Premium",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
-    "is_recovery_shoe": "FALSE",
-    "is_workout_shoe": "TRUE",
+    "is_super_trainer": "FALSE",
+    "is_recovery_shoe": "TRUE",
+    "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
     "is_trail_shoe": "FALSE",
     "is_walking_shoe": "FALSE",
@@ -437,7 +458,8 @@
     "why_it_feels_this_way": "Multiple soft midsole layers create a springy, highly cushioned ride, but the stacked build and narrower structure can feel less controlled, and the construction carries a noticeable weight penalty.",
     "avoid_if": "Avoid if you are sensitive to weight or need a wide fit, as it feels bulky and narrow.",
     "similar_to": "HOKA Bondi 9, Mizuno Neo Zen, New Balance Fresh Foam X 1080 v14",
-    "notable_detail": "Stacks multiple Nike cushioning technologies together for a uniquely springy but heavy ride."
+    "notable_detail": "Stacks multiple Nike cushioning technologies together for a uniquely springy but heavy ride.",
+    "common_issues": "weight:heavier than typical pegasus feel | ride:firm forefoot reduces comfort on long runs"
   },
   {
     "shoe_id": "shoe_0012",
@@ -447,7 +469,8 @@
     "full_name": "Adidas Adizero EVO SL",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
-    "is_recovery_shoe": "FALSE",
+    "is_super_trainer": "TRUE",
+    "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "TRUE",
     "is_race_shoe": "FALSE",
     "is_trail_shoe": "FALSE",
@@ -477,7 +500,8 @@
     "why_it_feels_this_way": "Lightstrike Pro gives a soft-but-lively, high-rebound ride, and the lighter, less structured build means it feels quick and free-moving rather than guided or inherently stable.",
     "avoid_if": "Avoid if you want plush cushioning, as the ride is firm and performance-oriented.",
     "similar_to": "New Balance FuelCell Rebel v5, ASICS Superblast 2, PUMA Velocity NITRO 4",
-    "notable_detail": "Uses full Lightstrike Pro foam, giving it race-shoe energy in a lightweight trainer format."
+    "notable_detail": "Uses full Lightstrike Pro foam, giving it race-shoe energy in a lightweight trainer format.",
+    "common_issues": "ride:firm feel at easy paces | use_case:not forgiving for high-mileage training"
   },
   {
     "shoe_id": "shoe_0013",
@@ -486,7 +510,8 @@
     "version": "27",
     "full_name": "ASICS Gel Nimbus 27",
     "alias_code": "Nimbus 27",
-    "is_daily_trainer": "TRUE",
+    "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -517,7 +542,8 @@
     "why_it_feels_this_way": "A thick FF BLAST+ midsole plus GEL cushioning dulls impact effectively with a more damped rebound, and the broad base helps keep the high stack feeling stable rather than wobbly.",
     "avoid_if": "Avoid if you want a lively or lightweight feel, as the shoe is very soft and heavy.",
     "similar_to": "Brooks Glycerin Max, HOKA Clifton 10, New Balance Fresh Foam X 1080 v14",
-    "notable_detail": "Known for its ultra-plush, protective ride with one of the softest landings in ASICS’ lineup."
+    "notable_detail": "Known for its ultra-plush, protective ride with one of the softest landings in ASICS’ lineup.",
+    "common_issues": "weight:feels heavy for daily use | ride:overly soft for runners wanting ground feel"
   },
   {
     "shoe_id": "shoe_0014",
@@ -527,7 +553,8 @@
     "full_name": "ASICS Superblast 2",
     "alias_code": "SB2",
     "is_daily_trainer": "TRUE",
-    "is_recovery_shoe": "FALSE",
+    "is_super_trainer": "TRUE",
+    "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "TRUE",
     "is_race_shoe": "FALSE",
     "is_trail_shoe": "FALSE",
@@ -557,7 +584,8 @@
     "why_it_feels_this_way": "The tall FF BLAST TURBO midsole compresses deeply and rebounds efficiently for high cushioning and energy return, and the pronounced rocker helps it roll fast and smoothly without relying on a plate.",
     "avoid_if": "Avoid if you need a wide or forgiving fit, as the platform remains snug and performance-focused.",
     "similar_to": "Salomon Aero Glide 3, HOKA Mach X 3",
-    "notable_detail": "A plateless super-trainer combining low weight with huge cushioning and versatility."
+    "notable_detail": "A plateless super-trainer combining low weight with huge cushioning and versatility.",
+    "common_issues": "fit:snug midfoot for high-volume feet | stability:can feel unstable at slow paces"
   },
   {
     "shoe_id": "shoe_0015",
@@ -566,8 +594,9 @@
     "version": "3",
     "full_name": "Brooks Ghost Max 3",
     "alias_code": null,
-    "is_daily_trainer": "TRUE",
-    "is_recovery_shoe": "FALSE",
+    "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
+    "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
     "is_trail_shoe": "FALSE",
@@ -597,7 +626,8 @@
     "why_it_feels_this_way": "A broad, stable base and a mostly straight-ahead geometry create a steady, protective ride, with cushioning that feels more damped than bouncy and a weighty, cruisy overall feel.",
     "avoid_if": "Avoid if you want flexibility or pop, as the ride is stiff and heavily cushioned.",
     "similar_to": "HOKA Bondi 9, New Balance Fresh Foam X More v6, Saucony Triumph 23",
-    "notable_detail": "A max-stack take on the Ghost that emphasises stability and comfort over speed."
+    "notable_detail": "A max-stack take on the Ghost that emphasises stability and comfort over speed.",
+    "common_issues": "weight:feels bulky for everyday running | ride:muted transition at faster paces"
   },
   {
     "shoe_id": "shoe_0016",
@@ -607,6 +637,7 @@
     "full_name": "Skechers Aero Burst",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "TRUE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -637,7 +668,8 @@
     "why_it_feels_this_way": "Dual-density Hyper Burst cushions landings while a pronounced rocker and firmer forefoot structure encourage a quicker roll-through, though the high stack feels more protective than nimble.",
     "avoid_if": "Avoid if you want a nimble shoe, as the plated, high-stack design feels bulky at faster paces.",
     "similar_to": "HOKA Mach X 3, Saucony Endorphin Speed 5, PUMA Fast-R NITRO Elite 2",
-    "notable_detail": "Uses a carbon-infused plate inside Hyper Burst foam to add snap to a plush trainer."
+    "notable_detail": "Uses a carbon-infused plate inside Hyper Burst foam to add snap to a plush trainer.",
+    "common_issues": "fit:narrow midfoot for wider feet | durability:upper shows wear early"
   },
   {
     "shoe_id": "shoe_0017",
@@ -647,6 +679,7 @@
     "full_name": "ASICS Gel Kayano 32",
     "alias_code": "Kayano 32",
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -677,7 +710,8 @@
     "why_it_feels_this_way": "A cushioned midsole paired with strong guidance elements (sidewalls/support features) and a wide platform keeps the ride highly controlled and stable, with a more damped, non-springy rebound.",
     "avoid_if": "Avoid if you want a soft, energetic ride, as the feel is firm and support-focused.",
     "similar_to": "Saucony Guide 18, HOKA Arahi 8, Brooks Ghost Max 3",
-    "notable_detail": "Refines ASICS’ flagship stability shoe with a lower drop and very controlled platform."
+    "notable_detail": "Refines ASICS’ flagship stability shoe with a lower drop and very controlled platform.",
+    "common_issues": "weight:feels heavy compared to neutral options | ride:firm for runners expecting plushness"
   },
   {
     "shoe_id": "shoe_0018",
@@ -687,6 +721,7 @@
     "full_name": "On Cloudmonster 2",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -717,7 +752,8 @@
     "why_it_feels_this_way": "Taller, softer CloudTec elements make the ride smoother and more forgiving than the original, with a moderate rocker that keeps transitions rolling rather than snappy or ground-connected.",
     "avoid_if": "Avoid if you expect soft cushioning, as the ride remains firm and structured.",
     "similar_to": "Mizuno Neo Vista 2, Brooks Ghost Max 3, Nike Pegasus Premium",
-    "notable_detail": "Uses oversized CloudTec pods and a Speedboard for a rolling, rocker-driven feel."
+    "notable_detail": "Uses oversized CloudTec pods and a Speedboard for a rolling, rocker-driven feel.",
+    "common_issues": "ride:slappy feel on hard surfaces | traction:inconsistent grip on wet roads"
   },
   {
     "shoe_id": "shoe_0019",
@@ -727,6 +763,7 @@
     "full_name": "On Cloudmonster",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -757,7 +794,8 @@
     "why_it_feels_this_way": "Firmer CloudTec pods and a rocker-led shape create a rolling transition that feels cushioned but relatively stiff underfoot, with a more structured, less plush sensation than softer max trainers.",
     "avoid_if": "Avoid if you want a plush, sinking sensation underfoot.",
     "similar_to": "Mizuno Neo Vista 2, Nike Pegasus Premium, Brooks Ghost Max 3",
-    "notable_detail": "On’s first true max-cushion shoe, notable for its distinctive podded midsole feel."
+    "notable_detail": "On’s first true max-cushion shoe, notable for its distinctive podded midsole feel.",
+    "common_issues": "ride:harsh landings at slower paces | stability:can feel awkward on camber"
   },
   {
     "shoe_id": "shoe_0020",
@@ -767,7 +805,8 @@
     "full_name": "New Balance FuelCell Rebel v5",
     "alias_code": "Rebel",
     "is_daily_trainer": "TRUE",
-    "is_recovery_shoe": "FALSE",
+    "is_super_trainer": "TRUE",
+    "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "TRUE",
     "is_race_shoe": "FALSE",
     "is_trail_shoe": "FALSE",
@@ -797,7 +836,8 @@
     "why_it_feels_this_way": "A very light FuelCell midsole compresses easily for a soft, fast-feeling ride with some rebound, and the lower guidance and slimmer build make it feel agile and more connected than max-cushion cruisers.",
     "avoid_if": "Avoid if you need structure or stability, as the soft foam and flexible build prioritise fun over control.",
     "similar_to": "Adidas Adizero EVO SL, HOKA Mach 6, PUMA Velocity NITRO 4",
-    "notable_detail": "Famed for its ultra-light, soft FuelCell foam that feels playful across a wide pace range."
+    "notable_detail": "Famed for its ultra-light, soft FuelCell foam that feels playful across a wide pace range.",
+    "common_issues": "durability:midsole loses pop quickly | stability:less stable when fatigued"
   },
   {
     "shoe_id": "shoe_0021",
@@ -807,6 +847,7 @@
     "full_name": "Nike Invincible 3",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -837,7 +878,8 @@
     "why_it_feels_this_way": "ZoomX gives a soft-leaning, bouncy landing with a lot of compression underfoot, but the tall stack and springy foam can feel a bit wobbly when you’re not running straight, so it’s more fun and cushioned than truly planted.",
     "avoid_if": "Avoid if you want a planted ride, as the springy foam and tall stack can feel a bit wobbly on corners and camber.",
     "similar_to": "HOKA Clifton 10, New Balance Fresh Foam X 1080 v14, Saucony Triumph 23",
-    "notable_detail": "A soft-leaning, bouncy daily trainer built around a full slab of ZoomX foam."
+    "notable_detail": "A soft-leaning, bouncy daily trainer built around a full slab of ZoomX foam.",
+    "common_issues": "stability:wobbly for runners with ankle weakness | ride:too soft for controlled pacing"
   },
   {
     "shoe_id": "shoe_0022",
@@ -846,7 +888,8 @@
     "version": "22",
     "full_name": "Brooks Glycerin 22",
     "alias_code": null,
-    "is_daily_trainer": "TRUE",
+    "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -877,7 +920,8 @@
     "why_it_feels_this_way": "Dual-density DNA Tuned foam blends plush cushioning with controlled rebound, smoothing impact without feeling unstable.",
     "avoid_if": "Avoid if you want a fast or lightweight trainer, as it feels relaxed and comfort-first.",
     "similar_to": "ASICS Gel Nimbus 27, HOKA Clifton 10, Saucony Triumph 23",
-    "notable_detail": "Introduces DNA Tuned foam for a smoother, more refined version of Brooks’ classic cruiser."
+    "notable_detail": "Introduces DNA Tuned foam for a smoother, more refined version of Brooks’ classic cruiser.",
+    "common_issues": "ride:feels dull for uptempo running | weight:heavier than expected for a daily trainer"
   },
   {
     "shoe_id": "shoe_0023",
@@ -887,6 +931,7 @@
     "full_name": "Saucony Ride 18",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -917,7 +962,8 @@
     "why_it_feels_this_way": "Traditional geometry paired with PWRRUN foam yields a slightly firm, predictable ride that suits everyday training.",
     "avoid_if": "Avoid if you need stability or racing-level responsiveness, as it sits firmly in the neutral daily category.",
     "similar_to": "ASICS Gel Cumulus 27, Nike Pegasus 41, Brooks Ghost 17",
-    "notable_detail": "Revamped with PWRRUN+ foam, making it lighter and more energetic than previous Rides."
+    "notable_detail": "Revamped with PWRRUN+ foam, making it lighter and more energetic than previous Rides.",
+    "common_issues": "ride:firm for runners preferring softness | use_case:lacks excitement for workouts"
   },
   {
     "shoe_id": "shoe_0024",
@@ -927,6 +973,7 @@
     "full_name": "PUMA Velocity NITRO 4",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -957,7 +1004,8 @@
     "why_it_feels_this_way": "NITRO foam gives a lively toe-off in a light build, but the relatively neutral platform and limited guidance keep stability feeling only moderate.",
     "avoid_if": "Avoid if you want very soft cushioning, as the ride is balanced and slightly firm.",
     "similar_to": "Adidas Adizero SL 2, New Balance FuelCell Rebel v5, HOKA Mach 6",
-    "notable_detail": "Known for excellent grip and a well-rounded NITRO foam ride at a competitive weight."
+    "notable_detail": "Known for excellent grip and a well-rounded NITRO foam ride at a competitive weight.",
+    "common_issues": "fit:snug toe box for wider feet | ride:firm forefoot at slower paces"
   },
   {
     "shoe_id": "shoe_0025",
@@ -967,8 +1015,9 @@
     "full_name": "PUMA MagMax NITRO",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
-    "is_workout_shoe": "TRUE",
+    "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
     "is_trail_shoe": "FALSE",
     "is_walking_shoe": "TRUE",
@@ -997,7 +1046,8 @@
     "why_it_feels_this_way": "A tall, high-stack NITRO setup prioritises protection with a more damped, steady feel rather than deep softness, while the broad base and rocker help smooth and stabilise the ride.",
     "avoid_if": "Avoid if you prefer low-stack shoes, as the midsole height is extreme.",
     "similar_to": "Brooks Glycerin Max, Nike Vomero Plus, Saucony Triumph 23",
-    "notable_detail": "A bold max-cushion design with a massive slab of NITRO foam that still feels lively."
+    "notable_detail": "A bold max-cushion design with a massive slab of NITRO foam that still feels lively.",
+    "common_issues": "weight:feels bulky over long runs | ride:softness reduces stability when tired"
   },
   {
     "shoe_id": "shoe_0026",
@@ -1007,7 +1057,8 @@
     "full_name": "Adidas Adizero SL 2",
     "alias_code": "SL2",
     "is_daily_trainer": "TRUE",
-    "is_recovery_shoe": "FALSE",
+    "is_super_trainer": "TRUE",
+    "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "TRUE",
     "is_race_shoe": "FALSE",
     "is_trail_shoe": "FALSE",
@@ -1037,7 +1088,8 @@
     "why_it_feels_this_way": "Lightstrike Pro foam offers a smooth, responsive underfoot feel while keeping overall bulk low.",
     "avoid_if": "Avoid if you want plush comfort, as the ride is firm and speed-oriented.",
     "similar_to": "PUMA Velocity NITRO 4, HOKA Mach 6, New Balance FuelCell Rebel v5",
-    "notable_detail": "A budget-friendly trainer that borrows performance geometry from Adidas’ Adizero racers."
+    "notable_detail": "A budget-friendly trainer that borrows performance geometry from Adidas’ Adizero racers.",
+    "common_issues": "ride:firm ride limits comfort on long runs | use_case:not ideal for recovery days"
   },
   {
     "shoe_id": "shoe_0027",
@@ -1047,6 +1099,7 @@
     "full_name": "Mizuno Neo Zen",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -1077,7 +1130,8 @@
     "why_it_feels_this_way": "A big, highly compliant midsole gives a very soft, pillowy landing, but the foam rebounds with a clean pop rather than a dull sink. With a tall stack and less inherent guidance, it can feel a bit wobbly when you are not running straight, so the ride is plush and lively but not especially planted.",
     "avoid_if": "Avoid if you prefer firm, structured rides, as the foam is very soft and flexible.",
     "similar_to": "Nike Pegasus Premium, New Balance Fresh Foam X 1080 v14, HOKA Bondi 9",
-    "notable_detail": "Showcases Mizuno’s modern Enerzy foam in a highly cushioned, minimalist build."
+    "notable_detail": "Showcases Mizuno’s modern Enerzy foam in a highly cushioned, minimalist build.",
+    "common_issues": "fit:low-volume upper for high insteps | ride:stiff forefoot limits natural flex"
   },
   {
     "shoe_id": "shoe_0028",
@@ -1087,6 +1141,7 @@
     "full_name": "Mizuno Neo Vista 2",
     "alias_code": null,
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "TRUE",
     "is_race_shoe": "FALSE",
@@ -1117,7 +1172,8 @@
     "why_it_feels_this_way": "The layered midsole is highly protective but not truly plush, so it compresses with a deeper, damped feel under load, with the wave structure adding some shape without making it feel rigid.",
     "avoid_if": "Avoid if you value cornering stability, as the tall stack and plate can feel awkward.",
     "similar_to": "On Cloudmonster 2, PUMA MagMax NITRO, ASICS Superblast 2",
-    "notable_detail": "A plated super-trainer blending Enerzy foam with a carbon-infused Wave plate."
+    "notable_detail": "A plated super-trainer blending Enerzy foam with a carbon-infused Wave plate.",
+    "common_issues": "stability:rocker feels awkward at slower paces | ride:less controlled when fatigued"
   },
   {
     "shoe_id": "shoe_0029",
@@ -1127,6 +1183,7 @@
     "full_name": "PUMA Magnify NITRO 3",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -1157,7 +1214,8 @@
     "why_it_feels_this_way": "A thick NITRO midsole prioritises comfort and impact reduction, with moderate energy return.",
     "avoid_if": "Avoid if you want a nimble or fast-feeling shoe, as it is heavy and comfort-focused.",
     "similar_to": "HOKA Mach 6, Adidas Adizero SL 2, New Balance Fresh Foam 680 v8",
-    "notable_detail": "A durable max-cushion trainer built around a thick NITRO foam platform."
+    "notable_detail": "A durable max-cushion trainer built around a thick NITRO foam platform.",
+    "common_issues": "weight:heavier than similar max trainers | ride:lacks responsiveness for faster efforts"
   },
   {
     "shoe_id": "shoe_0030",
@@ -1167,6 +1225,7 @@
     "full_name": "Salomon Aero Glide 2",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -1197,7 +1256,8 @@
     "why_it_feels_this_way": "The high-stack Energy Surge midsole cushions impact well and maintains a steady, neutral ride profile.",
     "avoid_if": "Avoid if you want ground feel, as the shoe prioritises cushioning and roll-through.",
     "similar_to": "ASICS Superblast 2, Skechers Aero Burst, Nike Vomero Plus",
-    "notable_detail": "Salomon’s most cushioned road shoe, using a high-stack Energy Foam midsole."
+    "notable_detail": "Salomon’s most cushioned road shoe, using a high-stack Energy Foam midsole.",
+    "common_issues": "fit:snug midfoot for wider feet | stability:less confidence on road camber"
   },
   {
     "shoe_id": "shoe_0031",
@@ -1207,6 +1267,7 @@
     "full_name": "Topo Athletic Atmos",
     "alias_code": "Topo Atmos",
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -1237,7 +1298,8 @@
     "why_it_feels_this_way": "A rockered, high-stack midsole paired with a wide toe box encourages smooth transitions and stable, natural foot placement.",
     "avoid_if": "Avoid if you want ultra-soft cushioning, as the ride is tuned firmer for stability.",
     "similar_to": "ASICS Gel Cumulus 27, Brooks Ghost 17, Nike Pegasus 41",
-    "notable_detail": "Combines a wide, foot-shaped toe box with high-stack cushioning in a low-drop setup."
+    "notable_detail": "Combines a wide, foot-shaped toe box with high-stack cushioning in a low-drop setup.",
+    "common_issues": "ride:softness reduces stability at pace | use_case:overbuilt for shorter runs"
   },
   {
     "shoe_id": "shoe_0032",
@@ -1247,6 +1309,7 @@
     "full_name": "Brooks Ghost 17",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -1277,7 +1340,8 @@
     "why_it_feels_this_way": "DNA Loft v3 foam and classic geometry create a consistent, neutral ride that feels smooth and familiar.",
     "avoid_if": "Avoid if you want speed or bounce, as the ride is steady and traditional.",
     "similar_to": "ASICS Gel Cumulus 27, Nike Pegasus 41, New Balance Fresh Foam 680 v8",
-    "notable_detail": "A refined take on Brooks’ most popular daily trainer with softer DNA Loft v3 foam."
+    "notable_detail": "A refined take on Brooks’ most popular daily trainer with softer DNA Loft v3 foam.",
+    "common_issues": "ride:feels dull for runners wanting responsiveness | weight:heavier than expected for a neutral daily trainer"
   },
   {
     "shoe_id": "shoe_0033",
@@ -1287,6 +1351,7 @@
     "full_name": "Altra Experience Flow 2",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -1317,7 +1382,8 @@
     "why_it_feels_this_way": "Low-drop geometry and a flexible, low-rocker setup keep the ride feeling natural and foot-led, with a lower-to-the-ground sensation that prioritises ground feedback over a rolling transition.",
     "avoid_if": "Avoid if you rely on heel drop or narrow fits, as the platform is low-drop and wide.",
     "similar_to": "Nike Pegasus 41, ASICS Gel Contend 9, Adidas Adizero SL 2",
-    "notable_detail": "Stays true to Altra’s natural-running ethos with a foot-shaped toe box and level platform."
+    "notable_detail": "Stays true to Altra’s natural-running ethos with a foot-shaped toe box and level platform.",
+    "common_issues": "fit:low-volume midfoot for higher insteps | ride:firm feel at slower paces"
   },
   {
     "shoe_id": "shoe_0034",
@@ -1327,6 +1393,7 @@
     "full_name": "PUMA Deviate NITRO Elite 3",
     "alias_code": "DNE3",
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "TRUE",
     "is_race_shoe": "TRUE",
@@ -1357,7 +1424,8 @@
     "why_it_feels_this_way": "A stiff carbon plate working with NITRO Elite foam channels force efficiently, producing an aggressive, race-ready ride.",
     "avoid_if": "Avoid if you want a forgiving daily shoe, as the carbon plate is tuned for racing.",
     "similar_to": "Adidas Adizero Adios Pro 4, Nike Alphafly Next% 3, Saucony Endorphin Elite 2",
-    "notable_detail": "PUMA’s flagship marathon racer with NITRO Elite foam and a powerful carbon plate."
+    "notable_detail": "PUMA’s flagship marathon racer with NITRO Elite foam and a powerful carbon plate.",
+    "common_issues": "fit:narrow midfoot for wider feet | ride:firm feel at easy paces"
   },
   {
     "shoe_id": "shoe_0035",
@@ -1367,6 +1435,7 @@
     "full_name": "Adidas Adizero Boston 13",
     "alias_code": null,
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "TRUE",
     "is_race_shoe": "FALSE",
@@ -1397,7 +1466,8 @@
     "why_it_feels_this_way": "Energy Rods embedded in Lightstrike Pro foam create a firm platform that favours controlled propulsion at faster training paces.",
     "avoid_if": "Avoid if you want a soft daily trainer, as the ride is firm and tempo-focused.",
     "similar_to": "Saucony Endorphin Speed 5, Nike Zoom Fly 6, HOKA Mach X 3",
-    "notable_detail": "A plated trainer using EnergyRods, blurring the line between trainer and racer."
+    "notable_detail": "A plated trainer using EnergyRods, blurring the line between trainer and racer.",
+    "common_issues": "ride:very firm for non-workout use | use_case:feels harsh for daily mileage"
   },
   {
     "shoe_id": "shoe_0036",
@@ -1407,7 +1477,8 @@
     "full_name": "HOKA Mach 6",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
-    "is_recovery_shoe": "FALSE",
+    "is_super_trainer": "TRUE",
+    "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "TRUE",
     "is_race_shoe": "FALSE",
     "is_trail_shoe": "FALSE",
@@ -1437,7 +1508,8 @@
     "why_it_feels_this_way": "A relatively light build with a mild rocker keeps turnover quick and smooth, while the midsole stays more lively than plush for faster daily running.",
     "avoid_if": "Avoid if you want maximal cushioning, as the ride is relatively firm and quick.",
     "similar_to": "Adidas Adizero SL 2, New Balance FuelCell Rebel v5, PUMA Velocity NITRO 4",
-    "notable_detail": "Uses a dual-density PROFLY midsole to balance speed and daily usability."
+    "notable_detail": "Uses a dual-density PROFLY midsole to balance speed and daily usability.",
+    "common_issues": "durability:outsole rubber wears quickly | ride:less stable when fatigued"
   },
   {
     "shoe_id": "shoe_0037",
@@ -1447,7 +1519,8 @@
     "full_name": "Saucony Endorphin Speed 5",
     "alias_code": "ES5",
     "is_daily_trainer": "TRUE",
-    "is_recovery_shoe": "FALSE",
+    "is_super_trainer": "TRUE",
+    "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "TRUE",
     "is_race_shoe": "FALSE",
     "is_trail_shoe": "FALSE",
@@ -1477,7 +1550,8 @@
     "why_it_feels_this_way": "PWRRUN PB foam paired with a flexible plate encourages a fast, rolling stride with noticeable energy return.",
     "avoid_if": "Avoid if you dislike plated guidance, as the nylon plate shapes the ride.",
     "similar_to": "HOKA Mach X 3, Adidas Adizero Boston 13, Nike Zoom Fly 6",
-    "notable_detail": "A cult favourite tempo shoe combining PWRRUN PB foam with a flexible plate."
+    "notable_detail": "A cult favourite tempo shoe combining PWRRUN PB foam with a flexible plate.",
+    "common_issues": "stability:can feel unstable if form breaks down | fit:narrow midfoot for wider feet"
   },
   {
     "shoe_id": "shoe_0038",
@@ -1487,6 +1561,7 @@
     "full_name": "Saucony Endorphin Elite 2",
     "alias_code": "EE2",
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "TRUE",
@@ -1517,7 +1592,8 @@
     "why_it_feels_this_way": "An ultra-soft, high-rebound midsole paired with a very stiff carbon plate creates a huge spring off the forefoot, but the tall race setup can feel unstable and offers almost no ground feel.",
     "avoid_if": "Avoid if you want comfort or durability, as the design is uncompromisingly race-focused.",
     "similar_to": "Adidas Adizero Adios Pro 4, Nike Vaporfly Next% 4, PUMA Fast-R NITRO Elite 3",
-    "notable_detail": "Uses PWRRUN HG foam and an aggressive carbon plate for elite-level racing efficiency."
+    "notable_detail": "Uses PWRRUN HG foam and an aggressive carbon plate for elite-level racing efficiency.",
+    "common_issues": "stability:can feel unstable on camber | fit:snug upper for high-volume feet"
   },
   {
     "shoe_id": "shoe_0039",
@@ -1526,7 +1602,8 @@
     "version": "3",
     "full_name": "HOKA Mach X 3",
     "alias_code": "Mach X3",
-    "is_daily_trainer": "FALSE",
+    "is_daily_trainer": "TRUE",
+    "is_super_trainer": "TRUE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "TRUE",
     "is_race_shoe": "FALSE",
@@ -1557,7 +1634,8 @@
     "why_it_feels_this_way": "A high-stack dual-foam midsole split by a Pebax plate and a pronounced rocker creates a smooth roll and steady pop for long tempo efforts without feeling brutally stiff.",
     "avoid_if": "Avoid if you want flexibility, as the plate and rocker create a stiff ride.",
     "similar_to": "Adidas Adizero Boston 13, Saucony Endorphin Speed 5, Nike Zoom Fly 6",
-    "notable_detail": "A plated trainer-racer hybrid built around PEBA foam for springy turnover."
+    "notable_detail": "A plated trainer-racer hybrid built around PEBA foam for springy turnover.",
+    "common_issues": "ride:plate feels intrusive at slow speeds | stability:less confidence on tight turns"
   },
   {
     "shoe_id": "shoe_0040",
@@ -1567,6 +1645,7 @@
     "full_name": "Nike Alphafly Next% 3",
     "alias_code": "Alphafly 3",
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "TRUE",
@@ -1597,7 +1676,8 @@
     "why_it_feels_this_way": "ZoomX foam, Air pods, and a carbon plate work together to maximise energy return and cushioning at race pace.",
     "avoid_if": "Avoid if you run mostly at easy paces, as the geometry only shines at speed.",
     "similar_to": "Adidas Adizero Adios Pro 4, Saucony Endorphin Pro 4, New Balance FuelCell SuperComp Elite v5",
-    "notable_detail": "Features dual Air pods and a towering ZoomX midsole for maximum race-day efficiency."
+    "notable_detail": "Features dual Air pods and a towering ZoomX midsole for maximum race-day efficiency.",
+    "common_issues": "stability:awkward on corners and camber | fit:narrow midfoot for wider feet"
   },
   {
     "shoe_id": "shoe_0041",
@@ -1607,7 +1687,8 @@
     "full_name": "Nike Zoom Fly 6",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
-    "is_recovery_shoe": "FALSE",
+    "is_super_trainer": "TRUE",
+    "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "TRUE",
     "is_race_shoe": "FALSE",
     "is_trail_shoe": "FALSE",
@@ -1637,7 +1718,8 @@
     "why_it_feels_this_way": "Dual foams around a full-length carbon plate make the ride structured and moderately firm, and the strong rocker helps it roll through sustained faster training.",
     "avoid_if": "Avoid if you expect Vaporfly softness, as the ride is firmer and heavier.",
     "similar_to": "Adidas Adizero Boston 13, Saucony Endorphin Speed 5, HOKA Mach X 3",
-    "notable_detail": "A durable plated trainer that brings racing geometry into everyday workouts."
+    "notable_detail": "A durable plated trainer that brings racing geometry into everyday workouts.",
+    "common_issues": "ride:firm plate feel at easy paces | weight:heavier than plated alternatives"
   },
   {
     "shoe_id": "shoe_0042",
@@ -1647,6 +1729,7 @@
     "full_name": "Adidas Adizero Adios Pro 4",
     "alias_code": "AP4",
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "TRUE",
@@ -1677,7 +1760,8 @@
     "why_it_feels_this_way": "Soft, high-rebound Lightstrike Pro combined with EnergyRods gives a fast, springy toe-off, but the narrow race platform prioritises speed over stability and ground feel.",
     "avoid_if": "Avoid if you need stability at slow speeds, as it is optimised for racing.",
     "similar_to": "Nike Alphafly Next% 3, Saucony Endorphin Elite 2, PUMA Deviate NITRO Elite 3",
-    "notable_detail": "Uses EnergyRods and Lightstrike Pro foam for elite marathon performance."
+    "notable_detail": "Uses EnergyRods and Lightstrike Pro foam for elite marathon performance.",
+    "common_issues": "ride:firm forefoot for lighter runners | fit:snug toe box on longer races"
   },
   {
     "shoe_id": "shoe_0043",
@@ -1687,6 +1771,7 @@
     "full_name": "Saucony Endorphin Pro 4",
     "alias_code": null,
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "TRUE",
     "is_race_shoe": "TRUE",
@@ -1717,7 +1802,8 @@
     "why_it_feels_this_way": "A carbon plate integrated with energetic foam produces a fast, controlled feel optimised for racing.",
     "avoid_if": "Avoid if you want a casual trainer, as the carbon plate is tuned for speed.",
     "similar_to": "New Balance FuelCell SuperComp Elite v5, Nike Alphafly Next% 3, Adidas Adizero Adios Pro 4",
-    "notable_detail": "A balanced carbon racer that blends race-day efficiency with relative comfort."
+    "notable_detail": "A balanced carbon racer that blends race-day efficiency with relative comfort.",
+    "common_issues": "stability:can feel unstable late in races | ride:less forgiving at slower paces"
   },
   {
     "shoe_id": "shoe_0044",
@@ -1727,6 +1813,7 @@
     "full_name": "New Balance FuelCell SuperComp Elite v5",
     "alias_code": "SC Elite v5",
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "TRUE",
     "is_race_shoe": "TRUE",
@@ -1757,7 +1844,8 @@
     "why_it_feels_this_way": "A high-stack FuelCell midsole with a stiff carbon plate keeps you moving efficiently at pace, but the tall geometry trades some stability for speed and cushioning.",
     "avoid_if": "Avoid if you are not racing or doing hard workouts, as the setup is aggressive.",
     "similar_to": "Saucony Endorphin Pro 4, Nike Alphafly Next% 3, Adidas Adizero Adios Pro 4",
-    "notable_detail": "Uses Energy Arc technology to create a rolling, highly propulsive marathon shoe."
+    "notable_detail": "Uses Energy Arc technology to create a rolling, highly propulsive marathon shoe.",
+    "common_issues": "fit:narrow midfoot for wider feet | stability:soft platform feels wobbly when fatigued"
   },
   {
     "shoe_id": "shoe_0045",
@@ -1767,6 +1855,7 @@
     "full_name": "Nike Streakfly 2",
     "alias_code": null,
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "TRUE",
     "is_race_shoe": "TRUE",
@@ -1797,7 +1886,8 @@
     "why_it_feels_this_way": "A very low stack with a carbon plate and highly responsive foam delivers explosive pop and a sharp rocker-driven roll, but it feels unstable and very direct underfoot.",
     "avoid_if": "Avoid if you need cushioning for long distances, as the stack is minimal.",
     "similar_to": "Saucony Endorphin Elite 2, Adidas Adizero Adios Pro 4, PUMA Deviate NITRO Elite 3",
-    "notable_detail": "A lightweight ZoomX racer designed primarily for 5K and 10K efforts."
+    "notable_detail": "A lightweight ZoomX racer designed primarily for 5K and 10K efforts.",
+    "common_issues": "use_case:limited to short distances | durability:outsole wears quickly"
   },
   {
     "shoe_id": "shoe_0046",
@@ -1807,6 +1897,7 @@
     "full_name": "ASICS Metaspeed Edge Tokyo",
     "alias_code": "Edge Tokyo",
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "TRUE",
@@ -1837,7 +1928,8 @@
     "why_it_feels_this_way": "Dual racing foams with a cadence-focused carbon plate and a smoother rocker create a very cushioned, quick-transition ride, though stability remains only moderate for a supershoe.",
     "avoid_if": "Avoid if you rely on long, bounding strides, as it favours cadence runners.",
     "similar_to": "Saucony Endorphin Elite 2, Adidas Adizero Adios Pro 4, Nike Vaporfly Next% 4",
-    "notable_detail": "Tuned specifically for high-cadence runners with targeted plate placement."
+    "notable_detail": "Tuned specifically for high-cadence runners with targeted plate placement.",
+    "common_issues": "fit:low-volume upper for higher insteps | ride:firm for runners expecting softness"
   },
   {
     "shoe_id": "shoe_0047",
@@ -1847,6 +1939,7 @@
     "full_name": "Adidas Adizero Prime X3 Strung",
     "alias_code": null,
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "TRUE",
@@ -1877,7 +1970,8 @@
     "why_it_feels_this_way": "Huge stack height with a carbon plate plus EnergyRods makes the shoe extremely stiff and heavily rockered for a strong roll and rebound, but it can feel unwieldy and less stable given the height and weight.",
     "avoid_if": "Avoid if you want a stable or legal racer, as the stack height is extreme.",
     "similar_to": "ASICS Superblast 2, Salomon Aero Glide 3, HOKA Mach X 3",
-    "notable_detail": "Pushes cushioning limits with over 50 mm of Lightstrike Pro and a Strung upper."
+    "notable_detail": "Pushes cushioning limits with over 50 mm of Lightstrike Pro and a Strung upper.",
+    "common_issues": "stability:very unstable on turns and camber | use_case:too extreme for most racing scenarios"
   },
   {
     "shoe_id": "shoe_0048",
@@ -1887,9 +1981,10 @@
     "full_name": "ASICS Megablast",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "TRUE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "TRUE",
-    "is_race_shoe": "TRUE",
+    "is_race_shoe": "FALSE",
     "is_trail_shoe": "FALSE",
     "is_walking_shoe": "FALSE",
     "cushion_softness_1to5": 5,
@@ -1917,7 +2012,8 @@
     "why_it_feels_this_way": "A very tall, plush and energetic midsole with a strong rocker gives an effortless roll and plenty of rebound, while staying only reasonably stable for such a high stack.",
     "avoid_if": "Avoid if you dislike extreme softness or very tall stacks.",
     "similar_to": "Adidas Adizero Prime X3 Strung, ASICS Superblast 2, Salomon Aero Glide 3",
-    "notable_detail": "Designed as an ultra-max cushion concept shoe showcasing ASICS’ highest-volume foam."
+    "notable_detail": "Designed as an ultra-max cushion concept shoe showcasing ASICS’ highest-volume foam.",
+    "common_issues": "stability:less controlled at slower paces | ride:too bouncy for runners wanting ground feel"
   },
   {
     "shoe_id": "shoe_0049",
@@ -1927,6 +2023,7 @@
     "full_name": "PUMA Fast-R NITRO Elite 2",
     "alias_code": "Fast-R 2",
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "TRUE",
@@ -1957,7 +2054,8 @@
     "why_it_feels_this_way": "The split midsole and carbon plate funnel load into an aggressive, rockered forefoot for aggressive forward propulsion, with a high-stack feel that stays reasonably controlled rather than nimble.",
     "avoid_if": "Avoid if you are a heel striker or want a forgiving feel.",
     "similar_to": "Adidas Adizero Adios Pro 4, Saucony Endorphin Elite 2, PUMA Fast-R NITRO Elite 3",
-    "notable_detail": "A unique design with the carbon plate extending beyond the front of the shoe. Features a split midsole and carbon plate for aggressive forward propulsion."
+    "notable_detail": "A unique design with the carbon plate extending beyond the front of the shoe. Features a split midsole and carbon plate for aggressive forward propulsion.",
+    "common_issues": "ride:awkward transition at slower speeds | fit:rigid upper limits adaptability"
   },
   {
     "shoe_id": "shoe_0050",
@@ -1967,6 +2065,7 @@
     "full_name": "HOKA Challenger 8",
     "alias_code": null,
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -1997,7 +2096,8 @@
     "why_it_feels_this_way": "A balanced, road-like midsole with a moderate rocker keeps turnover smooth, while shallow lugs add just enough bite for light trails without making it feel harsh on tarmac.",
     "avoid_if": "Avoid if you need aggressive trail grip, as the lugs are moderate.",
     "similar_to": "New Balance Fresh Foam X Hierro v9, Nike Pegasus Trail 5, Salomon Speedcross 6",
-    "notable_detail": "A door-to-trail shoe that blends road cushioning with light trail capability."
+    "notable_detail": "A door-to-trail shoe that blends road cushioning with light trail capability.",
+    "common_issues": "traction:limited grip on wet or technical terrain | use_case:road-focused outsole struggles on steep trails"
   },
   {
     "shoe_id": "shoe_0051",
@@ -2007,6 +2107,7 @@
     "full_name": "New Balance Fresh Foam X Hierro v9",
     "alias_code": "Hierro",
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -2037,7 +2138,8 @@
     "why_it_feels_this_way": "A tall, protective midsole and a broad platform keep things calm on uneven ground, with a steady rebound rather than a squishy feel and a noticeably substantial, protective ride.",
     "avoid_if": "Avoid if you want a light or agile trail shoe.",
     "similar_to": "The North Face Vectiv Enduris 3, HOKA Challenger 8, ASICS Metafuji Trail",
-    "notable_detail": "A max-cushion trail model built for comfort and protection over long distances."
+    "notable_detail": "A max-cushion trail model built for comfort and protection over long distances.",
+    "common_issues": "weight:feels heavy on longer trail runs | ride:soft midsole reduces precision on rocky ground"
   },
   {
     "shoe_id": "shoe_0052",
@@ -2047,6 +2149,7 @@
     "full_name": "Altra Lone Peak 9",
     "alias_code": null,
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -2077,7 +2180,8 @@
     "why_it_feels_this_way": "Zero-drop geometry and a flexible build keep the shoe foot-led and very ground-connected, with a firmer, more direct underfoot feel and a stable, roomy front end for natural toe splay.",
     "avoid_if": "Avoid if you prefer high-drop or heavily cushioned trail shoes.",
     "similar_to": "Nike Pegasus Trail 5, HOKA Challenger 8, Saucony Peregrine 15",
-    "notable_detail": "A cult trail shoe known for its zero-drop platform and roomy toe box."
+    "notable_detail": "A cult trail shoe known for its zero-drop platform and roomy toe box.",
+    "common_issues": "durability:upper and outsole wear quickly on abrasive trails | stability:less secure on technical descents"
   },
   {
     "shoe_id": "shoe_0053",
@@ -2087,6 +2191,7 @@
     "full_name": "Altra Olympus 6",
     "alias_code": null,
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -2117,7 +2222,8 @@
     "why_it_feels_this_way": "A very high stack and wide platform prioritise protection and stability over precision, with a cushioned-but-not-sinky feel and a bulky, planted ride that suits long trail cruising.",
     "avoid_if": "Avoid if you run technical trails requiring precision, as the platform is bulky.",
     "similar_to": "The North Face Vectiv Enduris 3, New Balance Fresh Foam X Hierro v9, ASICS Metafuji Trail",
-    "notable_detail": "Altra’s most cushioned trail shoe, favoured for ultra-distance comfort."
+    "notable_detail": "Altra’s most cushioned trail shoe, favoured for ultra-distance comfort.",
+    "common_issues": "stability:high stack feels tippy on uneven terrain | weight:bulky feel on climbs"
   },
   {
     "shoe_id": "shoe_0054",
@@ -2127,6 +2233,7 @@
     "full_name": "ASICS Metafuji Trail",
     "alias_code": null,
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -2157,7 +2264,8 @@
     "why_it_feels_this_way": "A lively midsole combined with a stiff carbon plate creates a punchy, forward drive on trail, but the performance geometry and stiffness can feel tippy and unforgiving if you want a relaxed, stable cruiser.",
     "avoid_if": "Avoid if you want a relaxed trail cruiser, as the design is performance-focused.",
     "similar_to": "The North Face Vectiv Enduris 3, New Balance Fresh Foam X Hierro v9, HOKA Challenger 8",
-    "notable_detail": "Brings plated, race-inspired geometry into ASICS’ trail lineup."
+    "notable_detail": "Brings plated, race-inspired geometry into ASICS’ trail lineup.",
+    "common_issues": "use_case:too aggressive for easy trail running | stability:unstable at slower technical paces"
   },
   {
     "shoe_id": "shoe_0055",
@@ -2167,6 +2275,7 @@
     "full_name": "The North Face Vectiv Enduris 3",
     "alias_code": "Enduris 3",
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -2197,7 +2306,8 @@
     "why_it_feels_this_way": "A stiff plate and pronounced rocker create an efficient roll through long efforts, while the wider platform and guiding geometry make it feel notably stable for a plated trail shoe.",
     "avoid_if": "Avoid if you want flexibility on technical terrain, as the plate stiffens the ride.",
     "similar_to": "ASICS Metafuji Trail, New Balance Fresh Foam X Hierro v9, HOKA Challenger 8",
-    "notable_detail": "Uses VECTIV rocker geometry to reduce fatigue over long trail distances."
+    "notable_detail": "Uses VECTIV rocker geometry to reduce fatigue over long trail distances.",
+    "common_issues": "ride:stiff rocker limits ground feel | fit:narrow midfoot for wider feet"
   },
   {
     "shoe_id": "shoe_0056",
@@ -2207,6 +2317,7 @@
     "full_name": "Saucony Triumph 23",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -2237,7 +2348,8 @@
     "why_it_feels_this_way": "A thick, soft midsole with a smooth rocker absorbs impact and rebounds with a gentle spring, delivering a plush, protective ride with very little ground feel and a more substantial feel on foot.",
     "avoid_if": "Avoid if you want a light or fast trainer, as the shoe is plush and substantial.",
     "similar_to": "Nike Vomero Plus, ASICS Gel Nimbus 27, Brooks Glycerin Max",
-    "notable_detail": "A premium max-cushion daily trainer built around PWRRUN+ foam."
+    "notable_detail": "A premium max-cushion daily trainer built around PWRRUN+ foam.",
+    "common_issues": "weight:feels bulky over longer runs | ride:softness reduces responsiveness"
   },
   {
     "shoe_id": "shoe_0057",
@@ -2247,6 +2359,7 @@
     "full_name": "Saucony Guide 18",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -2277,7 +2390,8 @@
     "why_it_feels_this_way": "A structured platform and guidance features keep the ride controlled and stable, with a more supportive, steady transition that prioritises predictability over a free, unstructured feel.",
     "avoid_if": "Avoid if you do not need stability support, as the guidance can feel intrusive.",
     "similar_to": "ASICS Gel Kayano 32, HOKA Arahi 8, Brooks Ghost Max 3",
-    "notable_detail": "A reliable stability trainer balancing comfort with structured support."
+    "notable_detail": "A reliable stability trainer balancing comfort with structured support.",
+    "common_issues": "ride:firm for runners expecting plush support | fit:snug forefoot for wider feet"
   },
   {
     "shoe_id": "shoe_0058",
@@ -2287,6 +2401,7 @@
     "full_name": "HOKA Arahi 8",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -2317,7 +2432,8 @@
     "why_it_feels_this_way": "A stable frame and a pronounced rocker guide you forward smoothly without a harsh post, pairing moderate cushioning with a stable, rolling transition that feels controlled rather than bouncy.",
     "avoid_if": "Avoid if you want an unstructured ride, as the J-Frame adds guidance.",
     "similar_to": "ASICS Gel Kayano 32, Saucony Guide 18, Brooks Ghost Max 3",
-    "notable_detail": "A lightweight stability shoe that avoids traditional medial posts."
+    "notable_detail": "A lightweight stability shoe that avoids traditional medial posts.",
+    "common_issues": "ride:firm sensation underfoot | fit:narrow midfoot for high-volume feet"
   },
   {
     "shoe_id": "shoe_0059",
@@ -2327,6 +2443,7 @@
     "full_name": "Salomon Speedcross 6",
     "alias_code": null,
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -2357,7 +2474,8 @@
     "why_it_feels_this_way": "A firm, very direct midsole and an aggressive lugged outsole create maximum bite and control on soft, muddy ground, but the ride feels rigid and intrusive on hard surfaces with almost no bounce.",
     "avoid_if": "Avoid if you run mainly on hard surfaces, as the aggressive lugs are intrusive.",
     "similar_to": "Saucony Peregrine 15, Nike Pegasus Trail 5, HOKA Challenger 8",
-    "notable_detail": "Famous for deep lugs and narrow fit, excelling in mud and soft ground."
+    "notable_detail": "Famous for deep lugs and narrow fit, excelling in mud and soft ground.",
+    "common_issues": "use_case:overly aggressive for hardpack trails | ride:firm feel on longer distances"
   },
   {
     "shoe_id": "shoe_0060",
@@ -2367,6 +2485,7 @@
     "full_name": "HOKA Speedgoat 6",
     "alias_code": null,
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -2397,7 +2516,8 @@
     "why_it_feels_this_way": "A protective midsole and grippy outsole combine for dependable traction and control, with a stable, planted platform that prioritises security and protection over agility and soft step-in plushness.",
     "avoid_if": "Avoid if you want agility or ground feel on technical trails.",
     "similar_to": "Altra Olympus 6, New Balance Fresh Foam X Hierro v9, The North Face Vectiv Enduris 3",
-    "notable_detail": "A max-cushion trail icon known for Vibram grip and ultra-distance comfort."
+    "notable_detail": "A max-cushion trail icon known for Vibram grip and ultra-distance comfort.",
+    "common_issues": "fit:snug forefoot for wider feet | ride:firm platform on long descents"
   },
   {
     "shoe_id": "shoe_0061",
@@ -2407,6 +2527,7 @@
     "full_name": "ASICS Gel Cumulus 27",
     "alias_code": "Cumulus 27",
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -2437,7 +2558,8 @@
     "why_it_feels_this_way": "A traditional, balanced midsole smooths impact without feeling overly soft, with a steady, predictable transition and moderate stability that suits everyday mileage over lively bounce.",
     "avoid_if": "Avoid if you expect a soft or bouncy ride, as it remains traditional and firm.",
     "similar_to": "Nike Pegasus 41, Brooks Ghost 17, New Balance Fresh Foam 680 v8",
-    "notable_detail": "A dependable daily trainer offering balanced cushioning and durability."
+    "notable_detail": "A dependable daily trainer offering balanced cushioning and durability.",
+    "common_issues": "ride:uninspiring for faster efforts | weight:heavier than comparable daily trainers"
   },
   {
     "shoe_id": "shoe_0062",
@@ -2447,8 +2569,9 @@
     "full_name": "Nike Vaporfly Next% 4",
     "alias_code": "Vaporfly 4",
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
-    "is_workout_shoe": "FALSE",
+    "is_workout_shoe": "TRUE",
     "is_race_shoe": "TRUE",
     "is_trail_shoe": "FALSE",
     "is_walking_shoe": "FALSE",
@@ -2477,7 +2600,8 @@
     "why_it_feels_this_way": "High-rebound foam paired with a stiff carbon Flyplate delivers explosive snap in an ultra-light package, with a race-focused geometry that feels fast and direct but not particularly forgiving or stable at easy paces.",
     "avoid_if": "Avoid if you need stability or plan to use it for daily training.",
     "similar_to": "Adidas Adizero Adios Pro 4, Saucony Endorphin Elite 2, PUMA Deviate NITRO Elite 3",
-    "notable_detail": "The latest evolution of Nike’s iconic carbon-plated marathon racer."
+    "notable_detail": "The latest evolution of Nike’s iconic carbon-plated marathon racer.",
+    "common_issues": "fit:narrow midfoot for wider feet | stability:less confidence on sharp corners"
   },
   {
     "shoe_id": "shoe_0063",
@@ -2487,7 +2611,8 @@
     "full_name": "Salomon Aero Glide 3",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
-    "is_recovery_shoe": "FALSE",
+    "is_super_trainer": "TRUE",
+    "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "TRUE",
     "is_race_shoe": "FALSE",
     "is_trail_shoe": "FALSE",
@@ -2517,7 +2642,8 @@
     "why_it_feels_this_way": "A high stack with a soft, energetic midsole gives a cushioned, bouncy feel for long runs, while the relatively low ground feel and tapered fit keep it feeling more like a modern max trainer than a stable cruiser.",
     "avoid_if": "Avoid if you need a wide toe box, want strong stability for easy miles, or prefer more ground feel and a firmer, controlled ride.",
     "similar_to": "ASICS Superblast 2, Adidas Adizero Prime X3 Strung, Nike Vomero Plus",
-    "notable_detail": "Feels like Salomon’s “road max cushion” direction done properly - high stack, soft ride, and a smoother rocker than older Salomon road shoes, but still with a slightly tapered, performance-leaning fit that can feel snug through the midfoot if you like a roomy upper."
+    "notable_detail": "Feels like Salomon’s “road max cushion” direction done properly - high stack, soft ride, and a smoother rocker than older Salomon road shoes, but still with a slightly tapered, performance-leaning fit that can feel snug through the midfoot if you like a roomy upper.",
+    "common_issues": "fit:snug midfoot for wider feet | ride:stiff transition on road"
   },
   {
     "shoe_id": "shoe_0064",
@@ -2526,7 +2652,8 @@
     "version": "28",
     "full_name": "ASICS Gel Nimbus 28",
     "alias_code": "Nimbus 28",
-    "is_daily_trainer": "TRUE",
+    "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -2557,7 +2684,8 @@
     "why_it_feels_this_way": "A very cushioned, damped midsole soaks up impact with a calm, non-bouncy feel, and the rocker helps it roll through easy miles while staying smooth and protective rather than energetic.",
     "avoid_if": "Avoid if you want noticeable bounce for workouts, prefer lighter-feeling trainers, or want more ground feedback and a sharper toe-off.",
     "similar_to": "Saucony Triumph 23, Brooks Glycerin Max, Nike Vomero 18",
-    "notable_detail": "The update keeps the Nimbus identity - deep, calm cushioning and a smooth roll - but shifts the feel towards “more protective than playful”. It’s the kind of shoe that makes easy miles feel easier, rather than making you want to run fast."
+    "notable_detail": "The update keeps the Nimbus identity - deep, calm cushioning and a smooth roll - but shifts the feel towards “more protective than playful”. It’s the kind of shoe that makes easy miles feel easier, rather than making you want to run fast.",
+    "common_issues": "weight:very heavy for daily use | ride:overly soft for runners wanting control"
   },
   {
     "shoe_id": "shoe_0065",
@@ -2567,6 +2695,7 @@
     "full_name": "Mizuno Wave Rebellion Pro 3",
     "alias_code": null,
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "TRUE",
@@ -2597,7 +2726,8 @@
     "why_it_feels_this_way": "Extreme stack height and a very aggressive geometry create a soft, springy feel that rewards fast, forward running, but the unstable platform and minimal ground feel make it demanding if you are not landing efficiently.",
     "avoid_if": "Avoid if you heel strike heavily, need stability, want an easy all-round racer, or prefer a natural, flexible ride - it works best when you stay forward and commit to the geometry.",
     "similar_to": "Adidas Adizero Adios Pro 4, Saucony Endorphin Elite 2, Nike Vaporfly Next% 4",
-    "notable_detail": "Mizuno’s aggressive geometry is the whole point: the shoe is designed to keep you moving forward, with a rocker and midsole shape that works best when you stay on the front half of the shoe. If you land back on the heel, it feels clumsy and inefficient - the ride only clicks when you commit to a forward landing and quick turnover."
+    "notable_detail": "Mizuno’s aggressive geometry is the whole point: the shoe is designed to keep you moving forward, with a rocker and midsole shape that works best when you stay on the front half of the shoe. If you land back on the heel, it feels clumsy and inefficient - the ride only clicks when you commit to a forward landing and quick turnover.",
+    "common_issues": "stability:aggressive geometry feels unstable | ride:awkward if cadence drops"
   },
   {
     "shoe_id": "shoe_0066",
@@ -2607,6 +2737,7 @@
     "full_name": "PUMA Fast-R NITRO Elite 3",
     "alias_code": "Fast-R 3",
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "TRUE",
@@ -2637,7 +2768,8 @@
     "why_it_feels_this_way": "A highly rockered, split-midsole design with a stiff carbon plate produces an ultra-light, explosive rebound, but the aggressive geometry and narrow control window can feel unstable and very race-specific.",
     "avoid_if": "Avoid if you want stability, expect it to work well at easy paces, or rely on a long heel landing - it rewards fast running with a forward strike.",
     "similar_to": "Adidas Adizero Adios Pro 4, Saucony Endorphin Elite 2",
-    "notable_detail": "The split midsole and very late, steep rocker create a narrow “sweet spot” that rewards fast, forward running. It actively discourages heavy heel striking - if you try to sit back, the geometry feels awkward, but if you stay forward it delivers a sharp, high-gear roll and a punchy toe-off."
+    "notable_detail": "The split midsole and very late, steep rocker create a narrow “sweet spot” that rewards fast, forward running. It actively discourages heavy heel striking - if you try to sit back, the geometry feels awkward, but if you stay forward it delivers a sharp, high-gear roll and a punchy toe-off.",
+    "common_issues": "ride:stiff and unforgiving at easy paces | fit:snug midfoot limits comfort"
   },
   {
     "shoe_id": "shoe_0067",
@@ -2647,6 +2779,7 @@
     "full_name": "ASICS Gel Contend 9",
     "alias_code": "Contend 9",
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -2677,7 +2810,8 @@
     "why_it_feels_this_way": "A straightforward, slightly firm ride with moderate cushioning and a predictable transition, where the stable, traditional geometry prioritises consistency over bounce or speed.",
     "avoid_if": "Avoid if you want a soft, plush feel, high energy return, or a lighter, faster shoe for workouts.",
     "similar_to": "New Balance Fresh Foam 680 v8, Brooks Ghost 17, Nike Pegasus 41",
-    "notable_detail": "Uses AMPLIFOAM+ with rearfoot GEL for a simple, durable cushioning setup that’s aimed at entry-level mileage rather than performance."
+    "notable_detail": "Uses AMPLIFOAM+ with rearfoot GEL for a simple, durable cushioning setup that’s aimed at entry-level mileage rather than performance.",
+    "common_issues": "ride:firm and basic cushioning | use_case:limited beyond easy runs"
   },
   {
     "shoe_id": "shoe_0068",
@@ -2687,6 +2821,7 @@
     "full_name": "Nike Revolution 8",
     "alias_code": null,
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -2717,7 +2852,8 @@
     "why_it_feels_this_way": "A basic foam midsole and flexible build create a simple, easygoing ride with moderate rebound, plus a gentle rocker that helps it roll along at easy paces without feeling aggressive.",
     "avoid_if": "Avoid if you want a truly stable platform, more structure for longer runs, or a more energetic, springy midsole feel.",
     "similar_to": "New Balance Fresh Foam 680 v8, ASICS Gel Contend 9, Brooks Ghost 17",
-    "notable_detail": "Nike leans into comfort and ease here: a foam midsole and “comfort-focused rocker geometry” are the main story, making it more of a beginner daily and walking shoe than a performance trainer."
+    "notable_detail": "Nike leans into comfort and ease here: a foam midsole and “comfort-focused rocker geometry” are the main story, making it more of a beginner daily and walking shoe than a performance trainer.",
+    "common_issues": "durability:midsole compresses quickly | ride:harsh feel over longer distances"
   },
   {
     "shoe_id": "shoe_0069",
@@ -2727,6 +2863,7 @@
     "full_name": "New Balance Fresh Foam 680 v8",
     "alias_code": "680",
     "is_daily_trainer": "TRUE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "TRUE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -2757,7 +2894,8 @@
     "why_it_feels_this_way": "A balanced, slightly cushioned feel that sits in the middle of the spectrum: not especially soft or bouncy, but smooth and steady with a more natural transition and moderate ground feedback.",
     "avoid_if": "Avoid if you want a lively tempo shoe, very soft recovery cushioning, or a snappier rocker-driven ride.",
     "similar_to": "Nike Pegasus 41, Brooks Ghost 17, ASICS Gel Contend 9",
-    "notable_detail": "New Balance positions it as a value daily trainer built around Fresh Foam cushioning and a simple, durable outsole, aimed at comfort per pound rather than standout speed feel."
+    "notable_detail": "New Balance positions it as a value daily trainer built around Fresh Foam cushioning and a simple, durable outsole, aimed at comfort per pound rather than standout speed feel.",
+    "common_issues": "ride:firm for heavier runners | use_case:lacks versatility beyond easy mileage"
   },
   {
     "shoe_id": "shoe_0070",
@@ -2767,6 +2905,7 @@
     "full_name": "Nike Pegasus Trail 5",
     "alias_code": null,
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -2797,7 +2936,8 @@
     "why_it_feels_this_way": "A moderately cushioned, slightly springy ReactX ride that works best as a road-to-trail cruiser, with a steady platform and a do-it-all transition rather than a highly specialised trail feel.",
     "avoid_if": "Avoid if you want aggressive lugs for technical mud and wet rock, or if you need a more locked-in, trail-specific upper and platform for rough descents.",
     "similar_to": "HOKA Challenger 8, New Balance Fresh Foam X Hierro v9, Saucony Peregrine 15",
-    "notable_detail": "The big update is the move to ReactX and a roomier, improved upper, but multiple testers still flag outsole grip as the main limitation on slick wet terrain."
+    "notable_detail": "The big update is the move to ReactX and a roomier, improved upper, but multiple testers still flag outsole grip as the main limitation on slick wet terrain.",
+    "common_issues": "traction:less confidence on wet rock | stability:platform feels unstable on technical terrain"
   },
   {
     "shoe_id": "shoe_0071",
@@ -2807,6 +2947,7 @@
     "full_name": "Saucony Peregrine 15",
     "alias_code": null,
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "FALSE",
@@ -2837,7 +2978,8 @@
     "why_it_feels_this_way": "A firmer, protective trail ride with a stable platform and a more direct feel underfoot, where the rock plate and outsole bite prioritise control and protection over plush softness or a strong rocker roll.",
     "avoid_if": "Avoid if you want a soft, max-cushion trail cruiser, a wide toe box, or a smoother road-like ride for hard surfaces.",
     "similar_to": "Altra Lone Peak 9, Nike Pegasus Trail 5, HOKA Speedgoat 6",
-    "notable_detail": "Saucony highlights a reformulated PWRTRAC outsole for traction and an updated PWRRUN midsole for a softer feel than before, while still keeping a protective rock-plate style setup for sharp terrain."
+    "notable_detail": "Saucony highlights a reformulated PWRTRAC outsole for traction and an updated PWRRUN midsole for a softer feel than before, while still keeping a protective rock-plate style setup for sharp terrain.",
+    "common_issues": "ride:firm feel on long runs | fit:narrow midfoot for high-volume feet"
   },
   {
     "shoe_id": "shoe_0072",
@@ -2847,6 +2989,7 @@
     "full_name": "ASICS Metaspeed Sky Tokyo",
     "alias_code": "Sky Tokyo",
     "is_daily_trainer": "FALSE",
+    "is_super_trainer": "FALSE",
     "is_recovery_shoe": "FALSE",
     "is_workout_shoe": "FALSE",
     "is_race_shoe": "TRUE",
@@ -2877,6 +3020,7 @@
     "why_it_feels_this_way": "A very cushioned, ultra-bouncy racer built around a stiff carbon plate, tuned for stride-based running: it feels explosive and fast, but the narrow, race-first platform offers little stability or ground feel.",
     "avoid_if": "Avoid if you want stability, easy-day versatility, or a shoe that feels controlled when you are tired or landing heavily on the heel.",
     "similar_to": "Nike Vaporfly Next% 4, Adidas Adizero Adios Pro 4, Saucony Endorphin Elite 2",
-    "notable_detail": "ASICS positions Sky Tokyo for stride-style runners, using a dual-foam stack (FF LEAP plus FF TURBO PLUS) and a full-length carbon plate, with the Sky using a flatter plate setup intended to support longer strides rather than cadence-focused turnover."
+    "notable_detail": "ASICS positions Sky Tokyo for stride-style runners, using a dual-foam stack (FF LEAP plus FF TURBO PLUS) and a full-length carbon plate, with the Sky using a flatter plate setup intended to support longer strides rather than cadence-focused turnover.",
+    "common_issues": "fit:narrow midfoot for wider feet | stability:less controlled if form deteriorates"
   }
 ]
