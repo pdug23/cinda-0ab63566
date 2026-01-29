@@ -612,7 +612,7 @@ const ProfileBuilderStep4Analysis = () => {
   return (
     <>
       <AnimatedBackground />
-      <OnboardingLayout scrollable invisible>
+      <OnboardingLayout scrollable invisible={status === "loading"}>
         <PageTransition className="flex flex-col flex-1 min-h-0">
           {/* Card header with back button */}
           <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-start flex-shrink-0">
