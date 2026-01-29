@@ -864,6 +864,7 @@ async function buildRecommendedShoe(
     keyStrengths: extractDifferentiatedStrengths(shoe, gap, allThreeShoes),
     tradeOffs: identifyTradeoffsComparative(shoe, currentShoes, catalogue, isTradeOff, allThreeShoes),
     archetypes: getShoeArchetypes(shoe),
+    is_super_trainer: shoe.is_super_trainer,
     badge,
     position,
   };
