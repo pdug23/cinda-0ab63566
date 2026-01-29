@@ -20,12 +20,22 @@ const Landing = () => {
   const [isExiting, setIsExiting] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   
-  // Detect if running as installed PWA
+  // Detect if running as installed PWA and auto-show modal on first visit
   useEffect(() => {
     const isInStandaloneMode = 
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true;
     setIsStandalone(isInStandaloneMode);
+    
+    // Show modal automatically on first visit (if not already in PWA mode)
+    if (!isInStandaloneMode) {
+      const hasVisited = localStorage.getItem('cinda_has_visited');
+      if (!hasVisited) {
+        localStorage.setItem('cinda_has_visited', 'true');
+        // Small delay to let the landing page render first
+        setTimeout(() => setShowA2HSModal(true), 1500);
+      }
+    }
   }, []);
   
   // Orientation content stagger states
