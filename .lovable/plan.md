@@ -1,47 +1,85 @@
 
-# Remove Side Borders Clipping Adjacent Card Peeks
+# Add Subtle Emphasis to BUY Button
 
-## Problem
+## Current State
 
-The horizontal padding (`px-4 md:px-6`) on the `OnboardingLayout`'s main element creates visible borders on both sides of the display. These paddings clip the "peek" preview of adjacent shoe cards, defeating the purpose of the carousel's `slidesPerView` values (1.2-1.45).
+The BUY button currently has:
+- Dark translucent background (`rgba(26, 26, 30, 0.95)`)
+- Subtle white border (15% opacity)
+- Muted white text and icon (70% opacity)
+- No glow or accent color
 
-## Solution
+This makes it blend in with the SAVE button, lacking visual hierarchy.
 
-When `OnboardingLayout` is in `invisible` mode (used on the Recommendations page), remove the horizontal padding from the main element so the carousel can extend edge-to-edge. This allows the adjacent card peeks to be visible without being clipped.
+---
+
+## Proposed Solution
+
+Add subtle enhancements that draw attention without overwhelming the design:
+
+1. **Subtle orange glow** - A soft box-shadow using the primary color at low opacity
+2. **Slightly brighter text** - Increase text/icon opacity from 70% to 85%
+3. **Orange-tinted border** - Replace white border with a very subtle orange tint
 
 ---
 
 ## Changes
 
-### File: `src/components/OnboardingLayout.tsx`
+### File: `src/components/results/ShoeCard.tsx`
 
-**Current code (line 75):**
+**Lines 292-303**
+
 ```tsx
-<main className="h-full flex flex-col items-center justify-center px-4 md:px-6">
+<button
+  className="absolute top-4 right-4 h-8 px-2.5 flex items-center justify-center gap-1 rounded-xl transition-all z-10"
+  style={{
+    backgroundColor: "rgba(26, 26, 30, 0.95)",
+    border: "1px solid hsl(var(--primary) / 0.25)",
+    boxShadow: "0 0 8px hsl(var(--primary) / 0.3)",
+  }}
+  onClick={() => setBuyModalOpen(true)}
+  aria-label="Buy now"
+>
+  <span className="text-[10px] font-medium uppercase tracking-wide text-white/85">Buy</span>
+  <ExternalLink className="w-3.5 h-3.5 text-white/85" />
+</button>
 ```
-
-**Updated code:**
-```tsx
-<main className={`h-full flex flex-col items-center justify-center ${invisible ? '' : 'px-4 md:px-6'}`}>
-```
-
-This conditionally removes the horizontal padding when `invisible={true}`, allowing the ShoeCarousel to extend to the edges of the screen while the card peeks remain visible.
 
 ---
 
-## Visual Impact
+## Visual Comparison
 
 ```text
-BEFORE (with padding):
-┌──────────────────────────────────────────────┐
-│ ░░ │  peek  │     Active Card     │  peek  │ ░░ │  ← padding clips peeks
-└──────────────────────────────────────────────┘
+BEFORE:
+┌─────────────────────────────────────┐
+│  [SAVE]                     [BUY]  │  ← Both buttons identical (dark, muted)
+└─────────────────────────────────────┘
 
-AFTER (no padding in invisible mode):
-┌──────────────────────────────────────────────┐
-│  peek  │        Active Card        │  peek  │  ← full edge-to-edge
-└──────────────────────────────────────────────┘
+AFTER:
+┌─────────────────────────────────────┐
+│  [SAVE]                    [✨BUY]  │  ← BUY has subtle orange glow halo
+└─────────────────────────────────────┘
 ```
+
+---
+
+## Design Details
+
+| Property | Current | Proposed |
+|----------|---------|----------|
+| Background | Dark translucent | Dark translucent (unchanged) |
+| Border | White 15% | Orange 25% (subtle tint) |
+| Text/Icon | White 70% | White 85% (slightly brighter) |
+| Glow | None | Orange glow at 30% opacity |
+
+---
+
+## Why This Works
+
+- **Maintains dark aesthetic** - Background stays the same dark color
+- **Subtle differentiation** - The soft glow creates a "halo" effect without screaming for attention
+- **Brand consistency** - Uses the orange accent color already established in the app
+- **Not overwhelming** - Low opacity values (25-30%) keep it refined
 
 ---
 
@@ -49,4 +87,4 @@ AFTER (no padding in invisible mode):
 
 | File | Change |
 |------|--------|
-| `src/components/OnboardingLayout.tsx` | Remove horizontal padding when `invisible={true}` |
+| `src/components/results/ShoeCard.tsx` | Add subtle orange glow, orange-tinted border, and slightly brighter text to BUY button |
