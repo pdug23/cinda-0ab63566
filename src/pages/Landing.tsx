@@ -18,6 +18,15 @@ const Landing = () => {
   const [showA2HSModal, setShowA2HSModal] = useState(false);
   const [viewState, setViewState] = useState<ViewState>("landing");
   const [isExiting, setIsExiting] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+  
+  // Detect if running as installed PWA
+  useEffect(() => {
+    const isInStandaloneMode = 
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+    setIsStandalone(isInStandaloneMode);
+  }, []);
   
   // Orientation content stagger states
   const [showHeadline, setShowHeadline] = useState(false);
@@ -201,8 +210,8 @@ const Landing = () => {
           </PageTransition>
         )}
 
-        {/* Web app promotion link - visible on both views */}
-        {!isExiting && (
+        {/* Web app promotion link - hidden in standalone/PWA mode */}
+        {!isExiting && !isStandalone && (
           <button
             onClick={() => {
               analytics.installLinkClicked(viewState);
