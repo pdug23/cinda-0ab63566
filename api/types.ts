@@ -526,13 +526,17 @@ export interface Shoe {
   full_name: string;
   alias_code: string | null;
 
-  // Archetype booleans (stored as "TRUE"/"FALSE" strings in JSON)
-  is_daily_trainer: string;
-  is_recovery_shoe: string;
-  is_workout_shoe: string;
-  is_race_shoe: string;
-  is_trail_shoe: string;
-  is_walking_shoe: string;
+  // Archetype booleans
+  is_daily_trainer: boolean;
+  is_recovery_shoe: boolean;
+  is_workout_shoe: boolean;
+  is_race_shoe: boolean;
+  is_trail_shoe: boolean;
+  is_walking_shoe: boolean;
+  is_super_trainer: boolean;
+
+  // Known fit/durability issues
+  common_issues: string[];
 
   // Feel scores (1-5 scale from shoebase.json)
   /** 5 = very soft/plush, 1 = very firm */
@@ -850,12 +854,11 @@ export const ARCHETYPE_FIELD_MAP: Record<ShoeArchetype, keyof Shoe> = {
 
 /**
  * Helper to check if a shoe has a specific archetype
- * Handles the string "TRUE"/"FALSE" values in shoebase.json
+ * Now uses actual boolean values from shoebase.json
  */
 export function shoeHasArchetype(shoe: Shoe, archetype: ShoeArchetype): boolean {
   const field = ARCHETYPE_FIELD_MAP[archetype];
-  const value = shoe[field];
-  return value === "TRUE" || value === true;
+  return shoe[field] === true;
 }
 
 /**

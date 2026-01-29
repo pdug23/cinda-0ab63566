@@ -39,6 +39,22 @@ const openaiClient = new OpenAI({
 });
 
 /**
+ * User context for bullet generation - either gap-based (Full Analysis) or preference-based (Quick Match)
+ */
+interface BulletUserContext {
+  mode: 'full_analysis' | 'quick_match';
+  // Full Analysis mode: current rotation and gap info
+  currentShoeNames?: string[];  // e.g., ["Clifton 9", "Vaporfly 3"]
+  currentShoeUses?: string[];   // e.g., ["easy runs", "races"]
+  gapReasoning?: string;        // e.g., "needs workout shoe for tempo/intervals"
+  gapType?: string;             // e.g., "coverage", "performance"
+  // Quick Match mode: feel preferences
+  preferredCushion?: number;    // 1-5
+  preferredBounce?: number;     // 1-5
+  preferredStability?: number;  // 1-5
+}
+
+/**
  * Parameters for generating match description bullets
  */
 interface MatchDescriptionParams {
@@ -56,138 +72,196 @@ interface MatchDescriptionParams {
   bounce_1to5: number;
   stability_1to5: number;
   rocker_1to5: number;
+  // Fit details for education bullet
+  fit_volume: string;
+  toe_box: string;
+  support_type: string;
   // Actual shoe archetype flags (what this shoe IS)
   is_daily_trainer: boolean;
   is_recovery_shoe: boolean;
   is_workout_shoe: boolean;
   is_race_shoe: boolean;
   is_trail_shoe: boolean;
+  // New fields for redesigned bullets
+  is_super_trainer: boolean;
+  common_issues: string[];
+  // User context for personalization
+  userContext: BulletUserContext;
 }
 
 /**
- * Generate a custom match description using gpt-4o-mini
- * Returns three bullet points: midsole/ride, differentiator, versatility
+ * Generate personalized match description bullets using gpt-4o-mini
+ * Returns three bullets: Personal Match, Education, Standout + Use Case
  */
 async function generateMatchDescription(params: MatchDescriptionParams): Promise<string[]> {
-  console.log('[generateMatchDescription] Called with params:', JSON.stringify(params, null, 2));
+  console.log('[generateMatchDescription] Called for:', params.fullName);
 
   const archetypeLabel = params.archetype.replace('_', ' ');
+  const ctx = params.userContext;
 
-  // Build actual archetype flags string (what this shoe IS)
-  const archetypeFlags = [
-    params.is_daily_trainer && 'daily trainer',
-    params.is_recovery_shoe && 'recovery shoe',
-    params.is_workout_shoe && 'workout shoe',
-    params.is_race_shoe && 'race shoe',
-    params.is_trail_shoe && 'trail shoe'
-  ].filter(Boolean).join(', ') || 'general running shoe';
+  // Build user context section based on mode
+  let userContextSection: string;
+  if (ctx.mode === 'full_analysis' && ctx.currentShoeNames && ctx.currentShoeNames.length > 0) {
+    const rotationDesc = ctx.currentShoeNames.map((name, i) =>
+      `${name} (${ctx.currentShoeUses?.[i] || 'general'})`
+    ).join(', ');
+    userContextSection = `USER'S CURRENT ROTATION: ${rotationDesc}
+GAP IDENTIFIED: ${ctx.gapReasoning || `Needs ${archetypeLabel}`}`;
+  } else {
+    // Quick Match mode - preference based
+    const cushionDesc = ctx.preferredCushion ? (ctx.preferredCushion <= 2 ? 'firm' : ctx.preferredCushion >= 4 ? 'soft/plush' : 'moderate') : 'balanced';
+    const bounceDesc = ctx.preferredBounce ? (ctx.preferredBounce <= 2 ? 'muted' : ctx.preferredBounce >= 4 ? 'high bounce' : 'balanced') : 'balanced';
+    const stabilityDesc = ctx.preferredStability ? (ctx.preferredStability <= 2 ? 'neutral/flexible' : ctx.preferredStability >= 4 ? 'stable/supportive' : 'moderate') : 'balanced';
+    userContextSection = `USER'S PREFERENCES: ${cushionDesc} cushion, ${bounceDesc} response, ${stabilityDesc} stability
+SEARCHING FOR: ${archetypeLabel}`;
+  }
 
-  // Build descriptive context from specs
-  const cushionDesc = params.cushion_1to5 <= 2 ? 'firm' : params.cushion_1to5 >= 4 ? 'soft' : 'moderate';
-  const bounceDesc = params.bounce_1to5 <= 2 ? 'muted' : params.bounce_1to5 >= 4 ? 'bouncy/responsive' : 'balanced';
-  const weightDesc = params.weight_g < 230 ? 'lightweight' : params.weight_g > 280 ? 'heavier' : 'moderate weight';
-  const plateInfo = params.plateTechName
-    ? `Has ${params.plateTechName} (${params.plateMaterial})`
-    : 'No plate';
+  // Build fit description
+  const fitDesc = `${params.fit_volume} volume, ${params.toe_box} toe box, ${params.support_type} support`;
 
-  const prompt = `You're writing shoe card bullets for runners choosing shoes.
+  // Build common issues warning (only if critical)
+  const criticalIssues = params.common_issues.filter(issue =>
+    issue.toLowerCase().includes('size') ||
+    issue.toLowerCase().includes('narrow') ||
+    issue.toLowerCase().includes('wide')
+  );
+  const issueNote = criticalIssues.length > 0
+    ? `\nCRITICAL FIT NOTE (mention briefly if relevant): ${criticalIssues[0]}`
+    : '';
+
+  // Super trainer instruction
+  const superTrainerNote = params.is_super_trainer
+    ? '\nSUPER TRAINER: Yes - this shoe handles easy recovery through hard intervals. Mention this versatility in bullet 3.'
+    : '';
+
+  const prompt = `Write 3 personalized shoe recommendation bullets for a runner.
 
 SHOE: ${params.fullName}
-WHAT THIS SHOE ACTUALLY IS: ${archetypeFlags}
-RECOMMENDED FOR: ${archetypeLabel}
+RECOMMENDED AS: ${archetypeLabel}
 
-TECH & FEEL:
+${userContextSection}
+
+SHOE RIDE & FEEL:
 ${params.whyItFeelsThisWay}
 
-NOTABLE:
+STANDOUT FEATURE:
 ${params.notableDetail}
 
-SPECS (for context, DO NOT output these as numbers):
-- Weight: ${params.weight_g}g (${weightDesc})
-- Drop: ${params.heelDrop_mm}mm
-- Cushion: ${cushionDesc} (${params.cushion_1to5}/5)
-- Response: ${bounceDesc} (${params.bounce_1to5}/5)
-- ${plateInfo}
-- Wet grip: ${params.wetGrip}
+FIT DETAILS: ${fitDesc}
 
-AVOID IF:
-${params.avoidIf}
+SPECS (context only, don't output numbers):
+- Cushion: ${params.cushion_1to5}/5, Bounce: ${params.bounce_1to5}/5
+- Stability: ${params.stability_1to5}/5, Rocker: ${params.rocker_1to5}/5
+- ${params.plateTechName ? `Has ${params.plateTechName} plate` : 'No plate'}${superTrainerNote}${issueNote}
 
-Write exactly 3 bullets. Max 11 words each.
+Write exactly 3 bullets. Max 15 words each. No bullet numbers or prefixes.
 
-1. TECH: Name the foam/plate tech. What it does to the ride.
-2. DIFFERENTIATOR: What makes it unique. No tech name repetition.
-3. CLOSER: Emotional feel + practical benefit. The reason to buy.
+BULLET 1 - PERSONAL MATCH:
+${ctx.mode === 'full_analysis'
+  ? '- Reference their current shoes BY NAME (e.g., "Fills the tempo gap between your Clifton\'s comfort and your Vaporfly\'s race snap")'
+  : '- Reference their preferences (e.g., "Your preference for balanced cushion with high bounce matches this responsive trainer perfectly")'}
+- Explain WHY this shoe fits their situation
+- Make it feel personally chosen for them
+
+BULLET 2 - EDUCATION:
+- Teach ONE thing about how this shoe rides or fits
+- Priority: ride characteristics > fit details > stability
+- DO NOT list problems or common issues
+- Example: "The smooth rocker guides you naturally while the flexible forefoot preserves your natural cadence"
+
+BULLET 3 - STANDOUT + USE CASE:
+- Lead with the notable feature/tech
+${params.is_super_trainer ? '- MUST mention "rare versatility handles easy through tempo" or similar super trainer capability' : '- End with when/how to use it'}
+- Example: "ReactX foam stays responsive through marathon pace - ideal for your everyday training efforts"
 
 RULES:
-- Tech name in bullet 1 ONLY. No repetition of ANY words across bullets.
-- No weight/drop numbers, no em dashes, no "The" or "This" starts.
-- British spelling. Short punchy words.`;
+- Use em dashes only in bullet 3 to separate feature from use case
+- British spelling
+- Conversational, not marketing-speak
+
+SENTENCE QUALITY (CRITICAL):
+- Write proper, complete sentences with all necessary articles (a, an, the)
+- Don't drop helper words (and, while, with, for, etc.) to force word limits
+- Don't write in "telegram style" or compressed syntax
+- If a sentence doesn't fit naturally in 15 words, rephrase it completely
+- Prioritize readability over hitting exactly 15 words (14 natural words beats 15 robotic words)
+
+BAD examples (robotic, missing words):
+- "Fills tempo gap between Clifton comfort and Vaporfly snap"
+- "Smooth rocker guides naturally, flexible forefoot preserves cadence"
+
+GOOD examples (complete, natural sentences):
+- "Fills the tempo gap between your Clifton's comfort and your Vaporfly's race focus"
+- "The smooth rocker guides naturally while the flexible forefoot preserves your cadence"`;
 
   try {
     const response = await openaiClient.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 256,
+      max_tokens: 300,
     });
 
-    console.log('[generateMatchDescription] Raw LLM response:', JSON.stringify(response, null, 2));
-
     const content = response.choices[0]?.message?.content?.trim();
-
-    console.log('[generateMatchDescription] Extracted content:', content);
+    console.log('[generateMatchDescription] LLM response:', content);
 
     if (content) {
-      // Clean up numbered prefixes like "1. " or "1) " or "- "
+      // Clean up numbered prefixes like "1. " or "1) " or "- " or "BULLET 1:"
       const lines = content
         .split('\n')
         .map(line => line.trim())
-        .filter(line => line.length > 0)
-        .map(line => line.replace(/^[\d]+[.\)]\s*/, '').replace(/^[-•]\s*/, '').trim());
+        .filter(line => line.length > 0 && !line.startsWith('BULLET'))
+        .map(line => line
+          .replace(/^[\d]+[.\)]\s*/, '')
+          .replace(/^[-•]\s*/, '')
+          .replace(/^\*\*.*?\*\*:?\s*/, '')
+          .trim()
+        )
+        .filter(line => line.length > 5); // Filter out very short lines
 
-      // Ensure consistent punctuation - remove trailing periods
+      // Remove trailing periods for consistency
       const normalizedLines = lines.map(line => line.replace(/\.$/, ''));
 
-      // Enforce 11-word limit (hard truncation if LLM exceeds)
+      // Enforce 15-word limit
       const enforceWordLimit = (bullet: string): string => {
         const words = bullet.trim().split(/\s+/);
-        if (words.length > 11) {
-          console.log(`[generateMatchDescription] Truncating bullet from ${words.length} to 11 words`);
-          return words.slice(0, 11).join(' ');
+        if (words.length > 15) {
+          console.log(`[generateMatchDescription] Truncating bullet from ${words.length} to 15 words`);
+          return words.slice(0, 15).join(' ');
         }
         return bullet;
       };
 
       const truncatedLines = normalizedLines.map(enforceWordLimit);
-      console.log('[generateMatchDescription] Parsed lines:', truncatedLines);
+      console.log('[generateMatchDescription] Parsed bullets:', truncatedLines);
 
       if (truncatedLines.length >= 3) {
-        const result = [truncatedLines[0], truncatedLines[1], truncatedLines[2]];
-        console.log('[generateMatchDescription] Returning 3 bullets:', result);
-        return result;
+        return [truncatedLines[0], truncatedLines[1], truncatedLines[2]];
       } else if (truncatedLines.length === 2) {
-        const result = [truncatedLines[0], truncatedLines[1], enforceWordLimit(params.notableDetail.replace(/\.$/, ''))];
-        console.log('[generateMatchDescription] Only 2 lines, adding fallback. Returning:', result);
-        return result;
+        return [truncatedLines[0], truncatedLines[1], enforceWordLimit(params.notableDetail.replace(/\.$/, ''))];
       } else if (truncatedLines.length === 1) {
-        const result = [truncatedLines[0], enforceWordLimit(params.notableDetail.replace(/\.$/, '')), enforceWordLimit(params.whyItFeelsThisWay.slice(0, 80).replace(/\.$/, ''))];
-        console.log('[generateMatchDescription] Only 1 line, adding fallbacks. Returning:', result);
-        return result;
+        return [truncatedLines[0], enforceWordLimit(params.whyItFeelsThisWay.slice(0, 100)), enforceWordLimit(params.notableDetail)];
       }
     }
   } catch (error) {
     console.error('[generateMatchDescription] OpenAI API error:', error);
   }
 
-  // Fallback if API fails
-  console.log('[generateMatchDescription] Using complete fallback - no valid content from LLM');
+  // Fallback if API fails - still try to be personal
+  console.log('[generateMatchDescription] Using fallback bullets');
+  const fallbackBullet1 = ctx.mode === 'full_analysis' && ctx.gapReasoning
+    ? `Addresses your ${ctx.gapType || 'coverage'} gap with responsive ${archetypeLabel} capability`
+    : `Matches your preference for ${archetypeLabel} with balanced, versatile performance`;
+
   return [
-    params.notableDetail.replace(/\.$/, ''),
-    params.whyItFeelsThisWay.length > 80
-      ? params.whyItFeelsThisWay.slice(0, 77).replace(/\.$/, '') + '...'
-      : params.whyItFeelsThisWay.replace(/\.$/, ''),
-    `Well-suited for ${archetypeLabel}`
+    enforceWordLimit(fallbackBullet1),
+    enforceWordLimit(params.whyItFeelsThisWay.slice(0, 80)),
+    enforceWordLimit(params.notableDetail + (params.is_super_trainer ? ' - rare versatility for varied training' : ''))
   ];
+
+  function enforceWordLimit(bullet: string): string {
+    const words = bullet.trim().split(/\s+/);
+    return words.length > 15 ? words.slice(0, 15).join(' ') : bullet;
+  }
 }
 
 // ============================================================================
@@ -637,6 +711,7 @@ export async function generateRecommendations(
       heelDropScore: 0,
       stabilityBonus: 0,
       availabilityBonus: 0,
+      superTrainerBonus: 0,
       footStrikeScore: 0,
       experienceScore: 0,
       primaryGoalScore: scoreForGapFit(shoe, gap, profile),
@@ -685,10 +760,22 @@ export async function generateRecommendations(
   // Step 8: Build recommendations with center-emphasis reordering
   const archetypeLabel = gap.recommendedArchetype || 'daily_trainer';
 
+  // Build user context for personalized bullets (Full Analysis mode)
+  const userContext: BulletUserContext = {
+    mode: 'full_analysis',
+    currentShoeNames: currentShoes.map(cs => {
+      const shoe = catalogue.find(s => s.shoe_id === cs.shoeId);
+      return shoe?.full_name || cs.shoeId;
+    }),
+    currentShoeUses: currentShoes.map(cs => cs.runTypes?.join('/') || 'general'),
+    gapReasoning: gap.reasoning,
+    gapType: gap.type,
+  };
+
   const recommendations: RecommendedShoe[] = await Promise.all([
-    buildRecommendedShoe(second, archetypeLabel, getBadge(second, false, true), currentShoes, catalogue, false, allThreeShoes, "left"),
-    buildRecommendedShoe(first, archetypeLabel, getBadge(first, true, false), currentShoes, catalogue, false, allThreeShoes, "center"),
-    buildRecommendedShoe(third, archetypeLabel, getBadge(third, false, false), currentShoes, catalogue, true, allThreeShoes, "right"),
+    buildRecommendedShoe(second, archetypeLabel, getBadge(second, false, true), currentShoes, catalogue, false, allThreeShoes, "left", userContext),
+    buildRecommendedShoe(first, archetypeLabel, getBadge(first, true, false), currentShoes, catalogue, false, allThreeShoes, "center", userContext),
+    buildRecommendedShoe(third, archetypeLabel, getBadge(third, false, false), currentShoes, catalogue, true, allThreeShoes, "right", userContext),
   ]);
 
   console.log('[Badge Assignment]', recommendations.map(r => ({
@@ -712,10 +799,10 @@ async function buildRecommendedShoe(
   catalogue: Shoe[],
   isTradeOff: boolean,
   allThreeShoes: Shoe[],
-  position: RecommendationPosition
+  position: RecommendationPosition,
+  userContext: BulletUserContext
 ): Promise<RecommendedShoe> {
   // Generate match description using LLM (with fallback)
-  // Note: archetype flags in shoebase.json are strings "TRUE"/"FALSE", convert to boolean
   const matchReason = await generateMatchDescription({
     fullName: shoe.full_name,
     archetype: archetypeLabel,
@@ -731,12 +818,21 @@ async function buildRecommendedShoe(
     bounce_1to5: shoe.bounce_1to5,
     stability_1to5: shoe.stability_1to5,
     rocker_1to5: shoe.rocker_1to5,
+    // Fit details for education bullet
+    fit_volume: shoe.fit_volume,
+    toe_box: shoe.toe_box,
+    support_type: shoe.support_type,
     // Actual shoe archetype flags (what this shoe IS)
-    is_daily_trainer: shoe.is_daily_trainer === "TRUE",
-    is_recovery_shoe: shoe.is_recovery_shoe === "TRUE",
-    is_workout_shoe: shoe.is_workout_shoe === "TRUE",
-    is_race_shoe: shoe.is_race_shoe === "TRUE",
-    is_trail_shoe: shoe.is_trail_shoe === "TRUE",
+    is_daily_trainer: shoe.is_daily_trainer,
+    is_recovery_shoe: shoe.is_recovery_shoe,
+    is_workout_shoe: shoe.is_workout_shoe,
+    is_race_shoe: shoe.is_race_shoe,
+    is_trail_shoe: shoe.is_trail_shoe,
+    // New fields for redesigned bullets
+    is_super_trainer: shoe.is_super_trainer,
+    common_issues: shoe.common_issues || [],
+    // User context for personalization
+    userContext,
   });
 
   // Build gap object for strength extraction
@@ -860,23 +956,36 @@ export async function generateDiscoveryRecommendations(
   const archetypeLabel = request.archetype;
   const allThreeShoes = selectedShoes;
 
+  // Build user context for personalized bullets (Quick Match mode - preference based)
+  // Extract numeric preference values for the prompt
+  const getPreferenceValue = (pref: { mode: string; value?: number }): number | undefined => {
+    return pref.mode === 'user_set' ? pref.value : undefined;
+  };
+
+  const userContext: BulletUserContext = {
+    mode: 'quick_match',
+    preferredCushion: getPreferenceValue(request.feelPreferences.cushionAmount),
+    preferredBounce: getPreferenceValue(request.feelPreferences.energyReturn),
+    preferredStability: getPreferenceValue(request.feelPreferences.stabilityAmount),
+  };
+
   if (selectedShoes.length === 1) {
     return [
-      await buildRecommendedShoe(selectedShoes[0], archetypeLabel, getBadge(selectedShoes[0], true, false), currentShoes, catalogue, false, allThreeShoes, "center"),
+      await buildRecommendedShoe(selectedShoes[0], archetypeLabel, getBadge(selectedShoes[0], true, false), currentShoes, catalogue, false, allThreeShoes, "center", userContext),
     ];
   }
 
   if (selectedShoes.length === 2) {
     return await Promise.all([
-      buildRecommendedShoe(selectedShoes[1], archetypeLabel, getBadge(selectedShoes[1], false, true), currentShoes, catalogue, false, allThreeShoes, "left"),
-      buildRecommendedShoe(selectedShoes[0], archetypeLabel, getBadge(selectedShoes[0], true, false), currentShoes, catalogue, false, allThreeShoes, "center"),
+      buildRecommendedShoe(selectedShoes[1], archetypeLabel, getBadge(selectedShoes[1], false, true), currentShoes, catalogue, false, allThreeShoes, "left", userContext),
+      buildRecommendedShoe(selectedShoes[0], archetypeLabel, getBadge(selectedShoes[0], true, false), currentShoes, catalogue, false, allThreeShoes, "center", userContext),
     ]);
   }
 
   return await Promise.all([
-    buildRecommendedShoe(selectedShoes[1], archetypeLabel, getBadge(selectedShoes[1], false, true), currentShoes, catalogue, false, allThreeShoes, "left"),
-    buildRecommendedShoe(selectedShoes[0], archetypeLabel, getBadge(selectedShoes[0], true, false), currentShoes, catalogue, false, allThreeShoes, "center"),
-    buildRecommendedShoe(selectedShoes[2], archetypeLabel, getBadge(selectedShoes[2], false, false), currentShoes, catalogue, true, allThreeShoes, "right"),
+    buildRecommendedShoe(selectedShoes[1], archetypeLabel, getBadge(selectedShoes[1], false, true), currentShoes, catalogue, false, allThreeShoes, "left", userContext),
+    buildRecommendedShoe(selectedShoes[0], archetypeLabel, getBadge(selectedShoes[0], true, false), currentShoes, catalogue, false, allThreeShoes, "center", userContext),
+    buildRecommendedShoe(selectedShoes[2], archetypeLabel, getBadge(selectedShoes[2], false, false), currentShoes, catalogue, true, allThreeShoes, "right", userContext),
   ]);
 }
 

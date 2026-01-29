@@ -49,6 +49,7 @@ export interface ScoredShoe {
     heelDropScore: number;
     stabilityBonus: number;
     availabilityBonus: number;
+    superTrainerBonus: number;  // Bonus for super trainer versatility
     footStrikeScore: number;
     experienceScore: number;
     primaryGoalScore: number;
@@ -147,9 +148,15 @@ function passesHardFilters(
 
     // Filter 4: HARD FILTER by archetype flags
     // Shoe must match at least ONE of the requested archetypes
-    const matchesAnyArchetype = archetypes.some(archetype =>
-      shoeHasArchetype(shoe, archetype)
-    );
+    // Super trainers can match daily_trainer, workout_shoe, and recovery_shoe
+    const matchesAnyArchetype = archetypes.some(archetype => {
+      if (shoeHasArchetype(shoe, archetype)) return true;
+      // Super trainers can do everything except races
+      if (shoe.is_super_trainer && archetype !== 'race_shoe' && archetype !== 'trail_shoe') {
+        return true;
+      }
+      return false;
+    });
 
     if (!matchesAnyArchetype) {
       return false; // Shoe doesn't match any requested archetype
@@ -450,6 +457,17 @@ function scoreStabilityBonus(
     return 10;
   }
 
+  return 0;
+}
+
+/**
+ * Apply super trainer versatility bonus (0-10 points)
+ * Super trainers are highly versatile and can handle recovery through hard intervals
+ */
+function scoreSuperTrainerBonus(shoe: Shoe): number {
+  if (shoe.is_super_trainer) {
+    return 10; // Versatility bonus for super trainers
+  }
   return 0;
 }
 
@@ -1301,6 +1319,7 @@ export function scoreShoe(
   const heelDropScore = scoreHeelDropMatch(shoe, constraints.feelPreferences);
   const stabilityBonus = scoreStabilityBonus(shoe, constraints.stabilityNeed);
   const availabilityBonus = scoreAvailability(shoe);
+  const superTrainerBonus = scoreSuperTrainerBonus(shoe);
 
   // Profile-based modifiers (per SCORING_MODIFIERS.md)
   const footStrikeBonus = scoreFootStrikeMatch(shoe, constraints.profile);
@@ -1327,6 +1346,7 @@ export function scoreShoe(
     heelDropScore +
     stabilityBonus +
     availabilityBonus +
+    superTrainerBonus +
     footStrikeBonus +
     experienceModifier +
     primaryGoalModifier +
@@ -1348,6 +1368,7 @@ export function scoreShoe(
       heelDropScore,
       stabilityBonus,
       availabilityBonus,
+      superTrainerBonus,
       footStrikeScore: footStrikeBonus,
       experienceScore: experienceModifier,
       primaryGoalScore: primaryGoalModifier,

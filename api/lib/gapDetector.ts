@@ -107,6 +107,7 @@ function getRequiredArchetypes(profile: RunnerProfile): ShoeArchetype[] {
 
 /**
  * Get archetypes covered by current shoes
+ * Super trainers count as covering daily_trainer, workout_shoe, and recovery_shoe
  */
 function getCoveredArchetypes(
   currentShoes: CurrentShoe[],
@@ -123,6 +124,13 @@ function getCoveredArchetypes(
     if (shoeHasArchetype(shoe, 'workout_shoe')) covered.add('workout_shoe');
     if (shoeHasArchetype(shoe, 'race_shoe')) covered.add('race_shoe');
     if (shoeHasArchetype(shoe, 'trail_shoe')) covered.add('trail_shoe');
+
+    // Super trainers cover daily_trainer, workout_shoe, and recovery_shoe
+    if (shoe.is_super_trainer) {
+      covered.add('daily_trainer');
+      covered.add('workout_shoe');
+      covered.add('recovery_shoe');
+    }
   }
 
   return Array.from(covered);
@@ -216,6 +224,13 @@ function detectCoverageGaps(
       }
       const shoeArchetypes = suitableArchetypes.filter(archetype => shoeHasArchetype(shoe, archetype));
       console.log(`[detectCoverageGaps] Shoe ${shoe.full_name} (${userShoe.shoeId}) archetypes for ${runType}:`, shoeArchetypes);
+
+      // Super trainers can cover daily_trainer, workout_shoe, and recovery_shoe run types
+      if (shoe.is_super_trainer && runType !== 'races' && runType !== 'trail') {
+        console.log(`[detectCoverageGaps] Shoe ${shoe.full_name} is a super trainer - covers ${runType}`);
+        return true;
+      }
+
       return shoeArchetypes.length > 0;
     });
 
@@ -444,9 +459,10 @@ function checkPerformanceGap(
   }
 
   // Check if they have workout or race shoe coverage
+  // Super trainers count as workout coverage
   const hasWorkoutShoe = currentShoes.some(us => {
     const shoe = catalogue.find(s => s.shoe_id === us.shoeId);
-    return shoe && shoeHasArchetype(shoe, 'workout_shoe');
+    return shoe && (shoeHasArchetype(shoe, 'workout_shoe') || shoe.is_super_trainer);
   });
 
   const hasRaceShoe = currentShoes.some(us => {
@@ -502,9 +518,10 @@ function checkRecoveryGap(
   }
 
   // Check if they have recovery shoe coverage
+  // Super trainers and daily trainers can serve as recovery shoes
   const hasRecoveryShoe = currentShoes.some(us => {
     const shoe = catalogue.find(s => s.shoe_id === us.shoeId);
-    return shoe && shoeHasArchetype(shoe, 'recovery_shoe');
+    return shoe && (shoeHasArchetype(shoe, 'recovery_shoe') || shoe.is_super_trainer || shoeHasArchetype(shoe, 'daily_trainer'));
   });
 
   // No recovery shoes at all

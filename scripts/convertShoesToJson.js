@@ -50,6 +50,10 @@ function parseCSV(content) {
 function convertValue(key, value) {
   // Check if value is blank/empty
   if (!value || !value.trim()) {
+    // Return empty array for array fields, null for others
+    if (key === 'common_issues') {
+      return [];
+    }
     return null;
   }
 
@@ -80,7 +84,7 @@ function convertValue(key, value) {
     return parseFloat(trimmedValue);
   }
 
-  // Boolean fields
+  // Boolean fields - UPDATED TO INCLUDE ARCHETYPE FLAGS
   const booleanFields = [
     'has_plate',
     'use_daily',
@@ -90,7 +94,14 @@ function convertValue(key, value) {
     'use_speed_intervals',
     'use_race',
     'use_trail',
-    'use_walking_all_day'
+    'use_walking_all_day',
+    'is_recovery_shoe',
+    'is_daily_trainer',
+    'is_super_trainer',
+    'is_workout_shoe',
+    'is_race_shoe',
+    'is_trail_shoe',
+    'is_walking_shoe'
   ];
 
   if (booleanFields.includes(key)) {
@@ -103,6 +114,15 @@ function convertValue(key, value) {
     }
     // If it's not a valid boolean value, return null
     return null;
+  }
+
+  // Array fields (pipe-delimited)
+  if (key === 'common_issues') {
+    // Split on pipe, trim each item, filter empty
+    return trimmedValue
+      .split('|')
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
   }
 
   // All other fields remain as strings
