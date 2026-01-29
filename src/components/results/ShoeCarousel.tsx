@@ -188,8 +188,8 @@ export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onS
               className={cn(
                 "w-2 h-2 rounded-full transition-all duration-200",
                 index === activeIndex 
-                  ? "bg-foreground/80" 
-                  : "bg-foreground/30 hover:bg-foreground/50"
+                  ? "bg-white/80" 
+                  : "bg-white/30 hover:bg-white/50"
               )}
               aria-label={`Go to slide ${index + 1}`}
             />
