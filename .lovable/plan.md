@@ -1,90 +1,62 @@
 
-# Add Subtle Emphasis to BUY Button
+# Update Match Badge Color Scheme
 
-## Current State
+## Problem
 
-The BUY button currently has:
-- Dark translucent background (`rgba(26, 26, 30, 0.95)`)
-- Subtle white border (15% opacity)
-- Muted white text and icon (70% opacity)
-- No glow or accent color
+The "CLOSE MATCH" badge uses a platinum white color (`#F1F5F9`) which causes the model name shimmer animation to be invisible, making the card look "sad" compared to the others.
 
-This makes it blend in with the SAVE button, lacking visual hierarchy.
+## Solution
 
----
+Update the color scheme to use a two-tone blue system:
 
-## Proposed Solution
+| Badge Type | Current Color | New Color | Description |
+|------------|---------------|-----------|-------------|
+| CLOSEST MATCH | `#7DD3FC` (light cyan) | `#3B82F6` (deeper blue) | A richer, more saturated blue |
+| CLOSE MATCH | `#F1F5F9` (white) | `#93C5FD` (light sky blue) | Lighter blue, similar to old CLOSEST but slightly lighter |
+| TRADE-OFF | `#F97316` (orange) | `#F97316` (unchanged) | Stays the same |
 
-Add subtle enhancements that draw attention without overwhelming the design:
+## Visual Hierarchy
 
-1. **Subtle orange glow** - A soft box-shadow using the primary color at low opacity
-2. **Slightly brighter text** - Increase text/icon opacity from 70% to 85%
-3. **Orange-tinted border** - Replace white border with a very subtle orange tint
+```text
+CLOSEST MATCH  →  Deep/rich blue (#3B82F6)     ← Most prominent, saturated
+CLOSE MATCH    →  Light sky blue (#93C5FD)     ← Softer, lighter blue
+TRADE-OFF      →  Orange (#F97316)             ← Unchanged, distinct category
+```
 
----
+Both blues will be visibly different: CLOSEST is darker/richer, CLOSE is lighter/softer. The shimmer effect will now work for CLOSE MATCH since it's a visible color rather than near-white.
 
 ## Changes
 
 ### File: `src/components/results/ShoeCard.tsx`
 
-**Lines 292-303**
+**Lines 66-79** - Update the `getBadgeConfig` function:
 
 ```tsx
-<button
-  className="absolute top-4 right-4 h-8 px-2.5 flex items-center justify-center gap-1 rounded-xl transition-all z-10"
-  style={{
-    backgroundColor: "rgba(26, 26, 30, 0.95)",
-    border: "1px solid hsl(var(--primary) / 0.25)",
-    boxShadow: "0 0 8px hsl(var(--primary) / 0.3)",
-  }}
-  onClick={() => setBuyModalOpen(true)}
-  aria-label="Buy now"
->
-  <span className="text-[10px] font-medium uppercase tracking-wide text-white/85">Buy</span>
-  <ExternalLink className="w-3.5 h-3.5 text-white/85" />
-</button>
+const getBadgeConfig = (
+  type: ShoeCardProps["shoe"]["recommendationType"],
+  badge?: ShoeCardProps["shoe"]["badge"]
+): { text: string; color: string } => {
+  const effectiveType = badge || type;
+  
+  if (effectiveType === "closest_match") {
+    return { text: "CLOSEST MATCH", color: "#3B82F6" }; // Rich/deep blue
+  }
+  if (effectiveType === "trade_off_option" || effectiveType === "trade_off") {
+    return { text: "TRADE-OFF", color: "#F97316" }; // Orange (unchanged)
+  }
+  return { text: "CLOSE MATCH", color: "#93C5FD" }; // Light sky blue
+};
 ```
 
----
+## Technical Notes
 
-## Visual Comparison
+- The color change propagates to: badge styling, card glow animation, checkmark icons, and the model name shimmer effect
+- `#3B82F6` is Tailwind's `blue-500` - a rich, saturated blue that feels premium
+- `#93C5FD` is Tailwind's `blue-300` - a soft, light blue that complements the deeper tone
+- Both blues are distinct enough to be clearly differentiated while belonging to the same family
 
-```text
-BEFORE:
-┌─────────────────────────────────────┐
-│  [SAVE]                     [BUY]  │  ← Both buttons identical (dark, muted)
-└─────────────────────────────────────┘
-
-AFTER:
-┌─────────────────────────────────────┐
-│  [SAVE]                    [✨BUY]  │  ← BUY has subtle orange glow halo
-└─────────────────────────────────────┘
-```
-
----
-
-## Design Details
-
-| Property | Current | Proposed |
-|----------|---------|----------|
-| Background | Dark translucent | Dark translucent (unchanged) |
-| Border | White 15% | Orange 25% (subtle tint) |
-| Text/Icon | White 70% | White 85% (slightly brighter) |
-| Glow | None | Orange glow at 30% opacity |
-
----
-
-## Why This Works
-
-- **Maintains dark aesthetic** - Background stays the same dark color
-- **Subtle differentiation** - The soft glow creates a "halo" effect without screaming for attention
-- **Brand consistency** - Uses the orange accent color already established in the app
-- **Not overwhelming** - Low opacity values (25-30%) keep it refined
-
----
-
-## File Summary
+## Files to Edit
 
 | File | Change |
 |------|--------|
-| `src/components/results/ShoeCard.tsx` | Add subtle orange glow, orange-tinted border, and slightly brighter text to BUY button |
+| `src/components/results/ShoeCard.tsx` | Update color values in `getBadgeConfig` function |
