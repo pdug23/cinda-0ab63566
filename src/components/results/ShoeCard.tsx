@@ -33,6 +33,7 @@ interface ShoeCardProps {
     use_speed_intervals?: boolean;
     use_race?: boolean;
     use_trail?: boolean;
+    retail_price_category?: 'Budget' | 'Core' | 'Premium' | 'Race_Day';
   };
   role: "daily" | "tempo" | "race" | "easy" | "long" | "trail";
   position?: 1 | 2 | 3;
@@ -335,7 +336,17 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </div>
 
         {/* Model Name */}
-        <h2 className={`text-2xl font-bold text-center mb-4 text-shimmer-${position}`}>
+        <h2 
+          className={`font-bold text-center mb-4 text-shimmer-${position} whitespace-nowrap overflow-hidden`}
+          style={{
+            fontSize: (() => {
+              const nameLength = (shoe.model + ' ' + (shoe.version || '')).length;
+              if (nameLength <= 12) return '1.5rem';   // text-2xl
+              if (nameLength <= 18) return '1.25rem';  // text-xl  
+              return '1.1rem';                          // text-lg
+            })(),
+          }}
+        >
           {shoe.model} {shoe.version}
         </h2>
 
@@ -455,7 +466,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
           <div className="h-px my-3" style={{ backgroundColor: dividerColor }} />
 
           {/* Specs Grid */}
-          <div className="grid grid-cols-3 gap-4 mb-3">
+          <div className="grid grid-cols-4 gap-2 mb-3">
             <div className="text-center">
               <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Weight</span>
               <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{weightLabel}</span>
@@ -466,7 +477,15 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
             </div>
             <div className="text-center">
               <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Plate</span>
-            <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{plateLabel}</span>
+              <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{plateLabel}</span>
+            </div>
+            <div className="text-center">
+              <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Tier</span>
+              <span className="block text-sm font-medium" style={{ color: textColorMuted }}>
+                {shoe.retail_price_category === 'Budget' ? '$' : 
+                 shoe.retail_price_category === 'Core' ? '$$' : 
+                 shoe.retail_price_category === 'Premium' ? '$$$' : '$$$$'}
+              </span>
             </div>
           </div>
         </div>
