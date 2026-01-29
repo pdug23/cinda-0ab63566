@@ -1,112 +1,324 @@
 
-# Add Super Trainer Badge to Shoe Cards
+# Add "Let Cinda Decide" Mode to Quick Match Feel Preferences
 
 ## Overview
 
-Display a "SUPER TRAINER" badge on shoe cards when the shoe is a super trainer. Super trainers are versatile shoes that can handle everything from easy recovery runs through hard workouts - a valuable distinguishing feature worth highlighting.
+Replace Quick Match's hardcoded feel preference sliders with the same mode-aware preference cards used in Full Analysis (ProfileBuilderStep4b), but simplified to only two options: "Let Cinda decide" and "I have a preference" (no "wildcard" / "I don't mind").
 
 ## Current State
 
-- `is_super_trainer` exists in `shoebase.json` for each shoe
-- The backend uses this flag for coverage logic and bullet point generation
-- However, `is_super_trainer` is NOT currently passed to the frontend in the `RecommendedShoe` type
-- The frontend `ShoeCard` component has no awareness of this property
+**Quick Match (QuickMatch.tsx):**
+- Uses raw sliders that are always visible (lines 471-524)
+- State stores raw slider values: `sliders: { cushionAmount: 3, ... }` (lines 327-333)
+- On submit, **always** sends `mode: "user_set"` (lines 387-394)
+- Heel drop uses simple checkbox array without mode selector (lines 526-554)
 
-## Solution
+**Full Analysis (ProfileBuilderStep4b.tsx):**
+- Has `ModeSelector` component with 3 options (lines 204-237)
+- Has `SliderPreferenceCard` that shows slider only when `mode === "user_set"` (lines 240-326)
+- Has `HeelDropPreferenceCard` with same pattern (lines 329-394)
+- State uses `SliderPreference` and `HeelDropPreference` types from ProfileContext
 
-Two-step implementation:
+## Changes Required
 
-1. **Backend**: Add `is_super_trainer` to the `RecommendedShoe` type and the builder function
-2. **Frontend**: Add the badge display logic to `ShoeCard.tsx`
+### 1. Update State Structure
 
-## Changes
-
-### 1. Update API Types
-
-**File: `api/types.ts`**
-
-Add `is_super_trainer` to the `RecommendedShoe` interface (around line 634):
-
+**Before (lines 324-335):**
 ```typescript
-// Archetype badges (which types this shoe is)
-archetypes: ShoeArchetype[];
-is_super_trainer: boolean;  // NEW: Flag for super trainer versatility badge
+interface QuickMatchState {
+  selectedArchetype: DiscoveryArchetype | null;
+  sliders: {
+    cushionAmount: FeelValue;
+    stabilityAmount: FeelValue;
+    energyReturn: FeelValue;
+    rocker: FeelValue;
+  };
+  heelDropValues: HeelDropOption[];
+  brandPreference: BrandPreference;
+}
 ```
 
-### 2. Update Recommendation Engine
-
-**File: `api/lib/recommendationEngine.ts`**
-
-Add `is_super_trainer` to the returned object in `buildRecommendedShoe` (around line 866):
-
+**After:**
 ```typescript
-archetypes: getShoeArchetypes(shoe),
-is_super_trainer: shoe.is_super_trainer,  // NEW
-badge,
-position,
+interface QuickMatchState {
+  selectedArchetype: DiscoveryArchetype | null;
+  feelPreferences: {
+    cushionAmount: SliderPreference;
+    stabilityAmount: SliderPreference;
+    energyReturn: SliderPreference;
+    rocker: SliderPreference;
+    heelDropPreference: HeelDropPreference;
+  };
+  brandPreference: BrandPreference;
+}
 ```
 
-### 3. Update ShoeCard Props
+### 2. Update Initial State
 
-**File: `src/components/results/ShoeCard.tsx`**
-
-Add `is_super_trainer` to the shoe prop type (around line 35):
-
+**Before (lines 340-350):**
 ```typescript
-use_trail?: boolean;
-retail_price_category?: 'Budget' | 'Core' | 'Premium' | 'Race_Day';
-is_super_trainer?: boolean;  // NEW
+const [state, setState] = useState<QuickMatchState>({
+  selectedArchetype: null,
+  sliders: {
+    cushionAmount: 3,
+    stabilityAmount: 3,
+    energyReturn: 3,
+    rocker: 3,
+  },
+  heelDropValues: [],
+  brandPreference: { mode: "all", brands: [] },
+});
 ```
 
-### 4. Add Badge Display
+**After:**
+```typescript
+const [state, setState] = useState<QuickMatchState>({
+  selectedArchetype: null,
+  feelPreferences: {
+    cushionAmount: { mode: "cinda_decides" },
+    stabilityAmount: { mode: "cinda_decides" },
+    energyReturn: { mode: "cinda_decides" },
+    rocker: { mode: "cinda_decides" },
+    heelDropPreference: { mode: "cinda_decides" },
+  },
+  brandPreference: { mode: "all", brands: [] },
+});
+```
 
-**File: `src/components/results/ShoeCard.tsx`**
+### 3. Add Two-Option ModeSelector Component
 
-Add a new badge in the badges section (around line 409, before the match badge):
+Copy from ProfileBuilderStep4b but remove "wildcard" option:
+
+```typescript
+const ModeSelector = ({
+  mode,
+  onChange,
+}: {
+  mode: PreferenceMode;
+  onChange: (mode: PreferenceMode) => void;
+}) => {
+  const modes: { value: PreferenceMode; label: string }[] = [
+    { value: "cinda_decides", label: "Let Cinda decide" },
+    { value: "user_set", label: "I have a preference" },
+    // No "wildcard" option for Quick Match
+  ];
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {modes.map((m) => (
+        <button
+          key={m.value}
+          type="button"
+          onClick={() => onChange(m.value)}
+          className={cn(
+            "px-3 py-1.5 text-xs rounded-md border transition-all",
+            mode === m.value
+              ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+              : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
+          )}
+        >
+          {m.label}
+        </button>
+      ))}
+    </div>
+  );
+};
+```
+
+### 4. Add SliderPreferenceCard Component
+
+Copy from ProfileBuilderStep4b (lines 240-326):
+
+```typescript
+const SliderPreferenceCard = ({
+  config,
+  preference,
+  onChange,
+}: {
+  config: SliderConfig;
+  preference: SliderPreference;
+  onChange: (pref: SliderPreference) => void;
+}) => {
+  const showSlider = preference.mode === "user_set";
+  const sliderValue = preference.value ?? 3;
+
+  const handleModeChange = (mode: PreferenceMode) => {
+    if (mode === "user_set") {
+      onChange({ mode, value: preference.value ?? 3 });
+    } else {
+      onChange({ mode });
+    }
+  };
+
+  const handleSliderChange = (value: FeelValue) => {
+    onChange({ mode: "user_set", value });
+  };
+
+  return (
+    // ... full implementation from ProfileBuilderStep4b
+  );
+};
+```
+
+### 5. Add HeelDropPreferenceCard Component
+
+Copy from ProfileBuilderStep4b (lines 329-394):
+
+```typescript
+const HeelDropPreferenceCard = ({
+  preference,
+  onChange,
+}: {
+  preference: HeelDropPreference;
+  onChange: (pref: HeelDropPreference) => void;
+}) => {
+  const showCheckboxes = preference.mode === "user_set";
+  const selectedValues = preference.values ?? [];
+
+  const handleModeChange = (mode: PreferenceMode) => {
+    if (mode === "user_set") {
+      onChange({ mode, values: preference.values ?? [] });
+    } else {
+      onChange({ mode });
+    }
+  };
+
+  // ... rest of implementation
+};
+```
+
+### 6. Update Handler Functions
+
+**Remove:**
+- `handleSliderChange` (lines 363-368)
+- `handleHeelDropToggle` (lines 370-377)
+
+**Add:**
+```typescript
+const handleFeelPreferenceChange = (
+  key: keyof QuickMatchState["feelPreferences"],
+  pref: SliderPreference | HeelDropPreference
+) => {
+  setState((prev) => ({
+    ...prev,
+    feelPreferences: { ...prev.feelPreferences, [key]: pref },
+  }));
+};
+```
+
+### 7. Update handleSubmit
+
+**Before (lines 386-396):**
+```typescript
+const feelPreferences: FeelPreferences = {
+  cushionAmount: { mode: "user_set", value: state.sliders.cushionAmount },
+  stabilityAmount: { mode: "user_set", value: state.sliders.stabilityAmount },
+  energyReturn: { mode: "user_set", value: state.sliders.energyReturn },
+  rocker: { mode: "user_set", value: state.sliders.rocker },
+  heelDropPreference: state.heelDropValues.length > 0
+    ? { mode: "user_set", values: state.heelDropValues }
+    : { mode: "cinda_decides" },
+  brandPreference: state.brandPreference,
+};
+```
+
+**After:**
+```typescript
+const feelPreferences: FeelPreferences = {
+  cushionAmount: state.feelPreferences.cushionAmount,
+  stabilityAmount: state.feelPreferences.stabilityAmount,
+  energyReturn: state.feelPreferences.energyReturn,
+  rocker: state.feelPreferences.rocker,
+  heelDropPreference: state.feelPreferences.heelDropPreference,
+  brandPreference: state.brandPreference,
+};
+```
+
+### 8. Update UI Section
+
+**Replace (lines 471-554):** the current always-visible sliders and heel drop checkboxes
+
+**With:** The new preference card components:
 
 ```tsx
-{shoe.is_super_trainer && (
-  <span
-    className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-md font-medium"
-    style={{
-      backgroundColor: "rgba(168, 85, 247, 0.15)",  // Purple tint
-      border: "1px solid rgba(168, 85, 247, 0.4)",
-      color: "#A855F7",  // Purple (Tailwind purple-500)
-      letterSpacing: "0.5px",
-      boxShadow: "0 0 8px rgba(168, 85, 247, 0.2)",
-    }}
-  >
-    Super Trainer
-  </span>
-)}
+{/* Feel Preferences */}
+<div className="space-y-4 mb-4">
+  {SLIDERS.map((config) => (
+    <SliderPreferenceCard
+      key={config.key}
+      config={config}
+      preference={state.feelPreferences[config.key]}
+      onChange={(pref) => handleFeelPreferenceChange(config.key, pref)}
+    />
+  ))}
+</div>
+
+{/* Heel Drop */}
+<div className="mb-4">
+  <HeelDropPreferenceCard
+    preference={state.feelPreferences.heelDropPreference}
+    onChange={(pref) => handleFeelPreferenceChange("heelDropPreference", pref)}
+  />
+</div>
 ```
 
-## Color Choice
+### 9. Add Missing Imports
 
-Using **purple (#A855F7)** for the Super Trainer badge because:
-- Distinct from existing badge colors (blue for matches, orange for trade-offs, gray for archetypes)
-- Conveys premium/special status
-- Good visibility on dark card background
-- Matches the "elite versatility" positioning of super trainers
+```typescript
+import type {
+  DiscoveryArchetype,
+  FeelValue,
+  HeelDropOption,
+  BrandPreferenceMode,
+  BrandPreference,
+  FeelPreferences,
+  ShoeRequest,
+  PreferenceMode,      // NEW
+  SliderPreference,    // NEW
+  HeelDropPreference,  // NEW
+} from "@/contexts/ProfileContext";
+```
 
-## Visual Result
+## Visual Comparison
 
-| Badge | Color | Purpose |
-|-------|-------|---------|
-| DAILY / WORKOUT etc. | Gray (#94a3b8) | Archetype category |
-| SUPER TRAINER | Purple (#A855F7) | Versatility highlight |
-| CLOSEST MATCH | Blue (#3B82F6) | Match tier |
-| CLOSE MATCH | Light blue (#93C5FD) | Match tier |
-| TRADE-OFF | Orange (#F97316) | Match tier |
+| Current Quick Match | Updated Quick Match |
+|---------------------|---------------------|
+| Sliders always visible | Mode selector with slider hidden by default |
+| Forces user to set values | Defaults to "Let Cinda decide" |
+| Heel drop just checkboxes | Same mode selector pattern |
 
-## Files to Edit
+## API Payload Comparison
 
-| File | Change |
-|------|--------|
-| `api/types.ts` | Add `is_super_trainer: boolean` to `RecommendedShoe` interface |
-| `api/lib/recommendationEngine.ts` | Include `is_super_trainer` in `buildRecommendedShoe` return object |
-| `src/components/results/ShoeCard.tsx` | Add prop type and render Super Trainer badge |
+**Before (always user_set):**
+```json
+{
+  "feelPreferences": {
+    "cushionAmount": { "mode": "user_set", "value": 3 },
+    "stabilityAmount": { "mode": "user_set", "value": 3 },
+    "energyReturn": { "mode": "user_set", "value": 3 },
+    "rocker": { "mode": "user_set", "value": 3 }
+  }
+}
+```
+
+**After (respects user choice):**
+```json
+{
+  "feelPreferences": {
+    "cushionAmount": { "mode": "cinda_decides" },
+    "stabilityAmount": { "mode": "cinda_decides" },
+    "energyReturn": { "mode": "user_set", "value": 4 },
+    "rocker": { "mode": "cinda_decides" }
+  }
+}
+```
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/pages/QuickMatch.tsx` | Replace state structure, add 3 new components (ModeSelector, SliderPreferenceCard, HeelDropPreferenceCard), update handlers and UI |
 
 ## Complexity
 
-Low - straightforward data plumbing and UI addition following existing patterns.
+Medium - significant refactoring of one file, but all patterns are copied from ProfileBuilderStep4b which is already working.
