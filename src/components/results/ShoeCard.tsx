@@ -335,7 +335,17 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </div>
 
         {/* Model Name */}
-        <h2 className={`text-2xl font-bold text-center mb-4 text-shimmer-${position}`}>
+        <h2 
+          className={`font-bold text-center mb-4 text-shimmer-${position} whitespace-nowrap overflow-hidden`}
+          style={{
+            fontSize: (() => {
+              const nameLength = (shoe.model + ' ' + (shoe.version || '')).length;
+              if (nameLength <= 12) return '1.5rem';   // text-2xl
+              if (nameLength <= 18) return '1.25rem';  // text-xl  
+              return '1.1rem';                          // text-lg
+            })(),
+          }}
+        >
           {shoe.model} {shoe.version}
         </h2>
 
