@@ -237,11 +237,11 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         }
       `}</style>
       <article
-        className={`relative w-full max-w-[90vw] min-w-[320px] rounded-2xl pt-3 px-5 pb-5 flex flex-col card-glow-${position}`}
+        className={`relative w-full max-w-[80vw] min-w-[300px] rounded-2xl pt-3 px-5 pb-5 flex flex-col card-glow-${position}`}
         style={{
           background: "rgba(26, 26, 30, 0.95)",
           border: "2px solid rgba(255, 255, 255, 0.5)",
-          height: "560px",
+          height: "600px",
         }}
       >
         {/* Top Corner Action Buttons */}
