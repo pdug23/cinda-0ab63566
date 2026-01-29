@@ -22,6 +22,9 @@ import type {
   BrandPreference,
   FeelPreferences,
   ShoeRequest,
+  PreferenceMode,
+  SliderPreference,
+  HeelDropPreference,
 } from "@/contexts/ProfileContext";
 import type { RunnerProfile } from "../../api/types";
 
@@ -198,6 +201,186 @@ const BRAND_OPTIONS = [
   "Adidas", "On", "PUMA", "Altra", "Mizuno", "Salomon"
 ];
 
+// Two-option mode selector for Quick Match (no "wildcard")
+const ModeSelector = ({
+  mode,
+  onChange,
+}: {
+  mode: PreferenceMode;
+  onChange: (mode: PreferenceMode) => void;
+}) => {
+  const modes: { value: PreferenceMode; label: string }[] = [
+    { value: "cinda_decides", label: "Let Cinda decide" },
+    { value: "user_set", label: "I have a preference" },
+  ];
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {modes.map((m) => (
+        <button
+          key={m.value}
+          type="button"
+          onClick={() => onChange(m.value)}
+          className={cn(
+            "px-3 py-1.5 text-xs rounded-md border transition-all",
+            mode === m.value
+              ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+              : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
+          )}
+        >
+          {m.label}
+        </button>
+      ))}
+    </div>
+  );
+};
+
+// Slider preference card with mode selector
+const SliderPreferenceCard = ({
+  config,
+  preference,
+  onChange,
+}: {
+  config: SliderConfig;
+  preference: SliderPreference;
+  onChange: (pref: SliderPreference) => void;
+}) => {
+  const showSlider = preference.mode === "user_set";
+  const sliderValue = preference.value ?? 3;
+
+  const handleModeChange = (mode: PreferenceMode) => {
+    if (mode === "user_set") {
+      onChange({ mode, value: preference.value ?? 3 });
+    } else {
+      onChange({ mode });
+    }
+  };
+
+  const handleSliderChange = (value: FeelValue) => {
+    onChange({ mode: "user_set", value });
+  };
+
+  return (
+    <div className="p-4 rounded-lg bg-card-foreground/[0.02] border border-card-foreground/10">
+      <div className="flex items-center gap-1.5 mb-3">
+        <span className="text-sm text-card-foreground/90">{config.label}</span>
+        <AdaptiveTooltip content={config.tooltip} />
+      </div>
+
+      <ModeSelector mode={preference.mode} onChange={handleModeChange} />
+
+      {showSlider && (
+        <div className="mt-4">
+          <Slider
+            value={[sliderValue]}
+            onValueChange={(vals) => handleSliderChange(vals[0] as FeelValue)}
+            min={1}
+            max={5}
+            step={1}
+            className={cn(
+              "w-full",
+              "[&_[data-slot=track]]:h-1 [&_[data-slot=track]]:bg-[#374151]",
+              "[&_[data-slot=range]]:bg-amber-600/70",
+              "[&_[role=slider]]:h-2.5 [&_[role=slider]]:w-2.5",
+              "[&_[role=slider]]:bg-[#FF6B35] [&_[role=slider]]:border-0 [&_[role=slider]]:z-10",
+              "[&_[role=slider]]:relative [&_[role=slider]]:before:absolute [&_[role=slider]]:before:inset-0",
+              "[&_[role=slider]]:before:-m-5 [&_[role=slider]]:before:rounded-full",
+              "[&_[role=slider]:focus-visible]:ring-[#FF6B35]/30 [&_[role=slider]:focus-visible]:ring-offset-0"
+            )}
+          />
+
+          <div className="relative w-full mt-2 text-xs text-card-foreground/50">
+            <span className={cn(
+              "absolute left-0",
+              sliderValue === 1 && "text-amber-500"
+            )}>
+              {config.leftLabel}
+            </span>
+            <span className={cn(
+              "absolute left-1/2 -translate-x-1/2",
+              sliderValue === 3 && "text-amber-500"
+            )}>
+              {config.middleLabel}
+            </span>
+            <span className={cn(
+              "absolute right-0",
+              sliderValue === 5 && "text-amber-500"
+            )}>
+              {config.rightLabel}
+            </span>
+            <span className="invisible">{config.middleLabel}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Heel drop preference card with mode selector
+const HeelDropPreferenceCard = ({
+  preference,
+  onChange,
+}: {
+  preference: HeelDropPreference;
+  onChange: (pref: HeelDropPreference) => void;
+}) => {
+  const showCheckboxes = preference.mode === "user_set";
+  const selectedValues = preference.values ?? [];
+
+  const handleModeChange = (mode: PreferenceMode) => {
+    if (mode === "user_set") {
+      onChange({ mode, values: preference.values ?? [] });
+    } else {
+      onChange({ mode });
+    }
+  };
+
+  const handleCheckboxChange = (option: HeelDropOption) => {
+    const newValues = selectedValues.includes(option)
+      ? selectedValues.filter((v) => v !== option)
+      : [...selectedValues, option];
+    onChange({ mode: "user_set", values: newValues });
+  };
+
+  return (
+    <div className="p-4 rounded-lg bg-card-foreground/[0.02] border border-card-foreground/10">
+      <div className="flex items-center gap-1.5 mb-3">
+        <span className="text-sm text-card-foreground/90">Heel drop</span>
+        <AdaptiveTooltip content="The height difference between heel and forefoot. Lower drops encourage midfoot striking. Higher drops suit heel strikers." />
+      </div>
+
+      <ModeSelector mode={preference.mode} onChange={handleModeChange} />
+
+      {showCheckboxes && (
+        <div className="mt-3">
+          <p className="text-xs text-card-foreground/40 mb-2">Select all that apply</p>
+          <div className="flex flex-wrap gap-2">
+            {HEEL_DROP_OPTIONS.map((option) => {
+              const isSelected = selectedValues.includes(option);
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => handleCheckboxChange(option)}
+                  className={cn(
+                    "px-3 py-1.5 text-xs rounded-md border transition-all flex items-center gap-1.5",
+                    isSelected
+                      ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                      : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
+                  )}
+                >
+                  {isSelected && <Check className="w-3 h-3" />}
+                  {option}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Brand preference card
 const BrandPreferenceCard = ({
   preference,
@@ -321,31 +504,32 @@ const BrandPreferenceCard = ({
   );
 };
 
-// State interface
+// State interface with mode-aware feel preferences
 interface QuickMatchState {
   selectedArchetype: DiscoveryArchetype | null;
-  sliders: {
-    cushionAmount: FeelValue;
-    stabilityAmount: FeelValue;
-    energyReturn: FeelValue;
-    rocker: FeelValue;
+  feelPreferences: {
+    cushionAmount: SliderPreference;
+    stabilityAmount: SliderPreference;
+    energyReturn: SliderPreference;
+    rocker: SliderPreference;
+    heelDropPreference: HeelDropPreference;
   };
-  heelDropValues: HeelDropOption[];
   brandPreference: BrandPreference;
 }
 
 const QuickMatch = () => {
   const navigate = useNavigate();
   
+  // Initialize with "Let Cinda decide" as default for all feel preferences
   const [state, setState] = useState<QuickMatchState>({
     selectedArchetype: null,
-    sliders: {
-      cushionAmount: 3,
-      stabilityAmount: 3,
-      energyReturn: 3,
-      rocker: 3,
+    feelPreferences: {
+      cushionAmount: { mode: "cinda_decides" },
+      stabilityAmount: { mode: "cinda_decides" },
+      energyReturn: { mode: "cinda_decides" },
+      rocker: { mode: "cinda_decides" },
+      heelDropPreference: { mode: "cinda_decides" },
     },
-    heelDropValues: [],
     brandPreference: { mode: "all", brands: [] },
   });
 
@@ -360,19 +544,13 @@ const QuickMatch = () => {
     }));
   };
 
-  const handleSliderChange = (key: keyof QuickMatchState["sliders"], value: FeelValue) => {
+  const handleFeelPreferenceChange = (
+    key: keyof QuickMatchState["feelPreferences"],
+    pref: SliderPreference | HeelDropPreference
+  ) => {
     setState((prev) => ({
       ...prev,
-      sliders: { ...prev.sliders, [key]: value },
-    }));
-  };
-
-  const handleHeelDropToggle = (option: HeelDropOption) => {
-    setState((prev) => ({
-      ...prev,
-      heelDropValues: prev.heelDropValues.includes(option)
-        ? prev.heelDropValues.filter((v) => v !== option)
-        : [...prev.heelDropValues, option],
+      feelPreferences: { ...prev.feelPreferences, [key]: pref },
     }));
   };
 
@@ -383,15 +561,13 @@ const QuickMatch = () => {
   const handleSubmit = () => {
     if (!state.selectedArchetype) return;
 
-    // Build feel preferences
+    // Build feel preferences - respects user's mode choice (cinda_decides or user_set)
     const feelPreferences: FeelPreferences = {
-      cushionAmount: { mode: "user_set", value: state.sliders.cushionAmount },
-      stabilityAmount: { mode: "user_set", value: state.sliders.stabilityAmount },
-      energyReturn: { mode: "user_set", value: state.sliders.energyReturn },
-      rocker: { mode: "user_set", value: state.sliders.rocker },
-      heelDropPreference: state.heelDropValues.length > 0
-        ? { mode: "user_set", values: state.heelDropValues }
-        : { mode: "cinda_decides" },
+      cushionAmount: state.feelPreferences.cushionAmount,
+      stabilityAmount: state.feelPreferences.stabilityAmount,
+      energyReturn: state.feelPreferences.energyReturn,
+      rocker: state.feelPreferences.rocker,
+      heelDropPreference: state.feelPreferences.heelDropPreference,
       brandPreference: state.brandPreference,
     };
 
@@ -468,89 +644,24 @@ const QuickMatch = () => {
                   How do you want your {ARCHETYPE_LABELS[state.selectedArchetype]} to feel?
                 </p>
 
-                {/* Sliders */}
+                {/* Feel Preference Cards with Mode Selectors */}
                 <div className="space-y-4 mb-4">
                   {SLIDERS.map((config) => (
-                    <div
+                    <SliderPreferenceCard
                       key={config.key}
-                      className="p-4 rounded-lg bg-card-foreground/[0.02] border border-card-foreground/10"
-                    >
-                      <div className="flex items-center gap-1.5 mb-3">
-                        <span className="text-sm text-card-foreground/90">{config.label}</span>
-                        <AdaptiveTooltip content={config.tooltip} />
-                      </div>
-
-                      <Slider
-                        value={[state.sliders[config.key]]}
-                        onValueChange={(vals) => handleSliderChange(config.key, vals[0] as FeelValue)}
-                        min={1}
-                        max={5}
-                        step={1}
-                        className={cn(
-                          "w-full",
-                          "[&_[data-slot=track]]:h-1 [&_[data-slot=track]]:bg-[#374151]",
-                          "[&_[data-slot=range]]:bg-amber-600/70",
-                          "[&_[role=slider]]:h-2.5 [&_[role=slider]]:w-2.5",
-                          "[&_[role=slider]]:bg-[#FF6B35] [&_[role=slider]]:border-0 [&_[role=slider]]:z-10",
-                          "[&_[role=slider]]:relative [&_[role=slider]]:before:absolute [&_[role=slider]]:before:inset-0",
-                          "[&_[role=slider]]:before:-m-5 [&_[role=slider]]:before:rounded-full",
-                          "[&_[role=slider]:focus-visible]:ring-[#FF6B35]/30 [&_[role=slider]:focus-visible]:ring-offset-0"
-                        )}
-                      />
-
-                      <div className="relative w-full mt-2 text-xs text-card-foreground/50">
-                        <span className={cn(
-                          "absolute left-0",
-                          state.sliders[config.key] === 1 && "text-amber-500"
-                        )}>
-                          {config.leftLabel}
-                        </span>
-                        <span className={cn(
-                          "absolute left-1/2 -translate-x-1/2",
-                          state.sliders[config.key] === 3 && "text-amber-500"
-                        )}>
-                          {config.middleLabel}
-                        </span>
-                        <span className={cn(
-                          "absolute right-0",
-                          state.sliders[config.key] === 5 && "text-amber-500"
-                        )}>
-                          {config.rightLabel}
-                        </span>
-                        <span className="invisible">{config.middleLabel}</span>
-                      </div>
-                    </div>
+                      config={config}
+                      preference={state.feelPreferences[config.key]}
+                      onChange={(pref) => handleFeelPreferenceChange(config.key, pref)}
+                    />
                   ))}
                 </div>
 
                 {/* Heel Drop */}
-                <div className="p-4 rounded-lg bg-card-foreground/[0.02] border border-card-foreground/10 mb-4">
-                  <div className="flex items-center gap-1.5 mb-3">
-                    <span className="text-sm text-card-foreground/90">Heel drop</span>
-                    <AdaptiveTooltip content="The height difference between heel and forefoot. Lower drops encourage midfoot striking. Higher drops suit heel strikers." />
-                  </div>
-                  <p className="text-xs text-card-foreground/40 mb-2">Select all that apply (optional)</p>
-                  <div className="flex flex-wrap gap-2">
-                    {HEEL_DROP_OPTIONS.map((option) => {
-                      const isSelected = state.heelDropValues.includes(option);
-                      return (
-                        <button
-                          key={option}
-                          type="button"
-                          onClick={() => handleHeelDropToggle(option)}
-                          className={cn(
-                            "px-3 py-1.5 text-xs rounded-md border transition-all flex items-center gap-1.5",
-                            isSelected
-                              ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
-                              : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
-                          )}
-                        >
-                          {isSelected && <Check className="w-3 h-3" />}
-                          {option}
-                        </button>
-                      );
-                    })}
-                  </div>
+                <div className="mb-4">
+                  <HeelDropPreferenceCard
+                    preference={state.feelPreferences.heelDropPreference}
+                    onChange={(pref) => handleFeelPreferenceChange("heelDropPreference", pref)}
+                  />
                 </div>
 
                 {/* Brand Preference */}
