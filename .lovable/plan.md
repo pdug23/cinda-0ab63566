@@ -1,123 +1,62 @@
 
-# Fix iOS PWA Grey Bar at Bottom
+# Update Match Badge Color Scheme
 
-## Overview
+## Problem
 
-Fix the persistent grey bar that appears at the bottom of the screen in iOS PWA standalone mode. The issue is that the animated background and safe-area shim are not properly covering the home indicator region.
+The "CLOSE MATCH" badge uses a platinum white color (`#F1F5F9`) which causes the model name shimmer animation to be invisible, making the card look "sad" compared to the others.
 
----
+## Solution
 
-## Current State Analysis
+Update the color scheme to use a two-tone blue system:
 
-| Component | Status | Problem |
-|-----------|--------|---------|
-| Viewport meta tag | Already has `viewport-fit=cover` | None |
-| manifest.json | Already has `#1a1a1a` | None |
-| CSS variable `--app-bg` | Missing | Hardcoded values scattered |
-| `body::after` shim | Exists but uses `z-index: -1` | May paint behind iOS compositing |
-| AnimatedBackground | Uses conflicting positioning | `bottom: 0` + extra height calc conflict |
+| Badge Type | Current Color | New Color | Description |
+|------------|---------------|-----------|-------------|
+| CLOSEST MATCH | `#7DD3FC` (light cyan) | `#3B82F6` (deeper blue) | A richer, more saturated blue |
+| CLOSE MATCH | `#F1F5F9` (white) | `#93C5FD` (light sky blue) | Lighter blue, similar to old CLOSEST but slightly lighter |
+| TRADE-OFF | `#F97316` (orange) | `#F97316` (unchanged) | Stays the same |
 
----
+## Visual Hierarchy
 
-## Technical Changes
-
-### File 1: `src/index.css`
-
-**1. Add `--app-bg` CSS variable** (line 17, inside `:root`)
-
-```css
---app-bg: #1a1a1a;
+```text
+CLOSEST MATCH  →  Deep/rich blue (#3B82F6)     ← Most prominent, saturated
+CLOSE MATCH    →  Light sky blue (#93C5FD)     ← Softer, lighter blue
+TRADE-OFF      →  Orange (#F97316)             ← Unchanged, distinct category
 ```
 
-**2. Update html/body/#root to use the variable** (lines 164-198)
+Both blues will be visibly different: CLOSEST is darker/richer, CLOSE is lighter/softer. The shimmer effect will now work for CLOSE MATCH since it's a visible color rather than near-white.
 
-Replace all hardcoded `hsl(0 0% 10%)` with `var(--app-bg)`.
+## Changes
 
-**3. Fix `body::after` shim** (lines 201-220)
+### File: `src/components/results/ShoeCard.tsx`
 
-- Move `body::after` outside the media query so it's always present
-- Change `z-index` from `-1` to `0` to paint over iOS grey
-- Add `body { position: relative; }` to establish stacking context
-
-Updated structure:
-```css
-body {
-  position: relative;
-  /* existing styles */
-}
-
-body::after {
-  content: "";
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: env(safe-area-inset-bottom, 34px);
-  background: var(--app-bg);
-  pointer-events: none;
-  z-index: 0;
-}
-```
-
-**4. Consolidate root height rules**
-
-Ensure html, body, #root all use consistent `min-height: 100dvh` with `-webkit-fill-available` fallback.
-
----
-
-### File 2: `src/components/AnimatedBackground.tsx`
-
-**Fix positioning to avoid conflicting properties**
-
-Current code uses:
-```tsx
-top: 0, left: 0, right: 0, bottom: 0,
-height: `calc(100% + var(--safe-area-bottom, 34px))`,
-```
-
-This is conflicting - `bottom: 0` anchors the bottom, but then height extends beyond.
-
-**Fix:** Use `inset: 0` and `height: 100%` without the extra calc. The `body::after` shim will handle the safe area.
-
-Alternatively, remove `bottom` and let the `height` calc extend naturally:
+**Lines 66-79** - Update the `getBadgeConfig` function:
 
 ```tsx
-style={{
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  height: '100%',
-  width: '100%',
-  // remove bottom: 0 and the height calc
-}}
+const getBadgeConfig = (
+  type: ShoeCardProps["shoe"]["recommendationType"],
+  badge?: ShoeCardProps["shoe"]["badge"]
+): { text: string; color: string } => {
+  const effectiveType = badge || type;
+  
+  if (effectiveType === "closest_match") {
+    return { text: "CLOSEST MATCH", color: "#3B82F6" }; // Rich/deep blue
+  }
+  if (effectiveType === "trade_off_option" || effectiveType === "trade_off") {
+    return { text: "TRADE-OFF", color: "#F97316" }; // Orange (unchanged)
+  }
+  return { text: "CLOSE MATCH", color: "#93C5FD" }; // Light sky blue
+};
 ```
 
-For all three layers (gradient, grain, vignette), update to:
-```tsx
-top: 0,
-left: 0,
-width: '100%',
-height: '100%',
-// remove right: 0 and bottom: 0
-```
+## Technical Notes
 
----
+- The color change propagates to: badge styling, card glow animation, checkmark icons, and the model name shimmer effect
+- `#3B82F6` is Tailwind's `blue-500` - a rich, saturated blue that feels premium
+- `#93C5FD` is Tailwind's `blue-300` - a soft, light blue that complements the deeper tone
+- Both blues are distinct enough to be clearly differentiated while belonging to the same family
 
-## Summary of Changes
+## Files to Edit
 
-| File | Changes |
-|------|---------|
-| `src/index.css` | Add `--app-bg` variable, use it in html/body/#root, fix body::after to z-index: 0 and always present, add body position: relative |
-| `src/components/AnimatedBackground.tsx` | Simplify positioning to use `width: 100%` and `height: 100%` instead of conflicting inset + calc values |
-
----
-
-## Testing Steps
-
-After changes:
-1. Clear Safari cache
-2. Remove existing Cinda app from home screen
-3. Re-add to home screen via Share → Add to Home Screen
-4. Open from home screen icon
-5. Verify: no grey bar at bottom, animated background extends under home indicator
+| File | Change |
+|------|--------|
+| `src/components/results/ShoeCard.tsx` | Update color values in `getBadgeConfig` function |

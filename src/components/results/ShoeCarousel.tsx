@@ -3,6 +3,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Keyboard } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import { ShoeCard } from "./ShoeCard";
+import { cn } from "@/lib/utils";
 
 import "swiper/css";
 
@@ -62,13 +63,15 @@ export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onS
       }
       .shoe-carousel .swiper-slide {
         overflow: visible !important;
-        transition: transform 250ms ease-out, opacity 250ms ease-out;
-        opacity: 0.6;
-        transform: scale(0.95);
+        transition: transform 250ms ease-out, opacity 250ms ease-out, filter 250ms ease-out;
+        opacity: 0.4;
+        transform: scale(0.92);
+        filter: blur(1px);
       }
       .shoe-carousel .swiper-slide-active {
         opacity: 1;
         transform: scale(1);
+        filter: blur(0);
       }
     `;
 
@@ -127,20 +130,20 @@ export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onS
         grabCursor={true}
         breakpoints={{
           320: {
-            slidesPerView: 1.1,
-            spaceBetween: 24,
+            slidesPerView: 1.2,
+            spaceBetween: 16,
           },
           375: {
-            slidesPerView: 1.15,
-            spaceBetween: 32,
+            slidesPerView: 1.25,
+            spaceBetween: 20,
           },
           640: {
-            slidesPerView: 1.25,
-            spaceBetween: 40,
+            slidesPerView: 1.35,
+            spaceBetween: 28,
           },
           1024: {
-            slidesPerView: 1.35,
-            spaceBetween: 48,
+            slidesPerView: 1.45,
+            spaceBetween: 36,
           },
         }}
         onSwiper={(swiper) => {
@@ -174,6 +177,25 @@ export function ShoeCarousel({ recommendations, role, shortlistedShoes = [], onS
           );
         })}
       </Swiper>
+
+      {/* Pagination Dots */}
+      {totalSlides > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-4">
+          {recommendations.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => swiperRef.current?.slideTo(index)}
+              className={cn(
+                "w-2 h-2 rounded-full transition-all duration-200",
+                index === activeIndex 
+                  ? "bg-white/80" 
+                  : "bg-white/30 hover:bg-white/50"
+              )}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

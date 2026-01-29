@@ -16,6 +16,7 @@ import { useProfile, DiscoveryArchetype, GapData, FeelGapInfo, ContrastProfile }
 import { buildAPIRaceTimeFromPicker } from "@/utils/raceTime";
 import { saveGap } from "@/utils/storage";
 import { cn } from "@/lib/utils";
+import { CindaLogoLoader } from "@/components/CindaLogoLoader";
 
 type Status = "loading" | "success" | "no_gap" | "error";
 
@@ -606,23 +607,7 @@ const ProfileBuilderStep4Analysis = () => {
     );
   };
 
-  // Loading skeleton matching new layout: recommendation → summary → rotation (collapsed)
-  const LoadingSkeleton = () => (
-    <div className="space-y-4 animate-pulse">
-      {/* Recommendation box skeleton */}
-      <div className="h-24 bg-card-foreground/10 rounded-lg" />
-      {/* Summary box skeleton */}
-      <div className="h-20 bg-card-foreground/10 rounded-lg" />
-      {/* Rotation header + collapsed cards skeleton */}
-      <div>
-        <div className="h-4 w-32 bg-card-foreground/10 rounded mb-4" />
-        <div className="space-y-2">
-          <div className="h-14 bg-card-foreground/10 rounded-lg" />
-          <div className="h-14 bg-card-foreground/10 rounded-lg" />
-        </div>
-      </div>
-    </div>
-  );
+  // Loading state now uses CindaLogoLoader instead of skeleton
 
   return (
     <>
@@ -633,7 +618,7 @@ const ProfileBuilderStep4Analysis = () => {
           <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-start flex-shrink-0">
             <button
               type="button"
-              onClick={() => navigate("/profile/step3")}
+              onClick={() => navigate("/profile/step4")}
               className="h-7 px-3 flex items-center gap-2 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -643,8 +628,8 @@ const ProfileBuilderStep4Analysis = () => {
           <div className="w-full max-w-md mx-auto flex flex-col flex-1 min-h-0 px-6 md:px-8">
             {/* Loading State */}
             {status === "loading" && (
-              <div className="flex flex-col animate-in fade-in duration-300 flex-1">
-                <LoadingSkeleton />
+              <div className="flex flex-col items-center justify-center animate-in fade-in duration-300 flex-1">
+                <CindaLogoLoader />
               </div>
             )}
 

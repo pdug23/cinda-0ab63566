@@ -3,10 +3,35 @@ import { ArrowLeft } from "lucide-react";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
-import { useProfile } from "@/contexts/ProfileContext";
+import { useProfile, FeelPreferences, ShoeRequest } from "@/contexts/ProfileContext";
 import { usePageNavigation } from "@/hooks/usePageNavigation";
+import { saveShoeRequests, clearGap } from "@/utils/storage";
 import { cn } from "@/lib/utils";
 
+// Custom Sparkle Icon for "Recommend me a shoe"
+const SparkleIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    {/* Main sparkle */}
+    <path
+      d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+    />
+    {/* Small sparkle */}
+    <path
+      d="M19 16L19.75 18.25L22 19L19.75 19.75L19 22L18.25 19.75L16 19L18.25 18.25L19 16Z"
+      stroke="currentColor"
+      strokeWidth="1.25"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 // Custom Crosshair Icon - Minimalistic target/crosshair for "find a specific shoe"
 const CrosshairIcon = ({ className }: { className?: string }) => (
   <svg
@@ -210,6 +235,31 @@ const ProfileBuilderStep4 = () => {
     navigateWithTransition("/profile/step4-analysis");
   };
 
+  const handleRecommendMode = () => {
+    // Build "let Cinda decide" preferences for all options
+    const cindaDecidesPreferences: FeelPreferences = {
+      cushionAmount: { mode: "cinda_decides" },
+      stabilityAmount: { mode: "cinda_decides" },
+      energyReturn: { mode: "cinda_decides" },
+      rocker: { mode: "cinda_decides" },
+      heelDropPreference: { mode: "cinda_decides" },
+      brandPreference: { mode: "all", brands: [] },
+    };
+
+    // Build shoe request for daily trainer with Cinda deciding everything
+    const shoeRequest: ShoeRequest = {
+      archetype: "daily_trainer",
+      feelPreferences: cindaDecidesPreferences,
+    };
+
+    // Save request and clear any existing gap data
+    saveShoeRequests([shoeRequest]);
+    clearGap();
+
+    // Navigate to recommendations
+    navigate("/recommendations", { state: { from: "/profile/step4" } });
+  };
+
   return (
     <>
       <AnimatedBackground />
@@ -236,12 +286,17 @@ const ProfileBuilderStep4 = () => {
 
             {/* Mode cards - stacked vertically, full width */}
             <div className="flex flex-col gap-4">
-              <ModeCard
-                icon={<CrosshairIcon className="w-6 h-6" />}
-                label="Find a specific shoe"
-                description="Know what type of shoe you're after? Cinda works with you to find the shoe you need"
-                onClick={handleShoppingMode}
-              />
+              {/* Option 1: Recommend me a shoe - only shown when no shoes */}
+              {!hasShoes && (
+                <ModeCard
+                  icon={<SparkleIcon className="w-6 h-6" />}
+                  label="Recommend me a shoe"
+                  description="Cinda picks one shoe based on your profile"
+                  onClick={handleRecommendMode}
+                />
+              )}
+              
+              {/* Option 2: Check my rotation */}
               <ModeCard
                 icon={<RotationIcon className="w-6 h-6" />}
                 label="Check my rotation"
@@ -253,6 +308,14 @@ const ProfileBuilderStep4 = () => {
                     : undefined
                 }
                 onClick={handleAnalysisMode}
+              />
+              
+              {/* Option 3: Find by shoe type */}
+              <ModeCard
+                icon={<CrosshairIcon className="w-6 h-6" />}
+                label="Find by shoe type"
+                description="Cinda works with you to find the exact shoe you need"
+                onClick={handleShoppingMode}
               />
             </div>
           </div>

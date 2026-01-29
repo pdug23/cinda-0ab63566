@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import AnimatedBackground from "@/components/AnimatedBackground";
@@ -10,7 +10,7 @@ import { LeaveRecommendationsModal } from "@/components/LeaveRecommendationsModa
 import { loadProfile, loadShoes, loadShoeRequests, loadGap, loadChatContext } from "@/utils/storage";
 import { normalizeStoredRaceTimeForApi } from "@/utils/raceTime";
 import type { FeelPreferences as APIFeelPreferences, CurrentShoe as APICurrentShoe } from "../../api/types";
-import { LiquidMetalLoader } from "@/components/LiquidMetalLoader";
+import { CindaLogoLoader } from "@/components/CindaLogoLoader";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -143,14 +143,14 @@ function LoadingState() {
   }, []);
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center gap-16 px-4">
-      {/* Liquid Metal Animation */}
-      <LiquidMetalLoader />
+    <div className="flex-1 flex flex-col items-center justify-center gap-12 px-4">
+      {/* Cinda Logo Animation */}
+      <CindaLogoLoader />
 
-      {/* Rotating loading messages - refined typography */}
+      {/* Rotating loading messages - updated typography */}
       <p 
         key={messageIndex}
-        className="text-lg text-muted-foreground/60 font-light italic tracking-wide animate-fade-in"
+        className="text-base text-muted-foreground/70 animate-fade-in"
       >
         {loadingMessages[messageIndex]}
       </p>
@@ -404,6 +404,8 @@ function DiscoveryModeResults({
 
 export default function RecommendationsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromRoute = (location.state as { from?: string } | null)?.from || "/profile/step4";
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode | null>(null);
@@ -424,8 +426,8 @@ export default function RecommendationsPage() {
   }, [navigate, shortlistedShoes.length]);
 
   const goBack = useCallback(() => {
-    handleNavigationAttempt("/profile/step4");
-  }, [handleNavigationAttempt]);
+    handleNavigationAttempt(fromRoute);
+  }, [handleNavigationAttempt, fromRoute]);
 
   const handleShortlist = useCallback((shoeId: string) => {
     setShortlistedShoes(prev => {

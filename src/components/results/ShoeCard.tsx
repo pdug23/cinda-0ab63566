@@ -70,12 +70,12 @@ const getBadgeConfig = (
   const effectiveType = badge || type;
   
   if (effectiveType === "closest_match") {
-    return { text: "CLOSEST MATCH", color: "#7DD3FC" }; // Cyan/Sky blue
+    return { text: "CLOSEST MATCH", color: "#3B82F6" }; // Rich/deep blue
   }
   if (effectiveType === "trade_off_option" || effectiveType === "trade_off") {
     return { text: "TRADE-OFF", color: "#F97316" }; // Orange (unchanged)
   }
-  return { text: "CLOSE MATCH", color: "#F1F5F9" }; // Platinum white
+  return { text: "CLOSE MATCH", color: "#93C5FD" }; // Light sky blue
 };
 
 const getRoleBadgeLabel = (roleOrArchetype: string): string => {
@@ -237,11 +237,11 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         }
       `}</style>
       <article
-        className={`relative w-full max-w-[90vw] min-w-[320px] rounded-2xl pt-3 px-5 pb-5 flex flex-col card-glow-${position}`}
+        className={`relative w-full max-w-[80vw] min-w-[300px] rounded-2xl pt-3 px-5 pb-5 flex flex-col card-glow-${position}`}
         style={{
           background: "rgba(26, 26, 30, 0.95)",
           border: "2px solid rgba(255, 255, 255, 0.5)",
-          height: "560px",
+          height: "600px",
         }}
       >
         {/* Top Corner Action Buttons */}
@@ -292,14 +292,14 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         <button
           className="absolute top-4 right-4 h-8 px-2.5 flex items-center justify-center gap-1 rounded-xl transition-all z-10"
           style={{
-            backgroundColor: "rgba(26, 26, 30, 0.95)",
-            border: "1px solid rgba(255, 255, 255, 0.15)",
+            backgroundColor: "rgba(38, 38, 44, 0.95)",
+            border: `1px solid ${badgeConfig.color}40`,
           }}
           onClick={() => setBuyModalOpen(true)}
           aria-label="Buy now"
         >
-          <span className="text-[10px] font-medium uppercase tracking-wide text-white/70">Buy</span>
-          <ExternalLink className="w-3.5 h-3.5 text-white/70" />
+          <span className="text-[10px] font-medium uppercase tracking-wide text-white/85">Buy</span>
+          <ExternalLink className="w-3.5 h-3.5 text-white/85" />
         </button>
 
         {/* Brand Logo */}

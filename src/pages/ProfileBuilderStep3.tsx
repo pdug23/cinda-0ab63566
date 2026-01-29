@@ -40,12 +40,62 @@ const shoes = shoebaseData as Shoe[];
 // Run type options
 const RUN_TYPE_OPTIONS: { value: RunType; label: string }[] = [
   { value: "all_my_runs", label: "All my runs" },
-  { value: "recovery", label: "Recovery" },
+  { value: "recovery", label: "Recovery runs" },
   { value: "long_runs", label: "Long runs" },
   { value: "workouts", label: "Workouts" },
   { value: "races", label: "Races" },
-  { value: "trail", label: "Trail" },
+  { value: "trail", label: "Trail runs" },
 ];
+
+// Brand logo path helper
+const getBrandLogoPath = (brand: string): string => {
+  const brandMap: Record<string, string> = {
+    "Adidas": "/logos/adidas-logo.png",
+    "Altra": "/logos/altra-logo.png",
+    "ASICS": "/logos/asics-logo.png",
+    "Brooks": "/logos/brooks-logo.png",
+    "HOKA": "/logos/hoka-logo.png",
+    "Mizuno": "/logos/mizuno-logo.png",
+    "New Balance": "/logos/newbalance-logo.png",
+    "Nike": "/logos/nike-logo.png",
+    "On": "/logos/on-logo.png",
+    "PUMA": "/logos/puma-logo.png",
+    "Salomon": "/logos/salomon-logo.png",
+    "Saucony": "/logos/saucony-logo.png",
+    "Skechers": "/logos/skechers-logo.png",
+    "Topo Athletic": "/logos/topo-logo.png",
+  };
+  return brandMap[brand] || "";
+};
+
+// Format run types for display
+const formatRunTypesForDisplay = (runTypes: RunType[]): string => {
+  if (runTypes.includes("all_my_runs")) {
+    const hasTrail = runTypes.includes("trail");
+    return hasTrail ? "All runs + Trail" : "All runs";
+  }
+  
+  const labels: Record<RunType, string> = {
+    all_my_runs: "All runs",
+    recovery: "Recovery",
+    long_runs: "Long runs",
+    workouts: "Workouts",
+    races: "Races",
+    trail: "Trail",
+  };
+  
+  return runTypes.map(rt => labels[rt]).join(" • ");
+};
+
+// Get sentiment icon for display
+const getSentimentIcon = (sentiment: ShoeSentiment | null) => {
+  switch (sentiment) {
+    case "love": return <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400" />;
+    case "neutral": return <Meh className="w-3.5 h-3.5 text-amber-400" />;
+    case "dislike": return <ThumbsDown className="w-3.5 h-3.5 text-slate-400" />;
+    default: return null;
+  }
+};
 
 // Run types that get auto-selected when "all my runs" is selected (trail excluded)
 const ALL_MY_RUNS_TYPES: RunType[] = ["recovery", "long_runs", "workouts", "races"];
@@ -862,28 +912,50 @@ const ProfileBuilderStep3 = () => {
                 </DialogTitle>
               </DialogHeader>
               <div className="px-4 pt-4 pb-6">
-                <ul className="space-y-1.5 text-sm text-card-foreground/70">
-                  {currentShoes.map((item) => (
-                    <li key={item.shoe.shoe_id} className="normal-case">
-                      {item.shoe.full_name}
-                    </li>
-                  ))}
-                </ul>
+                <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
+                  {currentShoes.map((item) => {
+                    const logoPath = getBrandLogoPath(item.shoe.brand);
+                    const modelDisplay = [item.shoe.model, item.shoe.version].filter(Boolean).join(" ");
+                    
+                    return (
+                      <div 
+                        key={item.shoe.shoe_id} 
+                        className="flex items-center gap-3 p-3 rounded-lg bg-card-foreground/[0.03] border border-card-foreground/10"
+                      >
+                        {logoPath && (
+                          <img 
+                            src={logoPath} 
+                            alt={item.shoe.brand}
+                            className="h-4 w-auto opacity-60 flex-shrink-0 brightness-0 invert"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm text-card-foreground font-medium truncate block">
+                            {modelDisplay}
+                          </span>
+                          <p className="text-xs text-card-foreground/50 mt-0.5">
+                            {formatRunTypesForDisplay(item.runTypes)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
               <div className="p-4 pt-0 flex flex-col gap-2">
                 <Button
                   onClick={handleConfirmNext}
                   variant="outline"
-                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
+                  className="w-full h-9 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 hover:border-primary/60 hover:text-primary transition-colors"
                 >
-                  Looks good
+                  LOOKS GOOD
                 </Button>
                 <Button
                   onClick={() => setConfirmShoesModalOpen(false)}
                   variant="outline"
-                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
+                  className="w-full h-9 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 hover:border-primary/60 hover:text-primary transition-colors"
                 >
-                  Go back
+                  GO BACK
                 </Button>
               </div>
             </DialogContent>
@@ -912,16 +984,16 @@ const ProfileBuilderStep3 = () => {
                 <Button
                   onClick={handleConfirmSkip}
                   variant="outline"
-                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
+                  className="w-full h-9 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 hover:border-primary/60 hover:text-primary transition-colors"
                 >
-                  Skip anyway
+                  SKIP
                 </Button>
                 <Button
                   onClick={() => setConfirmSkipModalOpen(false)}
                   variant="outline"
-                  className="w-full min-h-[44px] bg-transparent border-border/40 text-muted-foreground hover:border-primary/60 hover:text-primary hover:bg-primary/5 text-sm"
+                  className="w-full h-9 rounded-full text-[10px] font-medium tracking-wider uppercase text-card-foreground/60 hover:text-card-foreground bg-card-foreground/[0.03] hover:bg-card-foreground/10 border border-card-foreground/20 hover:border-primary/60 hover:text-primary transition-colors"
                 >
-                  Go back
+                  GO BACK
                 </Button>
               </div>
             </DialogContent>

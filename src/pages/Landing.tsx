@@ -118,7 +118,7 @@ const Landing = () => {
 
         {viewState === "orientation" && (
           <PageTransition className="absolute inset-0 flex flex-col items-center text-center px-6 z-10">
-            <div className="flex flex-col items-center max-w-md mt-[120px]">
+            <div className="flex flex-col items-center max-w-md mt-[150px]">
               {/* Headline and subheading */}
               <div
                 className={`transition-all ${prefersReducedMotion ? "" : "duration-700"} ${
@@ -132,12 +132,12 @@ const Landing = () => {
                   Buying running shoes has never felt more overwhelming.
                 </h1>
                 <p 
-                  className="text-card-foreground leading-tight italic mt-4"
+                  className="text-card-foreground leading-tight italic mt-6"
                   style={{ fontVariantLigatures: "none", fontSize: "20px", fontWeight: 900 }}
                 >
                   Endless marketing. Infinite options. Zero clarity.
                 </p>
-                <p className="text-card-foreground/80 text-base mt-4">
+                <p className="text-card-foreground/80 text-base mt-6">
                   Cinda helps you cut through the noise.
                 </p>
               </div>
@@ -208,9 +208,9 @@ const Landing = () => {
               analytics.installLinkClicked(viewState);
               setShowA2HSModal(true);
             }}
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/50 hover:text-muted-foreground/70 transition-all cursor-pointer z-10 underline underline-offset-2 decoration-dotted decoration-muted-foreground/30 hover:decoration-solid hover:decoration-muted-foreground/50"
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs italic text-muted-foreground/40 hover:text-muted-foreground/60 transition-all cursor-pointer z-10 underline underline-offset-2 decoration-dotted decoration-muted-foreground/20 hover:decoration-solid hover:decoration-muted-foreground/40"
           >
-            Cinda is best as a web app
+            Add Cinda as a web app for an optimal experience
           </button>
         )}
 

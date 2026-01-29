@@ -750,10 +750,10 @@ const ProfileBuilderStep4b = () => {
           requests: step3.chatContext.requests,
         });
 
-        navigate("/recommendations");
+        navigate("/recommendations", { state: { from: "/profile/step4" } });
       } catch (error) {
         console.error("Error saving to localStorage:", error);
-        navigate("/recommendations");
+        navigate("/recommendations", { state: { from: "/profile/step4" } });
       }
     }
   };
