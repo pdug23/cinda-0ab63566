@@ -31,7 +31,7 @@ import {
 } from './shoeRetrieval.js';
 
 // ============================================================================
-// LLM-BASED MATCH DESCRIPTION GENERATOR
+// LLM-BASED MATCH DESCRIPTION GENERATOR (gpt-5-mini optimised)
 // ============================================================================
 
 const openaiClient = new OpenAI({
@@ -89,165 +89,275 @@ interface MatchDescriptionParams {
   userContext: BulletUserContext;
 }
 
+// ============================================================================
+// PROMPT CONSTRUCTION (gpt-5-mini optimised)
+// ============================================================================
+
 /**
- * Generate personalized match description bullets using gpt-4o-mini
- * Returns three bullets: Personal Match, Education, Standout + Use Case
+ * Build user context string based on mode.
+ * Separated for clarity and testability.
  */
-async function generateMatchDescription(params: MatchDescriptionParams): Promise<string[]> {
-  console.log('[generateMatchDescription] Called for:', params.fullName);
-
-  const archetypeLabel = params.archetype.replace('_', ' ');
-  const ctx = params.userContext;
-
-  // Build user context section based on mode
-  let userContextSection: string;
+function buildUserContextSection(ctx: BulletUserContext, archetypeLabel: string): string {
   if (ctx.mode === 'full_analysis' && ctx.currentShoeNames && ctx.currentShoeNames.length > 0) {
     const rotationDesc = ctx.currentShoeNames.map((name, i) =>
       `${name} (${ctx.currentShoeUses?.[i] || 'general'})`
     ).join(', ');
-    userContextSection = `USER'S CURRENT ROTATION: ${rotationDesc}
-GAP IDENTIFIED: ${ctx.gapReasoning || `Needs ${archetypeLabel}`}`;
-  } else {
-    // Quick Match mode - preference based
-    const cushionDesc = ctx.preferredCushion ? (ctx.preferredCushion <= 2 ? 'firm' : ctx.preferredCushion >= 4 ? 'soft/plush' : 'moderate') : 'balanced';
-    const bounceDesc = ctx.preferredBounce ? (ctx.preferredBounce <= 2 ? 'muted' : ctx.preferredBounce >= 4 ? 'high bounce' : 'balanced') : 'balanced';
-    const stabilityDesc = ctx.preferredStability ? (ctx.preferredStability <= 2 ? 'neutral/flexible' : ctx.preferredStability >= 4 ? 'stable/supportive' : 'moderate') : 'balanced';
-    userContextSection = `USER'S PREFERENCES: ${cushionDesc} cushion, ${bounceDesc} response, ${stabilityDesc} stability
-SEARCHING FOR: ${archetypeLabel}`;
+    return `ROTATION: ${rotationDesc}\nGAP: ${ctx.gapReasoning || `Needs ${archetypeLabel}`}`;
+  }
+  // Quick Match mode - preference based
+  const cushionDesc = ctx.preferredCushion ? (ctx.preferredCushion <= 2 ? 'firm' : ctx.preferredCushion >= 4 ? 'soft' : 'moderate') : 'balanced';
+  const bounceDesc = ctx.preferredBounce ? (ctx.preferredBounce <= 2 ? 'muted' : ctx.preferredBounce >= 4 ? 'bouncy' : 'balanced') : 'balanced';
+  const stabilityDesc = ctx.preferredStability ? (ctx.preferredStability <= 2 ? 'neutral' : ctx.preferredStability >= 4 ? 'stable' : 'moderate') : 'balanced';
+  return `PREFS: ${cushionDesc} cushion, ${bounceDesc} response, ${stabilityDesc} stability\nSEEKING: ${archetypeLabel}`;
+}
+
+/**
+ * Build the prompt for gpt-5-mini.
+ *
+ * Key design decisions for gpt-5-mini:
+ * - Single-pass transformation framing, not analysis
+ * - No self-evaluation or revision language
+ * - Declarative constraints, no "ensure" or "verify"
+ * - Banned robotic patterns listed explicitly
+ * - Concise - fewer tokens in = faster planning
+ */
+function buildBulletPrompt(params: MatchDescriptionParams): string {
+  const archetypeLabel = params.archetype.replace('_', ' ');
+  const ctx = params.userContext;
+  const userContextSection = buildUserContextSection(ctx, archetypeLabel);
+
+  // Super trainer note - only included if true
+  const superNote = params.is_super_trainer ? ' | SUPER: handles easy through tempo' : '';
+
+  // Construct prompt - deliberately concise to minimise gpt-5-mini planning time
+  return `Transform this shoe data into 3 bullets (max 15 words each).
+
+SHOE: ${params.fullName} (${archetypeLabel})
+${userContextSection}
+RIDE: ${params.whyItFeelsThisWay}
+STANDOUT: ${params.notableDetail}${superNote}
+
+OUTPUT FORMAT (3 lines, no prefixes):
+1. Personal: ${ctx.mode === 'full_analysis' ? 'Reference their shoes by name. Explain why this fills their gap.' : 'Reference their feel preferences. Explain the match.'}
+2. Education: Teach one thing about ride or fit. Complete sentence with articles.
+3. Standout: Lead with feature, em dash, then use case.
+
+STYLE:
+- British spelling
+- Natural sentences with articles (a, an, the)
+- Conversational, not marketing copy
+
+BANNED PATTERNS:
+- "Your preference for X aligns/matches/makes"
+- "perfectly suited" or "ideal match"
+- Sentences missing articles or helper words
+- Compressed telegram-style phrasing`;
+}
+
+// ============================================================================
+// RESPONSE PARSING
+// ============================================================================
+
+/**
+ * Parse and normalise bullet response from gpt-5-mini.
+ * Handles partial responses, malformed output, and enforces word limit.
+ */
+function parseBulletResponse(content: string | null | undefined): string[] | null {
+  if (!content || typeof content !== 'string') {
+    return null;
   }
 
-  // Build fit description
-  const fitDesc = `${params.fit_volume} volume, ${params.toe_box} toe box, ${params.support_type} support`;
+  const trimmed = content.trim();
+  if (trimmed.length === 0) {
+    return null;
+  }
 
-  // Build common issues warning (only if critical)
-  const criticalIssues = params.common_issues.filter(issue =>
-    issue.toLowerCase().includes('size') ||
-    issue.toLowerCase().includes('narrow') ||
-    issue.toLowerCase().includes('wide')
-  );
-  const issueNote = criticalIssues.length > 0
-    ? `\nCRITICAL FIT NOTE (mention briefly if relevant): ${criticalIssues[0]}`
-    : '';
+  // Split on newlines and clean each line
+  const lines = trimmed
+    .split('\n')
+    .map(line => line.trim())
+    // Remove common prefixes: "1. ", "1) ", "- ", "• ", "BULLET 1:", "**Personal:**"
+    .map(line => line
+      .replace(/^[\d]+[.\)]\s*/, '')
+      .replace(/^[-•]\s*/, '')
+      .replace(/^\*\*.*?\*\*:?\s*/, '')
+      .replace(/^(Personal|Education|Standout)[:\s]*/i, '')
+      .trim()
+    )
+    // Filter empty lines and headers
+    .filter(line => line.length > 5 && !line.toUpperCase().startsWith('BULLET'));
 
-  // Super trainer instruction
-  const superTrainerNote = params.is_super_trainer
-    ? '\nSUPER TRAINER: Yes - this shoe handles easy recovery through hard intervals. Mention this versatility in bullet 3.'
-    : '';
+  if (lines.length === 0) {
+    return null;
+  }
 
-  const prompt = `Write 3 personalized shoe recommendation bullets for a runner.
+  // Remove trailing periods for consistency
+  const normalised = lines.map(line => line.replace(/\.$/, ''));
 
-SHOE: ${params.fullName}
-RECOMMENDED AS: ${archetypeLabel}
+  // Enforce 15-word limit on each bullet
+  const enforced = normalised.map(bullet => {
+    const words = bullet.split(/\s+/);
+    if (words.length > 15) {
+      console.log(`[parseBulletResponse] Truncating from ${words.length} to 15 words`);
+      return words.slice(0, 15).join(' ');
+    }
+    return bullet;
+  });
 
-${userContextSection}
+  return enforced;
+}
 
-SHOE RIDE & FEEL:
-${params.whyItFeelsThisWay}
+/**
+ * Enforce 15-word limit on a single bullet.
+ */
+function enforceWordLimit(bullet: string): string {
+  const words = bullet.trim().split(/\s+/);
+  return words.length > 15 ? words.slice(0, 15).join(' ') : bullet;
+}
 
-STANDOUT FEATURE:
-${params.notableDetail}
+// ============================================================================
+// MODEL CONFIGURATION (Responses API)
+// ============================================================================
 
-FIT DETAILS: ${fitDesc}
+/**
+ * gpt-5-mini Responses API configuration.
+ *
+ * WHY these values:
+ *
+ * max_output_tokens: 140
+ *   - Tight limit prevents extended internal reasoning
+ *   - 3 bullets × ~15 words × ~1.3 tokens/word ≈ 60 tokens output
+ *   - Buffer of ~80 tokens for formatting/variance
+ *   - gpt-5-mini internal reasoning time scales with max_output_tokens
+ *
+ * temperature: 0.5
+ *   - Moderate creativity - enough variety without chaos
+ *   - Lower than gpt-4o-mini (which used implicit 1.0) because
+ *     gpt-5-mini already has more natural variation
+ *
+ * reasoning.effort: "none"
+ *   - CRITICAL for latency - disables internal planning/self-evaluation
+ *   - gpt-5-mini defaults to medium reasoning which adds 2-4s latency
+ *   - "none" tells the model to produce output directly without
+ *     internal chain-of-thought or self-correction passes
+ *   - Combined with tight prompt framing, ensures single-pass generation
+ *
+ * Using Responses API instead of Chat Completions because:
+ *   - Native support for reasoning models (gpt-5-mini)
+ *   - Cleaner streaming interface
+ *   - Built-in reasoning effort control
+ */
+const GPT5_MINI_CONFIG = {
+  model: 'gpt-5-mini' as const,
+  max_output_tokens: 140,
+  temperature: 0.5,
+  reasoning: { effort: 'none' as const },
+};
 
-SPECS (context only, don't output numbers):
-- Cushion: ${params.cushion_1to5}/5, Bounce: ${params.bounce_1to5}/5
-- Stability: ${params.stability_1to5}/5, Rocker: ${params.rocker_1to5}/5
-- ${params.plateTechName ? `Has ${params.plateTechName} plate` : 'No plate'}${superTrainerNote}${issueNote}
+// ============================================================================
+// STREAMING CALLBACK TYPE
+// ============================================================================
 
-Write exactly 3 bullets. Max 15 words each. No bullet numbers or prefixes.
+/**
+ * Optional callback for streaming updates.
+ * Called with each chunk of partial output as it arrives.
+ * Enables real-time UI updates (e.g., showing bullets as they generate).
+ */
+export type StreamingCallback = (partialContent: string, fullContentSoFar: string) => void;
 
-BULLET 1 - PERSONAL MATCH:
-${ctx.mode === 'full_analysis'
-  ? '- Reference their current shoes BY NAME (e.g., "Fills the tempo gap between your Clifton\'s comfort and your Vaporfly\'s race snap")'
-  : '- Reference their preferences (e.g., "Your preference for balanced cushion with high bounce matches this responsive trainer perfectly")'}
-- Explain WHY this shoe fits their situation
-- Make it feel personally chosen for them
+// ============================================================================
+// MAIN GENERATION FUNCTION
+// ============================================================================
 
-BULLET 2 - EDUCATION:
-- Teach ONE thing about how this shoe rides or fits
-- Priority: ride characteristics > fit details > stability
-- DO NOT list problems or common issues
-- Example: "The smooth rocker guides you naturally while the flexible forefoot preserves your natural cadence"
+/**
+ * Generate personalized match description bullets using gpt-5-mini.
+ * Returns three bullets: Personal Match, Education, Standout + Use Case.
+ *
+ * Uses streaming to reduce perceived latency. If onStream callback is provided,
+ * it will be called with each chunk of partial output as it arrives.
+ *
+ * @param params - Shoe data and user context for bullet generation
+ * @param onStream - Optional callback for real-time streaming updates
+ * @returns Promise resolving to array of 3 bullet strings
+ */
+async function generateMatchDescription(
+  params: MatchDescriptionParams,
+  onStream?: StreamingCallback
+): Promise<string[]> {
+  console.log('[generateMatchDescription] Called for:', params.fullName);
 
-BULLET 3 - STANDOUT + USE CASE:
-- Lead with the notable feature/tech
-${params.is_super_trainer ? '- MUST mention "rare versatility handles easy through tempo" or similar super trainer capability' : '- End with when/how to use it'}
-- Example: "ReactX foam stays responsive through marathon pace - ideal for your everyday training efforts"
-
-RULES:
-- Use em dashes only in bullet 3 to separate feature from use case
-- British spelling
-- Conversational, not marketing-speak
-
-SENTENCE QUALITY (CRITICAL):
-- Write proper, complete sentences with all necessary articles (a, an, the)
-- Don't drop helper words (and, while, with, for, etc.) to force word limits
-- Don't write in "telegram style" or compressed syntax
-- If a sentence doesn't fit naturally in 15 words, rephrase it completely
-- Prioritize readability over hitting exactly 15 words (14 natural words beats 15 robotic words)
-
-BAD examples (robotic, missing words):
-- "Fills tempo gap between Clifton comfort and Vaporfly snap"
-- "Smooth rocker guides naturally, flexible forefoot preserves cadence"
-
-GOOD examples (complete, natural sentences):
-- "Fills the tempo gap between your Clifton's comfort and your Vaporfly's race focus"
-- "The smooth rocker guides naturally while the flexible forefoot preserves your cadence"`;
+  const prompt = buildBulletPrompt(params);
+  const archetypeLabel = params.archetype.replace('_', ' ');
+  const ctx = params.userContext;
 
   try {
-    const response = await openaiClient.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 300,
+    // gpt-5-mini Responses API streaming request
+    // Streaming reduces perceived latency even for short outputs
+    const stream = await openaiClient.responses.create({
+      model: GPT5_MINI_CONFIG.model,
+      max_output_tokens: GPT5_MINI_CONFIG.max_output_tokens,
+      temperature: GPT5_MINI_CONFIG.temperature,
+      reasoning: GPT5_MINI_CONFIG.reasoning,
+      input: prompt,
+      stream: true,
     });
 
-    const content = response.choices[0]?.message?.content?.trim();
-    console.log('[generateMatchDescription] LLM response:', content);
+    // Collect streamed chunks from Responses API
+    // The Responses API emits 'response.output_text.delta' events
+    let fullContent = '';
+    for await (const event of stream) {
+      // Handle text delta events
+      if (event.type === 'response.output_text.delta') {
+        const delta = event.delta;
+        if (delta) {
+          fullContent += delta;
 
-    if (content) {
-      // Clean up numbered prefixes like "1. " or "1) " or "- " or "BULLET 1:"
-      const lines = content
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0 && !line.startsWith('BULLET'))
-        .map(line => line
-          .replace(/^[\d]+[.\)]\s*/, '')
-          .replace(/^[-•]\s*/, '')
-          .replace(/^\*\*.*?\*\*:?\s*/, '')
-          .trim()
-        )
-        .filter(line => line.length > 5); // Filter out very short lines
+          // Emit to callback if provided (for real-time UI updates)
+          if (onStream) {
+            onStream(delta, fullContent);
+          }
 
-      // Remove trailing periods for consistency
-      const normalizedLines = lines.map(line => line.replace(/\.$/, ''));
-
-      // Enforce 15-word limit
-      const enforceWordLimit = (bullet: string): string => {
-        const words = bullet.trim().split(/\s+/);
-        if (words.length > 15) {
-          console.log(`[generateMatchDescription] Truncating bullet from ${words.length} to 15 words`);
-          return words.slice(0, 15).join(' ');
+          // Log for debugging/latency monitoring
+          console.log('[generateMatchDescription] Streaming chunk:', delta.length, 'chars');
         }
-        return bullet;
-      };
-
-      const truncatedLines = normalizedLines.map(enforceWordLimit);
-      console.log('[generateMatchDescription] Parsed bullets:', truncatedLines);
-
-      if (truncatedLines.length >= 3) {
-        return [truncatedLines[0], truncatedLines[1], truncatedLines[2]];
-      } else if (truncatedLines.length === 2) {
-        return [truncatedLines[0], truncatedLines[1], enforceWordLimit(params.notableDetail.replace(/\.$/, ''))];
-      } else if (truncatedLines.length === 1) {
-        return [truncatedLines[0], enforceWordLimit(params.whyItFeelsThisWay.slice(0, 100)), enforceWordLimit(params.notableDetail)];
       }
     }
+
+    console.log('[generateMatchDescription] Full response:', fullContent);
+
+    // Parse and validate response
+    const bullets = parseBulletResponse(fullContent);
+
+    if (bullets && bullets.length >= 3) {
+      console.log('[generateMatchDescription] Parsed bullets:', bullets.slice(0, 3));
+      return [bullets[0], bullets[1], bullets[2]];
+    }
+
+    // Handle partial response - fill in missing bullets from params
+    if (bullets && bullets.length === 2) {
+      console.log('[generateMatchDescription] Partial response (2 bullets), using fallback for 3rd');
+      return [bullets[0], bullets[1], enforceWordLimit(params.notableDetail.replace(/\.$/, ''))];
+    }
+
+    if (bullets && bullets.length === 1) {
+      console.log('[generateMatchDescription] Partial response (1 bullet), using fallbacks');
+      return [
+        bullets[0],
+        enforceWordLimit(params.whyItFeelsThisWay.slice(0, 100)),
+        enforceWordLimit(params.notableDetail)
+      ];
+    }
+
+    // If parsing failed completely, fall through to fallback
+    console.log('[generateMatchDescription] Response parsing failed, using full fallback');
+
   } catch (error) {
-    console.error('[generateMatchDescription] OpenAI API error:', error);
+    console.error('[generateMatchDescription] API error:', error);
   }
 
-  // Fallback if API fails - still try to be personal
+  // Fallback if API fails or response is malformed
   console.log('[generateMatchDescription] Using fallback bullets');
+
   const fallbackBullet1 = ctx.mode === 'full_analysis' && ctx.gapReasoning
     ? `Addresses your ${ctx.gapType || 'coverage'} gap with responsive ${archetypeLabel} capability`
     : `Matches your preference for ${archetypeLabel} with balanced, versatile performance`;
@@ -257,11 +367,6 @@ GOOD examples (complete, natural sentences):
     enforceWordLimit(params.whyItFeelsThisWay.slice(0, 80)),
     enforceWordLimit(params.notableDetail + (params.is_super_trainer ? ' - rare versatility for varied training' : ''))
   ];
-
-  function enforceWordLimit(bullet: string): string {
-    const words = bullet.trim().split(/\s+/);
-    return words.length > 15 ? words.slice(0, 15).join(' ') : bullet;
-  }
 }
 
 // ============================================================================
