@@ -34,6 +34,7 @@ interface ShoeCardProps {
     use_race?: boolean;
     use_trail?: boolean;
     retail_price_category?: 'Budget' | 'Core' | 'Premium' | 'Race_Day';
+    is_super_trainer?: boolean;
   };
   role: "daily" | "tempo" | "race" | "easy" | "long" | "trail";
   position?: 1 | 2 | 3;
@@ -407,6 +408,20 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
               );
             }
           })()}
+          {shoe.is_super_trainer && (
+            <span
+              className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-md font-medium"
+              style={{
+                backgroundColor: "rgba(168, 85, 247, 0.15)",
+                border: "1px solid rgba(168, 85, 247, 0.4)",
+                color: "#A855F7",
+                letterSpacing: "0.5px",
+                boxShadow: "0 0 8px rgba(168, 85, 247, 0.2)",
+              }}
+            >
+              Super Trainer
+            </span>
+          )}
           <span
             className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-md font-medium"
             style={{
