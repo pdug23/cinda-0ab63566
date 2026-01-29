@@ -632,6 +632,7 @@ export interface RecommendedShoe {
 
   // Archetype badges (which types this shoe is)
   archetypes: ShoeArchetype[];
+  is_super_trainer: boolean; // Flag for super trainer versatility badge
 
   // Badge system (center-emphasis layout)
   badge: RecommendationBadge;

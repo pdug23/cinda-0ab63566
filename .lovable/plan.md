@@ -1,76 +1,112 @@
 
-# Prevent Model Name Wrapping on Shoe Cards
+# Add Super Trainer Badge to Shoe Cards
+
+## Overview
+
+Display a "SUPER TRAINER" badge on shoe cards when the shoe is a super trainer. Super trainers are versatile shoes that can handle everything from easy recovery runs through hard workouts - a valuable distinguishing feature worth highlighting.
 
 ## Current State
 
-The model name is displayed with fixed styling (line 338):
-```tsx
-<h2 className={`text-2xl font-bold text-center mb-4 text-shimmer-${position}`}>
-  {shoe.model} {shoe.version}
-</h2>
-```
-
-This doesn't account for longer names like "PRIME X3 STRUNG" which may wrap to multiple lines on narrower cards.
+- `is_super_trainer` exists in `shoebase.json` for each shoe
+- The backend uses this flag for coverage logic and bullet point generation
+- However, `is_super_trainer` is NOT currently passed to the frontend in the `RecommendedShoe` type
+- The frontend `ShoeCard` component has no awareness of this property
 
 ## Solution
 
-Use CSS to dynamically scale the font size based on the text length, ensuring the model name always fits on a single line. Two approaches available:
+Two-step implementation:
 
-### Option A: CSS `clamp()` with `text-wrap: nowrap` (Recommended)
-- Force the text to stay on one line with `whitespace-nowrap`
-- Use a combination of `clamp()` for font sizing and `text-overflow: ellipsis` as a fallback
+1. **Backend**: Add `is_super_trainer` to the `RecommendedShoe` type and the builder function
+2. **Frontend**: Add the badge display logic to `ShoeCard.tsx`
 
-### Option B: JavaScript-based dynamic sizing
-- Calculate the text length and apply different font size classes
-- More control but adds complexity
+## Changes
 
-## Implementation (Option A)
+### 1. Update API Types
 
-### File: `src/components/results/ShoeCard.tsx`
+**File: `api/types.ts`**
 
-Update the model name heading (lines 337-340):
+Add `is_super_trainer` to the `RecommendedShoe` interface (around line 634):
 
-```tsx
-{/* Model Name */}
-<h2 
-  className={`font-bold text-center mb-4 text-shimmer-${position} whitespace-nowrap overflow-hidden`}
-  style={{
-    fontSize: `${shoe.model.length + (shoe.version?.length || 0) > 15 ? '1.25rem' : '1.5rem'}`,
-  }}
->
-  {shoe.model} {shoe.version}
-</h2>
+```typescript
+// Archetype badges (which types this shoe is)
+archetypes: ShoeArchetype[];
+is_super_trainer: boolean;  // NEW: Flag for super trainer versatility badge
 ```
 
-**Logic:**
-- If the combined model + version name exceeds 15 characters, use `1.25rem` (equivalent to `text-xl`)
-- Otherwise, use `1.5rem` (equivalent to `text-2xl`)
-- `whitespace-nowrap` ensures the text never wraps to a second line
-- `overflow-hidden` as a safety net for extremely long names
+### 2. Update Recommendation Engine
 
-### Thresholds
+**File: `api/lib/recommendationEngine.ts`**
 
-| Name Length | Font Size | Example |
-|-------------|-----------|---------|
-| ≤ 15 chars | 1.5rem (text-2xl) | "Pegasus 41" |
-| 16-20 chars | 1.25rem (text-xl) | "PRIME X3 STRUNG" |
-| > 20 chars | 1rem (text-base) | Very long names |
+Add `is_super_trainer` to the returned object in `buildRecommendedShoe` (around line 866):
 
-For better granularity, we can use a more refined approach:
+```typescript
+archetypes: getShoeArchetypes(shoe),
+is_super_trainer: shoe.is_super_trainer,  // NEW
+badge,
+position,
+```
+
+### 3. Update ShoeCard Props
+
+**File: `src/components/results/ShoeCard.tsx`**
+
+Add `is_super_trainer` to the shoe prop type (around line 35):
+
+```typescript
+use_trail?: boolean;
+retail_price_category?: 'Budget' | 'Core' | 'Premium' | 'Race_Day';
+is_super_trainer?: boolean;  // NEW
+```
+
+### 4. Add Badge Display
+
+**File: `src/components/results/ShoeCard.tsx`**
+
+Add a new badge in the badges section (around line 409, before the match badge):
 
 ```tsx
-style={{
-  fontSize: (() => {
-    const nameLength = (shoe.model + ' ' + (shoe.version || '')).length;
-    if (nameLength <= 12) return '1.5rem';   // text-2xl
-    if (nameLength <= 18) return '1.25rem';  // text-xl  
-    return '1.1rem';                          // text-lg
-  })(),
-}}
+{shoe.is_super_trainer && (
+  <span
+    className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-md font-medium"
+    style={{
+      backgroundColor: "rgba(168, 85, 247, 0.15)",  // Purple tint
+      border: "1px solid rgba(168, 85, 247, 0.4)",
+      color: "#A855F7",  // Purple (Tailwind purple-500)
+      letterSpacing: "0.5px",
+      boxShadow: "0 0 8px rgba(168, 85, 247, 0.2)",
+    }}
+  >
+    Super Trainer
+  </span>
+)}
 ```
+
+## Color Choice
+
+Using **purple (#A855F7)** for the Super Trainer badge because:
+- Distinct from existing badge colors (blue for matches, orange for trade-offs, gray for archetypes)
+- Conveys premium/special status
+- Good visibility on dark card background
+- Matches the "elite versatility" positioning of super trainers
+
+## Visual Result
+
+| Badge | Color | Purpose |
+|-------|-------|---------|
+| DAILY / WORKOUT etc. | Gray (#94a3b8) | Archetype category |
+| SUPER TRAINER | Purple (#A855F7) | Versatility highlight |
+| CLOSEST MATCH | Blue (#3B82F6) | Match tier |
+| CLOSE MATCH | Light blue (#93C5FD) | Match tier |
+| TRADE-OFF | Orange (#F97316) | Match tier |
 
 ## Files to Edit
 
 | File | Change |
 |------|--------|
-| `src/components/results/ShoeCard.tsx` | Add dynamic font sizing based on name length and `whitespace-nowrap` to prevent wrapping |
+| `api/types.ts` | Add `is_super_trainer: boolean` to `RecommendedShoe` interface |
+| `api/lib/recommendationEngine.ts` | Include `is_super_trainer` in `buildRecommendedShoe` return object |
+| `src/components/results/ShoeCard.tsx` | Add prop type and render Super Trainer badge |
+
+## Complexity
+
+Low - straightforward data plumbing and UI addition following existing patterns.
