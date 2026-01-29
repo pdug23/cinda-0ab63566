@@ -1,93 +1,48 @@
 
-# Make Shoe Images Look More Natural and Integrated
+# Show Container on Analysis Results Page
 
-## Current State
+## Overview
 
-The shoe images currently appear as flat, floating cutouts on the card with:
-- Fixed 96px height
-- No background or visual grounding
-- No depth effects (shadows, reflections)
-- Hard edges that contrast sharply with the dark card
+The analysis page currently uses the `invisible` prop on OnboardingLayout for all states, which hides the card container. You want the container to remain hidden during the loading phase but appear once results are ready.
 
-## Options to Consider
+## Solution
 
-### Option A: Subtle Shadow & Glow (Recommended)
-Add a soft drop shadow beneath the shoe to create depth and ground it visually. This works well with product photography and matches the card's premium aesthetic.
+Make the `invisible` prop dynamic based on the loading status. This is a simple one-line change.
 
-### Option B: Gradient Background Pill
-Place the shoe on a subtle gradient background shape (oval or rounded rectangle) to give it a "stage" effect.
+## Changes
 
-### Option C: Reflection Effect
-Add a faded reflection/mirror effect below the shoe image for a polished product showcase look.
+### File: `src/pages/ProfileBuilderStep4Analysis.tsx`
 
-### Option D: Combination Approach
-Combine a soft shadow with a very subtle radial gradient background for maximum integration.
+**Update line 615:**
 
----
-
-## Recommended Implementation: Option D (Combination)
-
-Create a subtle radial gradient "glow" behind the shoe that matches the card's badge color, plus a soft shadow to ground it:
-
-### Changes to `src/components/results/ShoeCard.tsx`
-
-**Update the image container (lines 413-420):**
-
+Change from:
 ```tsx
-{/* Shoe Image */}
-<div 
-  className="flex justify-center items-center pt-3 pb-1 relative"
-  style={{
-    // Subtle radial gradient that matches badge color for cohesion
-    background: `radial-gradient(ellipse 80% 60% at center, ${badgeConfig.color}10 0%, transparent 70%)`,
-  }}
->
-  <img
-    src={getShoeImagePath(shoe.model, shoe.version)}
-    alt={`${shoe.brand} ${shoe.model} ${shoe.version}`}
-    className="h-[96px] w-auto max-w-full object-contain relative z-10"
-    style={{
-      // Soft drop shadow for depth
-      filter: "drop-shadow(0 8px 12px rgba(0, 0, 0, 0.4))",
-    }}
-  />
-</div>
+<OnboardingLayout scrollable invisible>
 ```
 
-### Visual Effect Breakdown
-
-| Effect | Purpose |
-|--------|---------|
-| `radial-gradient` with badge color at 10% opacity | Creates a subtle colored "spotlight" behind the shoe that ties it to the card's theme |
-| `drop-shadow` with 8px blur | Grounds the shoe on the card, adding depth without harsh edges |
-| Ellipse shape (80% wide, 60% tall) | Natural spotlight effect that's wider than tall |
-
-### Why This Works
-
-1. **Drop shadow** uses `filter: drop-shadow()` instead of `box-shadow`, which follows the actual shoe outline rather than creating a rectangular shadow
-2. **Radial gradient** is very subtle (10% opacity) so it enhances without overwhelming
-3. **Color coordination** ties the image section to the badge color for visual coherence
-4. Works equally well for placeholder images and real product photos
-
-### Alternative: Simpler Version
-
-If the combination feels too busy, we can start with just the drop shadow:
-
+To:
 ```tsx
-<img
-  src={getShoeImagePath(shoe.model, shoe.version)}
-  alt={...}
-  className="h-[96px] w-auto max-w-full object-contain"
-  style={{
-    filter: "drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35))",
-  }}
-/>
+<OnboardingLayout scrollable invisible={status === "loading"}>
 ```
 
----
+## How it works
 
-## Files to Edit
+| Status | `invisible` prop | Container visible? |
+|--------|------------------|-------------------|
+| `loading` | `true` | No - just the spinning logo floats on the animated background |
+| `success` | `false` | Yes - content appears inside the styled card |
+| `no_gap` | `false` | Yes - content appears inside the styled card |
+| `error` | `false` | Yes - error content appears inside the styled card |
+
+## Visual effect
+
+- **During loading**: The Cinda logo spins freely on the animated background with no container (current behavior preserved)
+- **After loading completes**: The familiar dark card container fades in with the recommendation content inside it
+
+The `transition-all duration-300 ease-out` class already on the container will provide a smooth transition when the container becomes visible.
+
+## Files to edit
 
 | File | Change |
 |------|--------|
-| `src/components/results/ShoeCard.tsx` | Update image container styling with gradient background and drop shadow |
+| `src/pages/ProfileBuilderStep4Analysis.tsx` | Make `invisible` prop conditional on `status === "loading"` |
