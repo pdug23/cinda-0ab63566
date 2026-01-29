@@ -72,7 +72,7 @@ const OnboardingLayout = ({
         paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
       }}
     >
-      <main className="h-full flex flex-col items-center justify-center px-4 md:px-6">
+      <main className={`h-full flex flex-col items-center justify-center ${invisible ? '' : 'px-4 md:px-6'}`}>
         <div
           className={`w-full ${invisible ? '' : 'max-w-lg'} flex flex-col ${invisible ? '' : 'rounded-2xl'} border ${allowOverflow ? 'overflow-x-hidden overflow-y-visible' : 'overflow-hidden'} relative z-10 transition-all duration-300 ease-out ${containerClasses} ${centerContent ? 'justify-center' : ''
             }`}
