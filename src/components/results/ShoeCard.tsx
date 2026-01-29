@@ -290,16 +290,17 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         </TooltipProvider>
 
         <button
-          className="absolute top-4 right-4 h-8 px-2.5 flex items-center justify-center gap-1 rounded-xl transition-all z-10"
+          className="absolute top-4 right-4 h-8 px-3 flex items-center justify-center gap-1.5 rounded-xl transition-all z-10 group"
           style={{
-            backgroundColor: "rgba(26, 26, 30, 0.95)",
-            border: "1px solid rgba(255, 255, 255, 0.15)",
+            background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%)",
+            border: "1px solid hsl(var(--primary) / 0.6)",
+            boxShadow: "0 0 12px hsl(var(--primary) / 0.4), 0 2px 8px rgba(0,0,0,0.3)",
           }}
           onClick={() => setBuyModalOpen(true)}
           aria-label="Buy now"
         >
-          <span className="text-[10px] font-medium uppercase tracking-wide text-white/70">Buy</span>
-          <ExternalLink className="w-3.5 h-3.5 text-white/70" />
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-white">Buy</span>
+          <ExternalLink className="w-3.5 h-3.5 text-white" />
         </button>
 
         {/* Brand Logo */}
