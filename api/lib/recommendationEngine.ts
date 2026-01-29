@@ -65,7 +65,7 @@ interface MatchDescriptionParams {
 }
 
 /**
- * Generate a custom match description using gpt-5-mini
+ * Generate a custom match description using gpt-4o-mini
  * Returns three bullet points: midsole/ride, differentiator, versatility
  */
 async function generateMatchDescription(params: MatchDescriptionParams): Promise<string[]> {
@@ -125,22 +125,15 @@ RULES:
 - British spelling. Short punchy words.`;
 
   try {
-    const response = await openaiClient.responses.create({
-      model: 'gpt-5-mini',
-      input: prompt,
-      text: {
-        verbosity: 'low'
-      },
-      max_output_tokens: 2500
+    const response = await openaiClient.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 256,
     });
 
     console.log('[generateMatchDescription] Raw LLM response:', JSON.stringify(response, null, 2));
 
-    let content: string | undefined;
-    content = (response.output?.[0] as any)?.text?.trim();
-    if (!content) content = (response.output as any)?.text?.trim();
-    if (!content) content = (response.output?.[0] as any)?.content?.trim();
-    if (!content) content = (response as any)?.output_text?.trim();
+    const content = response.choices[0]?.message?.content?.trim();
 
     console.log('[generateMatchDescription] Extracted content:', content);
 
