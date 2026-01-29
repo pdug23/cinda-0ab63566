@@ -1,62 +1,57 @@
 
-# Update Match Badge Color Scheme
 
-## Problem
+# Hide "Add Cinda as a web app" Link When Already Using PWA
 
-The "CLOSE MATCH" badge uses a platinum white color (`#F1F5F9`) which causes the model name shimmer animation to be invisible, making the card look "sad" compared to the others.
+## Overview
 
-## Solution
+When users have already installed Cinda as a web app (PWA), showing the "Add Cinda as a web app" link is redundant and potentially confusing. We'll detect standalone/PWA mode and hide the link accordingly.
 
-Update the color scheme to use a two-tone blue system:
+## How It Works
 
-| Badge Type | Current Color | New Color | Description |
-|------------|---------------|-----------|-------------|
-| CLOSEST MATCH | `#7DD3FC` (light cyan) | `#3B82F6` (deeper blue) | A richer, more saturated blue |
-| CLOSE MATCH | `#F1F5F9` (white) | `#93C5FD` (light sky blue) | Lighter blue, similar to old CLOSEST but slightly lighter |
-| TRADE-OFF | `#F97316` (orange) | `#F97316` (unchanged) | Stays the same |
+We can detect if the app is running as a PWA using two methods:
 
-## Visual Hierarchy
-
-```text
-CLOSEST MATCH  →  Deep/rich blue (#3B82F6)     ← Most prominent, saturated
-CLOSE MATCH    →  Light sky blue (#93C5FD)     ← Softer, lighter blue
-TRADE-OFF      →  Orange (#F97316)             ← Unchanged, distinct category
-```
-
-Both blues will be visibly different: CLOSEST is darker/richer, CLOSE is lighter/softer. The shimmer effect will now work for CLOSE MATCH since it's a visible color rather than near-white.
+1. **Standard browsers**: CSS media query `(display-mode: standalone)`
+2. **iOS Safari**: `navigator.standalone` property
 
 ## Changes
 
-### File: `src/components/results/ShoeCard.tsx`
+### File: `src/pages/Landing.tsx`
 
-**Lines 66-79** - Update the `getBadgeConfig` function:
+**Add PWA detection state and effect:**
 
 ```tsx
-const getBadgeConfig = (
-  type: ShoeCardProps["shoe"]["recommendationType"],
-  badge?: ShoeCardProps["shoe"]["badge"]
-): { text: string; color: string } => {
-  const effectiveType = badge || type;
+const [isStandalone, setIsStandalone] = useState(false);
+
+useEffect(() => {
+  // Check if running as installed PWA
+  const isInStandaloneMode = 
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as any).standalone === true;
   
-  if (effectiveType === "closest_match") {
-    return { text: "CLOSEST MATCH", color: "#3B82F6" }; // Rich/deep blue
-  }
-  if (effectiveType === "trade_off_option" || effectiveType === "trade_off") {
-    return { text: "TRADE-OFF", color: "#F97316" }; // Orange (unchanged)
-  }
-  return { text: "CLOSE MATCH", color: "#93C5FD" }; // Light sky blue
-};
+  setIsStandalone(isInStandaloneMode);
+}, []);
+```
+
+**Update the conditional rendering (line 205):**
+
+```tsx
+{/* Web app promotion link - hidden in standalone/PWA mode */}
+{!isExiting && !isStandalone && (
+  <button ...>
+    Add Cinda as a web app for an optimal experience
+  </button>
+)}
 ```
 
 ## Technical Notes
 
-- The color change propagates to: badge styling, card glow animation, checkmark icons, and the model name shimmer effect
-- `#3B82F6` is Tailwind's `blue-500` - a rich, saturated blue that feels premium
-- `#93C5FD` is Tailwind's `blue-300` - a soft, light blue that complements the deeper tone
-- Both blues are distinct enough to be clearly differentiated while belonging to the same family
+- `(display-mode: standalone)` - Works on Chrome, Edge, Firefox, and Android browsers
+- `navigator.standalone` - iOS Safari specific property (needs type assertion)
+- The check runs once on mount since standalone mode won't change during a session
 
 ## Files to Edit
 
 | File | Change |
 |------|--------|
-| `src/components/results/ShoeCard.tsx` | Update color values in `getBadgeConfig` function |
+| `src/pages/Landing.tsx` | Add `isStandalone` state and detection logic, update conditional rendering |
+
