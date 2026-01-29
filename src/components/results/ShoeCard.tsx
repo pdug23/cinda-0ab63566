@@ -294,7 +294,6 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
           style={{
             backgroundColor: "rgba(26, 26, 30, 0.95)",
             border: "1px solid rgba(255, 255, 255, 0.15)",
-            boxShadow: "0 0 10px hsl(var(--primary) / 0.35)",
           }}
           onClick={() => setBuyModalOpen(true)}
           aria-label="Buy now"
