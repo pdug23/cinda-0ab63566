@@ -139,6 +139,7 @@ STANDOUT: ${params.notableDetail}${superNote}
 
 OUTPUT FORMAT (3 lines, no prefixes):
 1. Personal: ${ctx.mode === 'full_analysis' ? 'Reference their shoes by name. Explain why this fills their gap.' : 'Reference their feel preferences. Explain the match.'}
+- This should sound like advice from a runner who knows their shoes.
 2. Education: Teach one thing about ride or fit. Complete sentence with articles.
 3. Standout: Lead with feature, em dash, then use case.
 
@@ -147,11 +148,8 @@ STYLE:
 - Natural sentences with articles (a, an, the)
 - Conversational, not marketing copy
 
-BANNED PATTERNS:
-- "Your preference for X aligns/matches/makes"
-- "perfectly suited" or "ideal match"
-- Sentences missing articles or helper words
-- Compressed telegram-style phrasing`;
+-Tone reference: calm, confident, runner-to-runner explanation.
+-Avoid generic recommendation phrases. Write as if explaining this choice to a friend.`;
 }
 
 // ============================================================================
@@ -249,9 +247,9 @@ function enforceWordLimit(bullet: string): string {
  */
 const GPT5_MINI_CONFIG = {
   model: 'gpt-5-mini' as const,
-  max_output_tokens: 140,
+  max_output_tokens: 200,
   temperature: 0.5,
-  reasoning: { effort: 'none' as const },
+  reasoning: { effort: 'low' as const },
 };
 
 // ============================================================================
