@@ -187,6 +187,19 @@ const getBrandLogoPath = (brand: string): string => {
   return brandMap[brand] || "";
 };
 
+const getShoeImagePath = (model: string, version: string): string => {
+  const fullName = `${model} ${version}`.trim();
+  
+  if (fullName === "Atmos" || model === "Atmos") {
+    return "/shoes/topo-atmos.png";
+  }
+  if (fullName === "Pegasus 41" || (model === "Pegasus" && version === "41")) {
+    return "/shoes/nike-pegasus-41.png";
+  }
+  
+  return "/shoes/PLACEHOLDER.png";
+};
+
 export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onShortlist, showRoleBadge = false }: ShoeCardProps) {
   const [buyModalOpen, setBuyModalOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -400,7 +413,7 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
         {/* Shoe Image */}
         <div className="flex justify-center items-center pt-3 pb-1">
           <img
-            src="/shoes/PLACEHOLDER.png"
+            src={getShoeImagePath(shoe.model, shoe.version)}
             alt={`${shoe.brand} ${shoe.model} ${shoe.version}`}
             className="h-[96px] w-auto max-w-full object-contain"
           />
