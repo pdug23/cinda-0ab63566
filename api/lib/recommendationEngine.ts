@@ -244,27 +244,23 @@ function enforceWordLimit(bullet: string): string {
 /**
  * gpt-5-mini Responses API configuration.
  *
- * WHY these values (based on OpenAI guidance):
+ * max_output_tokens: 1000
+ *   - Moderate budget for 3 bullets (~60 output tokens + ~400-600 reasoning tokens)
+ *   - Testing headroom vs speed tradeoff
  *
- * max_output_tokens: 280
- *   - Quality-first setting for 3 bullets
- *   - Actual output ~40-90 tokens, headroom for complete sentences
- *   - Not too high to avoid long planning/variability
+ * reasoning.effort: "low"
+ *   - Faster generation (4-6s per shoe vs 7-8s with "medium")
+ *   - Sufficient quality for structured bullet generation
  *
- * temperature: 0.55
- *   - Balance of creativity and consistency
- *   - In the recommended 0.4-0.7 band
- *
- * reasoning.effort: "medium"
- *   - Better phrasing than "low"
- *   - Acceptable latency (10-15s target)
- *   - "low" if speed needed, "none" produces flat copy
+ * text.verbosity: "low"
+ *   - Concise, tight phrasing
+ *   - Naturally shorter bullets without wordiness
  */
 const GPT5_MINI_CONFIG = {
   model: 'gpt-5-mini' as const,
-  max_output_tokens: 2000,  // Reasoning models need headroom - reasoning tokens count against this
-  // Note: temperature not supported by reasoning models (gpt-5-mini)
-  reasoning: { effort: 'medium' as const },
+  max_output_tokens: 1000,
+  reasoning: { effort: 'low' as const },
+  text: { verbosity: 'low' as const },
 };
 
 // ============================================================================
@@ -302,6 +298,7 @@ async function generateMatchDescription(
     model: GPT5_MINI_CONFIG.model,
     max_output_tokens: GPT5_MINI_CONFIG.max_output_tokens,
     reasoning_effort: GPT5_MINI_CONFIG.reasoning.effort,
+    text_verbosity: GPT5_MINI_CONFIG.text.verbosity,
   });
 
   const prompt = buildBulletPrompt(params);
@@ -318,6 +315,7 @@ async function generateMatchDescription(
       input: prompt,
       max_output_tokens: GPT5_MINI_CONFIG.max_output_tokens,
       reasoning: GPT5_MINI_CONFIG.reasoning,
+      text: GPT5_MINI_CONFIG.text,
     });
 
     console.log('[generateMatchDescription] API call completed');
