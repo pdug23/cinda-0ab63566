@@ -436,8 +436,8 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
                     boxShadow: "0 0 8px rgba(168, 85, 247, 0.2)",
                   }}
                 >
-                  Super
-                  <Info className="w-3 h-3" />
+                        ST
+                        <Info className="w-3 h-3" />
                 </button>
               </PopoverTrigger>
               <PopoverContent 
