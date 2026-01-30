@@ -457,14 +457,34 @@ function scoreStabilityBonus(
 }
 
 /**
- * Apply super trainer versatility bonus (0-10 points)
- * Super trainers are highly versatile and can handle recovery through hard intervals
+ * Apply super trainer versatility bonus (context-dependent)
+ *
+ * Super trainers get bonuses when versatility is valuable:
+ * - +5 for daily_trainer requests (versatility matters)
+ * - +10 when starting from scratch (0 current shoes = one-shoe rotation)
+ * - +0 for recovery/workout/race requests (let specialists win)
  */
-function scoreSuperTrainerBonus(shoe: Shoe): number {
-  if (shoe.is_super_trainer) {
-    return 10; // Versatility bonus for super trainers
+function scoreSuperTrainerBonus(shoe: Shoe, constraints?: RetrievalConstraints): number {
+  if (!shoe.is_super_trainer) {
+    return 0;
   }
-  return 0;
+
+  let bonus = 0;
+
+  // Bonus for daily trainer requests (versatility is valuable)
+  if (constraints?.archetypes?.includes('daily_trainer')) {
+    bonus += 5;
+  }
+
+  // Bonus when starting from scratch (0 current shoes = one-shoe rotation)
+  if (constraints?.currentShoes && constraints.currentShoes.length === 0) {
+    bonus += 10;
+  }
+
+  // NO bonus for specialized requests (recovery, workout, race)
+  // Let specialist shoes win in their categories
+
+  return bonus;
 }
 
 /**
@@ -1315,7 +1335,7 @@ export function scoreShoe(
   const heelDropScore = scoreHeelDropMatch(shoe, constraints.feelPreferences);
   const stabilityBonus = scoreStabilityBonus(shoe, constraints.stabilityNeed);
   const availabilityBonus = scoreAvailability(shoe);
-  const superTrainerBonus = scoreSuperTrainerBonus(shoe);
+  const superTrainerBonus = scoreSuperTrainerBonus(shoe, constraints);
 
   // Profile-based modifiers (per SCORING_MODIFIERS.md)
   const footStrikeBonus = scoreFootStrikeMatch(shoe, constraints.profile);
