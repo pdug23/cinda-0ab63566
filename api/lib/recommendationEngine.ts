@@ -136,22 +136,27 @@ function buildBulletPrompt(params: MatchDescriptionParams): string {
   // Super trainer note - only included if true
   const superNote = params.is_super_trainer ? '\nSUPER TRAINER: versatile for easy through tempo' : '';
 
-  // Construct prompt - 16-18 words allows complete sentences without truncation
+  // Construct prompt - max 12 words for tighter, more expert bullets
   return `SHOE: ${params.fullName} (${archetypeLabel})
 ${userContextSection}
 RIDE: ${params.whyItFeelsThisWay}
 STANDOUT: ${params.notableDetail}
 FIT/TECH: ${fitInfo}${superNote}
 
-OUTPUT: Exactly 3 lines of text. One sentence per line. 16-18 words each.
+OUTPUT: Exactly 3 lines. One sentence each. Maximum 12 words per line.
+Count words before outputting. If over 12 words, cut unnecessary words.
 
 Line 1: ${ctx.mode === 'full_analysis'
-    ? 'Why this shoe fills their gap - reference their current shoes if helpful.'
+    ? 'Why this shoe fills their gap - reference current shoes if helpful.'
     : 'Why this matches their feel preferences.'}
-Line 2: One specific biomechanical insight or trade-off about this shoe.
-Line 3: The distinctive trait and when it shines.${params.is_super_trainer ? ' Mention versatility.' : ''}
+Line 2: One specific biomechanical insight or trade-off.
+Line 3: Distinctive trait and primary use case.${params.is_super_trainer ? ' Mention versatility.' : ''}
 
-STYLE: British spelling, conversational, complete sentences. No em dashes. No spec numbers.
+STYLE:
+- British spelling, complete sentences
+- Start with the key feature or action, not "Its" or "The"
+- No em dashes, no spec numbers
+- Direct, confident expert voice
 
 No preamble. No numbering. No bullet points. Just 3 lines.`;
 }
@@ -160,18 +165,17 @@ No preamble. No numbering. No bullet points. Just 3 lines.`;
 // RESPONSE PARSING
 // ============================================================================
 
-// Word limit constants - strict 15-word limit
-const WORD_LIMIT_TARGET = 15;  // Prompt instructs model to stay under this
-const WORD_LIMIT_HARD = 18;    // Truncate to target if over this (allows minor slack)
+// Word limit constants - strict 12-word limit for tighter bullets
+const WORD_LIMIT_TARGET = 12;  // Prompt instructs model to stay under this
+const WORD_LIMIT_HARD = 15;    // Truncate to target if over this (allows minor slack)
 
 /**
  * Parse and normalise bullet response from gpt-5-mini.
- * Handles partial responses, malformed output, and enforces soft word limit.
+ * Handles partial responses, malformed output, and enforces word limit.
  *
- * Soft limit approach:
- * - If line is <= WORD_LIMIT_SOFT (22): keep as-is
- * - If line is <= WORD_LIMIT_HARD (26): keep as-is (slightly over but acceptable)
- * - If line is > WORD_LIMIT_HARD: truncate to WORD_LIMIT_SOFT words
+ * Word limit approach:
+ * - If line is <= WORD_LIMIT_HARD (15): keep as-is
+ * - If line is > WORD_LIMIT_HARD: truncate to WORD_LIMIT_TARGET (12) words
  */
 function parseBulletResponse(content: string | null | undefined): string[] | null {
   if (!content || typeof content !== 'string') {
