@@ -340,6 +340,10 @@ async function generateMatchDescription(
   const ctx = params.userContext;
 
   try {
+    // Verify the responses API exists
+    console.log('[generateMatchDescription] openaiClient.responses exists:', !!openaiClient.responses);
+    console.log('[generateMatchDescription] Calling OpenAI Responses API...');
+
     // gpt-5-mini Responses API (non-streaming for reliable text extraction)
     const response = await openaiClient.responses.create({
       model: GPT5_MINI_CONFIG.model,
@@ -348,6 +352,8 @@ async function generateMatchDescription(
       reasoning: GPT5_MINI_CONFIG.reasoning,
       input: prompt,
     });
+
+    console.log('[generateMatchDescription] API call completed');
 
     // Extract text from Responses API schema
     // Priority: response.output_text > iterate response.output[].content[]
@@ -413,8 +419,15 @@ async function generateMatchDescription(
     // If parsing failed completely, fall through to fallback
     console.log('[generateMatchDescription] Response parsing failed, using full fallback');
 
-  } catch (error) {
-    console.error('[generateMatchDescription] API error:', error);
+  } catch (error: any) {
+    console.error('[generateMatchDescription] API error:', {
+      name: error?.name,
+      message: error?.message,
+      code: error?.code,
+      status: error?.status,
+      type: error?.type,
+      stack: error?.stack?.split('\n').slice(0, 3).join('\n'),
+    });
   }
 
   // Fallback if API fails or response is malformed
@@ -970,6 +983,8 @@ async function buildRecommendedShoe(
   position: RecommendationPosition,
   userContext: BulletUserContext
 ): Promise<RecommendedShoe> {
+  console.log('[buildRecommendedShoe] Starting for:', shoe.full_name);
+
   // Generate match description using LLM (with fallback)
   const matchReason = await generateMatchDescription({
     fullName: shoe.full_name,
@@ -1073,7 +1088,9 @@ export async function generateDiscoveryRecommendations(
   };
 
   // Step 2: Get candidates for this archetype
+  console.log('[generateDiscoveryRecommendations] Getting candidates for', request.archetype);
   let candidates = getCandidates(constraints, catalogue);
+  console.log('[generateDiscoveryRecommendations] Got', candidates.length, 'candidates');
 
   // Step 3: If fewer than 3 candidates, relax constraints
   if (candidates.length < 3) {
@@ -1083,6 +1100,7 @@ export async function generateDiscoveryRecommendations(
       archetypes: [request.archetype, ...relatedArchetypes],
     };
     candidates = getCandidates(relaxedConstraints, catalogue);
+    console.log('[generateDiscoveryRecommendations] After relaxing:', candidates.length, 'candidates');
   }
 
   if (candidates.length === 0) {
@@ -1090,12 +1108,16 @@ export async function generateDiscoveryRecommendations(
   }
 
   // Step 4: Score candidates
+  console.log('[generateDiscoveryRecommendations] Scoring candidates...');
   const scoredCandidates: ScoredShoe[] = candidates.map(shoe =>
     scoreShoe(shoe, constraints)
   );
+  console.log('[generateDiscoveryRecommendations] Scored', scoredCandidates.length, 'candidates');
 
   // Step 5: Select top 2-3 shoes with diversity
+  console.log('[generateDiscoveryRecommendations] Selecting diverse shoes...');
   const selectedShoes = selectDiscoveryShoes(scoredCandidates);
+  console.log('[generateDiscoveryRecommendations] Selected', selectedShoes.length, 'shoes:', selectedShoes.map(s => s.full_name));
 
   // Step 6: Helper to check heel drop distance
   const getHeelDropDistance = (shoe: Shoe): number => {
@@ -1139,18 +1161,21 @@ export async function generateDiscoveryRecommendations(
   };
 
   if (selectedShoes.length === 1) {
+    console.log('[generateDiscoveryRecommendations] Building 1 recommendation...');
     return [
       await buildRecommendedShoe(selectedShoes[0], archetypeLabel, getBadge(selectedShoes[0], true, false), currentShoes, catalogue, false, allThreeShoes, "center", userContext),
     ];
   }
 
   if (selectedShoes.length === 2) {
+    console.log('[generateDiscoveryRecommendations] Building 2 recommendations...');
     return await Promise.all([
       buildRecommendedShoe(selectedShoes[1], archetypeLabel, getBadge(selectedShoes[1], false, true), currentShoes, catalogue, false, allThreeShoes, "left", userContext),
       buildRecommendedShoe(selectedShoes[0], archetypeLabel, getBadge(selectedShoes[0], true, false), currentShoes, catalogue, false, allThreeShoes, "center", userContext),
     ]);
   }
 
+  console.log('[generateDiscoveryRecommendations] Building 3 recommendations...');
   return await Promise.all([
     buildRecommendedShoe(selectedShoes[1], archetypeLabel, getBadge(selectedShoes[1], false, true), currentShoes, catalogue, false, allThreeShoes, "left", userContext),
     buildRecommendedShoe(selectedShoes[0], archetypeLabel, getBadge(selectedShoes[0], true, false), currentShoes, catalogue, false, allThreeShoes, "center", userContext),
