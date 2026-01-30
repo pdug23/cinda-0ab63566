@@ -368,16 +368,12 @@ export function scoreFeelMatch(
       if (feelGap && feelGapDimension && feelGap.dimension === feelGapDimension) {
         // Use feelGap targetValue - this is the rotation analysis override (single target)
         const distance = Math.abs(shoeValue - feelGap.targetValue);
-        const score = distanceToScore(distance);
-        console.log(`[scoreFeelMatch] ${dimension}: feelGap target=${feelGap.targetValue}, shoe=${shoeValue}, distance=${distance}, score=${score}`);
-        return score;
+        return distanceToScore(distance);
       } else {
         // Use archetype range - shoes within range all score equally well
         const [min, max] = getArchetypeRange(dimension, archetypeContext);
         const distance = distanceFromRange(shoeValue, min, max);
-        const score = distanceToScore(distance);
-        console.log(`[scoreFeelMatch] ${dimension}: range=[${min},${max}], shoe=${shoeValue}, inRange=${distance === 0}, distance=${distance}, score=${score}`);
-        return score;
+        return distanceToScore(distance);
       }
     }
   };
