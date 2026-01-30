@@ -262,7 +262,7 @@ function enforceWordLimit(bullet: string): string {
  */
 const GPT5_MINI_CONFIG = {
   model: 'gpt-5-mini' as const,
-  max_output_tokens: 280,
+  max_output_tokens: 2000,  // Reasoning models need headroom - reasoning tokens count against this
   // Note: temperature not supported by reasoning models (gpt-5-mini)
   reasoning: { effort: 'medium' as const },
 };
@@ -323,20 +323,40 @@ async function generateMatchDescription(
     console.log('[generateMatchDescription] API call completed');
 
     // Extract text from Responses API
-    // Prefer response.output_text (aggregated text helper)
-    // Fallback: walk response.output[].content[] for { type: "output_text", text: "..." }
+    // Try multiple extraction methods - gpt-5-mini may return text in different places
     let fullContent = '';
 
-    // First try the output_text helper (recommended)
+    // Method 1: output_text helper (aggregated text)
     if ((response as any).output_text) {
       fullContent = (response as any).output_text;
-    } else if (response.output && Array.isArray(response.output)) {
-      // Fallback: walk the output array
+    }
+    // Method 2: text property (some SDK versions)
+    else if ((response as any).text) {
+      fullContent = (response as any).text;
+    }
+    // Method 3: walk response.output[] for message blocks
+    else if (response.output && Array.isArray(response.output)) {
       const textSegments: string[] = [];
       for (const item of response.output) {
+        // Look for message type items
+        if ((item as any).type === 'message' && (item as any).content) {
+          for (const c of (item as any).content) {
+            if (c.type === 'output_text' && c.text) {
+              textSegments.push(c.text);
+            }
+            // Also check for text type (some responses use this)
+            if (c.type === 'text' && c.text) {
+              textSegments.push(c.text);
+            }
+          }
+        }
+        // Some structures put text directly in content array
         if ((item as any).content && Array.isArray((item as any).content)) {
           for (const c of (item as any).content) {
             if (c.type === 'output_text' && c.text) {
+              textSegments.push(c.text);
+            }
+            if (c.type === 'text' && c.text) {
               textSegments.push(c.text);
             }
           }
@@ -347,8 +367,10 @@ async function generateMatchDescription(
 
     // Debug log if extraction failed
     if (!fullContent) {
-      console.error('[generateMatchDescription] Text extraction failed. Response keys:', Object.keys(response));
-      console.error('[generateMatchDescription] Response output:', JSON.stringify(response.output, null, 2).slice(0, 500));
+      console.error('[generateMatchDescription] Text extraction failed.');
+      console.error('[generateMatchDescription] output_text:', (response as any).output_text);
+      console.error('[generateMatchDescription] text:', (response as any).text);
+      console.error('[generateMatchDescription] Response output:', JSON.stringify(response.output, null, 2).slice(0, 1000));
     }
 
     console.log('[generateMatchDescription] Full response:', fullContent);
