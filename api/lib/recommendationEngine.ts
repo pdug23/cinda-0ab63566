@@ -159,6 +159,7 @@ STYLE:
 - No jargon, no marketing fluff, no trade-offs
 - No em dashes, no spec numbers
 - Focus on positives and practical benefits
+- VARIETY: Each line must cover a DIFFERENT feature or benefit. Never repeat the same tech or foam name across lines.
 
 Examples of good Line 2s:
 "Carbon plate adds snap to help you roll through each stride"
