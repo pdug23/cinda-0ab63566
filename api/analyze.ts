@@ -539,7 +539,8 @@ export default async function handler(
     console.error('[analyze] Unexpected error:', error);
     res.status(500).json({
       success: false,
-      error: 'Internal server error. Please try again.',
+      error: `DEBUG: ${error?.message || 'Unknown error'}`,
+      debugStack: error?.stack?.split('\n').slice(0, 5),
     } as AnalyzeResponse);
   }
 }
