@@ -278,7 +278,8 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
                   border: "1px solid rgba(255, 255, 255, 0.15)",
                 }}
                 onClick={() => {
-                  onShortlist?.();
+                  // Don't toggle shortlist state - just show auth modal
+                  // Shortlist toggle will happen after successful sign-in
                   setAuthModalOpen(true);
                 }}
                 aria-label={isShortlisted ? "Remove from shortlist" : "Add to shortlist"}
