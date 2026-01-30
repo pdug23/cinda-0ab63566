@@ -3,7 +3,7 @@ import { Check, Heart, ExternalLink, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+
 import { cn } from "@/lib/utils";
 import { BuyNowModal } from "./BuyNowModal";
 import { ShortlistAuthModal } from "./ShortlistAuthModal";
@@ -206,7 +206,7 @@ const getShoeImagePath = (model: string, version: string): string => {
 export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onShortlist, showRoleBadge = false }: ShoeCardProps) {
   const [buyModalOpen, setBuyModalOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [superModalOpen, setSuperModalOpen] = useState(false);
+  
   const badgeConfig = getBadgeConfig(shoe.recommendationType, shoe.badge);
   // Use badge color for glow/shimmer to create visual coherence
   const shimmer = badgeConfig.color;
@@ -423,19 +423,37 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
             {badgeConfig.text}
           </span>
           {shoe.is_super_trainer && (
-            <button
-              onClick={() => setSuperModalOpen(true)}
-              className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-md font-medium cursor-pointer hover:opacity-80 transition-opacity"
-              style={{
-                backgroundColor: "rgba(168, 85, 247, 0.15)",
-                border: "1px solid rgba(168, 85, 247, 0.4)",
-                color: "#A855F7",
-                letterSpacing: "0.5px",
-                boxShadow: "0 0 8px rgba(168, 85, 247, 0.2)",
-              }}
-            >
-              Super
-            </button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-md font-medium flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity"
+                  style={{
+                    backgroundColor: "rgba(168, 85, 247, 0.15)",
+                    border: "1px solid rgba(168, 85, 247, 0.4)",
+                    color: "#A855F7",
+                    letterSpacing: "0.5px",
+                    boxShadow: "0 0 8px rgba(168, 85, 247, 0.2)",
+                  }}
+                >
+                  Super
+                  <Info className="w-3 h-3" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent 
+                className="w-72 p-3 bg-[#1a1a1f] border-white/10 text-white shadow-xl"
+                side="bottom"
+                align="center"
+              >
+                <div className="space-y-2">
+                  <p className="text-sm text-white/80 leading-relaxed">
+                    Super trainers are shoes that use race-level foam and geometry to feel fast and efficient, while remaining stable and durable enough for regular training.
+                  </p>
+                  <p className="text-sm text-white/80 leading-relaxed">
+                    Perfect for runners who like do-it-all versatile shoes, or want maximum capability without building a large rotation.
+                  </p>
+                </div>
+              </PopoverContent>
+            </Popover>
           )}
         </div>
 
@@ -521,20 +539,6 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
             brand: shoe.brand,
           }}
         />
-
-        <Dialog open={superModalOpen} onOpenChange={setSuperModalOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-lg font-semibold">Super trainers</DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground leading-relaxed pt-2">
-                Super trainers are shoes that use race-level foam and geometry to feel fast and efficient, while remaining stable and durable enough for regular training.
-              </DialogDescription>
-            </DialogHeader>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Perfect for runners who like do-it-all versatile shoes, or want maximum capability without building a large rotation.
-            </p>
-          </DialogContent>
-        </Dialog>
       </article>
     </>
   );
