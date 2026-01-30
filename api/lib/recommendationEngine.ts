@@ -274,33 +274,27 @@ function enforceWordLimit(bullet: string): string {
 /**
  * gpt-5-mini Responses API configuration.
  *
- * WHY these values for quality output (10-15 second target):
+ * WHY these values:
  *
  * max_output_tokens: 250
- *   - Increased to prevent mid-sentence cutoffs
  *   - 3 bullets × 15 words × ~1.5 tokens = ~68 tokens minimum
- *   - Buffer needed for complete sentences
+ *   - Buffer for complete sentences without cutoffs
+ *   - Not too high to avoid runaway generation
  *
- * temperature: 0.6
- *   - Higher for variety across multiple shoes
- *   - Prevents repetitive "Matches your preference..." patterns
+ * temperature: 0.5
+ *   - Balanced creativity + consistency
+ *   - Enough variety to avoid repetitive patterns
  *
- * reasoning.effort: "medium"
- *   - CRITICAL: Enables thinking time for quality output
- *   - "none" was too fast (~3s) = poor quality, cutoffs
- *   - "medium" = 10-15s latency, but complete coherent sentences
- *   - Worth the latency for non-broken output
- *
- * text.verbosity: "medium"
- *   - Prevents incomplete sentence generation
- *   - Ensures model finishes thoughts before stopping
+ * reasoning.effort: "low"
+ *   - Enables some thinking for quality output
+ *   - "none" produces too-generic bullets
+ *   - "low" is good balance of quality vs latency (~8-12s)
  */
 const GPT5_MINI_CONFIG = {
   model: 'gpt-5-mini' as const,
   max_output_tokens: 250,
-  temperature: 0.6,
-  reasoning: { effort: 'medium' as const },
-  text: { verbosity: 'medium' as const },
+  temperature: 0.5,
+  reasoning: { effort: 'low' as const },
 };
 
 // ============================================================================
@@ -339,7 +333,6 @@ async function generateMatchDescription(
     max_output_tokens: GPT5_MINI_CONFIG.max_output_tokens,
     temperature: GPT5_MINI_CONFIG.temperature,
     reasoning_effort: GPT5_MINI_CONFIG.reasoning.effort,
-    text_verbosity: GPT5_MINI_CONFIG.text.verbosity,
   });
 
   const prompt = buildBulletPrompt(params);
@@ -347,37 +340,49 @@ async function generateMatchDescription(
   const ctx = params.userContext;
 
   try {
-    // gpt-5-mini Responses API streaming request
-    // Medium reasoning = 10-15s latency but quality output
-    const stream = await openaiClient.responses.create({
+    // gpt-5-mini Responses API (non-streaming for reliable text extraction)
+    const response = await openaiClient.responses.create({
       model: GPT5_MINI_CONFIG.model,
       max_output_tokens: GPT5_MINI_CONFIG.max_output_tokens,
       temperature: GPT5_MINI_CONFIG.temperature,
       reasoning: GPT5_MINI_CONFIG.reasoning,
-      text: GPT5_MINI_CONFIG.text,
       input: prompt,
-      stream: true,
     });
 
-    // Collect streamed chunks from Responses API
-    // The Responses API emits 'response.output_text.delta' events
+    // Extract text from Responses API schema
+    // Priority: response.output_text > iterate response.output[].content[]
     let fullContent = '';
-    for await (const event of stream) {
-      // Handle text delta events
-      if (event.type === 'response.output_text.delta') {
-        const delta = event.delta;
-        if (delta) {
-          fullContent += delta;
 
-          // Emit to callback if provided (for real-time UI updates)
-          if (onStream) {
-            onStream(delta, fullContent);
+    // Cast response to any for flexible property access
+    const resp = response as any;
+
+    // First try the direct output_text field (most reliable)
+    if (resp.output_text) {
+      fullContent = resp.output_text;
+    } else if (resp.output && Array.isArray(resp.output)) {
+      // Iterate through output items and collect output_text content
+      const textSegments: string[] = [];
+      for (const item of resp.output) {
+        if (item.content && Array.isArray(item.content)) {
+          for (const c of item.content) {
+            if (c.type === 'output_text' && c.text) {
+              textSegments.push(c.text);
+            }
           }
-
-          // Log for debugging/latency monitoring
-          console.log('[generateMatchDescription] Streaming chunk:', delta.length, 'chars');
         }
       }
+      fullContent = textSegments.join('\n').trim();
+    }
+
+    // Debug log if extraction failed
+    if (!fullContent) {
+      console.error('[generateMatchDescription] Text extraction failed. Response shape:', JSON.stringify({
+        keys: Object.keys(resp),
+        hasOutputText: !!resp.output_text,
+        outputLength: resp.output?.length,
+        outputTypes: resp.output?.map((o: any) => o.type),
+        firstOutput: resp.output?.[0],
+      }, null, 2));
     }
 
     console.log('[generateMatchDescription] Full response:', fullContent);
