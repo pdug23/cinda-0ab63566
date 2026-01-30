@@ -382,14 +382,17 @@ async function generateMatchDescription(
     console.log('[generateMatchDescription] Response parsing failed, using full fallback');
 
   } catch (error: any) {
-    console.error('[generateMatchDescription] API error:', {
+    console.error('[generateMatchDescription] CRITICAL API FAILURE:', {
       name: error?.name,
       message: error?.message,
       code: error?.code,
       status: error?.status,
       type: error?.type,
-      stack: error?.stack?.split('\n').slice(0, 3).join('\n'),
+      fullError: JSON.stringify(error, Object.getOwnPropertyNames(error), 2),
     });
+
+    // Throw so we see the actual error instead of silent fallback
+    throw new Error(`OpenAI API failed: ${error?.message || 'Unknown error'}`);
   }
 
   // Fallback if API fails or response is malformed
