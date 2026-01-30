@@ -149,14 +149,21 @@ Count words before outputting. If over 12 words, cut unnecessary words.
 Line 1: ${ctx.mode === 'full_analysis'
     ? 'Why this shoe fills their gap - reference current shoes if helpful.'
     : 'Why this matches their feel preferences.'}
-Line 2: One specific biomechanical insight or trade-off.
-Line 3: Distinctive trait and primary use case.${params.is_super_trainer ? ' Mention versatility.' : ''}
+Line 2: How a key feature benefits your running. Use simple, practical language.
+Line 3: What makes this shoe distinctive and when to use it.${params.is_super_trainer ? ' Mention versatility.' : ''}
 
 STYLE:
 - British spelling, complete sentences
-- Start with the key feature or action, not "Its" or "The"
+- Talk like a knowledgeable runner friend, not a salesperson or engineer
+- Start with the feature or benefit, not "Its" or "The"
+- No jargon, no marketing fluff, no trade-offs
 - No em dashes, no spec numbers
-- Direct, confident expert voice
+- Focus on positives and practical benefits
+
+Examples of good Line 2s:
+"Carbon plate adds snap to help you roll through each stride"
+"Wide base keeps you stable when fatigue affects your form"
+"Soft foam absorbs impact so legs feel fresher on long runs"
 
 No preamble. No numbering. No bullet points. Just 3 lines.`;
 }
