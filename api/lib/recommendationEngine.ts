@@ -263,7 +263,7 @@ function enforceWordLimit(bullet: string): string {
 const GPT5_MINI_CONFIG = {
   model: 'gpt-5-mini' as const,
   max_output_tokens: 280,
-  temperature: 0.55,
+  // Note: temperature not supported by reasoning models (gpt-5-mini)
   reasoning: { effort: 'medium' as const },
 };
 
@@ -301,7 +301,6 @@ async function generateMatchDescription(
   console.log('[generateMatchDescription] Config:', {
     model: GPT5_MINI_CONFIG.model,
     max_output_tokens: GPT5_MINI_CONFIG.max_output_tokens,
-    temperature: GPT5_MINI_CONFIG.temperature,
     reasoning_effort: GPT5_MINI_CONFIG.reasoning.effort,
   });
 
@@ -318,7 +317,6 @@ async function generateMatchDescription(
       instructions: 'You are a running shoe expert writing concise bullet points. Follow the format instructions exactly. Output exactly 3 lines of text, no numbering, no bullets.',
       input: prompt,
       max_output_tokens: GPT5_MINI_CONFIG.max_output_tokens,
-      temperature: GPT5_MINI_CONFIG.temperature,
       reasoning: GPT5_MINI_CONFIG.reasoning,
     });
 
