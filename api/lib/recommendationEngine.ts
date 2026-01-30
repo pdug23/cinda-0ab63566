@@ -114,11 +114,10 @@ function buildUserContextSection(ctx: BulletUserContext, archetypeLabel: string)
 /**
  * Build the prompt for gpt-5-mini.
  *
- * Design principles for quality microcopy:
- * - Single-pass framing (no revision language)
- * - Specific examples for education bullet
- * - Variety enforcement to avoid robotic repetition
- * - Clear stop condition
+ * Design principles:
+ * - Strict 15-word limit with counting instruction
+ * - Variety enforcement to prevent repetition
+ * - Complete sentences only - no cutoffs
  * - No em dashes - use simple hyphen if needed
  */
 function buildBulletPrompt(params: MatchDescriptionParams): string {
@@ -135,11 +134,14 @@ function buildBulletPrompt(params: MatchDescriptionParams): string {
   ].filter(Boolean).join(', ') || 'neutral platform';
 
   // Super trainer note - only included if true
-  const superNote = params.is_super_trainer ? '\nSUPER TRAINER: handles easy runs through tempo work' : '';
+  const superNote = params.is_super_trainer ? '\nSUPER TRAINER: versatile for easy through tempo' : '';
 
-  // Construct prompt - single-pass, no revision language
-  return `Write 3 bullets for this running shoe recommendation. Max 18 words each.
-Write as a runner would speak to another runner. Use complete sentences with articles (a, the). Choose your phrasing once - do not revise.
+  // Construct prompt with strict rules
+  return `CRITICAL RULES - FOLLOW EXACTLY:
+1. Each bullet MUST be 15 words maximum - count before outputting
+2. Each bullet MUST be a complete sentence - no mid-word cutoffs
+3. NEVER repeat the same opening phrase across shoes
+4. NEVER copy text verbatim from data sections - paraphrase everything
 
 SHOE: ${params.fullName} (${archetypeLabel})
 ${userContextSection}
@@ -147,40 +149,50 @@ RIDE: ${params.whyItFeelsThisWay}
 STANDOUT: ${params.notableDetail}
 FIT/TECH: ${fitInfo}${superNote}
 
-LINE PURPOSES:
-1. Personal match: ${ctx.mode === 'full_analysis'
-    ? 'Name their rotation shoes. Explain why this fills the gap.'
-    : 'Reference their feel preferences (cushion/bounce/stability). Explain the match.'}
-2. Education: Explain ONE specific trade-off, design choice, or biomechanical effect.
-Good examples: "More stack height means softer landing but less ground feel" / "Wide toe box lets toes splay on landing - helpful if standard fits pinch"
-NOT generic marketing like "provides cushioning" or "delivers comfort".
-3. Standout: State this shoe's most distinctive trait and when it shines best.${params.is_super_trainer ? ' Mention versatility.' : ''} Vary structure - sometimes "feature - use case", sometimes a full sentence.
+OUTPUT FORMAT (STRICTLY ENFORCED):
+Return exactly 3 lines. Each line is one complete bullet point.
+
+Line 1 (max 15 words): ${ctx.mode === 'full_analysis'
+    ? 'Reference their rotation shoes by name. Explain why this fills the gap.'
+    : 'Reference their feel preferences. Explain the match.'}
+Line 2 (max 15 words): Teach one specific biomechanical insight or trade-off.
+Line 3 (max 15 words): State distinctive trait and when it shines.${params.is_super_trainer ? ' Mention versatility.' : ''}
+
+LINE 2 - EDUCATION REQUIREMENTS:
+GOOD (specific, under 15 words):
+- "Tall stack softens landings but reduces ground feel during fast turnover"
+- "Carbon plate channels energy forward but limits natural foot flex"
+- "Wide toe box lets toes splay naturally during longer efforts"
+BAD (too vague):
+- "The midsole provides excellent cushioning for your runs"
+- "Offers a comfortable and responsive ride"
 
 STYLE:
-- British spelling, conversational, runner-to-runner
-- Natural sentences with articles (a, an, the)
-- Never use em dashes - use hyphen only
+- British spelling, conversational
+- Complete sentences with articles (a, an, the)
+- Never use em dashes - hyphen only
 - No spec numbers, no marketing superlatives
 
-BANNED PHRASES (never use):
-- "Your preference for X aligns/makes/matches..."
-- "The [tech name] delivers/provides..."
+BANNED (never use these patterns):
+- "Your preference for X aligns/matches..."
+- "The [tech] delivers/provides..."
 - "This shoe is perfect/ideal for..."
-- Starting multiple bullets with "The [shoe name]..."
 
-OUTPUT FORMAT:
-Return exactly 3 lines of text.
-No preamble. No numbering. No bullet symbols. No blank lines.
-Stop immediately after line 3.`;
+WORD COUNTING (MANDATORY):
+Count words in each bullet before outputting.
+15 words is a HARD LIMIT. If over, cut unnecessary words.
+Complete sentences only - never truncate mid-word.
+
+No preamble. No numbering. No bullets. Just 3 lines of text.`;
 }
 
 // ============================================================================
 // RESPONSE PARSING
 // ============================================================================
 
-// Word limit constants for soft enforcement
-const WORD_LIMIT_SOFT = 22;  // Keep as-is if at or under this
-const WORD_LIMIT_HARD = 26;  // Truncate to soft limit if over this
+// Word limit constants - strict 15-word limit
+const WORD_LIMIT_TARGET = 15;  // Prompt instructs model to stay under this
+const WORD_LIMIT_HARD = 18;    // Truncate to target if over this (allows minor slack)
 
 /**
  * Parse and normalise bullet response from gpt-5-mini.
@@ -231,15 +243,13 @@ function parseBulletResponse(content: string | null | undefined): string[] | nul
     line.replace(/—/g, '-').replace(/–/g, '-')
   );
 
-  // Soft word limit enforcement
+  // Word limit enforcement - truncate if over hard limit
   const enforced = noEmDashes.map(bullet => {
     const words = bullet.split(/\s+/);
     if (words.length > WORD_LIMIT_HARD) {
-      // Way over - truncate to soft limit
-      console.log(`[parseBulletResponse] Truncating from ${words.length} to ${WORD_LIMIT_SOFT} words`);
-      return words.slice(0, WORD_LIMIT_SOFT).join(' ');
+      console.log(`[parseBulletResponse] Truncating from ${words.length} to ${WORD_LIMIT_TARGET} words`);
+      return words.slice(0, WORD_LIMIT_TARGET).join(' ');
     }
-    // At or under hard limit - keep as-is (even if slightly over soft limit)
     return bullet;
   });
 
@@ -247,13 +257,12 @@ function parseBulletResponse(content: string | null | undefined): string[] | nul
 }
 
 /**
- * Enforce soft word limit on a single bullet (used for fallbacks).
- * Uses the same soft limit logic as parseBulletResponse.
+ * Enforce word limit on a single bullet (used for fallbacks).
  */
 function enforceWordLimit(bullet: string): string {
   const words = bullet.trim().split(/\s+/);
   if (words.length > WORD_LIMIT_HARD) {
-    return words.slice(0, WORD_LIMIT_SOFT).join(' ');
+    return words.slice(0, WORD_LIMIT_TARGET).join(' ');
   }
   return bullet;
 }
@@ -265,33 +274,33 @@ function enforceWordLimit(bullet: string): string {
 /**
  * gpt-5-mini Responses API configuration.
  *
- * WHY these values for 8-12 second target latency:
+ * WHY these values for quality output (10-15 second target):
  *
- * max_output_tokens: 150
- *   - Tight limit for 3 bullets × ~40-50 tokens each
- *   - Prevents runaway generation and hidden reasoning
- *   - gpt-5-mini planning time scales with max_output_tokens
+ * max_output_tokens: 250
+ *   - Increased to prevent mid-sentence cutoffs
+ *   - 3 bullets × 15 words × ~1.5 tokens = ~68 tokens minimum
+ *   - Buffer needed for complete sentences
  *
- * temperature: 0.5
- *   - Balanced creativity + consistency
- *   - Higher than 0.3 to avoid robotic repetition
- *   - Lower than 0.7 to maintain coherence
+ * temperature: 0.6
+ *   - Higher for variety across multiple shoes
+ *   - Prevents repetitive "Matches your preference..." patterns
  *
- * reasoning.effort: "none"
- *   - CRITICAL for speed - disables internal reasoning tokens
- *   - gpt-5-mini defaults to reasoning which adds 3-6s latency
- *   - "none" forces direct output without chain-of-thought
- *   - Quality comes from prompt design, not model self-reflection
+ * reasoning.effort: "medium"
+ *   - CRITICAL: Enables thinking time for quality output
+ *   - "none" was too fast (~3s) = poor quality, cutoffs
+ *   - "medium" = 10-15s latency, but complete coherent sentences
+ *   - Worth the latency for non-broken output
  *
- * Using Responses API because:
- *   - Native reasoning effort control (not available in Chat Completions)
- *   - Cleaner streaming interface
+ * text.verbosity: "medium"
+ *   - Prevents incomplete sentence generation
+ *   - Ensures model finishes thoughts before stopping
  */
 const GPT5_MINI_CONFIG = {
   model: 'gpt-5-mini' as const,
-  max_output_tokens: 150,
-  temperature: 0.5,
-  reasoning: { effort: 'none' as const },
+  max_output_tokens: 250,
+  temperature: 0.6,
+  reasoning: { effort: 'medium' as const },
+  text: { verbosity: 'medium' as const },
 };
 
 // ============================================================================
@@ -325,6 +334,13 @@ async function generateMatchDescription(
   onStream?: StreamingCallback
 ): Promise<string[]> {
   console.log('[generateMatchDescription] Called for:', params.fullName);
+  console.log('[generateMatchDescription] Config:', {
+    model: GPT5_MINI_CONFIG.model,
+    max_output_tokens: GPT5_MINI_CONFIG.max_output_tokens,
+    temperature: GPT5_MINI_CONFIG.temperature,
+    reasoning_effort: GPT5_MINI_CONFIG.reasoning.effort,
+    text_verbosity: GPT5_MINI_CONFIG.text.verbosity,
+  });
 
   const prompt = buildBulletPrompt(params);
   const archetypeLabel = params.archetype.replace('_', ' ');
@@ -332,12 +348,13 @@ async function generateMatchDescription(
 
   try {
     // gpt-5-mini Responses API streaming request
-    // Streaming reduces perceived latency even for short outputs
+    // Medium reasoning = 10-15s latency but quality output
     const stream = await openaiClient.responses.create({
       model: GPT5_MINI_CONFIG.model,
       max_output_tokens: GPT5_MINI_CONFIG.max_output_tokens,
       temperature: GPT5_MINI_CONFIG.temperature,
       reasoning: GPT5_MINI_CONFIG.reasoning,
+      text: GPT5_MINI_CONFIG.text,
       input: prompt,
       stream: true,
     });
