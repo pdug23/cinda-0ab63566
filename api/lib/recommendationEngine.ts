@@ -136,54 +136,24 @@ function buildBulletPrompt(params: MatchDescriptionParams): string {
   // Super trainer note - only included if true
   const superNote = params.is_super_trainer ? '\nSUPER TRAINER: versatile for easy through tempo' : '';
 
-  // Construct prompt with strict rules
-  return `CRITICAL RULES - FOLLOW EXACTLY:
-1. Each bullet MUST be 15 words maximum - count before outputting
-2. Each bullet MUST be a complete sentence - no mid-word cutoffs
-3. NEVER repeat the same opening phrase across shoes
-4. NEVER copy text verbatim from data sections - paraphrase everything
-
-SHOE: ${params.fullName} (${archetypeLabel})
+  // Construct prompt - 16-18 words allows complete sentences without truncation
+  return `SHOE: ${params.fullName} (${archetypeLabel})
 ${userContextSection}
 RIDE: ${params.whyItFeelsThisWay}
 STANDOUT: ${params.notableDetail}
 FIT/TECH: ${fitInfo}${superNote}
 
-OUTPUT FORMAT (STRICTLY ENFORCED):
-Return exactly 3 lines. Each line is one complete bullet point.
+OUTPUT: Exactly 3 lines of text. One sentence per line. 16-18 words each.
 
-Line 1 (max 15 words): ${ctx.mode === 'full_analysis'
-    ? 'Reference their rotation shoes by name. Explain why this fills the gap.'
-    : 'Reference their feel preferences. Explain the match.'}
-Line 2 (max 15 words): Teach one specific biomechanical insight or trade-off.
-Line 3 (max 15 words): State distinctive trait and when it shines.${params.is_super_trainer ? ' Mention versatility.' : ''}
+Line 1: ${ctx.mode === 'full_analysis'
+    ? 'Why this shoe fills their gap - reference their current shoes if helpful.'
+    : 'Why this matches their feel preferences.'}
+Line 2: One specific biomechanical insight or trade-off about this shoe.
+Line 3: The distinctive trait and when it shines.${params.is_super_trainer ? ' Mention versatility.' : ''}
 
-LINE 2 - EDUCATION REQUIREMENTS:
-GOOD (specific, under 15 words):
-- "Tall stack softens landings but reduces ground feel during fast turnover"
-- "Carbon plate channels energy forward but limits natural foot flex"
-- "Wide toe box lets toes splay naturally during longer efforts"
-BAD (too vague):
-- "The midsole provides excellent cushioning for your runs"
-- "Offers a comfortable and responsive ride"
+STYLE: British spelling, conversational, complete sentences. No em dashes. No spec numbers.
 
-STYLE:
-- British spelling, conversational
-- Complete sentences with articles (a, an, the)
-- Never use em dashes - hyphen only
-- No spec numbers, no marketing superlatives
-
-BANNED (never use these patterns):
-- "Your preference for X aligns/matches..."
-- "The [tech] delivers/provides..."
-- "This shoe is perfect/ideal for..."
-
-WORD COUNTING (MANDATORY):
-Count words in each bullet before outputting.
-15 words is a HARD LIMIT. If over, cut unnecessary words.
-Complete sentences only - never truncate mid-word.
-
-No preamble. No numbering. No bullets. Just 3 lines of text.`;
+No preamble. No numbering. No bullet points. Just 3 lines.`;
 }
 
 // ============================================================================
@@ -268,33 +238,33 @@ function enforceWordLimit(bullet: string): string {
 }
 
 // ============================================================================
-// MODEL CONFIGURATION (Responses API)
+// MODEL CONFIGURATION (Responses API for gpt-5-mini)
 // ============================================================================
 
 /**
  * gpt-5-mini Responses API configuration.
  *
- * WHY these values:
+ * WHY these values (based on OpenAI guidance):
  *
- * max_output_tokens: 250
- *   - 3 bullets × 15 words × ~1.5 tokens = ~68 tokens minimum
- *   - Buffer for complete sentences without cutoffs
- *   - Not too high to avoid runaway generation
+ * max_output_tokens: 280
+ *   - Quality-first setting for 3 bullets
+ *   - Actual output ~40-90 tokens, headroom for complete sentences
+ *   - Not too high to avoid long planning/variability
  *
- * temperature: 0.5
- *   - Balanced creativity + consistency
- *   - Enough variety to avoid repetitive patterns
+ * temperature: 0.55
+ *   - Balance of creativity and consistency
+ *   - In the recommended 0.4-0.7 band
  *
- * reasoning.effort: "low"
- *   - Enables some thinking for quality output
- *   - "none" produces too-generic bullets
- *   - "low" is good balance of quality vs latency (~8-12s)
+ * reasoning.effort: "medium"
+ *   - Better phrasing than "low"
+ *   - Acceptable latency (10-15s target)
+ *   - "low" if speed needed, "none" produces flat copy
  */
 const GPT5_MINI_CONFIG = {
   model: 'gpt-5-mini' as const,
-  max_output_tokens: 250,
-  temperature: 0.5,
-  reasoning: { effort: 'low' as const },
+  max_output_tokens: 280,
+  temperature: 0.55,
+  reasoning: { effort: 'medium' as const },
 };
 
 // ============================================================================
@@ -340,37 +310,34 @@ async function generateMatchDescription(
   const ctx = params.userContext;
 
   try {
-    // Verify the responses API exists
-    console.log('[generateMatchDescription] openaiClient.responses exists:', !!openaiClient.responses);
     console.log('[generateMatchDescription] Calling OpenAI Responses API...');
 
-    // gpt-5-mini Responses API (non-streaming for reliable text extraction)
+    // Use Responses API (recommended for gpt-5-mini reasoning models)
     const response = await openaiClient.responses.create({
       model: GPT5_MINI_CONFIG.model,
+      instructions: 'You are a running shoe expert writing concise bullet points. Follow the format instructions exactly. Output exactly 3 lines of text, no numbering, no bullets.',
+      input: prompt,
       max_output_tokens: GPT5_MINI_CONFIG.max_output_tokens,
       temperature: GPT5_MINI_CONFIG.temperature,
       reasoning: GPT5_MINI_CONFIG.reasoning,
-      input: prompt,
     });
 
     console.log('[generateMatchDescription] API call completed');
 
-    // Extract text from Responses API schema
-    // Priority: response.output_text > iterate response.output[].content[]
+    // Extract text from Responses API
+    // Prefer response.output_text (aggregated text helper)
+    // Fallback: walk response.output[].content[] for { type: "output_text", text: "..." }
     let fullContent = '';
 
-    // Cast response to any for flexible property access
-    const resp = response as any;
-
-    // First try the direct output_text field (most reliable)
-    if (resp.output_text) {
-      fullContent = resp.output_text;
-    } else if (resp.output && Array.isArray(resp.output)) {
-      // Iterate through output items and collect output_text content
+    // First try the output_text helper (recommended)
+    if ((response as any).output_text) {
+      fullContent = (response as any).output_text;
+    } else if (response.output && Array.isArray(response.output)) {
+      // Fallback: walk the output array
       const textSegments: string[] = [];
-      for (const item of resp.output) {
-        if (item.content && Array.isArray(item.content)) {
-          for (const c of item.content) {
+      for (const item of response.output) {
+        if ((item as any).content && Array.isArray((item as any).content)) {
+          for (const c of (item as any).content) {
             if (c.type === 'output_text' && c.text) {
               textSegments.push(c.text);
             }
@@ -382,13 +349,8 @@ async function generateMatchDescription(
 
     // Debug log if extraction failed
     if (!fullContent) {
-      console.error('[generateMatchDescription] Text extraction failed. Response shape:', JSON.stringify({
-        keys: Object.keys(resp),
-        hasOutputText: !!resp.output_text,
-        outputLength: resp.output?.length,
-        outputTypes: resp.output?.map((o: any) => o.type),
-        firstOutput: resp.output?.[0],
-      }, null, 2));
+      console.error('[generateMatchDescription] Text extraction failed. Response keys:', Object.keys(response));
+      console.error('[generateMatchDescription] Response output:', JSON.stringify(response.output, null, 2).slice(0, 500));
     }
 
     console.log('[generateMatchDescription] Full response:', fullContent);
@@ -411,7 +373,7 @@ async function generateMatchDescription(
       console.log('[generateMatchDescription] Partial response (1 bullet), using fallbacks');
       return [
         bullets[0],
-        enforceWordLimit(params.whyItFeelsThisWay.slice(0, 100)),
+        enforceWordLimit(params.whyItFeelsThisWay),
         enforceWordLimit(params.notableDetail)
       ];
     }
@@ -440,7 +402,7 @@ async function generateMatchDescription(
 
   return [
     enforceWordLimit(fallbackBullet1),
-    enforceWordLimit(params.whyItFeelsThisWay.slice(0, 80)),
+    enforceWordLimit(params.whyItFeelsThisWay),  // Let enforceWordLimit handle truncation by words, not characters
     enforceWordLimit(params.notableDetail + (params.is_super_trainer ? ' - versatile from easy runs to tempo' : ''))
   ];
 }
