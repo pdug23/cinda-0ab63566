@@ -221,6 +221,7 @@ const ARCHETYPE_FEEL_RANGES: Record<ShoeArchetype, Record<string, [number, numbe
     bounce: [2, 4],       // Moderate range
     rocker: [2, 4],       // Moderate range
     groundFeel: [2, 4],   // Moderate range
+    stackHeight: [2, 4],  // Inverse of groundFeel: moderate range
   },
   recovery_shoe: {
     cushion: [4, 5],      // Recovery needs plush cushion
@@ -228,6 +229,7 @@ const ARCHETYPE_FEEL_RANGES: Record<ShoeArchetype, Record<string, [number, numbe
     bounce: [2, 4],       // Not bouncy, but acceptable range
     rocker: [2, 4],       // Moderate range
     groundFeel: [1, 3],   // Less ground feel preferred
+    stackHeight: [3, 5],  // Inverse of groundFeel: higher stack preferred
   },
   workout_shoe: {
     cushion: [1, 4],      // Firm to moderate (not max soft)
@@ -235,6 +237,7 @@ const ARCHETYPE_FEEL_RANGES: Record<ShoeArchetype, Record<string, [number, numbe
     bounce: [4, 5],       // Must be bouncy
     rocker: [2, 5],       // Moderate to aggressive
     groundFeel: [2, 5],   // More ground feel acceptable
+    stackHeight: [1, 4],  // Inverse of groundFeel: lower to moderate stack
   },
   race_shoe: {
     cushion: [1, 4],      // Firm to moderate (not max soft)
@@ -242,6 +245,7 @@ const ARCHETYPE_FEEL_RANGES: Record<ShoeArchetype, Record<string, [number, numbe
     bounce: [4, 5],       // Must be bouncy
     rocker: [2, 5],       // Moderate to aggressive
     groundFeel: [3, 5],   // Ground feel preferred
+    stackHeight: [1, 3],  // Inverse of groundFeel: lower stack preferred
   },
   trail_shoe: {
     cushion: [2, 4],      // Moderate range
@@ -249,6 +253,7 @@ const ARCHETYPE_FEEL_RANGES: Record<ShoeArchetype, Record<string, [number, numbe
     bounce: [2, 4],       // Moderate range
     rocker: [2, 4],       // Moderate range
     groundFeel: [3, 5],   // Ground feel important for trails
+    stackHeight: [1, 3],  // Inverse of groundFeel: grounded preferred
   },
 };
 
@@ -257,7 +262,7 @@ const ARCHETYPE_FEEL_RANGES: Record<ShoeArchetype, Record<string, [number, numbe
  * Returns [min, max] - shoes within this range all score equally well
  */
 function getArchetypeRange(
-  dimension: 'cushion' | 'stability' | 'bounce' | 'rocker' | 'groundFeel',
+  dimension: 'cushion' | 'stability' | 'bounce' | 'rocker' | 'groundFeel' | 'stackHeight',
   archetype?: ShoeArchetype
 ): [number, number] {
   const arch = archetype ?? 'daily_trainer';
@@ -339,7 +344,7 @@ export function scoreFeelMatch(
   const scoreDimension = (
     shoeValue: number,
     pref: PreferenceValue,
-    dimension: 'cushion' | 'stability' | 'bounce' | 'rocker' | 'groundFeel'
+    dimension: 'cushion' | 'stability' | 'bounce' | 'rocker' | 'groundFeel' | 'stackHeight'
   ): number => {
     if (pref.mode === 'wildcard') {
       return 0; // Skip - no score contribution
@@ -384,6 +389,14 @@ export function scoreFeelMatch(
   totalScore += scoreDimension(shoe.bounce_1to5, prefs.energyReturn, 'bounce');
   totalScore += scoreDimension(shoe.rocker_1to5, prefs.rocker, 'rocker');
   totalScore += scoreDimension(shoe.ground_feel_1to5, prefs.groundFeel, 'groundFeel');
+
+  // Stack height is INVERSE of ground feel:
+  // User wants stackHeight 1 (grounded) = shoe has ground_feel 5
+  // User wants stackHeight 5 (max stack) = shoe has ground_feel 1
+  if (prefs.stackHeight) {
+    const invertedGroundFeel = 6 - shoe.ground_feel_1to5;
+    totalScore += scoreDimension(invertedGroundFeel, prefs.stackHeight, 'stackHeight');
+  }
 
   return totalScore;
 }

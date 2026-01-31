@@ -305,6 +305,7 @@ export default async function handler(
         energyReturn: { mode: 'cinda_decides' as const },
         rocker: { mode: 'cinda_decides' as const },
         groundFeel: { mode: 'cinda_decides' as const },
+        stackHeight: { mode: 'cinda_decides' as const },
         heelDropPreference: { mode: 'cinda_decides' as const }
       };
 
@@ -342,6 +343,7 @@ export default async function handler(
             energyReturn: normalizePreference(feelPreferences.energyReturn),
             rocker: normalizePreference(feelPreferences.rocker),
             groundFeel: normalizePreference(feelPreferences.groundFeel),
+            stackHeight: normalizePreference(feelPreferences.stackHeight),
             heelDropPreference: normalizePreference(feelPreferences.heelDropPreference)
           }
         };
@@ -356,6 +358,7 @@ export default async function handler(
           energyReturn: { mode: 'cinda_decides' as const },
           rocker: { mode: 'cinda_decides' as const },
           groundFeel: { mode: 'cinda_decides' as const },
+          stackHeight: { mode: 'cinda_decides' as const },
           heelDropPreference: { mode: 'cinda_decides' as const }
         }
       }));

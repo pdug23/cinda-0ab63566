@@ -682,6 +682,7 @@ export interface FeelPreferences {
   energyReturn: PreferenceValue;     // 1 = damped, 5 = bouncy
   rocker: PreferenceValue;           // 1 = flat/minimal, 5 = aggressive rocker
   groundFeel: PreferenceValue;       // 1 = isolated/cushioned, 5 = high ground feel
+  stackHeight: PreferenceValue;      // 1 = grounded/minimal, 5 = max stack (inverse of groundFeel)
   heelDropPreference: HeelDropPreference;
 }
 
