@@ -151,7 +151,7 @@ const ARCHETYPE_LABELS: Record<DiscoveryArchetype, string> = {
 
 // Slider configuration
 interface SliderConfig {
-  key: "cushionAmount" | "stabilityAmount" | "energyReturn" | "rocker";
+  key: "cushionAmount" | "stabilityAmount" | "energyReturn" | "stackHeight" | "rocker";
   label: string;
   tooltip: string;
   leftLabel: string;
@@ -183,6 +183,14 @@ const SLIDERS: SliderConfig[] = [
     leftLabel: "Damped",
     middleLabel: "Balanced",
     rightLabel: "Bouncy",
+  },
+  {
+    key: "stackHeight",
+    label: "Stack height",
+    tooltip: "Low stack shoes feel closer to the ground (minimalist). High stack shoes provide maximum cushioning and isolation.",
+    leftLabel: "Grounded",
+    middleLabel: "Moderate",
+    rightLabel: "Max Stack",
   },
   {
     key: "rocker",
@@ -511,6 +519,7 @@ interface QuickMatchState {
     cushionAmount: SliderPreference;
     stabilityAmount: SliderPreference;
     energyReturn: SliderPreference;
+    stackHeight: SliderPreference;
     rocker: SliderPreference;
     heelDropPreference: HeelDropPreference;
   };
@@ -527,6 +536,7 @@ const QuickMatch = () => {
       cushionAmount: { mode: "cinda_decides" },
       stabilityAmount: { mode: "cinda_decides" },
       energyReturn: { mode: "cinda_decides" },
+      stackHeight: { mode: "cinda_decides" },
       rocker: { mode: "cinda_decides" },
       heelDropPreference: { mode: "cinda_decides" },
     },
@@ -566,6 +576,7 @@ const QuickMatch = () => {
       cushionAmount: state.feelPreferences.cushionAmount,
       stabilityAmount: state.feelPreferences.stabilityAmount,
       energyReturn: state.feelPreferences.energyReturn,
+      stackHeight: state.feelPreferences.stackHeight,
       rocker: state.feelPreferences.rocker,
       heelDropPreference: state.feelPreferences.heelDropPreference,
       brandPreference: state.brandPreference,

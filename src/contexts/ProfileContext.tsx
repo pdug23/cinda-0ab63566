@@ -79,6 +79,7 @@ export interface FeelPreferences {
   cushionAmount: SliderPreference;
   stabilityAmount: SliderPreference;
   energyReturn: SliderPreference;
+  stackHeight: SliderPreference;
   rocker: SliderPreference;
   heelDropPreference: HeelDropPreference;
   brandPreference: BrandPreference;
