@@ -52,6 +52,13 @@ interface BulletUserContext {
   preferredCushion?: number;    // 1-5
   preferredBounce?: number;     // 1-5
   preferredStability?: number;  // 1-5
+  // Optional personalisation context (reference only when naturally relevant)
+  experience?: string;          // e.g., "beginner", "intermediate", "advanced"
+  primaryGoal?: string;         // e.g., "marathon training", "general fitness"
+  footStrike?: string;          // e.g., "heel", "midfoot", "forefoot"
+  injuries?: string[];          // e.g., ["plantar fasciitis", "knee pain"]
+  fitNotes?: string[];          // e.g., ["wide feet", "narrow heel"]
+  pastShoeNotes?: string[];     // e.g., ["loved Clifton cushion", "Pegasus too firm"]
 }
 
 /**
@@ -90,6 +97,73 @@ interface MatchDescriptionParams {
 }
 
 // ============================================================================
+// PERSONALISATION HELPERS
+// ============================================================================
+
+/**
+ * Extract optional personalisation fields from profile and chat context.
+ * Returns only non-empty fields to avoid cluttering the prompt.
+ */
+function extractPersonalisationContext(
+  profile?: RunnerProfile,
+  chatContext?: ChatContext
+): Partial<Pick<BulletUserContext, 'experience' | 'primaryGoal' | 'footStrike' | 'injuries' | 'fitNotes' | 'pastShoeNotes'>> {
+  const result: Partial<Pick<BulletUserContext, 'experience' | 'primaryGoal' | 'footStrike' | 'injuries' | 'fitNotes' | 'pastShoeNotes'>> = {};
+
+  // Extract from profile
+  if (profile?.experience) {
+    result.experience = profile.experience;
+  }
+  if (profile?.primaryGoal) {
+    // Convert goal to readable format
+    const goalMap: Record<string, string> = {
+      'general_fitness': 'general fitness',
+      'race_training': 'race training',
+      'marathon_training': 'marathon training',
+      'injury_recovery': 'injury recovery',
+      'weight_loss': 'weight management',
+    };
+    result.primaryGoal = goalMap[profile.primaryGoal] || profile.primaryGoal;
+  }
+  if (profile?.footStrike) {
+    result.footStrike = profile.footStrike;
+  }
+
+  // Extract from chat context
+  if (chatContext?.injuries && chatContext.injuries.length > 0) {
+    result.injuries = chatContext.injuries
+      .filter(i => i.current) // Only include current injuries
+      .map(i => i.injury);
+  }
+  if (chatContext?.fit) {
+    const fitNotes: string[] = [];
+    if (chatContext.fit.width && chatContext.fit.width !== 'standard') {
+      fitNotes.push(`${chatContext.fit.width} feet`);
+    }
+    if (chatContext.fit.issues && chatContext.fit.issues.length > 0) {
+      fitNotes.push(...chatContext.fit.issues);
+    }
+    if (fitNotes.length > 0) {
+      result.fitNotes = fitNotes;
+    }
+  }
+  if (chatContext?.pastShoes && chatContext.pastShoes.length > 0) {
+    const notes = chatContext.pastShoes
+      .filter(ps => ps.sentiment === 'loved' || ps.sentiment === 'hated')
+      .map(ps => {
+        const shoeRef = ps.shoe || ps.brand || 'a shoe';
+        const verb = ps.sentiment === 'loved' ? 'loved' : 'disliked';
+        return ps.reason ? `${verb} ${shoeRef} (${ps.reason})` : `${verb} ${shoeRef}`;
+      });
+    if (notes.length > 0) {
+      result.pastShoeNotes = notes;
+    }
+  }
+
+  return result;
+}
+
+// ============================================================================
 // PROMPT CONSTRUCTION (gpt-5-mini optimised for quality microcopy)
 // ============================================================================
 
@@ -98,17 +172,49 @@ interface MatchDescriptionParams {
  * Separated for clarity and testability.
  */
 function buildUserContextSection(ctx: BulletUserContext, archetypeLabel: string): string {
+  let baseContext: string;
+
   if (ctx.mode === 'full_analysis' && ctx.currentShoeNames && ctx.currentShoeNames.length > 0) {
     const rotationDesc = ctx.currentShoeNames.map((name, i) =>
       `${name} (${ctx.currentShoeUses?.[i] || 'general'})`
     ).join(', ');
-    return `ROTATION: ${rotationDesc}\nGAP: ${ctx.gapReasoning || `Needs ${archetypeLabel}`}`;
+    baseContext = `ROTATION: ${rotationDesc}\nGAP: ${ctx.gapReasoning || `Needs ${archetypeLabel}`}`;
+  } else {
+    // Quick Match mode - preference based
+    const cushionDesc = ctx.preferredCushion ? (ctx.preferredCushion <= 2 ? 'firm' : ctx.preferredCushion >= 4 ? 'soft' : 'moderate') : 'balanced';
+    const bounceDesc = ctx.preferredBounce ? (ctx.preferredBounce <= 2 ? 'muted' : ctx.preferredBounce >= 4 ? 'bouncy' : 'balanced') : 'balanced';
+    const stabilityDesc = ctx.preferredStability ? (ctx.preferredStability <= 2 ? 'neutral' : ctx.preferredStability >= 4 ? 'stable' : 'moderate') : 'balanced';
+    baseContext = `PREFS: ${cushionDesc} cushion, ${bounceDesc} response, ${stabilityDesc} stability\nSEEKING: ${archetypeLabel}`;
   }
-  // Quick Match mode - preference based
-  const cushionDesc = ctx.preferredCushion ? (ctx.preferredCushion <= 2 ? 'firm' : ctx.preferredCushion >= 4 ? 'soft' : 'moderate') : 'balanced';
-  const bounceDesc = ctx.preferredBounce ? (ctx.preferredBounce <= 2 ? 'muted' : ctx.preferredBounce >= 4 ? 'bouncy' : 'balanced') : 'balanced';
-  const stabilityDesc = ctx.preferredStability ? (ctx.preferredStability <= 2 ? 'neutral' : ctx.preferredStability >= 4 ? 'stable' : 'moderate') : 'balanced';
-  return `PREFS: ${cushionDesc} cushion, ${bounceDesc} response, ${stabilityDesc} stability\nSEEKING: ${archetypeLabel}`;
+
+  // Build optional RUNNER CONTEXT section (only include non-empty items)
+  const runnerContextItems: string[] = [];
+
+  if (ctx.experience) {
+    runnerContextItems.push(`Experience: ${ctx.experience}`);
+  }
+  if (ctx.primaryGoal) {
+    runnerContextItems.push(`Goal: ${ctx.primaryGoal}`);
+  }
+  if (ctx.footStrike) {
+    runnerContextItems.push(`Foot strike: ${ctx.footStrike}`);
+  }
+  if (ctx.injuries && ctx.injuries.length > 0) {
+    runnerContextItems.push(`Injuries: ${ctx.injuries.join(', ')}`);
+  }
+  if (ctx.fitNotes && ctx.fitNotes.length > 0) {
+    runnerContextItems.push(`Fit: ${ctx.fitNotes.join(', ')}`);
+  }
+  if (ctx.pastShoeNotes && ctx.pastShoeNotes.length > 0) {
+    runnerContextItems.push(`Past shoes: ${ctx.pastShoeNotes.join(', ')}`);
+  }
+
+  // Only add RUNNER CONTEXT section if there's something to include
+  if (runnerContextItems.length > 0) {
+    return `${baseContext}\n\nRUNNER CONTEXT (reference only if naturally relevant):\n- ${runnerContextItems.join('\n- ')}`;
+  }
+
+  return baseContext;
 }
 
 /**
@@ -160,6 +266,7 @@ STYLE:
 - No em dashes, no spec numbers
 - Focus on positives and practical benefits
 - VARIETY: Each line must cover a DIFFERENT feature or benefit. Never repeat the same tech or foam name across lines.
+- PERSONALISATION: If RUNNER CONTEXT connects naturally to a shoe feature, weave it in. Don't force it if it doesn't fit.
 
 Examples of good Line 2s:
 "Carbon plate adds snap to help you roll through each stride"
@@ -937,6 +1044,7 @@ export async function generateRecommendations(
   const archetypeLabel = gap.recommendedArchetype || 'daily_trainer';
 
   // Build user context for personalized bullets (Full Analysis mode)
+  const personalisationContext = extractPersonalisationContext(profile, chatContext);
   const userContext: BulletUserContext = {
     mode: 'full_analysis',
     currentShoeNames: currentShoes.map(cs => {
@@ -946,6 +1054,8 @@ export async function generateRecommendations(
     currentShoeUses: currentShoes.map(cs => cs.runTypes?.join('/') || 'general'),
     gapReasoning: gap.reasoning,
     gapType: gap.type,
+    // Optional personalisation (referenced only when naturally relevant)
+    ...personalisationContext,
   };
 
   const recommendations: RecommendedShoe[] = await Promise.all([
@@ -1148,11 +1258,14 @@ export async function generateDiscoveryRecommendations(
     return pref.mode === 'user_set' ? pref.value : undefined;
   };
 
+  const personalisationContext = extractPersonalisationContext(profile, chatContext);
   const userContext: BulletUserContext = {
     mode: 'quick_match',
     preferredCushion: getPreferenceValue(request.feelPreferences.cushionAmount),
     preferredBounce: getPreferenceValue(request.feelPreferences.energyReturn),
     preferredStability: getPreferenceValue(request.feelPreferences.stabilityAmount),
+    // Optional personalisation (referenced only when naturally relevant)
+    ...personalisationContext,
   };
 
   if (selectedShoes.length === 1) {
