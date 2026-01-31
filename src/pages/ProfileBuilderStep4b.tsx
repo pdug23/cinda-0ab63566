@@ -156,7 +156,7 @@ const ARCHETYPE_LABELS: Record<DiscoveryArchetype, string> = {
 
 // Slider configuration
 interface SliderConfig {
-  key: "cushionAmount" | "stabilityAmount" | "energyReturn" | "rocker";
+  key: "cushionAmount" | "stabilityAmount" | "energyReturn" | "stackHeight" | "rocker";
   label: string;
   tooltip: string;
   leftLabel: string;
@@ -188,6 +188,14 @@ const SLIDERS: SliderConfig[] = [
     leftLabel: "Damped",
     middleLabel: "Balanced",
     rightLabel: "Bouncy",
+  },
+  {
+    key: "stackHeight",
+    label: "Stack height",
+    tooltip: "Low stack shoes feel closer to the ground (minimalist). High stack shoes provide maximum cushioning and isolation.",
+    leftLabel: "Grounded",
+    middleLabel: "Moderate",
+    rightLabel: "Max Stack",
   },
   {
     key: "rocker",
@@ -535,6 +543,7 @@ const getDefaultPreferences = (): FeelPreferences => ({
   cushionAmount: { mode: "cinda_decides" },
   stabilityAmount: { mode: "cinda_decides" },
   energyReturn: { mode: "cinda_decides" },
+  stackHeight: { mode: "cinda_decides" },
   rocker: { mode: "cinda_decides" },
   heelDropPreference: { mode: "cinda_decides" },
   brandPreference: { mode: "all", brands: [] },

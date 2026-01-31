@@ -241,6 +241,7 @@ const ProfileBuilderStep4 = () => {
       cushionAmount: { mode: "cinda_decides" },
       stabilityAmount: { mode: "cinda_decides" },
       energyReturn: { mode: "cinda_decides" },
+      stackHeight: { mode: "cinda_decides" },
       rocker: { mode: "cinda_decides" },
       heelDropPreference: { mode: "cinda_decides" },
       brandPreference: { mode: "all", brands: [] },
