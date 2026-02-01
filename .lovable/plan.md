@@ -1,104 +1,73 @@
 
+# Reposition Tooltip to Bottom-Right with Clear Border
 
-# Add Onboarding Tooltip to Cinda Chat Button
+## Changes
 
-## Overview
+### 1. Tooltip Positioning
 
-Add a dismissible text bubble that appears next to the Cinda logo button when it first reveals (after leaving Step 3b). The tooltip explains the button's purpose and can be closed via an X button.
+Move the tooltip from the left side of the button to spawning from the **bottom-right corner**:
 
-## User Experience
-
-1. User confirms leaving Step 3b → navigates to Step 4
-2. Cinda button appears with its existing reveal animation
-3. A small text bubble appears beside the button (after animation completes)
-4. Bubble shows explanatory text like "Need to add anything? I'm here whenever you need me"
-5. User clicks X on the bubble → it dismisses and never shows again
-6. If user clicks the Cinda button itself, the bubble also dismisses
-
-## Technical Approach
-
-### State Management
-
-Add a new state to `ProfileContext`:
-- `cindaTooltipDismissed: boolean` — tracks if user has dismissed the tooltip
-- `setCindaTooltipDismissed: (dismissed: boolean) => void`
-
-### UI Implementation
-
-Modify `CindaChatButton.tsx` to include a tooltip bubble:
-
-```text
-Layout:
-┌─────────────────────────────────────────────┐
-│                                             │
-│     [Bubble with text and X] ← [Cinda]      │
-│                                             │
-└─────────────────────────────────────────────┘
+**Current**: Positioned to the left with arrow pointing right
+```
+[Tooltip] → [Button]
 ```
 
-**Bubble Styling:**
-- Positioned to the left of the button on mobile (since button is centered)
-- Uses absolute positioning relative to a wrapper
-- Matches existing card styling (dark background, subtle border)
-- Contains the explanatory text + small X close button
-- Has a subtle entrance animation (fade-in + slide) that starts after the button's reveal animation completes
+**New**: Positioned below and slightly right with arrow pointing up to the button
+```
+      [Button]
+         ↑
+    [Tooltip]
+```
 
-**Tooltip Text Options:**
-- "Need to add anything? I'm here whenever you need me"
-- "You can chat with me anytime during the flow"
+### 2. Clearer Border
 
-### Dismissal Logic
+Add a more visible border so it stands out against the dark background:
+- Change from `border-border/30` to a more prominent `border-border/60` or use a lighter color like `border-slate-500/50`
 
-The tooltip is dismissed (and never shown again) when:
-1. User clicks the X button on the tooltip
-2. User clicks the Cinda button itself (which already sets `cindaChatButtonAnimated`)
+### 3. Updated Text
 
-Since we're tracking this with `cindaTooltipDismissed`, even if the animation has played, we can control whether to show the tooltip independently.
+Change the message to your suggested text (with minor polish):
+- **New text**: "More to say? Tap here anytime to add or update your info."
 
-### Animation Timing
+## Technical Details
 
-1. Button starts with `cinda-reveal` animation (0.6s)
-2. After animation completes (~600ms), tooltip fades in with a slight delay
-3. Use CSS animation-delay or a short setTimeout to sequence the entrance
+**File: `src/components/CindaChatButton.tsx`**
 
-## Files to Modify
+Changes to the tooltip div:
+- Position: Change from `right-full mr-3` to `top-full right-0 mt-2` (places it below the button, aligned to the right edge)
+- Border: Change to `border-border/60` or `border-slate-400/40` for better visibility
+- Arrow: Rotate the CSS triangle to point upward instead of right, positioned at the top-right corner of the bubble
+- Text: Update to the new copy
+
+### Arrow CSS Change
+
+Current arrow (pointing right):
+```css
+border-y-[6px] border-y-transparent border-l-[6px] border-l-card
+```
+
+New arrow (pointing up, at top-right):
+```css
+position: top-0, right-3, -translate-y-full
+border-x-[6px] border-x-transparent border-b-[6px] border-b-card
+```
+
+## Visual Layout
+
+```text
+         [Cinda Logo Button]
+                  \
+                   \
+              ┌─────────────────┐
+              │ More to say?    │
+              │ Tap here anytime│
+              │ to add or update│ [X]
+              │ your info.      │
+              └─────────────────┘
+```
+
+## File to Modify
 
 | File | Changes |
 |------|---------|
-| `src/contexts/ProfileContext.tsx` | Add `cindaTooltipDismissed` state and setter |
-| `src/components/CindaChatButton.tsx` | Add tooltip bubble UI with dismiss logic |
-| `tailwind.config.ts` | Add `tooltip-fade-in` animation keyframes |
-
-## Component Structure
-
-```tsx
-// CindaChatButton.tsx structure
-<div className="relative flex items-center">
-  {/* Tooltip bubble - only show when button visible, not dismissed, and not animated yet */}
-  {showCindaChatButton && !cindaTooltipDismissed && !cindaChatButtonAnimated && (
-    <div className="absolute right-full mr-3 animate-tooltip-fade-in ...">
-      <p>Need to add anything? I'm here whenever you need me</p>
-      <button onClick={handleDismissTooltip}>
-        <X className="w-3 h-3" />
-      </button>
-      {/* Small arrow pointing to button */}
-      <div className="absolute right-0 translate-x-full ... triangle" />
-    </div>
-  )}
-  
-  {/* Existing button */}
-  <button onClick={handleClick} ...>
-    <img src={cindaLogoGrey} ... />
-  </button>
-</div>
-```
-
-## Tooltip Styling Details
-
-- **Background**: `bg-card` with subtle border matching existing design
-- **Text**: Small text (text-xs or text-sm), muted color
-- **Arrow**: CSS triangle pointing right toward the button
-- **Close button**: Small X icon in top-right corner of bubble
-- **Max width**: ~180-200px to keep it compact
-- **Animation**: Fade in + slight translate from left, starts with delay
-
+| `src/components/CindaChatButton.tsx` | Reposition tooltip to bottom-right, update border opacity, change text, flip arrow direction |
