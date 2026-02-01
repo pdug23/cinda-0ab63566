@@ -246,6 +246,8 @@ interface ProfileContextType {
   setShowCindaChatButton: (show: boolean) => void;
   cindaChatButtonAnimated: boolean;
   setCindaChatButtonAnimated: (animated: boolean) => void;
+  cindaTooltipDismissed: boolean;
+  setCindaTooltipDismissed: (dismissed: boolean) => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -261,6 +263,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   // Cinda chat button visibility state
   const [showCindaChatButton, setShowCindaChatButton] = useState(false);
   const [cindaChatButtonAnimated, setCindaChatButtonAnimated] = useState(false);
+  const [cindaTooltipDismissed, setCindaTooltipDismissed] = useState(false);
 
   const updateStep1 = (data: Partial<Step1Data>) => {
     setProfileData((prev) => ({
@@ -336,6 +339,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       setShowCindaChatButton,
       cindaChatButtonAnimated,
       setCindaChatButtonAnimated,
+      cindaTooltipDismissed,
+      setCindaTooltipDismissed,
     }}>
       {children}
     </ProfileContext.Provider>
