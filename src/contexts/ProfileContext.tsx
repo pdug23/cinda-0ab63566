@@ -241,6 +241,11 @@ interface ProfileContextType {
   updateChatHistory: (messages: ChatMessage[]) => void;
   updateChatContext: (context: Partial<ChatContext>) => void;
   clearAll: () => void;
+  // Persistent Cinda chat button state
+  showCindaChatButton: boolean;
+  setShowCindaChatButton: (show: boolean) => void;
+  cindaChatButtonAnimated: boolean;
+  setCindaChatButtonAnimated: (animated: boolean) => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -252,6 +257,10 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     step3: defaultStep3,
     step4: defaultStep4,
   });
+
+  // Cinda chat button visibility state
+  const [showCindaChatButton, setShowCindaChatButton] = useState(false);
+  const [cindaChatButtonAnimated, setCindaChatButtonAnimated] = useState(false);
 
   const updateStep1 = (data: Partial<Step1Data>) => {
     setProfileData((prev) => ({
@@ -314,7 +323,20 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <ProfileContext.Provider value={{ profileData, updateStep1, updateStep2, updateStep3, updateStep4, updateChatHistory, updateChatContext, clearAll }}>
+    <ProfileContext.Provider value={{ 
+      profileData, 
+      updateStep1, 
+      updateStep2, 
+      updateStep3, 
+      updateStep4, 
+      updateChatHistory, 
+      updateChatContext, 
+      clearAll,
+      showCindaChatButton,
+      setShowCindaChatButton,
+      cindaChatButtonAnimated,
+      setCindaChatButtonAnimated,
+    }}>
       {children}
     </ProfileContext.Provider>
   );

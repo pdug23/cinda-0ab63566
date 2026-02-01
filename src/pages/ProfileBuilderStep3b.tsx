@@ -33,7 +33,7 @@ const getRandomFollowup = () => CINDA_FOLLOWUPS[Math.floor(Math.random() * CINDA
 
 const ProfileBuilderStep3b = () => {
   const navigate = useNavigate();
-  const { profileData, updateChatHistory, updateChatContext } = useProfile();
+  const { profileData, updateChatHistory, updateChatContext, setShowCindaChatButton } = useProfile();
   const { toast } = useToast();
   
   // Track if we've shown the initial typing animation
@@ -277,6 +277,8 @@ const ProfileBuilderStep3b = () => {
 
   const handleConfirmLeave = () => {
     updateChatHistory(messages);
+    // Show the persistent Cinda chat button in subsequent pages
+    setShowCindaChatButton(true);
     navigate("/profile/step4");
   };
 
