@@ -385,8 +385,8 @@ const ProfileBuilderStep3b = () => {
                   placeholder="Reply..."
                   rows={1}
                   disabled={isTyping || introPhase !== 'done'}
-                  className={cn(
-                    "flex-1 w-full bg-transparent resize-none text-sm leading-relaxed",
+              className={cn(
+                "flex-1 w-full bg-transparent resize-none text-base md:text-sm leading-relaxed",
                     "text-card-foreground placeholder:text-card-foreground/30",
                     "focus:outline-none",
                     "disabled:opacity-50 disabled:cursor-not-allowed",
