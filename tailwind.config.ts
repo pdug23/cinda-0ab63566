@@ -124,6 +124,21 @@ export default {
 				'50%': { transform: 'rotate(360deg)' },
 				'71.4%': { transform: 'rotate(720deg)' },
 				'100%': { transform: 'rotate(720deg)' }
+			},
+			'cinda-reveal': {
+				'0%': { 
+					transform: 'scale(0.8)',
+					opacity: '0'
+				},
+				'50%': { 
+					transform: 'scale(1.1)',
+					boxShadow: '0 0 20px hsl(var(--muted-foreground) / 0.4)'
+				},
+				'100%': { 
+					transform: 'scale(1)',
+					opacity: '1',
+					boxShadow: '0 0 0 transparent'
+				}
 			}
   		},
   		animation: {
@@ -133,7 +148,8 @@ export default {
   			'spin-settle': 'spin-settle 0.6s ease-out',
   			'spin-once': 'spin-once 0.6s ease-out',
   			'float-wave': 'float-wave 3s ease-in-out infinite',
-  			'spin-stop-cycle': 'spin-stop-cycle 2.8s ease-out infinite'
+  			'spin-stop-cycle': 'spin-stop-cycle 2.8s ease-out infinite',
+  			'cinda-reveal': 'cinda-reveal 0.6s ease-out forwards'
   		},
 		fontFamily: {
 			sans: [
