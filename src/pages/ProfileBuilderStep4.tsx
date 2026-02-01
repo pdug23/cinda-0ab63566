@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pencil } from "lucide-react";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
@@ -325,6 +325,40 @@ const ProfileBuilderStep4 = () => {
                 description="Cinda works with you to find the exact shoe you need"
                 onClick={handleShoppingMode}
               />
+            </div>
+
+            {/* Utility navigation buttons */}
+            <div className="flex gap-3 mt-6 pt-4 border-t border-card-foreground/10">
+              <button
+                type="button"
+                onClick={() => navigate("/profile/step3")}
+                className={cn(
+                  "flex-1 py-2.5 px-4 rounded-lg text-xs font-medium",
+                  "text-card-foreground/50 hover:text-card-foreground/70",
+                  "bg-transparent hover:bg-card-foreground/5",
+                  "border border-card-foreground/10 hover:border-card-foreground/20",
+                  "transition-all duration-200",
+                  "flex items-center justify-center gap-2"
+                )}
+              >
+                <Pencil className="w-3 h-3" />
+                Edit rotation
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/profile")}
+                className={cn(
+                  "flex-1 py-2.5 px-4 rounded-lg text-xs font-medium",
+                  "text-card-foreground/50 hover:text-card-foreground/70",
+                  "bg-transparent hover:bg-card-foreground/5",
+                  "border border-card-foreground/10 hover:border-card-foreground/20",
+                  "transition-all duration-200",
+                  "flex items-center justify-center gap-2"
+                )}
+              >
+                <Pencil className="w-3 h-3" />
+                Edit profile
+              </button>
             </div>
           </div>
         </PageTransition>
