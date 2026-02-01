@@ -49,7 +49,7 @@ export const CindaChatButton = ({ className }: CindaChatButtonProps) => {
         {showTooltip && (
           <div 
             className={cn(
-              "absolute top-full right-0 mt-2",
+              "absolute top-full right-0 mt-2 z-[9999]",
               "bg-card border border-border/60 rounded-lg shadow-xl",
               "p-3 pr-7 w-48",
               "opacity-0 animate-tooltip-fade-in"
