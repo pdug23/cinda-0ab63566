@@ -49,14 +49,14 @@ export const CindaChatButton = ({ className }: CindaChatButtonProps) => {
         {showTooltip && (
           <div 
             className={cn(
-              "absolute right-full mr-3",
-              "bg-card border border-border/30 rounded-lg shadow-xl",
-              "p-3 pr-7 max-w-[180px]",
+              "absolute top-full right-0 mt-2",
+              "bg-card border border-border/60 rounded-lg shadow-xl",
+              "p-3 pr-7 w-48",
               "opacity-0 animate-tooltip-fade-in"
             )}
           >
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Need to add anything? I'm here whenever you need me
+              More to say? Tap here anytime to add or update your info.
             </p>
             <button
               type="button"
@@ -66,9 +66,12 @@ export const CindaChatButton = ({ className }: CindaChatButtonProps) => {
             >
               <X className="w-3 h-3 text-muted-foreground" />
             </button>
-            {/* Arrow pointing to button */}
+            {/* Arrow pointing up to button */}
             <div 
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full w-0 h-0 border-y-[6px] border-y-transparent border-l-[6px] border-l-card"
+              className="absolute top-0 right-4 -translate-y-full w-0 h-0 border-x-[6px] border-x-transparent border-b-[6px] border-b-border/60"
+            />
+            <div 
+              className="absolute top-0 right-4 -translate-y-[5px] w-0 h-0 border-x-[6px] border-x-transparent border-b-[6px] border-b-card"
             />
           </div>
         )}
