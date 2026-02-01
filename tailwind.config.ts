@@ -139,6 +139,16 @@ export default {
 					opacity: '1',
 					boxShadow: '0 0 0 transparent'
 				}
+			},
+			'tooltip-fade-in': {
+				'0%': {
+					opacity: '0',
+					transform: 'translateX(8px)'
+				},
+				'100%': {
+					opacity: '1',
+					transform: 'translateX(0)'
+				}
 			}
   		},
   		animation: {
@@ -149,7 +159,8 @@ export default {
   			'spin-once': 'spin-once 0.6s ease-out',
   			'float-wave': 'float-wave 3s ease-in-out infinite',
   			'spin-stop-cycle': 'spin-stop-cycle 2.8s ease-out infinite',
-  			'cinda-reveal': 'cinda-reveal 0.6s ease-out forwards'
+  			'cinda-reveal': 'cinda-reveal 0.6s ease-out forwards',
+			'tooltip-fade-in': 'tooltip-fade-in 0.3s ease-out 0.7s forwards'
   		},
 		fontFamily: {
 			sans: [
