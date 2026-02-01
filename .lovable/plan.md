@@ -1,73 +1,109 @@
 
-# Reposition Tooltip to Bottom-Right with Clear Border
+# Add Quick-Access Navigation Buttons to Step 4
 
-## Changes
+## Overview
 
-### 1. Tooltip Positioning
+Add two utility buttons at the bottom of the Step 4 page that allow users to quickly navigate back to update their information without repeatedly pressing the back button:
 
-Move the tooltip from the left side of the button to spawning from the **bottom-right corner**:
+1. **Update my rotation** → navigates to `/profile/step3`
+2. **Update my info** → navigates to `/profile` (Step 1)
 
-**Current**: Positioned to the left with arrow pointing right
-```
-[Tooltip] → [Button]
-```
+These buttons will be styled distinctly from the three main service options to make it clear they're utility/navigation shortcuts, not primary actions.
 
-**New**: Positioned below and slightly right with arrow pointing up to the button
-```
-      [Button]
-         ↑
-    [Tooltip]
-```
-
-### 2. Clearer Border
-
-Add a more visible border so it stands out against the dark background:
-- Change from `border-border/30` to a more prominent `border-border/60` or use a lighter color like `border-slate-500/50`
-
-### 3. Updated Text
-
-Change the message to your suggested text (with minor polish):
-- **New text**: "More to say? Tap here anytime to add or update your info."
-
-## Technical Details
-
-**File: `src/components/CindaChatButton.tsx`**
-
-Changes to the tooltip div:
-- Position: Change from `right-full mr-3` to `top-full right-0 mt-2` (places it below the button, aligned to the right edge)
-- Border: Change to `border-border/60` or `border-slate-400/40` for better visibility
-- Arrow: Rotate the CSS triangle to point upward instead of right, positioned at the top-right corner of the bubble
-- Text: Update to the new copy
-
-### Arrow CSS Change
-
-Current arrow (pointing right):
-```css
-border-y-[6px] border-y-transparent border-l-[6px] border-l-card
-```
-
-New arrow (pointing up, at top-right):
-```css
-position: top-0, right-3, -translate-y-full
-border-x-[6px] border-x-transparent border-b-[6px] border-b-card
-```
-
-## Visual Layout
+## User Experience
 
 ```text
-         [Cinda Logo Button]
-                  \
-                   \
-              ┌─────────────────┐
-              │ More to say?    │
-              │ Tap here anytime│
-              │ to add or update│ [X]
-              │ your info.      │
-              └─────────────────┘
+┌────────────────────────────────────────┐
+│  [BACK]        [Cinda]         [ ]     │
+├────────────────────────────────────────┤
+│                                        │
+│  Profile complete. How can Cinda help? │
+│                                        │
+│  ┌──────────────────────────────────┐  │
+│  │ 🔮 Recommend me a shoe           │  │  ← Primary service options
+│  └──────────────────────────────────┘  │    (slate-blue styling)
+│  ┌──────────────────────────────────┐  │
+│  │ 🔄 Check my rotation             │  │
+│  └──────────────────────────────────┘  │
+│  ┌──────────────────────────────────┐  │
+│  │ 🎯 Find by shoe type             │  │
+│  └──────────────────────────────────┘  │
+│                                        │
+│  ────────────────────────────────────  │
+│                                        │
+│  [Edit my rotation]  [Update my info]  │  ← Utility buttons (subtle styling)
+│                                        │
+└────────────────────────────────────────┘
 ```
 
-## File to Modify
+## Styling Approach
 
-| File | Changes |
-|------|---------|
-| `src/components/CindaChatButton.tsx` | Reposition tooltip to bottom-right, update border opacity, change text, flip arrow direction |
+The utility buttons will be styled as subtle, text-based links rather than the prominent glass-morphism cards:
+
+- **Color**: Muted text with subtle border (no background fill)
+- **Size**: Smaller, more compact
+- **Layout**: Two buttons side-by-side at the bottom
+- **Icons**: Pencil/edit icons to indicate "update" action
+- **Hover**: Subtle highlight, no dramatic effects
+
+This clearly differentiates them from the main "service" options while keeping them accessible.
+
+## Technical Implementation
+
+### File to Modify
+
+`src/pages/ProfileBuilderStep4.tsx`
+
+### Changes
+
+1. **Import Pencil icon** from lucide-react for the edit buttons
+
+2. **Add navigation handlers**:
+   - `handleEditRotation` → navigates to `/profile/step3`
+   - `handleEditInfo` → navigates to `/profile`
+
+3. **Add utility button section** below the mode cards:
+   - Separator or spacing to distinguish from primary options
+   - Two inline buttons with muted styling
+   - Text like "Edit my rotation" and "Update my info"
+
+### Utility Button Styling
+
+```tsx
+// Subtle, compact utility button styling
+<button
+  type="button"
+  onClick={handleEditRotation}
+  className={cn(
+    "flex-1 py-2 px-4 rounded-lg text-xs font-medium",
+    "text-card-foreground/50 hover:text-card-foreground/70",
+    "bg-transparent hover:bg-card-foreground/5",
+    "border border-card-foreground/10 hover:border-card-foreground/20",
+    "transition-all duration-200",
+    "flex items-center justify-center gap-2"
+  )}
+>
+  <Pencil className="w-3 h-3" />
+  Edit rotation
+</button>
+```
+
+### Visual Distinction Summary
+
+| Aspect | Primary Cards | Utility Buttons |
+|--------|---------------|-----------------|
+| Size | Large (p-5) | Compact (py-2 px-4) |
+| Background | Glass morphism | Transparent |
+| Border | Slate blue glow | Very subtle |
+| Icons | 24px custom SVGs | 12px Pencil |
+| Text | Bold labels + desc | Small text only |
+| Hover | Scale + glow | Subtle highlight |
+
+## Button Labels
+
+Suggested labels (concise and action-oriented):
+- "Edit rotation" (links to Step 3)
+- "Edit profile" (links to Step 1)
+
+Or alternatively:
+- "Update shoes" / "Update info"
