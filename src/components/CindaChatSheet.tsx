@@ -8,12 +8,25 @@ import { cn } from "@/lib/utils";
 import cindaLogoGrey from "@/assets/cinda-logo-grey.png";
 import TypewriterText from "@/components/TypewriterText";
 
+const CINDA_GREETING = "Hey, Cinda here.";
+
+const CINDA_FOLLOWUPS = [
+  "You've told me the basics, but running's personal. Past injuries, shoes that didn't work out, weird fit issues, weather you run in... if there's anything else that might help, let me know.",
+  "Thanks for the info so far. Before I find your shoes — anything else I should know? Injuries, fit quirks, shoes you've loved or hated, or the weather you usually run in?",
+  "Almost there. If there's anything the questions didn't cover — past injuries, brands that don't work for you, wet or hot conditions, that kind of thing — now's the time.",
+  "One more thing before I get your recommendations. Anything else that might affect your shoe choice? Injuries, fit issues, weather conditions, specific needs?",
+  "Got the basics. If there's anything personal that might help — an old injury, a shoe that never worked, wide feet, rainy climate — feel free to share.",
+];
+
+const getRandomFollowup = () => CINDA_FOLLOWUPS[Math.floor(Math.random() * CINDA_FOLLOWUPS.length)];
+
 interface CindaChatSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  showIntro?: boolean; // Whether to show the intro sequence
 }
 
-export const CindaChatSheet = ({ open, onOpenChange }: CindaChatSheetProps) => {
+export const CindaChatSheet = ({ open, onOpenChange, showIntro = false }: CindaChatSheetProps) => {
   const { profileData, updateChatHistory, updateChatContext } = useProfile();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -24,6 +37,10 @@ export const CindaChatSheet = ({ open, onOpenChange }: CindaChatSheetProps) => {
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [typingMessageIndex, setTypingMessageIndex] = useState<number | null>(null);
+
+  // Intro sequence state
+  const [introPhase, setIntroPhase] = useState<'idle' | 'typing1' | 'message1' | 'pause' | 'typing2' | 'message2' | 'done'>('idle');
+  const [selectedFollowup] = useState(() => getRandomFollowup());
 
   // Speech-to-text hook
   const {
@@ -51,11 +68,84 @@ export const CindaChatSheet = ({ open, onOpenChange }: CindaChatSheetProps) => {
   // Sync messages from context when sheet opens
   useEffect(() => {
     if (open) {
-      setMessages(profileData.step3.chatHistory);
-      // Focus input after a short delay
-      setTimeout(() => inputRef.current?.focus(), 100);
+      const existingHistory = profileData.step3.chatHistory;
+      setMessages(existingHistory);
+      
+      // Determine if we need to show intro
+      if (showIntro && existingHistory.length === 0) {
+        setIntroPhase('typing1');
+        setIsTyping(true);
+      } else {
+        setIntroPhase('done');
+        // Focus input after a short delay
+        setTimeout(() => inputRef.current?.focus(), 100);
+      }
+    } else {
+      // Reset intro phase when sheet closes
+      setIntroPhase('idle');
     }
-  }, [open, profileData.step3.chatHistory]);
+  }, [open, profileData.step3.chatHistory, showIntro]);
+
+  // Multi-phase intro sequence
+  useEffect(() => {
+    if (!open || introPhase === 'idle' || introPhase === 'done') return;
+
+    let timer: NodeJS.Timeout;
+
+    switch (introPhase) {
+      case 'typing1':
+        // Show typing indicator for 1s, then show first message
+        timer = setTimeout(() => {
+          setIsTyping(false);
+          const greetingMessage: ChatMessage = {
+            role: 'assistant',
+            content: CINDA_GREETING,
+            timestamp: new Date(),
+          };
+          setMessages([greetingMessage]);
+          setTypingMessageIndex(0);
+          setIntroPhase('message1');
+        }, 1000);
+        break;
+
+      case 'message1':
+        // Wait for typewriter to complete, handled by onComplete callback
+        break;
+
+      case 'pause':
+        // 500ms pause, then show typing indicator again
+        timer = setTimeout(() => {
+          setIsTyping(true);
+          setIntroPhase('typing2');
+        }, 500);
+        break;
+
+      case 'typing2':
+        // Show typing indicator for 1s, then show second message
+        timer = setTimeout(() => {
+          setIsTyping(false);
+          const followupMessage: ChatMessage = {
+            role: 'assistant',
+            content: selectedFollowup,
+            timestamp: new Date(),
+          };
+          setMessages(prev => {
+            const updated = [...prev, followupMessage];
+            updateChatHistory(updated);
+            return updated;
+          });
+          setTypingMessageIndex(1);
+          setIntroPhase('message2');
+        }, 1000);
+        break;
+
+      case 'message2':
+        // Wait for typewriter to complete, handled by onComplete callback
+        break;
+    }
+
+    return () => clearTimeout(timer);
+  }, [open, introPhase, selectedFollowup, updateChatHistory]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -63,6 +153,13 @@ export const CindaChatSheet = ({ open, onOpenChange }: CindaChatSheetProps) => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isTyping, open]);
+
+  // Focus input after intro completes
+  useEffect(() => {
+    if (introPhase === 'done' && !isTyping && open) {
+      inputRef.current?.focus();
+    }
+  }, [introPhase, isTyping, open]);
 
   const handleMicClick = () => {
     if (isListening) {
@@ -158,6 +255,19 @@ export const CindaChatSheet = ({ open, onOpenChange }: CindaChatSheetProps) => {
     }
   };
 
+  // Handle typewriter completion for intro sequence
+  const handleTypewriterComplete = () => {
+    setTypingMessageIndex(null);
+    // Progress intro phases when typewriter completes
+    if (introPhase === 'message1') {
+      setIntroPhase('pause');
+    } else if (introPhase === 'message2') {
+      setIntroPhase('done');
+    }
+  };
+
+  const isInputDisabled = isTyping || (introPhase !== 'done' && introPhase !== 'idle');
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -195,7 +305,7 @@ export const CindaChatSheet = ({ open, onOpenChange }: CindaChatSheetProps) => {
                     <TypewriterText
                       text={message.content}
                       speed={40}
-                      onComplete={() => setTypingMessageIndex(null)}
+                      onComplete={handleTypewriterComplete}
                     />
                   ) : (
                     message.content
@@ -242,7 +352,7 @@ export const CindaChatSheet = ({ open, onOpenChange }: CindaChatSheetProps) => {
                 onKeyDown={handleKeyDown}
                 placeholder="Reply..."
                 rows={1}
-                disabled={isTyping}
+                disabled={isInputDisabled}
                 className={cn(
                   "flex-1 w-full bg-transparent resize-none text-base md:text-sm leading-relaxed",
                   "text-card-foreground placeholder:text-card-foreground/30",
@@ -257,7 +367,7 @@ export const CindaChatSheet = ({ open, onOpenChange }: CindaChatSheetProps) => {
                   <button
                     type="button"
                     onClick={handleMicClick}
-                    disabled={isTyping}
+                    disabled={isInputDisabled}
                     className={cn(
                       "w-8 h-8 rounded-full flex items-center justify-center",
                       "transition-colors",
@@ -273,7 +383,7 @@ export const CindaChatSheet = ({ open, onOpenChange }: CindaChatSheetProps) => {
                 )}
                 <button
                   onClick={handleSend}
-                  disabled={!inputValue.trim() || isTyping}
+                  disabled={!inputValue.trim() || isInputDisabled}
                   className={cn(
                     "w-8 h-8 rounded-full flex items-center justify-center",
                     "bg-card-foreground/15 text-card-foreground/60",
