@@ -122,6 +122,109 @@ function getCriticalArchetypes(profile: RunnerProfile): ShoeArchetype[] {
 }
 
 // ============================================================================
+// FEEL GAP HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Check if user profile suggests they would benefit from stability
+ * Only recommend stability if:
+ * - User is beginner (may need support)
+ * - User is coming back from injury (needs support)
+ * - User has explicitly disliked unstable shoes
+ */
+function shouldRecommendStability(
+  currentShoes: CurrentShoe[],
+  profile: RunnerProfile
+): boolean {
+  // Check if all shoes are low stability (threshold ≤ 2)
+  // This is a prerequisite - if they already have stable shoes, no need
+  // Note: This is checked by the caller, but we double-check here
+
+  // Check profile conditions
+  if (profile.experience === 'beginner') {
+    return true;
+  }
+
+  if (profile.primaryGoal === 'injury_comeback') {
+    return true;
+  }
+
+  // Check if any current shoe has 'unstable' dislike tag
+  const hasUnstableDislike = currentShoes.some(shoe =>
+    shoe.dislikeTags && shoe.dislikeTags.includes('unstable')
+  );
+
+  return hasUnstableDislike;
+}
+
+/**
+ * Check if drop variety is low (all shoes within 4mm of each other)
+ */
+function hasLowDropVariety(currentShoes: CurrentShoe[], catalogue: Shoe[]): boolean {
+  const shoes = resolveShoes(currentShoes, catalogue);
+  if (shoes.length === 0) return false;
+
+  const drops = shoes.map(s => s.heel_drop_mm);
+  const dropRange = Math.max(...drops) - Math.min(...drops);
+
+  return dropRange < 4;
+}
+
+/**
+ * Get drop variety recommendation based on current rotation's average drop
+ */
+function getDropVarietyRecommendation(currentShoes: CurrentShoe[], catalogue: Shoe[]): {
+  suggestion: string;
+  reason: string;
+} {
+  const shoes = resolveShoes(currentShoes, catalogue);
+  if (shoes.length === 0) {
+    return {
+      suggestion: 'Consider any drop for variety',
+      reason: 'Adding drop variety can help work different muscles'
+    };
+  }
+
+  const drops = shoes.map(s => s.heel_drop_mm);
+  const avgDrop = drops.reduce((a, b) => a + b, 0) / drops.length;
+
+  if (avgDrop >= 8) {
+    // All high drops
+    return {
+      suggestion: 'Consider 4-6mm drop for variety',
+      reason: 'All your shoes have high drops (8mm+) - a lower drop shoe adds variety and strengthens different muscles'
+    };
+  } else if (avgDrop <= 4) {
+    // All low drops
+    return {
+      suggestion: 'Consider 8-10mm drop for variety',
+      reason: 'All your shoes have low drops (4mm or less) - a higher drop shoe provides different feel and load distribution'
+    };
+  } else {
+    // All moderate drops
+    return {
+      suggestion: 'Consider either 0-4mm or 8-10mm drop',
+      reason: 'All your shoes have moderate drops (5-7mm) - exploring higher or lower adds useful variety'
+    };
+  }
+}
+
+/**
+ * Count daily trainers in current rotation
+ */
+function getDailyTrainerCount(currentShoes: CurrentShoe[], catalogue: Shoe[]): number {
+  const shoes = resolveShoes(currentShoes, catalogue);
+  return shoes.filter(s => s.is_daily_trainer).length;
+}
+
+/**
+ * Check if user is beginner or injury-comeback (for priority routing)
+ */
+function isBeginnerOrInjuryComeback(profile: RunnerProfile): boolean {
+  return profile.experience === 'beginner' || profile.primaryGoal === 'injury_comeback';
+}
+
+// ============================================================================
 // CONTRAST PROFILE
 // ============================================================================
 
@@ -161,51 +264,45 @@ function buildContrastProfile(
  * Describes a gap in feel variety that could be explored
  */
 interface FeelGap {
-  dimension: 'drop' | 'cushion' | 'rocker' | 'stability';
+  dimension: 'drop' | 'cushion' | 'rocker' | 'stability' | 'bounce' | 'daily_count';
   priority: number;  // Lower = more important (1 = highest priority)
   currentRange: { min: number; max: number };
-  suggestion: 'low' | 'high';  // Which end to explore
+  suggestion: 'low' | 'high' | 'variety';  // Which end to explore, or 'variety' for daily trainer
   reason: string;
   recommendedArchetype: ShoeArchetype;
+  dropSuggestion?: string;  // For drop variety - provides guidance text (e.g., "Consider 4-6mm drop")
 }
 
 /**
- * Detect feel gaps in the current rotation
- * Returns ordered list of feel dimensions that could use more variety
- * Priority: max cushion > high rocker > stability > drop
+ * Detect feel gaps for beginners / injury-comeback users
+ * Priority order: Max Cushion → Stability Gap → Different Daily → Drop Variety
  */
-function detectFeelGaps(
+function detectBeginnerPriorities(
   currentShoes: CurrentShoe[],
-  catalogue: Shoe[]
+  catalogue: Shoe[],
+  profile: RunnerProfile
 ): FeelGap[] {
   const shoes = resolveShoes(currentShoes, catalogue);
-
   if (shoes.length === 0) return [];
 
   const shoeCount = shoes.length;
-
-  // Calculate values for each dimension
-  const drops = shoes.map(s => s.heel_drop_mm);
-  const cushions = shoes.map(s => s.cushion_softness_1to5);
-  const rockers = shoes.map(s => s.rocker_1to5);
-  const stabilities = shoes.map(s => s.stability_1to5);
-
-  console.log('[detectFeelGaps] Feel dimensions:', {
-    shoeCount,
-    drops,
-    cushions,
-    rockers,
-    stabilities
-  });
-
   const gaps: FeelGap[] = [];
 
-  // Calculate ranges
-  const dropMin = Math.min(...drops);
-  const dropMax = Math.max(...drops);
+  // Calculate values
+  const cushions = shoes.map(s => s.cushion_softness_1to5);
+  const stabilities = shoes.map(s => s.stability_1to5);
+  const drops = shoes.map(s => s.heel_drop_mm);
+  const dailyCount = getDailyTrainerCount(currentShoes, catalogue);
+
   const cushionMax = Math.max(...cushions);
-  const rockerMax = Math.max(...rockers);
   const stabilityMax = Math.max(...stabilities);
+
+  console.log('[detectBeginnerPriorities] Analyzing:', {
+    shoeCount,
+    cushions,
+    stabilities,
+    dailyCount
+  });
 
   // Priority 1: Max cushion gap (no shoe has cushion 5)
   if (cushionMax < 5) {
@@ -221,79 +318,225 @@ function detectFeelGaps(
     });
   }
 
-  // Priority 2: High rocker gap (no shoe has rocker 4+)
-  if (rockerMax < 4) {
-    gaps.push({
-      dimension: 'rocker',
-      priority: 2,
-      currentRange: { min: Math.min(...rockers), max: rockerMax },
-      suggestion: 'high',
-      reason: shoeCount === 1
-        ? "Your shoe doesn't have much rocker. A shoe with an aggressive rocker could ease joint stress and offer a different ride."
-        : "None of your shoes have an aggressive rocker. A shoe with an aggressive rocker could ease joint stress and offer a different ride.",
-      recommendedArchetype: 'daily_trainer'
-    });
-  }
-
-  // Priority 3: Stability gap (all shoes neutral, stability ≤ 2)
-  if (stabilityMax <= 2) {
+  // Priority 2: Stability gap (conditional - only if profile suggests need)
+  if (stabilityMax <= 2 && shouldRecommendStability(currentShoes, profile)) {
     gaps.push({
       dimension: 'stability',
-      priority: 3,
+      priority: 2,
       currentRange: { min: Math.min(...stabilities), max: stabilityMax },
       suggestion: 'high',
       reason: shoeCount === 1
-        ? "Your shoe is neutral. A light stability option could offer support on tired days."
-        : "Your rotation is all neutral. A light stability shoe could offer support on tired days.",
+        ? "Your shoe is neutral. A more stable shoe could provide better support and reduce injury risk."
+        : "Your rotation is all neutral. A more stable shoe could provide better support and reduce injury risk.",
       recommendedArchetype: 'daily_trainer'
     });
   }
 
-  // Priority 4: Drop gap (check both directions)
-  if (dropMin > 5) {
-    // All shoes are mid-to-high drop, suggest low drop
+  // Priority 3: Different daily trainer (only one daily)
+  if (dailyCount === 1) {
     gaps.push({
-      dimension: 'drop',
-      priority: 4,
-      currentRange: { min: dropMin, max: dropMax },
-      suggestion: 'low',
-      reason: shoeCount === 1
-        ? "Your shoe is higher drop. A low-drop option could strengthen different muscles and add variety."
-        : "All your shoes are 6mm+ drop. A low-drop shoe could strengthen different muscles and add variety.",
-      recommendedArchetype: 'daily_trainer'
-    });
-  } else if (dropMax < 6) {
-    // All shoes are low drop, suggest higher drop
-    gaps.push({
-      dimension: 'drop',
-      priority: 4,
-      currentRange: { min: dropMin, max: dropMax },
-      suggestion: 'high',
-      reason: shoeCount === 1
-        ? "Your shoe is low drop. A traditional drop shoe could give your calves a break."
-        : "Your rotation is low-drop focused. A traditional drop shoe could give your calves a break.",
+      dimension: 'daily_count',
+      priority: 3,
+      currentRange: { min: dailyCount, max: dailyCount },
+      suggestion: 'variety',
+      reason: "You rely on one daily trainer - rotating between different dailies reduces overuse and adds variety.",
       recommendedArchetype: 'daily_trainer'
     });
   }
 
-  // Sort by priority before returning
+  // Priority 4: Drop variety (all drops within 4mm)
+  if (hasLowDropVariety(currentShoes, catalogue)) {
+    const dropRec = getDropVarietyRecommendation(currentShoes, catalogue);
+    gaps.push({
+      dimension: 'drop',
+      priority: 4,
+      currentRange: { min: Math.min(...drops), max: Math.max(...drops) },
+      suggestion: Math.max(...drops) >= 6 ? 'low' : 'high',
+      reason: dropRec.reason,
+      recommendedArchetype: 'daily_trainer',
+      dropSuggestion: dropRec.suggestion
+    });
+  }
+
+  // Sort by priority
   gaps.sort((a, b) => a.priority - b.priority);
 
-  console.log('[detectFeelGaps] Gaps found (sorted by priority):', gaps.map(g => `${g.dimension} (p${g.priority})`));
+  console.log('[detectBeginnerPriorities] Gaps found:', gaps.map(g => `${g.dimension} (p${g.priority})`));
 
   return gaps;
 }
 
 /**
- * Convert internal FeelGap to FeelGapInfo for API response
+ * Detect feel gaps for intermediate / advanced users
+ * Priority order: Max Cushion → Bounce Gap → Different Daily → Drop Variety → Stability Gap
  */
-function toFeelGapInfo(gap: FeelGap): FeelGapInfo {
+function detectAdvancedPriorities(
+  currentShoes: CurrentShoe[],
+  catalogue: Shoe[],
+  profile: RunnerProfile
+): FeelGap[] {
+  const shoes = resolveShoes(currentShoes, catalogue);
+  if (shoes.length === 0) return [];
+
+  const shoeCount = shoes.length;
+  const gaps: FeelGap[] = [];
+
+  // Calculate values
+  const cushions = shoes.map(s => s.cushion_softness_1to5);
+  const bounces = shoes.map(s => s.bounce_1to5);
+  const stabilities = shoes.map(s => s.stability_1to5);
+  const drops = shoes.map(s => s.heel_drop_mm);
+  const dailyCount = getDailyTrainerCount(currentShoes, catalogue);
+
+  const cushionMax = Math.max(...cushions);
+  const bounceMax = Math.max(...bounces);
+  const stabilityMax = Math.max(...stabilities);
+
+  console.log('[detectAdvancedPriorities] Analyzing:', {
+    shoeCount,
+    cushions,
+    bounces,
+    stabilities,
+    dailyCount
+  });
+
+  // Priority 1: Max cushion gap (no shoe has cushion 5)
+  if (cushionMax < 5) {
+    gaps.push({
+      dimension: 'cushion',
+      priority: 1,
+      currentRange: { min: Math.min(...cushions), max: cushionMax },
+      suggestion: 'high',
+      reason: shoeCount === 1
+        ? "Your shoe is moderate cushion. A max-cushion option could protect your legs on easy days."
+        : "None of your shoes have max cushion. A plush recovery shoe could protect your legs on easy days.",
+      recommendedArchetype: 'recovery_shoe'
+    });
+  }
+
+  // Priority 2: Bounce gap (no shoe has bounce >= 4)
+  if (bounceMax < 4) {
+    // Choose archetype based on running pattern
+    const archetype: ShoeArchetype = profile.runningPattern === 'structured_training'
+      ? 'workout_shoe'
+      : 'daily_trainer';
+
+    gaps.push({
+      dimension: 'bounce',
+      priority: 2,
+      currentRange: { min: Math.min(...bounces), max: bounceMax },
+      suggestion: 'high',
+      reason: "A bouncy shoe adds versatility for faster efforts and tempo runs.",
+      recommendedArchetype: archetype
+    });
+  }
+
+  // Priority 3: Different daily trainer (only one daily)
+  if (dailyCount === 1) {
+    gaps.push({
+      dimension: 'daily_count',
+      priority: 3,
+      currentRange: { min: dailyCount, max: dailyCount },
+      suggestion: 'variety',
+      reason: "You rely on one daily trainer - rotating between different dailies reduces overuse and adds variety.",
+      recommendedArchetype: 'daily_trainer'
+    });
+  }
+
+  // Priority 4: Drop variety (all drops within 4mm)
+  if (hasLowDropVariety(currentShoes, catalogue)) {
+    const dropRec = getDropVarietyRecommendation(currentShoes, catalogue);
+    gaps.push({
+      dimension: 'drop',
+      priority: 4,
+      currentRange: { min: Math.min(...drops), max: Math.max(...drops) },
+      suggestion: Math.max(...drops) >= 6 ? 'low' : 'high',
+      reason: dropRec.reason,
+      recommendedArchetype: 'daily_trainer',
+      dropSuggestion: dropRec.suggestion
+    });
+  }
+
+  // Priority 5: Stability gap (conditional - only if profile suggests need)
+  if (stabilityMax <= 2 && shouldRecommendStability(currentShoes, profile)) {
+    gaps.push({
+      dimension: 'stability',
+      priority: 5,
+      currentRange: { min: Math.min(...stabilities), max: stabilityMax },
+      suggestion: 'high',
+      reason: "A more stable shoe could provide better support and reduce injury risk.",
+      recommendedArchetype: 'daily_trainer'
+    });
+  }
+
+  // Sort by priority
+  gaps.sort((a, b) => a.priority - b.priority);
+
+  console.log('[detectAdvancedPriorities] Gaps found:', gaps.map(g => `${g.dimension} (p${g.priority})`));
+
+  return gaps;
+}
+
+/**
+ * Detect feel gaps in the current rotation
+ * Routes to beginner or advanced priorities based on experience level
+ *
+ * Beginner/Injury-comeback: Max Cushion → Stability → Different Daily → Drop Variety
+ * Intermediate/Advanced: Max Cushion → Bounce → Different Daily → Drop Variety → Stability
+ */
+function detectFeelGaps(
+  currentShoes: CurrentShoe[],
+  catalogue: Shoe[],
+  profile?: RunnerProfile
+): FeelGap[] {
+  const shoes = resolveShoes(currentShoes, catalogue);
+  if (shoes.length === 0) return [];
+
+  console.log('[detectFeelGaps] Starting feel gap detection', {
+    shoeCount: shoes.length,
+    experience: profile?.experience,
+    primaryGoal: profile?.primaryGoal
+  });
+
+  // Route based on experience level
+  if (profile && isBeginnerOrInjuryComeback(profile)) {
+    console.log('[detectFeelGaps] Using beginner priorities');
+    return detectBeginnerPriorities(currentShoes, catalogue, profile);
+  } else {
+    // Default to advanced priorities if no profile or intermediate/experienced/competitive
+    console.log('[detectFeelGaps] Using advanced priorities');
+    // Create a default profile for the function call if none provided
+    const effectiveProfile = profile || {
+      firstName: '',
+      experience: 'intermediate' as const,
+      primaryGoal: 'general_fitness' as const
+    };
+    return detectAdvancedPriorities(currentShoes, catalogue, effectiveProfile);
+  }
+}
+
+/**
+ * Convert internal FeelGap to FeelGapInfo for API response
+ * Note: 'daily_count' dimension doesn't have a direct feel mapping,
+ * so we use a contrast-based approach instead (handled separately)
+ */
+function toFeelGapInfo(gap: FeelGap): FeelGapInfo | null {
+  // daily_count doesn't map to a feel dimension - use contrast-based approach instead
+  if (gap.dimension === 'daily_count') {
+    return null;
+  }
+
   // Map dimension and suggestion to target values
   let targetValue: number;
+  // Type-safe dimension mapping (exclude 'daily_count' which returns null above)
+  const feelDimension = gap.dimension as 'cushion' | 'drop' | 'rocker' | 'stability' | 'bounce';
 
   switch (gap.dimension) {
     case 'cushion':
       targetValue = gap.suggestion === 'high' ? 5 : 1;
+      break;
+    case 'bounce':
+      targetValue = gap.suggestion === 'high' ? 5 : 2;
       break;
     case 'rocker':
       targetValue = gap.suggestion === 'high' ? 5 : 2;
@@ -311,8 +554,8 @@ function toFeelGapInfo(gap: FeelGap): FeelGapInfo {
   }
 
   return {
-    dimension: gap.dimension,
-    suggestion: gap.suggestion,
+    dimension: feelDimension,
+    suggestion: gap.suggestion === 'variety' ? 'high' : gap.suggestion,
     targetValue
   };
 }
@@ -579,7 +822,7 @@ export function classifyRotationTier(
     // Skip Tier 2, go straight to Tier 3 exploration
     // Use feel-based gap detection for recommendations
     console.log('[classifyRotationTier] Complete rotation - analyzing feel gaps');
-    const feelGaps = detectFeelGaps(currentShoes, catalogue);
+    const feelGaps = detectFeelGaps(currentShoes, catalogue, profile);
 
     // Build contrast profile to favor shoes different from current rotation
     const contrastProfile = buildContrastProfile(currentShoes, catalogue);
@@ -601,20 +844,24 @@ export function classifyRotationTier(
         reason = `Your rotation could use more feel variety. ${primaryGap.reason}`;
       }
 
+      // Get feel gap info (null for 'daily_count' dimension - use contrast instead)
+      const feelGapInfo = toFeelGapInfo(primaryGap);
+
       primary = {
         archetype,
         reason,
-        feelGap: toFeelGapInfo(primaryGap),  // Include feel gap info for recommendation engine
+        feelGap: feelGapInfo || undefined,  // Include feel gap info for recommendation engine
         contrastWith: contrastProfile  // Favor shoes different from current rotation
       };
 
       // Secondary = second feel gap if exists and different dimension
       if (feelGaps.length > 1) {
         const secondaryGap = feelGaps[1];
+        const secondaryFeelGapInfo = toFeelGapInfo(secondaryGap);
         secondary = {
           archetype: secondaryGap.recommendedArchetype,
           reason: secondaryGap.reason,
-          feelGap: toFeelGapInfo(secondaryGap),
+          feelGap: secondaryFeelGapInfo || undefined,
           contrastWith: contrastProfile
         };
       }
@@ -773,7 +1020,7 @@ export function classifyRotationTier(
   // =========================================================================
 
   console.log('[classifyRotationTier] Tier 3 - analyzing feel gaps');
-  const feelGaps = detectFeelGaps(currentShoes, catalogue);
+  const feelGaps = detectFeelGaps(currentShoes, catalogue, profile);
 
   // Build contrast profile to favor shoes different from current rotation
   const contrastProfile = buildContrastProfile(currentShoes, catalogue);
@@ -795,20 +1042,24 @@ export function classifyRotationTier(
       reason = `Your rotation could use more feel variety. ${primaryGap.reason}`;
     }
 
+    // Get feel gap info (null for 'daily_count' dimension - use contrast instead)
+    const feelGapInfo = toFeelGapInfo(primaryGap);
+
     primary = {
       archetype,
       reason,
-      feelGap: toFeelGapInfo(primaryGap),  // Include feel gap info for recommendation engine
+      feelGap: feelGapInfo || undefined,  // Include feel gap info for recommendation engine
       contrastWith: contrastProfile  // Favor shoes different from current rotation
     };
 
     // Secondary = second feel gap if exists
     if (feelGaps.length > 1) {
       const secondaryGap = feelGaps[1];
+      const secondaryFeelGapInfo = toFeelGapInfo(secondaryGap);
       secondary = {
         archetype: secondaryGap.recommendedArchetype,
         reason: secondaryGap.reason,
-        feelGap: toFeelGapInfo(secondaryGap),
+        feelGap: secondaryFeelGapInfo || undefined,
         contrastWith: contrastProfile
       };
     }

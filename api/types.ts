@@ -299,7 +299,7 @@ export type RecommendationConfidence = "high" | "medium" | "soft";
  * Used to override "Let Cinda decide" preferences with smart defaults
  */
 export interface FeelGapInfo {
-  dimension: 'cushion' | 'drop' | 'rocker' | 'stability';
+  dimension: 'cushion' | 'drop' | 'rocker' | 'stability' | 'bounce';
   suggestion: 'low' | 'high';
   targetValue: number;  // Target value for this dimension (e.g., 5 for max cushion)
 }
