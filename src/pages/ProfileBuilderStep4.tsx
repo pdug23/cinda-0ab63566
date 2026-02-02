@@ -1,9 +1,11 @@
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Pencil } from "lucide-react";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { CindaChatButton } from "@/components/CindaChatButton";
+import { CindaChatSheet } from "@/components/CindaChatSheet";
 import { useProfile, FeelPreferences, ShoeRequest } from "@/contexts/ProfileContext";
 import { usePageNavigation } from "@/hooks/usePageNavigation";
 import { saveShoeRequests, clearGap } from "@/utils/storage";
@@ -216,13 +218,40 @@ const ModeCard = ({
 
 const ProfileBuilderStep4 = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { navigateWithTransition } = usePageNavigation();
-  const { profileData, updateStep4 } = useProfile();
+  const { profileData, updateStep4, setShowCindaChatButton } = useProfile();
 
   const hasShoes = profileData.step3.currentShoes.length > 0;
+  
+  // Check if we should auto-open the chat sheet (coming from step 3)
+  const shouldAutoOpenChat = location.state?.autoOpenChat === true;
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [hasShownIntroChat, setHasShownIntroChat] = useState(false);
+
+  // Auto-open chat sheet on mount if coming from step 3
+  useEffect(() => {
+    if (shouldAutoOpenChat && !hasShownIntroChat) {
+      // Small delay to let the page render first
+      const timer = setTimeout(() => {
+        setIsSheetOpen(true);
+        setHasShownIntroChat(true);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldAutoOpenChat, hasShownIntroChat]);
+
+  // When sheet closes after auto-open, show the Cinda button
+  const handleSheetClose = (open: boolean) => {
+    setIsSheetOpen(open);
+    if (!open && hasShownIntroChat) {
+      // Show the persistent Cinda chat button after sheet closes
+      setShowCindaChatButton(true);
+    }
+  };
 
   const handleBack = () => {
-    navigate("/profile/step3b");
+    navigate("/profile/step3");
   };
 
   const handleShoppingMode = () => {
@@ -278,8 +307,12 @@ const ProfileBuilderStep4 = () => {
               Back
             </button>
             
-            {/* Cinda chat button - center */}
-            <CindaChatButton />
+            {/* Cinda chat button - center (only show if not in intro phase) */}
+            {!shouldAutoOpenChat || hasShownIntroChat ? (
+              <CindaChatButton />
+            ) : (
+              <div className="w-8 h-8" /> // Placeholder for layout balance
+            )}
             
             {/* Empty spacer for layout balance */}
             <div className="w-[72px]" />
@@ -363,6 +396,13 @@ const ProfileBuilderStep4 = () => {
           </div>
         </PageTransition>
       </OnboardingLayout>
+
+      {/* Cinda Chat Sheet - auto-opens when coming from step 3 */}
+      <CindaChatSheet 
+        open={isSheetOpen} 
+        onOpenChange={handleSheetClose}
+        showIntro={shouldAutoOpenChat}
+      />
 
       {/* Shimmer animation keyframes */}
       <style>{`
