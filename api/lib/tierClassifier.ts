@@ -224,6 +224,31 @@ function isBeginnerOrInjuryComeback(profile: RunnerProfile): boolean {
   return profile.experience === 'beginner' || profile.primaryGoal === 'injury_comeback';
 }
 
+/**
+ * Generate dynamic reason text for daily trainer recommendations
+ * Avoids hardcoded "second daily trainer" when user may have more
+ */
+function getDailyTrainerReasonText(dailyCount: number, context: 'variety' | 'load_sharing'): string {
+  if (context === 'variety') {
+    if (dailyCount === 0) {
+      return "A daily trainer would anchor your rotation and handle your regular mileage.";
+    } else if (dailyCount === 1) {
+      return "A second daily trainer with a different feel could add variety and share the load.";
+    } else {
+      return "Another daily trainer with a different feel could add more variety to your rotation.";
+    }
+  } else {
+    // load_sharing context
+    if (dailyCount === 0) {
+      return "Adding a daily trainer would help spread your training load.";
+    } else if (dailyCount === 1) {
+      return "A second daily trainer would help spread the load and protect your legs.";
+    } else {
+      return "Another daily trainer would help spread the load across more shoes.";
+    }
+  }
+}
+
 // ============================================================================
 // CONTRAST PROFILE
 // ============================================================================
@@ -575,7 +600,6 @@ const TIER_1_REASONS: Record<ShoeArchetype, string> = {
 // Load resilience specific reasons
 const LOAD_RESILIENCE_REASONS = {
   need_load_sharing: "At your weekly volume, one shoe is taking too much punishment. Adding another daily trainer would spread the load and reduce injury risk.",
-  high_volume_small_rotation: "You're running high mileage on a small rotation. A second daily trainer would help protect your legs and extend the life of your shoes.",
 };
 
 const TIER_2_REASONS = {
@@ -699,6 +723,7 @@ export function classifyRotationTier(
     if (isHighVolumeLoadIssue && currentShoes.length < 3) {
       // Check if they have a daily trainer
       const hasDailyTrainer = analysis.coveredArchetypes.includes("daily_trainer");
+      const dailyCount = getDailyTrainerCount(currentShoes, catalogue);
 
       if (!hasDailyTrainer) {
         // No daily trainer - recommend one
@@ -711,7 +736,8 @@ export function classifyRotationTier(
       } else {
         // 2 shoes but still load issue - recommend daily trainer
         primaryArchetype = "daily_trainer";
-        primaryReason = LOAD_RESILIENCE_REASONS.high_volume_small_rotation;
+        // Use dynamic text based on actual daily trainer count
+        primaryReason = `You're running high mileage on a small rotation. ${getDailyTrainerReasonText(dailyCount, 'load_sharing')}`;
       }
     }
 
@@ -881,9 +907,10 @@ export function classifyRotationTier(
       secondary = undefined;
       // Swap recovery_shoe to daily_trainer for beginners - more practical
       if (primary.archetype === 'recovery_shoe') {
+        const dailyCount = getDailyTrainerCount(currentShoes, catalogue);
         primary = {
           archetype: 'daily_trainer',
-          reason: "A second daily trainer with a different feel could add variety and share the load.",
+          reason: getDailyTrainerReasonText(dailyCount, 'variety'),
           feelGap: primary.feelGap,  // Preserve the feel gap info
           contrastWith: contrastProfile  // Preserve contrast profile
         };
@@ -1078,9 +1105,10 @@ export function classifyRotationTier(
     secondary = undefined;
     // Swap recovery_shoe to daily_trainer for beginners - more practical
     if (primary.archetype === 'recovery_shoe') {
+      const dailyCount = getDailyTrainerCount(currentShoes, catalogue);
       primary = {
         archetype: 'daily_trainer',
-        reason: "A second daily trainer with a different feel could add variety and share the load.",
+        reason: getDailyTrainerReasonText(dailyCount, 'variety'),
         feelGap: primary.feelGap,  // Preserve the feel gap info
         contrastWith: contrastProfile  // Preserve contrast profile
       };
