@@ -673,10 +673,11 @@ export default function RecommendationsPage() {
         <header className="w-full px-6 md:px-8 pt-4 md:pt-6 pb-2 flex items-center justify-between flex-shrink-0">
           <BackButton onClick={goBack} />
           
-          {/* Cinda chat button - center */}
-          <CindaChatButton />
-          
-          {!loading ? <ProfileButton onClick={handleGoToProfile} /> : <div className="w-[72px]" />}
+          {/* Right side buttons - Cinda + Profile grouped */}
+          <div className="flex items-center gap-2">
+            <CindaChatButton />
+            {!loading && <ProfileButton onClick={handleGoToProfile} />}
+          </div>
         </header>
 
         {/* Content */}

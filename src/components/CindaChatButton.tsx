@@ -76,12 +76,14 @@ export const CindaChatButton = ({ className }: CindaChatButtonProps) => {
           </div>
         )}
 
-        {/* Cinda button */}
+        {/* Cinda button - pill shape matching Back button */}
         <button
           type="button"
           onClick={handleClick}
           className={cn(
-            "w-9 h-9 rounded-full flex items-center justify-center",
+            "h-7 px-3 flex items-center gap-2 rounded-full",
+            "text-[10px] font-medium tracking-wider uppercase",
+            "text-card-foreground/60 hover:text-card-foreground",
             "bg-card-foreground/[0.03] hover:bg-card-foreground/10",
             "border border-card-foreground/20",
             "transition-colors",
@@ -93,9 +95,10 @@ export const CindaChatButton = ({ className }: CindaChatButtonProps) => {
         >
           <img
             src={cindaLogoGrey}
-            alt="Chat with Cinda"
-            className="w-5 h-5 object-contain"
+            alt=""
+            className="w-4 h-4 object-contain"
           />
+          <span>Cinda</span>
         </button>
       </div>
 
