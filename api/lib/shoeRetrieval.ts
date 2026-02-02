@@ -60,6 +60,13 @@ export interface ScoredShoe {
     loveDislikeScore: number;
     chatContextScore: number;
     contrastScore: number;  // Bonus for variety (shoes different from current rotation)
+    // Archetype-specific preference bonuses (when user selects "Let Cinda decide")
+    premiumRecoveryBonus?: number;         // Pure recovery + max cushion: +12
+    pureRecoveryBonus?: number;            // Pure recovery specialist: +3
+    superTrainerRecoveryPenalty?: number;  // Super trainer for recovery request: -5
+    recoveryCushionBonus?: number;         // Recovery + Cinda decides cushion: +8/+3
+    workoutBounceBonus?: number;           // Workout + Cinda decides bounce: +8/+3
+    raceBounceBonus?: number;              // Race + Cinda decides bounce: +8/+3
   };
 }
 
@@ -1333,6 +1340,135 @@ function scoreContrastBonus(
 }
 
 /**
+ * Archetype-specific preference bonuses breakdown
+ */
+interface ArchetypePreferenceBonuses {
+  premiumRecoveryBonus: number;
+  pureRecoveryBonus: number;
+  superTrainerRecoveryPenalty: number;
+  recoveryCushionBonus: number;
+  workoutBounceBonus: number;
+  raceBounceBonus: number;
+  total: number;
+}
+
+/**
+ * Score archetype-specific preference bonuses
+ * Applies gentle nudges for certain archetypes when user selects "Let Cinda decide"
+ *
+ * Recovery shoes: Prefer max cushion (value=5 gets +8, value=4 gets +3)
+ * Workout shoes: Prefer max bounce (value=5 gets +8, value=4 gets +3)
+ * Race shoes: Prefer max bounce (value=5 gets +8, value=4 gets +3)
+ *
+ * Recovery-specific:
+ * - Pure recovery specialist + max cushion: +12
+ * - Pure recovery specialist (other cushion): +3
+ * - Super trainer for recovery request: -5
+ */
+function scoreArchetypePreferenceBonuses(
+  shoe: Shoe,
+  constraints: RetrievalConstraints
+): ArchetypePreferenceBonuses {
+  const result: ArchetypePreferenceBonuses = {
+    premiumRecoveryBonus: 0,
+    pureRecoveryBonus: 0,
+    superTrainerRecoveryPenalty: 0,
+    recoveryCushionBonus: 0,
+    workoutBounceBonus: 0,
+    raceBounceBonus: 0,
+    total: 0,
+  };
+
+  const archetypes = constraints.archetypes || [];
+  const prefs = constraints.feelPreferences;
+
+  // ========================================
+  // RECOVERY-SPECIFIC MODIFIERS
+  // ========================================
+  if (archetypes.includes('recovery_shoe')) {
+    // 1. Pure recovery specialist bonus (conditional on max cushion)
+    const isPureRecovery = shoe.is_recovery_shoe &&
+                           !shoe.is_daily_trainer &&
+                           !shoe.is_workout_shoe &&
+                           !shoe.is_super_trainer;
+
+    if (isPureRecovery && shoe.cushion_softness_1to5 === 5) {
+      result.premiumRecoveryBonus = 12;
+      result.total += 12;
+    } else if (isPureRecovery) {
+      result.pureRecoveryBonus = 3;
+      result.total += 3;
+    }
+
+    // 2. Super trainer penalty for recovery requests
+    if (shoe.is_super_trainer) {
+      result.superTrainerRecoveryPenalty = -5;
+      result.total -= 5;
+    }
+
+    // 3. Cushion preference when user selects "Let Cinda decide"
+    if (prefs?.cushionAmount?.mode === 'cinda_decides') {
+      if (shoe.cushion_softness_1to5 === 5) {
+        result.recoveryCushionBonus = 8;
+        result.total += 8;
+      } else if (shoe.cushion_softness_1to5 === 4) {
+        result.recoveryCushionBonus = 3;
+        result.total += 3;
+      }
+      // Cushion 3 and below: no bonus, just normal range scoring
+    }
+  }
+
+  // ========================================
+  // WORKOUT-SPECIFIC MODIFIERS
+  // ========================================
+  if (archetypes.includes('workout_shoe')) {
+    // Bounce/energy return preference when user selects "Let Cinda decide"
+    if (prefs?.energyReturn?.mode === 'cinda_decides') {
+      if (shoe.bounce_1to5 === 5) {
+        result.workoutBounceBonus = 8;
+        result.total += 8;
+      } else if (shoe.bounce_1to5 === 4) {
+        result.workoutBounceBonus = 3;
+        result.total += 3;
+      }
+      // Bounce 3 and below: no bonus, just normal range scoring
+    }
+  }
+
+  // ========================================
+  // RACE-SPECIFIC MODIFIERS
+  // ========================================
+  if (archetypes.includes('race_shoe')) {
+    // Bounce/energy return preference when user selects "Let Cinda decide"
+    if (prefs?.energyReturn?.mode === 'cinda_decides') {
+      if (shoe.bounce_1to5 === 5) {
+        result.raceBounceBonus = 8;
+        result.total += 8;
+      } else if (shoe.bounce_1to5 === 4) {
+        result.raceBounceBonus = 3;
+        result.total += 3;
+      }
+      // Bounce 3 and below: no bonus, just normal range scoring
+    }
+  }
+
+  // Log if any bonuses/penalties applied
+  if (result.total !== 0) {
+    const bonusDetails: string[] = [];
+    if (result.premiumRecoveryBonus) bonusDetails.push(`premiumRecovery:+${result.premiumRecoveryBonus}`);
+    if (result.pureRecoveryBonus) bonusDetails.push(`pureRecovery:+${result.pureRecoveryBonus}`);
+    if (result.superTrainerRecoveryPenalty) bonusDetails.push(`superTrainerPenalty:${result.superTrainerRecoveryPenalty}`);
+    if (result.recoveryCushionBonus) bonusDetails.push(`recoveryCushion:+${result.recoveryCushionBonus}`);
+    if (result.workoutBounceBonus) bonusDetails.push(`workoutBounce:+${result.workoutBounceBonus}`);
+    if (result.raceBounceBonus) bonusDetails.push(`raceBounce:+${result.raceBounceBonus}`);
+    console.log(`[scoreArchetypePreferenceBonuses] ${shoe.model}: total=${result.total} (${bonusDetails.join(', ')})`);
+  }
+
+  return result;
+}
+
+/**
  * Calculate total score for a shoe
  * Applies all modifiers per SCORING_MODIFIERS.md
  */
@@ -1368,6 +1504,9 @@ export function scoreShoe(
   // Contrast bonus for variety recommendations (Tier 3)
   const contrastBonus = scoreContrastBonus(shoe, constraints.contrastWith);
 
+  // Archetype-specific preference bonuses (recovery/workout/race with "Let Cinda decide")
+  const archetypePreferenceBonuses = scoreArchetypePreferenceBonuses(shoe, constraints);
+
   // Sum all scores (per spec: modifiers stack, minimum final score = 0)
   const totalScore = Math.max(0,
     archetypeScore +
@@ -1385,7 +1524,8 @@ export function scoreShoe(
     trailPreferenceModifier +
     loveDislikeModifier +
     chatContextModifier +
-    contrastBonus
+    contrastBonus +
+    archetypePreferenceBonuses.total
   );
 
   return {
@@ -1408,6 +1548,13 @@ export function scoreShoe(
       loveDislikeScore: loveDislikeModifier,
       chatContextScore: chatContextModifier,
       contrastScore: contrastBonus,
+      // Archetype-specific preference bonuses
+      premiumRecoveryBonus: archetypePreferenceBonuses.premiumRecoveryBonus || undefined,
+      pureRecoveryBonus: archetypePreferenceBonuses.pureRecoveryBonus || undefined,
+      superTrainerRecoveryPenalty: archetypePreferenceBonuses.superTrainerRecoveryPenalty || undefined,
+      recoveryCushionBonus: archetypePreferenceBonuses.recoveryCushionBonus || undefined,
+      workoutBounceBonus: archetypePreferenceBonuses.workoutBounceBonus || undefined,
+      raceBounceBonus: archetypePreferenceBonuses.raceBounceBonus || undefined,
     },
   };
 }
