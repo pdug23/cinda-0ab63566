@@ -221,7 +221,6 @@ const ModeSelector = ({
   const modes: { value: PreferenceMode; label: string }[] = [
     { value: "cinda_decides", label: "Let Cinda decide" },
     { value: "user_set", label: "I have a preference" },
-    { value: "wildcard", label: "I don't mind" },
   ];
 
   return (
