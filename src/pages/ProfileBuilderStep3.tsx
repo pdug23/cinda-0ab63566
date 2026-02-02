@@ -725,7 +725,7 @@ const ProfileBuilderStep3 = () => {
   const handleConfirmSkip = () => {
     setConfirmSkipModalOpen(false);
     updateStep3({ currentShoes: [] });
-    navigate("/profile/step3b");
+    navigate("/profile/step4", { state: { autoOpenChat: true } });
   };
 
   const handleNextClick = () => {
@@ -766,7 +766,7 @@ const ProfileBuilderStep3 = () => {
     setConfirmShoesModalOpen(false);
     const mappedShoes = mapRunTypesForSave(currentShoes);
     updateStep3({ currentShoes: mappedShoes });
-    navigate("/profile/step3b");
+    navigate("/profile/step4", { state: { autoOpenChat: true } });
   };
 
   return (

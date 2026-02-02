@@ -36,7 +36,6 @@ const getSpeechRecognition = (): SpeechRecognitionConstructor | null => {
 interface UseSpeechToTextOptions {
   onResult?: (transcript: string) => void;
   onError?: (error: string) => void;
-  continuous?: boolean;
   language?: string;
 }
 
@@ -51,7 +50,6 @@ interface UseSpeechToTextReturn {
 export const useSpeechToText = ({
   onResult,
   onError,
-  continuous = false,
   language = "en-GB",
 }: UseSpeechToTextOptions = {}): UseSpeechToTextReturn => {
   const [isListening, setIsListening] = useState(false);
@@ -61,6 +59,11 @@ export const useSpeechToText = ({
   // Store callbacks in refs to prevent useEffect re-runs
   const onResultRef = useRef(onResult);
   const onErrorRef = useRef(onError);
+  
+  // Track user intent to keep listening (for auto-restart on silence)
+  const isListeningRef = useRef(false);
+  // Accumulate all transcribed text during the session
+  const accumulatedTextRef = useRef("");
 
   // Keep refs updated with latest callbacks
   useEffect(() => {
@@ -78,7 +81,8 @@ export const useSpeechToText = ({
 
     const recognition = new SpeechRecognitionClass();
 
-    recognition.continuous = continuous;
+    // Enable continuous mode for push-to-talk
+    recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = language;
 
@@ -87,58 +91,74 @@ export const useSpeechToText = ({
     };
 
     recognition.onend = () => {
-      setIsListening(false);
+      // If user still intends to listen, auto-restart (handles browser timeouts)
+      if (isListeningRef.current) {
+        try {
+          recognition.start();
+        } catch (error) {
+          // Recognition may already be running, ignore
+        }
+      } else {
+        setIsListening(false);
+      }
     };
 
     recognition.onerror = (event) => {
-      setIsListening(false);
-      
-      // Ignore aborted - this happens during cleanup
+      // Ignore aborted - this happens during cleanup or manual stop
       if (event.error === "aborted") return;
+      
+      // Ignore no-speech - we'll auto-restart via onend
+      if (event.error === "no-speech") return;
+      
+      // For other errors, stop listening
+      isListeningRef.current = false;
+      setIsListening(false);
       
       const errorMessage = event.error === "not-allowed" 
         ? "Microphone access denied. Please enable it in your browser settings."
-        : event.error === "no-speech"
-        ? "No speech detected. Try again."
         : `Speech recognition error: ${event.error}`;
       
       onErrorRef.current?.(errorMessage);
     };
 
     recognition.onresult = (event) => {
-      let finalTranscript = "";
       let interimTranscript = "";
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
         if (result.isFinal) {
-          finalTranscript += result[0].transcript;
+          // Accumulate final results with space separator
+          const text = result[0].transcript;
+          if (accumulatedTextRef.current && text) {
+            accumulatedTextRef.current += " " + text;
+          } else {
+            accumulatedTextRef.current += text;
+          }
         } else {
           interimTranscript += result[0].transcript;
         }
       }
 
-      // Show interim results while speaking
-      setTranscript(interimTranscript || finalTranscript);
-
-      // When we have a final result, call onResult
-      if (finalTranscript) {
-        onResultRef.current?.(finalTranscript);
-        setTranscript("");
-      }
+      // Show live preview: accumulated + current interim
+      const livePreview = accumulatedTextRef.current + (interimTranscript ? " " + interimTranscript : "");
+      setTranscript(livePreview.trim());
     };
 
     recognitionRef.current = recognition;
 
     return () => {
+      isListeningRef.current = false;
       recognition.abort();
     };
-  }, [continuous, language]);
+  }, [language]);
 
   const startListening = useCallback(() => {
-    if (!recognitionRef.current || isListening) return;
+    if (!recognitionRef.current || isListeningRef.current) return;
 
+    // Reset state for new session
+    accumulatedTextRef.current = "";
     setTranscript("");
+    isListeningRef.current = true;
     
     try {
       recognitionRef.current.start();
@@ -146,13 +166,27 @@ export const useSpeechToText = ({
       // Recognition may already be running
       console.error("Speech recognition start error:", error);
     }
-  }, [isListening]);
+  }, []);
 
   const stopListening = useCallback(() => {
-    if (!recognitionRef.current || !isListening) return;
+    if (!recognitionRef.current || !isListeningRef.current) return;
     
+    // Mark that user wants to stop
+    isListeningRef.current = false;
+    
+    // Stop recognition
     recognitionRef.current.stop();
-  }, [isListening]);
+    
+    // Deliver accumulated text
+    const finalText = accumulatedTextRef.current.trim();
+    if (finalText) {
+      onResultRef.current?.(finalText);
+    }
+    
+    // Clear state
+    setTranscript("");
+    setIsListening(false);
+  }, []);
 
   return {
     isListening,

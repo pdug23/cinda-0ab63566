@@ -7,6 +7,7 @@ import OnboardingLayout from "@/components/OnboardingLayout";
 import { ShoeCarousel } from "@/components/results/ShoeCarousel";
 import { Button } from "@/components/ui/button";
 import { LeaveRecommendationsModal } from "@/components/LeaveRecommendationsModal";
+import { CindaChatButton } from "@/components/CindaChatButton";
 import { loadProfile, loadShoes, loadShoeRequests, loadGap, loadChatContext } from "@/utils/storage";
 import { normalizeStoredRaceTimeForApi } from "@/utils/raceTime";
 import type { FeelPreferences as APIFeelPreferences, CurrentShoe as APICurrentShoe } from "../../api/types";
@@ -671,7 +672,12 @@ export default function RecommendationsPage() {
         {/* Header - transparent */}
         <header className="w-full px-6 md:px-8 pt-4 md:pt-6 pb-2 flex items-center justify-between flex-shrink-0">
           <BackButton onClick={goBack} />
-          {!loading && <ProfileButton onClick={handleGoToProfile} />}
+          
+          {/* Right side buttons - Cinda + Profile grouped */}
+          <div className="flex items-center gap-2">
+            <CindaChatButton />
+            {!loading && <ProfileButton onClick={handleGoToProfile} />}
+          </div>
         </header>
 
         {/* Content */}

@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
+import { CindaChatButton } from "@/components/CindaChatButton";
 import { useProfile, DiscoveryArchetype } from "@/contexts/ProfileContext";
 import { SelectionButton } from "@/components/SelectionButton";
 import { Button } from "@/components/ui/button";
@@ -64,7 +65,7 @@ const ProfileBuilderStep4a = () => {
       <OnboardingLayout scrollable>
         <PageTransition className="flex flex-col flex-1 min-h-0">
           {/* Card header */}
-          <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-start flex-shrink-0">
+          <header className="w-full px-6 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between flex-shrink-0">
             <button
               type="button"
               onClick={handleBack}
@@ -73,6 +74,9 @@ const ProfileBuilderStep4a = () => {
               <ArrowLeft className="w-3.5 h-3.5" />
               Back
             </button>
+            
+            {/* Cinda chat button - right aligned */}
+            <CindaChatButton />
           </header>
 
           {/* Scrollable content */}

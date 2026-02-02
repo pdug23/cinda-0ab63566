@@ -1,324 +1,188 @@
 
-# Add "Let Cinda Decide" Mode to Quick Match Feel Preferences
+# Improve Cinda Chat Button Styling & Positioning
 
-## Overview
+## Current Issues
 
-Replace Quick Match's hardcoded feel preference sliders with the same mode-aware preference cards used in Full Analysis (ProfileBuilderStep4b), but simplified to only two options: "Let Cinda decide" and "I have a preference" (no "wildcard" / "I don't mind").
+1. **Shape mismatch**: The Cinda button is a perfect circle (`w-9 h-9 rounded-full`), while the Back button is a pill shape (`h-7 px-3 rounded-full`)
+2. **Position**: Currently centered, but should align to the right
+3. **Layout conflict**: On pages with right-side buttons (like Recommendations), need to handle placement gracefully
 
-## Current State
+## Proposed Solution
 
-**Quick Match (QuickMatch.tsx):**
-- Uses raw sliders that are always visible (lines 471-524)
-- State stores raw slider values: `sliders: { cushionAmount: 3, ... }` (lines 327-333)
-- On submit, **always** sends `mode: "user_set"` (lines 387-394)
-- Heel drop uses simple checkbox array without mode selector (lines 526-554)
+### Option A: Match the Pill Shape (Recommended)
 
-**Full Analysis (ProfileBuilderStep4b.tsx):**
-- Has `ModeSelector` component with 3 options (lines 204-237)
-- Has `SliderPreferenceCard` that shows slider only when `mode === "user_set"` (lines 240-326)
-- Has `HeelDropPreferenceCard` with same pattern (lines 329-394)
-- State uses `SliderPreference` and `HeelDropPreference` types from ProfileContext
+Transform the Cinda button from a circle to a pill that matches the Back button's style:
 
-## Changes Required
+```text
+Current:    [BACK]     (●)     [    ]
+                       ↑ circle
 
-### 1. Update State Structure
-
-**Before (lines 324-335):**
-```typescript
-interface QuickMatchState {
-  selectedArchetype: DiscoveryArchetype | null;
-  sliders: {
-    cushionAmount: FeelValue;
-    stabilityAmount: FeelValue;
-    energyReturn: FeelValue;
-    rocker: FeelValue;
-  };
-  heelDropValues: HeelDropOption[];
-  brandPreference: BrandPreference;
-}
+Proposed:   [BACK]           [CINDA]
+                               ↑ pill shape with logo + text
 ```
 
-**After:**
-```typescript
-interface QuickMatchState {
-  selectedArchetype: DiscoveryArchetype | null;
-  feelPreferences: {
-    cushionAmount: SliderPreference;
-    stabilityAmount: SliderPreference;
-    energyReturn: SliderPreference;
-    rocker: SliderPreference;
-    heelDropPreference: HeelDropPreference;
-  };
-  brandPreference: BrandPreference;
-}
+**Styling:**
+- Same height as Back button: `h-7`
+- Same padding pattern: `px-3`
+- Same border/background treatment
+- Add "CINDA" text label next to the logo
+- Same `rounded-full` for pill effect
+
+### Option B: Pill Without Text
+
+If text feels too busy, use the same dimensions but keep logo-only:
+
+```text
+[BACK]                [●●]
+                       ↑ wider pill, no text
 ```
 
-### 2. Update Initial State
+**Styling:**
+- `h-7 px-2.5 rounded-full` (matching height, slightly wider for the logo)
 
-**Before (lines 340-350):**
-```typescript
-const [state, setState] = useState<QuickMatchState>({
-  selectedArchetype: null,
-  sliders: {
-    cushionAmount: 3,
-    stabilityAmount: 3,
-    energyReturn: 3,
-    rocker: 3,
-  },
-  heelDropValues: [],
-  brandPreference: { mode: "all", brands: [] },
-});
+---
+
+## Layout Strategy
+
+### Standard Layout (Right-Aligned Cinda)
+
+For most pages with just a Back button:
+
+```text
+[BACK]                    [CINDA]
+  ↑                          ↑
+left-aligned            right-aligned
 ```
 
-**After:**
-```typescript
-const [state, setState] = useState<QuickMatchState>({
-  selectedArchetype: null,
-  feelPreferences: {
-    cushionAmount: { mode: "cinda_decides" },
-    stabilityAmount: { mode: "cinda_decides" },
-    energyReturn: { mode: "cinda_decides" },
-    rocker: { mode: "cinda_decides" },
-    heelDropPreference: { mode: "cinda_decides" },
-  },
-  brandPreference: { mode: "all", brands: [] },
-});
+**Implementation:**
+```tsx
+<header className="flex items-center justify-between">
+  <BackButton />
+  <CindaChatButton />  {/* Naturally goes to right */}
+</header>
 ```
 
-### 3. Add Two-Option ModeSelector Component
+### With Right Button (Recommendations page)
 
-Copy from ProfileBuilderStep4b but remove "wildcard" option:
+When there's already a right button like "PROFILE":
 
-```typescript
-const ModeSelector = ({
-  mode,
-  onChange,
-}: {
-  mode: PreferenceMode;
-  onChange: (mode: PreferenceMode) => void;
-}) => {
-  const modes: { value: PreferenceMode; label: string }[] = [
-    { value: "cinda_decides", label: "Let Cinda decide" },
-    { value: "user_set", label: "I have a preference" },
-    // No "wildcard" option for Quick Match
-  ];
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {modes.map((m) => (
-        <button
-          key={m.value}
-          type="button"
-          onClick={() => onChange(m.value)}
-          className={cn(
-            "px-3 py-1.5 text-xs rounded-md border transition-all",
-            mode === m.value
-              ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
-              : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
-          )}
-        >
-          {m.label}
-        </button>
-      ))}
-    </div>
-  );
-};
+```text
+[BACK]           [CINDA]  [PROFILE]
+                    ↑         ↑
+            near-right    far-right
 ```
 
-### 4. Add SliderPreferenceCard Component
-
-Copy from ProfileBuilderStep4b (lines 240-326):
-
-```typescript
-const SliderPreferenceCard = ({
-  config,
-  preference,
-  onChange,
-}: {
-  config: SliderConfig;
-  preference: SliderPreference;
-  onChange: (pref: SliderPreference) => void;
-}) => {
-  const showSlider = preference.mode === "user_set";
-  const sliderValue = preference.value ?? 3;
-
-  const handleModeChange = (mode: PreferenceMode) => {
-    if (mode === "user_set") {
-      onChange({ mode, value: preference.value ?? 3 });
-    } else {
-      onChange({ mode });
-    }
-  };
-
-  const handleSliderChange = (value: FeelValue) => {
-    onChange({ mode: "user_set", value });
-  };
-
-  return (
-    // ... full implementation from ProfileBuilderStep4b
-  );
-};
+**Implementation:** Add a `rightAction` prop to CindaChatButton or group buttons:
+```tsx
+<header className="flex items-center justify-between">
+  <BackButton />
+  <div className="flex items-center gap-2">
+    <CindaChatButton />
+    <ProfileButton />
+  </div>
+</header>
 ```
 
-### 5. Add HeelDropPreferenceCard Component
+---
 
-Copy from ProfileBuilderStep4b (lines 329-394):
+## Technical Changes
 
-```typescript
-const HeelDropPreferenceCard = ({
-  preference,
-  onChange,
-}: {
-  preference: HeelDropPreference;
-  onChange: (pref: HeelDropPreference) => void;
-}) => {
-  const showCheckboxes = preference.mode === "user_set";
-  const selectedValues = preference.values ?? [];
+### File: `src/components/CindaChatButton.tsx`
 
-  const handleModeChange = (mode: PreferenceMode) => {
-    if (mode === "user_set") {
-      onChange({ mode, values: preference.values ?? [] });
-    } else {
-      onChange({ mode });
-    }
-  };
-
-  // ... rest of implementation
-};
-```
-
-### 6. Update Handler Functions
-
-**Remove:**
-- `handleSliderChange` (lines 363-368)
-- `handleHeelDropToggle` (lines 370-377)
-
-**Add:**
-```typescript
-const handleFeelPreferenceChange = (
-  key: keyof QuickMatchState["feelPreferences"],
-  pref: SliderPreference | HeelDropPreference
-) => {
-  setState((prev) => ({
-    ...prev,
-    feelPreferences: { ...prev.feelPreferences, [key]: pref },
-  }));
-};
-```
-
-### 7. Update handleSubmit
-
-**Before (lines 386-396):**
-```typescript
-const feelPreferences: FeelPreferences = {
-  cushionAmount: { mode: "user_set", value: state.sliders.cushionAmount },
-  stabilityAmount: { mode: "user_set", value: state.sliders.stabilityAmount },
-  energyReturn: { mode: "user_set", value: state.sliders.energyReturn },
-  rocker: { mode: "user_set", value: state.sliders.rocker },
-  heelDropPreference: state.heelDropValues.length > 0
-    ? { mode: "user_set", values: state.heelDropValues }
-    : { mode: "cinda_decides" },
-  brandPreference: state.brandPreference,
-};
-```
-
-**After:**
-```typescript
-const feelPreferences: FeelPreferences = {
-  cushionAmount: state.feelPreferences.cushionAmount,
-  stabilityAmount: state.feelPreferences.stabilityAmount,
-  energyReturn: state.feelPreferences.energyReturn,
-  rocker: state.feelPreferences.rocker,
-  heelDropPreference: state.feelPreferences.heelDropPreference,
-  brandPreference: state.brandPreference,
-};
-```
-
-### 8. Update UI Section
-
-**Replace (lines 471-554):** the current always-visible sliders and heel drop checkboxes
-
-**With:** The new preference card components:
+Update button styling to match pill format:
 
 ```tsx
-{/* Feel Preferences */}
-<div className="space-y-4 mb-4">
-  {SLIDERS.map((config) => (
-    <SliderPreferenceCard
-      key={config.key}
-      config={config}
-      preference={state.feelPreferences[config.key]}
-      onChange={(pref) => handleFeelPreferenceChange(config.key, pref)}
-    />
-  ))}
-</div>
+// Current
+"w-9 h-9 rounded-full"
 
-{/* Heel Drop */}
-<div className="mb-4">
-  <HeelDropPreferenceCard
-    preference={state.feelPreferences.heelDropPreference}
-    onChange={(pref) => handleFeelPreferenceChange("heelDropPreference", pref)}
-  />
-</div>
+// New (Option A - with text)
+"h-7 px-3 flex items-center gap-2 rounded-full"
++ Add <span>CINDA</span> text
+
+// New (Option B - logo only pill)
+"h-7 px-2.5 rounded-full"
 ```
 
-### 9. Add Missing Imports
+Match the subtle styling of Back button:
+- `bg-card-foreground/[0.03]`
+- `hover:bg-card-foreground/10`
+- `border border-card-foreground/20`
+- `text-[10px] font-medium tracking-wider uppercase` (if adding text)
 
-```typescript
-import type {
-  DiscoveryArchetype,
-  FeelValue,
-  HeelDropOption,
-  BrandPreferenceMode,
-  BrandPreference,
-  FeelPreferences,
-  ShoeRequest,
-  PreferenceMode,      // NEW
-  SliderPreference,    // NEW
-  HeelDropPreference,  // NEW
-} from "@/contexts/ProfileContext";
+### File: `src/pages/ProfileBuilderStep4.tsx`
+
+Update header layout:
+- Remove center positioning logic
+- Remove the spacer div
+- Let Cinda button naturally align right
+
+### File: `src/pages/Recommendations.tsx`
+
+Update header to group Cinda + Profile buttons on the right:
+```tsx
+<header className="flex items-center justify-between">
+  <BackButton onClick={goBack} />
+  <div className="flex items-center gap-2">
+    <CindaChatButton />
+    {!loading && <ProfileButton onClick={handleGoToProfile} />}
+  </div>
+</header>
 ```
+
+---
 
 ## Visual Comparison
 
-| Current Quick Match | Updated Quick Match |
-|---------------------|---------------------|
-| Sliders always visible | Mode selector with slider hidden by default |
-| Forces user to set values | Defaults to "Let Cinda decide" |
-| Heel drop just checkboxes | Same mode selector pattern |
-
-## API Payload Comparison
-
-**Before (always user_set):**
-```json
-{
-  "feelPreferences": {
-    "cushionAmount": { "mode": "user_set", "value": 3 },
-    "stabilityAmount": { "mode": "user_set", "value": 3 },
-    "energyReturn": { "mode": "user_set", "value": 3 },
-    "rocker": { "mode": "user_set", "value": 3 }
-  }
-}
+### Before
+```text
+┌────────────────────────────────────────┐
+│  [BACK]           (●)          [    ]  │
+│    ↑               ↑              ↑    │
+│  pill          circle         spacer   │
+└────────────────────────────────────────┘
 ```
 
-**After (respects user choice):**
-```json
-{
-  "feelPreferences": {
-    "cushionAmount": { "mode": "cinda_decides" },
-    "stabilityAmount": { "mode": "cinda_decides" },
-    "energyReturn": { "mode": "user_set", "value": 4 },
-    "rocker": { "mode": "cinda_decides" }
-  }
-}
+### After (Option A - with text)
+```text
+┌────────────────────────────────────────┐
+│  [BACK]                       [CINDA]  │
+│    ↑                             ↑     │
+│  pill                          pill    │
+└────────────────────────────────────────┘
 ```
+
+### After (Option B - logo pill)
+```text
+┌────────────────────────────────────────┐
+│  [BACK]                          [●●]  │
+│    ↑                              ↑    │
+│  pill                        logo pill │
+└────────────────────────────────────────┘
+```
+
+---
 
 ## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/pages/QuickMatch.tsx` | Replace state structure, add 3 new components (ModeSelector, SliderPreferenceCard, HeelDropPreferenceCard), update handlers and UI |
+| `src/components/CindaChatButton.tsx` | Change button shape from circle to pill, update styling to match Back button |
+| `src/pages/ProfileBuilderStep4.tsx` | Remove center positioning, remove spacer, let button align right |
+| `src/pages/Recommendations.tsx` | Group Cinda + Profile buttons in a right-aligned container |
+| Any other pages using CindaChatButton | Update header layout if needed |
 
-## Complexity
+---
 
-Medium - significant refactoring of one file, but all patterns are copied from ProfileBuilderStep4b which is already working.
+## Tooltip Adjustment
+
+The tooltip currently spawns from the bottom-right of the button. With the button now on the right edge, we may need to adjust:
+- Keep `right-0` alignment (arrow still points to button)
+- Or shift to `right-0` with a slight offset if it clips the edge
+
+---
+
+## Question for You
+
+Which option do you prefer?
+- **Option A**: Pill with "CINDA" text label (matches Back button exactly)
+- **Option B**: Pill shape but logo-only (cleaner, less text)
