@@ -1,180 +1,188 @@
 
+# Improve Cinda Chat Button Styling & Positioning
 
-# Replace Step 3b with Auto-Opening Cinda Chat Sheet on Step 4
+## Current Issues
 
-## Overview
+1. **Shape mismatch**: The Cinda button is a perfect circle (`w-9 h-9 rounded-full`), while the Back button is a pill shape (`h-7 px-3 rounded-full`)
+2. **Position**: Currently centered, but should align to the right
+3. **Layout conflict**: On pages with right-side buttons (like Recommendations), need to handle placement gracefully
 
-Remove the dedicated Step 3b page and instead have the Cinda chat automatically pop up as a sheet (the same `CindaChatSheet` component) when the user navigates from Step 3 to Step 4. This simplifies the flow and reuses the existing sheet component.
+## Proposed Solution
 
-## User Flow Change
+### Option A: Match the Pill Shape (Recommended)
 
-**Current flow:**
+Transform the Cinda button from a circle to a pill that matches the Back button's style:
+
 ```text
-Step 3 (Rotation) → Step 3b (Chat page) → [Click Continue] → Step 4 (Mode Selection)
+Current:    [BACK]     (●)     [    ]
+                       ↑ circle
+
+Proposed:   [BACK]           [CINDA]
+                               ↑ pill shape with logo + text
 ```
 
-**New flow:**
+**Styling:**
+- Same height as Back button: `h-7`
+- Same padding pattern: `px-3`
+- Same border/background treatment
+- Add "CINDA" text label next to the logo
+- Same `rounded-full` for pill effect
+
+### Option B: Pill Without Text
+
+If text feels too busy, use the same dimensions but keep logo-only:
+
 ```text
-Step 3 (Rotation) → Step 4 (Mode Selection) + [Cinda Sheet auto-opens]
-                                           → [Close Sheet] → Tooltip appears + Cinda button in header
+[BACK]                [●●]
+                       ↑ wider pill, no text
 ```
 
-## Detailed UX Sequence
+**Styling:**
+- `h-7 px-2.5 rounded-full` (matching height, slightly wider for the logo)
 
-1. User completes Step 3 and clicks "Next" or "Skip"
-2. Navigate directly to Step 4 (skipping Step 3b entirely)
-3. Step 4 loads with Cinda chat sheet automatically opening
-4. Cinda's intro sequence plays inside the sheet (greeting + follow-up)
-5. User can chat or close the sheet
-6. When sheet closes → Cinda button appears in header with the existing reveal animation + tooltip
+---
 
-## Technical Implementation
+## Layout Strategy
 
-### 1. Modify Step 3 Navigation
+### Standard Layout (Right-Aligned Cinda)
 
-**File: `src/pages/ProfileBuilderStep3.tsx`**
+For most pages with just a Back button:
 
-Change the navigation targets:
-- `handleConfirmSkip`: Change from `/profile/step3b` to `/profile/step4`
-- `handleNextClick`: Change from `/profile/step3b` to `/profile/step4`
+```text
+[BACK]                    [CINDA]
+  ↑                          ↑
+left-aligned            right-aligned
+```
 
-Pass a state flag to indicate the sheet should auto-open:
+**Implementation:**
 ```tsx
-navigate("/profile/step4", { state: { autoOpenChat: true } });
+<header className="flex items-center justify-between">
+  <BackButton />
+  <CindaChatButton />  {/* Naturally goes to right */}
+</header>
 ```
 
-### 2. Modify Step 4 to Auto-Open Chat Sheet
+### With Right Button (Recommendations page)
 
-**File: `src/pages/ProfileBuilderStep4.tsx`**
+When there's already a right button like "PROFILE":
 
-- Import `CindaChatSheet` component
-- Import `useLocation` to read the navigation state
-- Add local state for sheet open/close
-- On mount, check if `location.state?.autoOpenChat` is true
-  - If yes, open the sheet immediately
-- When sheet closes, trigger the Cinda button reveal + tooltip
+```text
+[BACK]           [CINDA]  [PROFILE]
+                    ↑         ↑
+            near-right    far-right
+```
 
-### 3. Enhance CindaChatSheet for Intro Sequence
+**Implementation:** Add a `rightAction` prop to CindaChatButton or group buttons:
+```tsx
+<header className="flex items-center justify-between">
+  <BackButton />
+  <div className="flex items-center gap-2">
+    <CindaChatButton />
+    <ProfileButton />
+  </div>
+</header>
+```
 
-**File: `src/components/CindaChatSheet.tsx`**
+---
 
-Currently, the sheet just loads existing chat history. We need to add support for the intro sequence (greeting + follow-up) when opened for the first time:
+## Technical Changes
 
-- Add intro phase logic (similar to Step 3b's `introPhase` state)
-- On first open (empty chat history), show:
-  1. Typing indicator → "Hey, Cinda here."
-  2. Pause → Typing indicator → Follow-up question
-- Disable input until intro completes
+### File: `src/components/CindaChatButton.tsx`
 
-### 4. Update Back Navigation on Step 4
+Update button styling to match pill format:
 
-**File: `src/pages/ProfileBuilderStep4.tsx`**
+```tsx
+// Current
+"w-9 h-9 rounded-full"
 
-Change `handleBack`:
-- Currently navigates to `/profile/step3b`
-- Change to navigate to `/profile/step3`
+// New (Option A - with text)
+"h-7 px-3 flex items-center gap-2 rounded-full"
++ Add <span>CINDA</span> text
 
-### 5. Handle Sheet Close → Button Reveal
+// New (Option B - logo only pill)
+"h-7 px-2.5 rounded-full"
+```
 
-**File: `src/pages/ProfileBuilderStep4.tsx`**
+Match the subtle styling of Back button:
+- `bg-card-foreground/[0.03]`
+- `hover:bg-card-foreground/10`
+- `border border-card-foreground/20`
+- `text-[10px] font-medium tracking-wider uppercase` (if adding text)
 
-When the sheet closes:
-1. Call `setShowCindaChatButton(true)` to show the persistent header button
-2. The button will animate with its reveal animation
-3. The tooltip will appear (since `cindaChatButtonAnimated` and `cindaTooltipDismissed` are still false)
+### File: `src/pages/ProfileBuilderStep4.tsx`
 
-### 6. Remove Step 3b Route (Optional/Later)
+Update header layout:
+- Remove center positioning logic
+- Remove the spacer div
+- Let Cinda button naturally align right
 
-**File: `src/App.tsx`**
+### File: `src/pages/Recommendations.tsx`
 
-The route can be removed or kept for backward compatibility. If removed:
-- Remove import for `ProfileBuilderStep3b`
-- Remove the route `<Route path="/profile/step3b" ... />`
+Update header to group Cinda + Profile buttons on the right:
+```tsx
+<header className="flex items-center justify-between">
+  <BackButton onClick={goBack} />
+  <div className="flex items-center gap-2">
+    <CindaChatButton />
+    {!loading && <ProfileButton onClick={handleGoToProfile} />}
+  </div>
+</header>
+```
+
+---
+
+## Visual Comparison
+
+### Before
+```text
+┌────────────────────────────────────────┐
+│  [BACK]           (●)          [    ]  │
+│    ↑               ↑              ↑    │
+│  pill          circle         spacer   │
+└────────────────────────────────────────┘
+```
+
+### After (Option A - with text)
+```text
+┌────────────────────────────────────────┐
+│  [BACK]                       [CINDA]  │
+│    ↑                             ↑     │
+│  pill                          pill    │
+└────────────────────────────────────────┘
+```
+
+### After (Option B - logo pill)
+```text
+┌────────────────────────────────────────┐
+│  [BACK]                          [●●]  │
+│    ↑                              ↑    │
+│  pill                        logo pill │
+└────────────────────────────────────────┘
+```
+
+---
 
 ## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/pages/ProfileBuilderStep3.tsx` | Change navigation from `/profile/step3b` to `/profile/step4` with state |
-| `src/pages/ProfileBuilderStep4.tsx` | Add auto-open chat logic, import sheet, handle close callback, fix back nav |
-| `src/components/CindaChatSheet.tsx` | Add intro sequence logic (greeting + follow-up + typewriter) |
-| `src/App.tsx` | Optionally remove Step 3b route |
+| `src/components/CindaChatButton.tsx` | Change button shape from circle to pill, update styling to match Back button |
+| `src/pages/ProfileBuilderStep4.tsx` | Remove center positioning, remove spacer, let button align right |
+| `src/pages/Recommendations.tsx` | Group Cinda + Profile buttons in a right-aligned container |
+| Any other pages using CindaChatButton | Update header layout if needed |
 
-## Component Flow Diagram
+---
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                         STEP 4 PAGE                              │
-│                                                                  │
-│   ┌─────────────────────────────────────────────────────────┐   │
-│   │  Header: [BACK]       [Cinda Button*]         [ ]        │   │
-│   └─────────────────────────────────────────────────────────┘   │
-│                                                                  │
-│   ┌─────────────────────────────────────────────────────────┐   │
-│   │  Mode Selection Cards                                    │   │
-│   │  • Recommend me a shoe                                   │   │
-│   │  • Check my rotation                                     │   │
-│   │  • Find by shoe type                                     │   │
-│   └─────────────────────────────────────────────────────────┘   │
-│                                                                  │
-│   * Button only shows AFTER sheet is closed                      │
-└─────────────────────────────────────────────────────────────────┘
+## Tooltip Adjustment
 
-                              │
-                              │ On mount (if autoOpenChat)
-                              ▼
+The tooltip currently spawns from the bottom-right of the button. With the button now on the right edge, we may need to adjust:
+- Keep `right-0` alignment (arrow still points to button)
+- Or shift to `right-0` with a slight offset if it clips the edge
 
-┌─────────────────────────────────────────────────────────────────┐
-│               CINDA CHAT SHEET (70vh, slides up)                 │
-│                                                                  │
-│   ┌─────────────────────────────────────────────────────────┐   │
-│   │  "Chat with Cinda"                              [X]      │   │
-│   └─────────────────────────────────────────────────────────┘   │
-│                                                                  │
-│   [Spinning logo] → "Hey, Cinda here."                           │
-│                                                                  │
-│   [Pause] → [Spinning logo] →                                    │
-│   "You've told me the basics, but running's personal..."        │
-│                                                                  │
-│   ┌─────────────────────────────────────────────────────────┐   │
-│   │  [Reply...                    ] [🎤] [↑]                 │   │
-│   └─────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-```
+---
 
-## Key Logic for CindaChatSheet Enhancement
+## Question for You
 
-The sheet will need to mirror the intro sequence from Step 3b:
-
-```tsx
-// CindaChatSheet.tsx - New state
-const [introPhase, setIntroPhase] = useState<'idle' | 'typing1' | 'message1' | 'pause' | 'typing2' | 'message2' | 'done'>('idle');
-const [selectedFollowup] = useState(() => getRandomFollowup());
-
-// On open, check if we need intro
-useEffect(() => {
-  if (open && profileData.step3.chatHistory.length === 0) {
-    setIntroPhase('typing1');
-  }
-}, [open]);
-
-// Phase progression logic (similar to Step 3b)
-useEffect(() => {
-  if (introPhase === 'typing1') {
-    // Show spinner, then add greeting after 1s
-    timer = setTimeout(() => {
-      addGreetingMessage();
-      setIntroPhase('message1');
-    }, 1000);
-  }
-  // ... etc
-}, [introPhase]);
-```
-
-## Benefits
-
-1. **Simpler flow** - One less page to navigate through
-2. **Reuses existing component** - `CindaChatSheet` already works well
-3. **Consistent UX** - Same sheet experience throughout the app
-4. **Better continuity** - Users see Step 4 content while chatting
-
+Which option do you prefer?
+- **Option A**: Pill with "CINDA" text label (matches Back button exactly)
+- **Option B**: Pill shape but logo-only (cleaner, less text)
