@@ -788,11 +788,8 @@ const ProfileBuilderStep4b = () => {
               Back
             </button>
             
-            {/* Cinda chat button - center */}
+            {/* Cinda chat button - right aligned */}
             <CindaChatButton />
-            
-            {/* Empty spacer for layout balance */}
-            <div className="w-[72px]" />
           </header>
 
           {/* Scrollable content */}
