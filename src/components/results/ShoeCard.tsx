@@ -503,28 +503,70 @@ export function ShoeCard({ shoe, role, position = 1, isShortlisted = false, onSh
           <div className="h-px my-3" style={{ backgroundColor: dividerColor }} />
 
           {/* Specs Grid */}
-          <div className="grid grid-cols-4 gap-2 mb-3">
-            <div className="text-center">
-              <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Weight</span>
-              <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{weightLabel}</span>
+          <TooltipProvider>
+            <div className="grid grid-cols-4 gap-2 mb-3">
+              <div className="text-center">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex items-center justify-center gap-1 text-xs uppercase tracking-wide mb-1 cursor-help" style={{ color: textColorSubtle }}>
+                      Weight
+                      <Info className="w-2.5 h-2.5 opacity-50" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[200px] text-xs bg-card border-border/40 text-card-foreground">
+                    How heavy the shoe feels on foot, from very light (race-focused) to heavy (max cushion).
+                  </TooltipContent>
+                </Tooltip>
+                <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{weightLabel}</span>
+              </div>
+              <div className="text-center">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex items-center justify-center gap-1 text-xs uppercase tracking-wide mb-1 cursor-help" style={{ color: textColorSubtle }}>
+                      Drop
+                      <Info className="w-2.5 h-2.5 opacity-50" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[200px] text-xs bg-card border-border/40 text-card-foreground">
+                    The height difference between heel and toe. Lower drops encourage midfoot striking; higher drops suit heel strikers.
+                  </TooltipContent>
+                </Tooltip>
+                <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{shoe.heel_drop_mm}mm</span>
+              </div>
+              <div className="text-center">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex items-center justify-center gap-1 text-xs uppercase tracking-wide mb-1 cursor-help" style={{ color: textColorSubtle }}>
+                      Plate
+                      <Info className="w-2.5 h-2.5 opacity-50" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[200px] text-xs bg-card border-border/40 text-card-foreground">
+                    Stiff plates (carbon, nylon, plastic) add propulsion and efficiency. 'None' means a traditional foam-only midsole.
+                  </TooltipContent>
+                </Tooltip>
+                <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{plateLabel}</span>
+              </div>
+              <div className="text-center">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex items-center justify-center gap-1 text-xs uppercase tracking-wide mb-1 cursor-help" style={{ color: textColorSubtle }}>
+                      Tier
+                      <Info className="w-2.5 h-2.5 opacity-50" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[200px] text-xs bg-card border-border/40 text-card-foreground">
+                    Price category: $ (budget) to $$$$ (premium race-day). Higher tiers typically use advanced foams and materials.
+                  </TooltipContent>
+                </Tooltip>
+                <span className="block text-sm font-medium" style={{ color: textColorMuted }}>
+                  {shoe.retail_price_category === 'Budget' ? '$' : 
+                   shoe.retail_price_category === 'Core' ? '$$' : 
+                   shoe.retail_price_category === 'Premium' ? '$$$' : '$$$$'}
+                </span>
+              </div>
             </div>
-            <div className="text-center">
-              <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Drop</span>
-              <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{shoe.heel_drop_mm}mm</span>
-            </div>
-            <div className="text-center">
-              <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Plate</span>
-              <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{plateLabel}</span>
-            </div>
-            <div className="text-center">
-              <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: textColorSubtle }}>Tier</span>
-              <span className="block text-sm font-medium" style={{ color: textColorMuted }}>
-                {shoe.retail_price_category === 'Budget' ? '$' : 
-                 shoe.retail_price_category === 'Core' ? '$$' : 
-                 shoe.retail_price_category === 'Premium' ? '$$$' : '$$$$'}
-              </span>
-            </div>
-          </div>
+          </TooltipProvider>
         </div>
 
         <ShortlistAuthModal 
