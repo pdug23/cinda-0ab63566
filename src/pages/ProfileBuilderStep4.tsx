@@ -307,15 +307,8 @@ const ProfileBuilderStep4 = () => {
               Back
             </button>
             
-            {/* Cinda chat button - center (only show if not in intro phase) */}
-            {!shouldAutoOpenChat || hasShownIntroChat ? (
-              <CindaChatButton />
-            ) : (
-              <div className="w-8 h-8" /> // Placeholder for layout balance
-            )}
-            
-            {/* Empty spacer for layout balance */}
-            <div className="w-[72px]" />
+            {/* Cinda chat button - right aligned (only show if not in intro phase) */}
+            {(!shouldAutoOpenChat || hasShownIntroChat) && <CindaChatButton />}
           </header>
 
           {/* Content */}
