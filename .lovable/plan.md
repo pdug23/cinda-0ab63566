@@ -1,109 +1,180 @@
 
-# Add Quick-Access Navigation Buttons to Step 4
+
+# Replace Step 3b with Auto-Opening Cinda Chat Sheet on Step 4
 
 ## Overview
 
-Add two utility buttons at the bottom of the Step 4 page that allow users to quickly navigate back to update their information without repeatedly pressing the back button:
+Remove the dedicated Step 3b page and instead have the Cinda chat automatically pop up as a sheet (the same `CindaChatSheet` component) when the user navigates from Step 3 to Step 4. This simplifies the flow and reuses the existing sheet component.
 
-1. **Update my rotation** → navigates to `/profile/step3`
-2. **Update my info** → navigates to `/profile` (Step 1)
+## User Flow Change
 
-These buttons will be styled distinctly from the three main service options to make it clear they're utility/navigation shortcuts, not primary actions.
-
-## User Experience
-
+**Current flow:**
 ```text
-┌────────────────────────────────────────┐
-│  [BACK]        [Cinda]         [ ]     │
-├────────────────────────────────────────┤
-│                                        │
-│  Profile complete. How can Cinda help? │
-│                                        │
-│  ┌──────────────────────────────────┐  │
-│  │ 🔮 Recommend me a shoe           │  │  ← Primary service options
-│  └──────────────────────────────────┘  │    (slate-blue styling)
-│  ┌──────────────────────────────────┐  │
-│  │ 🔄 Check my rotation             │  │
-│  └──────────────────────────────────┘  │
-│  ┌──────────────────────────────────┐  │
-│  │ 🎯 Find by shoe type             │  │
-│  └──────────────────────────────────┘  │
-│                                        │
-│  ────────────────────────────────────  │
-│                                        │
-│  [Edit my rotation]  [Update my info]  │  ← Utility buttons (subtle styling)
-│                                        │
-└────────────────────────────────────────┘
+Step 3 (Rotation) → Step 3b (Chat page) → [Click Continue] → Step 4 (Mode Selection)
 ```
 
-## Styling Approach
+**New flow:**
+```text
+Step 3 (Rotation) → Step 4 (Mode Selection) + [Cinda Sheet auto-opens]
+                                           → [Close Sheet] → Tooltip appears + Cinda button in header
+```
 
-The utility buttons will be styled as subtle, text-based links rather than the prominent glass-morphism cards:
+## Detailed UX Sequence
 
-- **Color**: Muted text with subtle border (no background fill)
-- **Size**: Smaller, more compact
-- **Layout**: Two buttons side-by-side at the bottom
-- **Icons**: Pencil/edit icons to indicate "update" action
-- **Hover**: Subtle highlight, no dramatic effects
-
-This clearly differentiates them from the main "service" options while keeping them accessible.
+1. User completes Step 3 and clicks "Next" or "Skip"
+2. Navigate directly to Step 4 (skipping Step 3b entirely)
+3. Step 4 loads with Cinda chat sheet automatically opening
+4. Cinda's intro sequence plays inside the sheet (greeting + follow-up)
+5. User can chat or close the sheet
+6. When sheet closes → Cinda button appears in header with the existing reveal animation + tooltip
 
 ## Technical Implementation
 
-### File to Modify
+### 1. Modify Step 3 Navigation
 
-`src/pages/ProfileBuilderStep4.tsx`
+**File: `src/pages/ProfileBuilderStep3.tsx`**
 
-### Changes
+Change the navigation targets:
+- `handleConfirmSkip`: Change from `/profile/step3b` to `/profile/step4`
+- `handleNextClick`: Change from `/profile/step3b` to `/profile/step4`
 
-1. **Import Pencil icon** from lucide-react for the edit buttons
-
-2. **Add navigation handlers**:
-   - `handleEditRotation` → navigates to `/profile/step3`
-   - `handleEditInfo` → navigates to `/profile`
-
-3. **Add utility button section** below the mode cards:
-   - Separator or spacing to distinguish from primary options
-   - Two inline buttons with muted styling
-   - Text like "Edit my rotation" and "Update my info"
-
-### Utility Button Styling
-
+Pass a state flag to indicate the sheet should auto-open:
 ```tsx
-// Subtle, compact utility button styling
-<button
-  type="button"
-  onClick={handleEditRotation}
-  className={cn(
-    "flex-1 py-2 px-4 rounded-lg text-xs font-medium",
-    "text-card-foreground/50 hover:text-card-foreground/70",
-    "bg-transparent hover:bg-card-foreground/5",
-    "border border-card-foreground/10 hover:border-card-foreground/20",
-    "transition-all duration-200",
-    "flex items-center justify-center gap-2"
-  )}
->
-  <Pencil className="w-3 h-3" />
-  Edit rotation
-</button>
+navigate("/profile/step4", { state: { autoOpenChat: true } });
 ```
 
-### Visual Distinction Summary
+### 2. Modify Step 4 to Auto-Open Chat Sheet
 
-| Aspect | Primary Cards | Utility Buttons |
-|--------|---------------|-----------------|
-| Size | Large (p-5) | Compact (py-2 px-4) |
-| Background | Glass morphism | Transparent |
-| Border | Slate blue glow | Very subtle |
-| Icons | 24px custom SVGs | 12px Pencil |
-| Text | Bold labels + desc | Small text only |
-| Hover | Scale + glow | Subtle highlight |
+**File: `src/pages/ProfileBuilderStep4.tsx`**
 
-## Button Labels
+- Import `CindaChatSheet` component
+- Import `useLocation` to read the navigation state
+- Add local state for sheet open/close
+- On mount, check if `location.state?.autoOpenChat` is true
+  - If yes, open the sheet immediately
+- When sheet closes, trigger the Cinda button reveal + tooltip
 
-Suggested labels (concise and action-oriented):
-- "Edit rotation" (links to Step 3)
-- "Edit profile" (links to Step 1)
+### 3. Enhance CindaChatSheet for Intro Sequence
 
-Or alternatively:
-- "Update shoes" / "Update info"
+**File: `src/components/CindaChatSheet.tsx`**
+
+Currently, the sheet just loads existing chat history. We need to add support for the intro sequence (greeting + follow-up) when opened for the first time:
+
+- Add intro phase logic (similar to Step 3b's `introPhase` state)
+- On first open (empty chat history), show:
+  1. Typing indicator → "Hey, Cinda here."
+  2. Pause → Typing indicator → Follow-up question
+- Disable input until intro completes
+
+### 4. Update Back Navigation on Step 4
+
+**File: `src/pages/ProfileBuilderStep4.tsx`**
+
+Change `handleBack`:
+- Currently navigates to `/profile/step3b`
+- Change to navigate to `/profile/step3`
+
+### 5. Handle Sheet Close → Button Reveal
+
+**File: `src/pages/ProfileBuilderStep4.tsx`**
+
+When the sheet closes:
+1. Call `setShowCindaChatButton(true)` to show the persistent header button
+2. The button will animate with its reveal animation
+3. The tooltip will appear (since `cindaChatButtonAnimated` and `cindaTooltipDismissed` are still false)
+
+### 6. Remove Step 3b Route (Optional/Later)
+
+**File: `src/App.tsx`**
+
+The route can be removed or kept for backward compatibility. If removed:
+- Remove import for `ProfileBuilderStep3b`
+- Remove the route `<Route path="/profile/step3b" ... />`
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/pages/ProfileBuilderStep3.tsx` | Change navigation from `/profile/step3b` to `/profile/step4` with state |
+| `src/pages/ProfileBuilderStep4.tsx` | Add auto-open chat logic, import sheet, handle close callback, fix back nav |
+| `src/components/CindaChatSheet.tsx` | Add intro sequence logic (greeting + follow-up + typewriter) |
+| `src/App.tsx` | Optionally remove Step 3b route |
+
+## Component Flow Diagram
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                         STEP 4 PAGE                              │
+│                                                                  │
+│   ┌─────────────────────────────────────────────────────────┐   │
+│   │  Header: [BACK]       [Cinda Button*]         [ ]        │   │
+│   └─────────────────────────────────────────────────────────┘   │
+│                                                                  │
+│   ┌─────────────────────────────────────────────────────────┐   │
+│   │  Mode Selection Cards                                    │   │
+│   │  • Recommend me a shoe                                   │   │
+│   │  • Check my rotation                                     │   │
+│   │  • Find by shoe type                                     │   │
+│   └─────────────────────────────────────────────────────────┘   │
+│                                                                  │
+│   * Button only shows AFTER sheet is closed                      │
+└─────────────────────────────────────────────────────────────────┘
+
+                              │
+                              │ On mount (if autoOpenChat)
+                              ▼
+
+┌─────────────────────────────────────────────────────────────────┐
+│               CINDA CHAT SHEET (70vh, slides up)                 │
+│                                                                  │
+│   ┌─────────────────────────────────────────────────────────┐   │
+│   │  "Chat with Cinda"                              [X]      │   │
+│   └─────────────────────────────────────────────────────────┘   │
+│                                                                  │
+│   [Spinning logo] → "Hey, Cinda here."                           │
+│                                                                  │
+│   [Pause] → [Spinning logo] →                                    │
+│   "You've told me the basics, but running's personal..."        │
+│                                                                  │
+│   ┌─────────────────────────────────────────────────────────┐   │
+│   │  [Reply...                    ] [🎤] [↑]                 │   │
+│   └─────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Key Logic for CindaChatSheet Enhancement
+
+The sheet will need to mirror the intro sequence from Step 3b:
+
+```tsx
+// CindaChatSheet.tsx - New state
+const [introPhase, setIntroPhase] = useState<'idle' | 'typing1' | 'message1' | 'pause' | 'typing2' | 'message2' | 'done'>('idle');
+const [selectedFollowup] = useState(() => getRandomFollowup());
+
+// On open, check if we need intro
+useEffect(() => {
+  if (open && profileData.step3.chatHistory.length === 0) {
+    setIntroPhase('typing1');
+  }
+}, [open]);
+
+// Phase progression logic (similar to Step 3b)
+useEffect(() => {
+  if (introPhase === 'typing1') {
+    // Show spinner, then add greeting after 1s
+    timer = setTimeout(() => {
+      addGreetingMessage();
+      setIntroPhase('message1');
+    }, 1000);
+  }
+  // ... etc
+}, [introPhase]);
+```
+
+## Benefits
+
+1. **Simpler flow** - One less page to navigate through
+2. **Reuses existing component** - `CindaChatSheet` already works well
+3. **Consistent UX** - Same sheet experience throughout the app
+4. **Better continuity** - Users see Step 4 content while chatting
+
