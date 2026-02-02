@@ -905,8 +905,9 @@ export function classifyRotationTier(
     // Beginners only get one practical recommendation
     if (profile.experience === 'beginner') {
       secondary = undefined;
-      // Swap recovery_shoe to daily_trainer for beginners - more practical
-      if (primary.archetype === 'recovery_shoe') {
+      // Swap recovery_shoe to daily_trainer for beginners with 0-1 shoes - more practical
+      // Beginners with 2+ shoes can benefit from dedicated recovery shoes
+      if (primary.archetype === 'recovery_shoe' && currentShoes.length <= 1) {
         const dailyCount = getDailyTrainerCount(currentShoes, catalogue);
         primary = {
           archetype: 'daily_trainer',
@@ -1103,8 +1104,9 @@ export function classifyRotationTier(
   // Beginners only get one practical recommendation
   if (profile.experience === 'beginner') {
     secondary = undefined;
-    // Swap recovery_shoe to daily_trainer for beginners - more practical
-    if (primary.archetype === 'recovery_shoe') {
+    // Swap recovery_shoe to daily_trainer for beginners with 0-1 shoes - more practical
+    // Beginners with 2+ shoes can benefit from dedicated recovery shoes
+    if (primary.archetype === 'recovery_shoe' && currentShoes.length <= 1) {
       const dailyCount = getDailyTrainerCount(currentShoes, catalogue);
       primary = {
         archetype: 'daily_trainer',
