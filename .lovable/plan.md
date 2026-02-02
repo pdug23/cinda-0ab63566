@@ -1,188 +1,119 @@
 
-# Improve Cinda Chat Button Styling & Positioning
+# Add Info Tooltips to Shoe Card Specs
 
-## Current Issues
+## Overview
 
-1. **Shape mismatch**: The Cinda button is a perfect circle (`w-9 h-9 rounded-full`), while the Back button is a pill shape (`h-7 px-3 rounded-full`)
-2. **Position**: Currently centered, but should align to the right
-3. **Layout conflict**: On pages with right-side buttons (like Recommendations), need to handle placement gracefully
+Add subtle info icons to each spec category label (Weight, Drop, Plate, Tier) that reveal explanatory tooltips when tapped/clicked. This helps users understand what each metric means without cluttering the UI.
 
-## Proposed Solution
+## Design Approach
 
-### Option A: Match the Pill Shape (Recommended)
+### Pattern: Inline (i) Icon + Tooltip
 
-Transform the Cinda button from a circle to a pill that matches the Back button's style:
+Following the existing pattern used for the ST badge, add a small info icon next to each spec label that triggers a tooltip:
 
 ```text
-Current:    [BACK]     (●)     [    ]
-                       ↑ circle
-
-Proposed:   [BACK]           [CINDA]
-                               ↑ pill shape with logo + text
+┌─────────────────────────────────────────────────┐
+│  WEIGHT ⓘ    DROP ⓘ    PLATE ⓘ    TIER ⓘ      │
+│   light       8mm       none       $$$$         │
+└─────────────────────────────────────────────────┘
 ```
 
-**Styling:**
-- Same height as Back button: `h-7`
-- Same padding pattern: `px-3`
-- Same border/background treatment
-- Add "CINDA" text label next to the logo
-- Same `rounded-full` for pill effect
+**Why Tooltip over Popover:**
+- Tooltips are lighter-weight and less disruptive
+- Perfect for short explanations (1-2 sentences)
+- Works well on both desktop (hover) and mobile (tap)
+- Takes zero additional space when not active
 
-### Option B: Pill Without Text
+### Icon Styling
+- Use a very small info icon (w-2.5 h-2.5)
+- Subtle opacity (50%) so it doesn't compete with the label
+- Position inline after the label text
+- Use existing `TooltipProvider` already in the component
 
-If text feels too busy, use the same dimensions but keep logo-only:
+## Tooltip Content
 
-```text
-[BACK]                [●●]
-                       ↑ wider pill, no text
-```
+Each metric gets a concise explanation:
 
-**Styling:**
-- `h-7 px-2.5 rounded-full` (matching height, slightly wider for the logo)
+| Metric | Tooltip Content |
+|--------|-----------------|
+| **Weight** | "How heavy the shoe feels on foot, from very light (race-focused) to heavy (max cushion)." |
+| **Drop** | "The height difference between heel and toe. Lower drops encourage midfoot striking; higher drops suit heel strikers." |
+| **Plate** | "Stiff plates (carbon, nylon, plastic) add propulsion and efficiency. 'None' means a traditional foam-only midsole." |
+| **Tier** | "Price category: $ (budget) to $$$$ (premium race-day). Higher tiers typically use advanced foams and materials." |
 
----
+## Technical Implementation
 
-## Layout Strategy
+### File: `src/components/results/ShoeCard.tsx`
 
-### Standard Layout (Right-Aligned Cinda)
+Update the specs grid section (lines 506-527) to wrap each label in a Tooltip:
 
-For most pages with just a Back button:
-
-```text
-[BACK]                    [CINDA]
-  ↑                          ↑
-left-aligned            right-aligned
-```
-
-**Implementation:**
 ```tsx
-<header className="flex items-center justify-between">
-  <BackButton />
-  <CindaChatButton />  {/* Naturally goes to right */}
-</header>
-```
-
-### With Right Button (Recommendations page)
-
-When there's already a right button like "PROFILE":
-
-```text
-[BACK]           [CINDA]  [PROFILE]
-                    ↑         ↑
-            near-right    far-right
-```
-
-**Implementation:** Add a `rightAction` prop to CindaChatButton or group buttons:
-```tsx
-<header className="flex items-center justify-between">
-  <BackButton />
-  <div className="flex items-center gap-2">
-    <CindaChatButton />
-    <ProfileButton />
+{/* Specs Grid */}
+<div className="grid grid-cols-4 gap-2 mb-3">
+  <div className="text-center">
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="inline-flex items-center gap-1 text-xs uppercase tracking-wide mb-1 cursor-help" style={{ color: textColorSubtle }}>
+          Weight
+          <Info className="w-2.5 h-2.5 opacity-50" />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[200px] text-xs">
+        How heavy the shoe feels on foot, from very light (race-focused) to heavy (max cushion).
+      </TooltipContent>
+    </Tooltip>
+    <span className="block text-sm font-medium" style={{ color: textColorMuted }}>{weightLabel}</span>
   </div>
-</header>
+  {/* ...repeat for Drop, Plate, Tier */}
+</div>
 ```
 
----
+### Styling Details
 
-## Technical Changes
+- **Tooltip styling**: Use existing dark theme (`bg-card border-border/40 text-card-foreground`)
+- **Max width**: `max-w-[200px]` to keep tooltips compact
+- **Side**: `side="top"` so tooltip appears above and doesn't overlap the card edge
+- **Cursor**: `cursor-help` to indicate interactivity
 
-### File: `src/components/CindaChatButton.tsx`
+### Mobile Consideration
 
-Update button styling to match pill format:
+Radix Tooltip works on tap for mobile devices. The existing `TooltipProvider` is already wrapping other elements in this component, so we can reuse it or add another provider scope for the specs section.
 
-```tsx
-// Current
-"w-9 h-9 rounded-full"
+## Visual Result
 
-// New (Option A - with text)
-"h-7 px-3 flex items-center gap-2 rounded-full"
-+ Add <span>CINDA</span> text
-
-// New (Option B - logo only pill)
-"h-7 px-2.5 rounded-full"
-```
-
-Match the subtle styling of Back button:
-- `bg-card-foreground/[0.03]`
-- `hover:bg-card-foreground/10`
-- `border border-card-foreground/20`
-- `text-[10px] font-medium tracking-wider uppercase` (if adding text)
-
-### File: `src/pages/ProfileBuilderStep4.tsx`
-
-Update header layout:
-- Remove center positioning logic
-- Remove the spacer div
-- Let Cinda button naturally align right
-
-### File: `src/pages/Recommendations.tsx`
-
-Update header to group Cinda + Profile buttons on the right:
-```tsx
-<header className="flex items-center justify-between">
-  <BackButton onClick={goBack} />
-  <div className="flex items-center gap-2">
-    <CindaChatButton />
-    {!loading && <ProfileButton onClick={handleGoToProfile} />}
-  </div>
-</header>
-```
-
----
-
-## Visual Comparison
-
-### Before
 ```text
-┌────────────────────────────────────────┐
-│  [BACK]           (●)          [    ]  │
-│    ↑               ↑              ↑    │
-│  pill          circle         spacer   │
-└────────────────────────────────────────┘
-```
+Before:
+┌─────────────────────────────────────────────────┐
+│    WEIGHT       DROP       PLATE       TIER     │
+│     light       8mm        none        $$$$     │
+└─────────────────────────────────────────────────┘
 
-### After (Option A - with text)
-```text
-┌────────────────────────────────────────┐
-│  [BACK]                       [CINDA]  │
-│    ↑                             ↑     │
-│  pill                          pill    │
-└────────────────────────────────────────┘
-```
+After:
+┌─────────────────────────────────────────────────┐
+│  WEIGHT ⓘ    DROP ⓘ    PLATE ⓘ    TIER ⓘ      │
+│   light       8mm       none       $$$$         │
+└─────────────────────────────────────────────────┘
 
-### After (Option B - logo pill)
-```text
-┌────────────────────────────────────────┐
-│  [BACK]                          [●●]  │
-│    ↑                              ↑    │
-│  pill                        logo pill │
-└────────────────────────────────────────┘
+On tap/hover:
+┌─────────────────────────────────────────────────┐
+│           ┌─────────────────────────┐           │
+│           │ The height difference   │           │
+│           │ between heel and toe... │           │
+│           └──────────┬──────────────┘           │
+│  WEIGHT ⓘ   [DROP ⓘ]   PLATE ⓘ    TIER ⓘ      │
+│   light       8mm       none       $$$$         │
+└─────────────────────────────────────────────────┘
 ```
-
----
 
 ## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/components/CindaChatButton.tsx` | Change button shape from circle to pill, update styling to match Back button |
-| `src/pages/ProfileBuilderStep4.tsx` | Remove center positioning, remove spacer, let button align right |
-| `src/pages/Recommendations.tsx` | Group Cinda + Profile buttons in a right-aligned container |
-| Any other pages using CindaChatButton | Update header layout if needed |
+| `src/components/results/ShoeCard.tsx` | Update specs grid to add Tooltip wrappers with Info icons and explanatory content |
 
----
+## Benefits
 
-## Tooltip Adjustment
-
-The tooltip currently spawns from the bottom-right of the button. With the button now on the right edge, we may need to adjust:
-- Keep `right-0` alignment (arrow still points to button)
-- Or shift to `right-0` with a slight offset if it clips the edge
-
----
-
-## Question for You
-
-Which option do you prefer?
-- **Option A**: Pill with "CINDA" text label (matches Back button exactly)
-- **Option B**: Pill shape but logo-only (cleaner, less text)
+1. **Zero space impact** - Icons are tiny, tooltips only appear on interaction
+2. **Educational** - Helps new runners understand shoe terminology
+3. **Consistent** - Uses same tooltip pattern as existing ST badge
+4. **Accessible** - Works with keyboard focus and screen readers
