@@ -94,7 +94,8 @@ const Landing = () => {
     <>
       <AnimatedBackground />
       
-      {/* Floating jargon layer - visible during transition and orientation */}
+      {/* Floating jargon layer - landing page 1: free float, landing page 2: with exclusion zone */}
+      {viewState === "landing" && !isExiting && <FloatingJargon freeFloat />}
       {(viewState === "orientation" || isExiting) && <FloatingJargon />}
 
       <OnboardingLayout centerContent transparent>

@@ -50,7 +50,11 @@ const isInExclusionZone = (x: number, y: number): boolean => {
   );
 };
 
-const FloatingJargon = () => {
+interface FloatingJargonProps {
+  freeFloat?: boolean; // When true, terms float anywhere (no exclusion zone)
+}
+
+const FloatingJargon = ({ freeFloat = false }: FloatingJargonProps) => {
   const [terms, setTerms] = useState<FloatingTerm[]>([]);
   const animationRef = useRef<number>();
   const prefersReducedMotion = useRef(
@@ -59,51 +63,70 @@ const FloatingJargon = () => {
   );
 
   useEffect(() => {
-    // Generate terms starting off-screen, floating inward
+    // Generate terms with unique selection (no duplicates)
     const initialTerms: FloatingTerm[] = [];
     const termCount = 24;
     const centerX = 50;
     const centerY = 50;
 
+    // Shuffle and take first termCount items for unique terms
+    const shuffled = [...JARGON_TERMS].sort(() => Math.random() - 0.5);
+    const selectedTerms = shuffled.slice(0, termCount);
+
     for (let i = 0; i < termCount; i++) {
-      // Start from edges - distribute around the perimeter
-      const edge = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
       let startX: number, startY: number;
-      
-      switch (edge) {
-        case 0: // top
-          startX = Math.random() * 120 - 10;
-          startY = -15 - Math.random() * 20;
-          break;
-        case 1: // right
-          startX = 115 + Math.random() * 20;
-          startY = Math.random() * 120 - 10;
-          break;
-        case 2: // bottom
-          startX = Math.random() * 120 - 10;
-          startY = 115 + Math.random() * 20;
-          break;
-        default: // left
-          startX = -15 - Math.random() * 20;
-          startY = Math.random() * 120 - 10;
-          break;
+      let vx: number, vy: number;
+
+      if (freeFloat) {
+        // Free float: start anywhere on screen
+        startX = Math.random() * 100;
+        startY = Math.random() * 100;
+        // Random direction
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 0.04 + Math.random() * 0.03;
+        vx = Math.cos(angle) * speed;
+        vy = Math.sin(angle) * speed;
+      } else {
+        // Start from edges - distribute around the perimeter
+        const edge = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
+        
+        switch (edge) {
+          case 0: // top
+            startX = Math.random() * 120 - 10;
+            startY = -15 - Math.random() * 20;
+            break;
+          case 1: // right
+            startX = 115 + Math.random() * 20;
+            startY = Math.random() * 120 - 10;
+            break;
+          case 2: // bottom
+            startX = Math.random() * 120 - 10;
+            startY = 115 + Math.random() * 20;
+            break;
+          default: // left
+            startX = -15 - Math.random() * 20;
+            startY = Math.random() * 120 - 10;
+            break;
+        }
+        
+        // Calculate velocity toward center (with some randomness)
+        const targetX = centerX + (Math.random() - 0.5) * 60;
+        const targetY = centerY + (Math.random() - 0.5) * 60;
+        const dx = targetX - startX;
+        const dy = targetY - startY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const speed = 0.06 + Math.random() * 0.04; // Gentle inward drift
+        vx = (dx / dist) * speed;
+        vy = (dy / dist) * speed;
       }
-      
-      // Calculate velocity toward center (with some randomness)
-      const targetX = centerX + (Math.random() - 0.5) * 60;
-      const targetY = centerY + (Math.random() - 0.5) * 60;
-      const dx = targetX - startX;
-      const dy = targetY - startY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const speed = 0.06 + Math.random() * 0.04; // Gentle inward drift
       
       initialTerms.push({
         id: i,
-        text: JARGON_TERMS[Math.floor(Math.random() * JARGON_TERMS.length)],
+        text: selectedTerms[i], // Each term guaranteed unique
         x: startX,
         y: startY,
-        vx: (dx / dist) * speed,
-        vy: (dy / dist) * speed,
+        vx,
+        vy,
         opacity: 0.04 + Math.random() * 0.06,
         fontSize: 10 + Math.random() * 6,
         angle: -5 + Math.random() * 10,
@@ -124,29 +147,32 @@ const FloatingJargon = () => {
           let newVx = term.vx;
           let newVy = term.vy;
 
-          const wasInZone = isInExclusionZone(term.x, term.y);
-          const willBeInZone = isInExclusionZone(newX, newY);
+          // Only apply exclusion zone logic when not in freeFloat mode
+          if (!freeFloat) {
+            const wasInZone = isInExclusionZone(term.x, term.y);
+            const willBeInZone = isInExclusionZone(newX, newY);
 
-          // Bounce off exclusion zone
-          if (willBeInZone && !wasInZone) {
-            // Determine which edge we're hitting
-            const fromLeft = term.x <= EXCLUSION_ZONE.left - EXCLUSION_ZONE.padding;
-            const fromRight = term.x >= EXCLUSION_ZONE.right + EXCLUSION_ZONE.padding;
-            const fromTop = term.y <= EXCLUSION_ZONE.top - EXCLUSION_ZONE.padding;
-            const fromBottom = term.y >= EXCLUSION_ZONE.bottom + EXCLUSION_ZONE.padding;
+            // Bounce off exclusion zone
+            if (willBeInZone && !wasInZone) {
+              // Determine which edge we're hitting
+              const fromLeft = term.x <= EXCLUSION_ZONE.left - EXCLUSION_ZONE.padding;
+              const fromRight = term.x >= EXCLUSION_ZONE.right + EXCLUSION_ZONE.padding;
+              const fromTop = term.y <= EXCLUSION_ZONE.top - EXCLUSION_ZONE.padding;
+              const fromBottom = term.y >= EXCLUSION_ZONE.bottom + EXCLUSION_ZONE.padding;
 
-            if (fromLeft || fromRight) {
-              newVx = -newVx * (0.8 + Math.random() * 0.2);
-              newVy += (Math.random() - 0.5) * 0.02; // Add slight random deflection
+              if (fromLeft || fromRight) {
+                newVx = -newVx * (0.8 + Math.random() * 0.2);
+                newVy += (Math.random() - 0.5) * 0.02; // Add slight random deflection
+              }
+              if (fromTop || fromBottom) {
+                newVy = -newVy * (0.8 + Math.random() * 0.2);
+                newVx += (Math.random() - 0.5) * 0.02;
+              }
+
+              // Keep position outside zone
+              newX = term.x + newVx;
+              newY = term.y + newVy;
             }
-            if (fromTop || fromBottom) {
-              newVy = -newVy * (0.8 + Math.random() * 0.2);
-              newVx += (Math.random() - 0.5) * 0.02;
-            }
-
-            // Keep position outside zone
-            newX = term.x + newVx;
-            newY = term.y + newVy;
           }
 
           // Wrap around screen edges
@@ -180,7 +206,7 @@ const FloatingJargon = () => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, []);
+  }, [freeFloat]);
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-[1]">
