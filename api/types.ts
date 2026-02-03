@@ -672,6 +672,15 @@ export interface HeelDropPreference {
 }
 
 /**
+ * Plate preference for shoe recommendations
+ * Allows users to specify whether they want plated shoes and what material
+ */
+export interface PlatePreference {
+  mode: "cinda_decides" | "user_set" | "wildcard";
+  value?: "no_plate" | "any_plate" | "nylon" | "pebax" | "carbon";  // Only present if mode === "user_set"
+}
+
+/**
  * Feel preferences for shoe recommendations with 3-mode system
  * All fields are REQUIRED but each has a mode to control behavior
  * Default mode for all is "cinda_decides"
@@ -684,6 +693,7 @@ export interface FeelPreferences {
   groundFeel: PreferenceValue;       // 1 = isolated/cushioned, 5 = high ground feel
   stackHeight: PreferenceValue;      // 1 = grounded/minimal, 5 = max stack (inverse of groundFeel)
   heelDropPreference: HeelDropPreference;
+  platePreference?: PlatePreference;  // Optional: plate material preference
 }
 
 /**

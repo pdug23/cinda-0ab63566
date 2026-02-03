@@ -658,10 +658,10 @@ function scoreForGapFit(
       break;
 
     case "performance":
-      // Has plate
-      if (shoe.has_plate) bonus += 15;
-      // Light weight
-      if (shoe.weight_g < 240) bonus += 15;
+      // Has plate (reduced from +15 to +10 - let super trainers compete)
+      if (shoe.has_plate) bonus += 10;
+      // Light weight (reduced from +15 to +10 for <240g)
+      if (shoe.weight_g < 240) bonus += 10;
       else if (shoe.weight_g < 260) bonus += 10;
       // High bounce
       if (shoe.bounce_1to5 >= 4) bonus += 10;

@@ -11,6 +11,7 @@ import type {
   FeelPreferences,
   PreferenceValue,
   HeelDropPreference,
+  PlatePreference,
   RunnerProfile,
   CurrentShoe,
   ChatContext,
@@ -65,8 +66,12 @@ export interface ScoredShoe {
     pureRecoveryBonus?: number;            // Pure recovery specialist: +3
     superTrainerRecoveryPenalty?: number;  // Super trainer for recovery request: -5
     recoveryCushionBonus?: number;         // Recovery + Cinda decides cushion: +8/+3
-    workoutBounceBonus?: number;           // Workout + Cinda decides bounce: +8/+3
-    raceBounceBonus?: number;              // Race + Cinda decides bounce: +8/+3
+    workoutBounceBonus?: number;           // Workout + Cinda decides bounce: +5/+3
+    raceBounceBonus?: number;              // Race + Cinda decides bounce: +5/+3
+    // Plate preference scoring
+    platePreferenceMatch?: number;         // Bonus for matching plate preference
+    platePreferenceMismatch?: number;      // Penalty for not matching plate preference
+    plateMildPreference?: number;          // Cinda decides mild bonus for workout/race
   };
 }
 
@@ -1340,6 +1345,135 @@ function scoreContrastBonus(
 }
 
 /**
+ * Plate preference scoring breakdown
+ */
+interface PlatePreferenceBonuses {
+  platePreferenceMatch: number;
+  platePreferenceMismatch: number;
+  plateMildPreference: number;
+  total: number;
+}
+
+/**
+ * Score plate preference match
+ *
+ * Three modes:
+ * - wildcard: No scoring, skip entirely
+ * - user_set: Strict matching with bonuses/penalties
+ * - cinda_decides: Archetype-based mild preference (plates for workout/race)
+ */
+function scorePlatePreference(
+  shoe: Shoe,
+  constraints: RetrievalConstraints
+): PlatePreferenceBonuses {
+  const result: PlatePreferenceBonuses = {
+    platePreferenceMatch: 0,
+    platePreferenceMismatch: 0,
+    plateMildPreference: 0,
+    total: 0,
+  };
+
+  const platePref = constraints.feelPreferences?.platePreference;
+  if (!platePref) return result;
+
+  // Wildcard mode: skip entirely
+  if (platePref.mode === 'wildcard') {
+    return result;
+  }
+
+  // User set mode: strict matching
+  if (platePref.mode === 'user_set' && platePref.value) {
+    const value = platePref.value;
+    const hasPlate = shoe.has_plate;
+    const plateMaterial = shoe.plate_material?.toLowerCase() || '';
+
+    if (value === 'no_plate') {
+      // User explicitly doesn't want plates
+      if (!hasPlate) {
+        result.platePreferenceMatch = 10;
+        result.total += 10;
+      } else {
+        result.platePreferenceMismatch = -25;
+        result.total -= 25;
+      }
+    } else if (value === 'any_plate') {
+      // User wants any plated shoe
+      if (hasPlate) {
+        result.platePreferenceMatch = 10;
+        result.total += 10;
+      } else {
+        result.platePreferenceMismatch = -15;
+        result.total -= 15;
+      }
+    } else if (value === 'carbon') {
+      // User wants carbon plate specifically
+      if (hasPlate && plateMaterial === 'carbon') {
+        result.platePreferenceMatch = 15;
+        result.total += 15;
+      } else if (hasPlate) {
+        // Has plate but wrong material
+        result.platePreferenceMismatch = -10;
+        result.total -= 10;
+      } else {
+        // No plate at all
+        result.platePreferenceMismatch = -20;
+        result.total -= 20;
+      }
+    } else if (value === 'nylon') {
+      // User wants nylon plate
+      if (hasPlate && plateMaterial === 'nylon') {
+        result.platePreferenceMatch = 15;
+        result.total += 15;
+      } else if (hasPlate) {
+        result.platePreferenceMismatch = -10;
+        result.total -= 10;
+      } else {
+        result.platePreferenceMismatch = -20;
+        result.total -= 20;
+      }
+    } else if (value === 'pebax') {
+      // User wants pebax/PEBA plate
+      if (hasPlate && (plateMaterial === 'pebax' || plateMaterial === 'peba')) {
+        result.platePreferenceMatch = 15;
+        result.total += 15;
+      } else if (hasPlate) {
+        result.platePreferenceMismatch = -10;
+        result.total -= 10;
+      } else {
+        result.platePreferenceMismatch = -20;
+        result.total -= 20;
+      }
+    }
+  }
+
+  // Cinda decides mode: archetype-based preference
+  if (platePref.mode === 'cinda_decides') {
+    const archetypes = constraints.archetypes || [];
+
+    // For race_shoe or workout_shoe, mild preference for plates
+    if (archetypes.includes('race_shoe') || archetypes.includes('workout_shoe')) {
+      if (shoe.has_plate) {
+        result.plateMildPreference = 5;
+        result.total += 5;
+      }
+      // Non-plated shoes get no bonus or penalty in cinda_decides mode
+    }
+    // For recovery_shoe or daily_trainer, no plate preference
+  }
+
+  // Log if any bonuses/penalties applied
+  if (result.total !== 0) {
+    const details: string[] = [];
+    if (result.platePreferenceMatch) details.push(`match:+${result.platePreferenceMatch}`);
+    if (result.platePreferenceMismatch) details.push(`mismatch:${result.platePreferenceMismatch}`);
+    if (result.plateMildPreference) details.push(`mild:+${result.plateMildPreference}`);
+    console.log(`[scorePlatePreference] ${shoe.model}: total=${result.total} (${details.join(', ')})`);
+  }
+
+  return result;
+}
+
+/**
  * Archetype-specific preference bonuses breakdown
  */
 interface ArchetypePreferenceBonuses {
@@ -1424,10 +1558,11 @@ function scoreArchetypePreferenceBonuses(
   // ========================================
   if (archetypes.includes('workout_shoe')) {
     // Bounce/energy return preference when user selects "Let Cinda decide"
+    // Reduced bounce=5 bonus from +8 to +5 so super trainers (bounce=4) can compete
     if (prefs?.energyReturn?.mode === 'cinda_decides') {
       if (shoe.bounce_1to5 === 5) {
-        result.workoutBounceBonus = 8;
-        result.total += 8;
+        result.workoutBounceBonus = 5;
+        result.total += 5;
       } else if (shoe.bounce_1to5 === 4) {
         result.workoutBounceBonus = 3;
         result.total += 3;
@@ -1441,10 +1576,11 @@ function scoreArchetypePreferenceBonuses(
   // ========================================
   if (archetypes.includes('race_shoe')) {
     // Bounce/energy return preference when user selects "Let Cinda decide"
+    // Reduced bounce=5 bonus from +8 to +5 so super trainers (bounce=4) can compete
     if (prefs?.energyReturn?.mode === 'cinda_decides') {
       if (shoe.bounce_1to5 === 5) {
-        result.raceBounceBonus = 8;
-        result.total += 8;
+        result.raceBounceBonus = 5;
+        result.total += 5;
       } else if (shoe.bounce_1to5 === 4) {
         result.raceBounceBonus = 3;
         result.total += 3;
@@ -1507,6 +1643,9 @@ export function scoreShoe(
   // Archetype-specific preference bonuses (recovery/workout/race with "Let Cinda decide")
   const archetypePreferenceBonuses = scoreArchetypePreferenceBonuses(shoe, constraints);
 
+  // Plate preference scoring
+  const platePreferenceBonuses = scorePlatePreference(shoe, constraints);
+
   // Sum all scores (per spec: modifiers stack, minimum final score = 0)
   const totalScore = Math.max(0,
     archetypeScore +
@@ -1525,7 +1664,8 @@ export function scoreShoe(
     loveDislikeModifier +
     chatContextModifier +
     contrastBonus +
-    archetypePreferenceBonuses.total
+    archetypePreferenceBonuses.total +
+    platePreferenceBonuses.total
   );
 
   return {
@@ -1555,6 +1695,10 @@ export function scoreShoe(
       recoveryCushionBonus: archetypePreferenceBonuses.recoveryCushionBonus || undefined,
       workoutBounceBonus: archetypePreferenceBonuses.workoutBounceBonus || undefined,
       raceBounceBonus: archetypePreferenceBonuses.raceBounceBonus || undefined,
+      // Plate preference scoring
+      platePreferenceMatch: platePreferenceBonuses.platePreferenceMatch || undefined,
+      platePreferenceMismatch: platePreferenceBonuses.platePreferenceMismatch || undefined,
+      plateMildPreference: platePreferenceBonuses.plateMildPreference || undefined,
     },
   };
 }
