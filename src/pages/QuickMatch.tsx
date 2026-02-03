@@ -208,11 +208,13 @@ const HEEL_DROP_OPTIONS: HeelDropOption[] = ["0mm", "1-4mm", "5-8mm", "9-12mm", 
 
 const PLATE_OPTIONS: { value: PlateOption; label: string }[] = [
   { value: "none", label: "No plate" },
-  { value: "any", label: "Any plate" },
+  { value: "any", label: "All plates" },
   { value: "nylon", label: "Nylon plate" },
   { value: "pebax", label: "Pebax plate" },
   { value: "carbon", label: "Carbon plate" },
 ];
+
+const ALL_PLATE_MATERIALS: ("nylon" | "pebax" | "carbon")[] = ["nylon", "pebax", "carbon"];
 
 const BRAND_OPTIONS = [
   "Nike", "HOKA", "ASICS", "Brooks", "New Balance", "Saucony",
@@ -422,14 +424,31 @@ const PlatePreferenceCard = ({
     let newValues: PlateOption[];
     
     if (option === "none") {
-      // "No plate" is mutually exclusive
+      // "No plate" is mutually exclusive - clears everything
       newValues = selectedValues.includes("none") ? [] : ["none"];
+    } else if (option === "any") {
+      // "All plates" toggles all plate materials + itself
+      const hasAllPlates = selectedValues.includes("any");
+      if (hasAllPlates) {
+        // Deselect all
+        newValues = [];
+      } else {
+        // Select "any" + all plate materials
+        newValues = ["any", ...ALL_PLATE_MATERIALS];
+      }
     } else {
-      // Remove "none" if selecting any plate option
+      // Individual plate material - remove "none", toggle the option
       const filteredValues = selectedValues.filter((v) => v !== "none");
-      newValues = filteredValues.includes(option)
-        ? filteredValues.filter((v) => v !== option)
-        : [...filteredValues, option];
+      if (filteredValues.includes(option)) {
+        // Removing an option - also remove "any" if it was set
+        newValues = filteredValues.filter((v) => v !== option && v !== "any");
+      } else {
+        // Adding an option
+        const withNewOption = [...filteredValues, option];
+        // Check if all materials are now selected - if so, add "any"
+        const allMaterialsSelected = ALL_PLATE_MATERIALS.every((m) => withNewOption.includes(m));
+        newValues = allMaterialsSelected ? ["any", ...ALL_PLATE_MATERIALS] : withNewOption;
+      }
     }
     
     onChange({ mode: "user_set", values: newValues });
