@@ -68,6 +68,13 @@ export interface HeelDropPreference {
   values?: HeelDropOption[];  // Only set when mode === "user_set"
 }
 
+export type PlateOption = "none" | "any" | "nylon" | "pebax" | "carbon";
+
+export interface PlatePreference {
+  mode: PreferenceMode;
+  values?: PlateOption[];  // Only set when mode === "user_set"
+}
+
 export type BrandPreferenceMode = "all" | "include" | "exclude";
 
 export interface BrandPreference {
@@ -82,6 +89,7 @@ export interface FeelPreferences {
   stackHeight: SliderPreference;
   rocker: SliderPreference;
   heelDropPreference: HeelDropPreference;
+  platePreference: PlatePreference;
   brandPreference: BrandPreference;
 }
 

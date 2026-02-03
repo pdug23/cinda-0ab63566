@@ -274,6 +274,7 @@ const ProfileBuilderStep4 = () => {
       stackHeight: { mode: "cinda_decides" },
       rocker: { mode: "cinda_decides" },
       heelDropPreference: { mode: "cinda_decides" },
+      platePreference: { mode: "cinda_decides" },
       brandPreference: { mode: "all", brands: [] },
     };
 

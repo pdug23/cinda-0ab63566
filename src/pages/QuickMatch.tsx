@@ -18,6 +18,7 @@ import type {
   DiscoveryArchetype,
   FeelValue,
   HeelDropOption,
+  PlateOption,
   BrandPreferenceMode,
   BrandPreference,
   FeelPreferences,
@@ -25,6 +26,7 @@ import type {
   PreferenceMode,
   SliderPreference,
   HeelDropPreference,
+  PlatePreference,
 } from "@/contexts/ProfileContext";
 import type { RunnerProfile } from "../../api/types";
 
@@ -203,6 +205,14 @@ const SLIDERS: SliderConfig[] = [
 ];
 
 const HEEL_DROP_OPTIONS: HeelDropOption[] = ["0mm", "1-4mm", "5-8mm", "9-12mm", "13mm+"];
+
+const PLATE_OPTIONS: { value: PlateOption; label: string }[] = [
+  { value: "none", label: "No plate" },
+  { value: "any", label: "Any plate" },
+  { value: "nylon", label: "Nylon plate" },
+  { value: "pebax", label: "Pebax plate" },
+  { value: "carbon", label: "Carbon plate" },
+];
 
 const BRAND_OPTIONS = [
   "Nike", "HOKA", "ASICS", "Brooks", "New Balance", "Saucony",
@@ -389,6 +399,81 @@ const HeelDropPreferenceCard = ({
   );
 };
 
+// Plate preference card with mode selector
+const PlatePreferenceCard = ({
+  preference,
+  onChange,
+}: {
+  preference: PlatePreference;
+  onChange: (pref: PlatePreference) => void;
+}) => {
+  const showCheckboxes = preference.mode === "user_set";
+  const selectedValues = preference.values ?? [];
+
+  const handleModeChange = (mode: PreferenceMode) => {
+    if (mode === "user_set") {
+      onChange({ mode, values: preference.values ?? [] });
+    } else {
+      onChange({ mode });
+    }
+  };
+
+  const handleOptionChange = (option: PlateOption) => {
+    let newValues: PlateOption[];
+    
+    if (option === "none") {
+      // "No plate" is mutually exclusive
+      newValues = selectedValues.includes("none") ? [] : ["none"];
+    } else {
+      // Remove "none" if selecting any plate option
+      const filteredValues = selectedValues.filter((v) => v !== "none");
+      newValues = filteredValues.includes(option)
+        ? filteredValues.filter((v) => v !== option)
+        : [...filteredValues, option];
+    }
+    
+    onChange({ mode: "user_set", values: newValues });
+  };
+
+  return (
+    <div className="p-4 rounded-lg bg-card-foreground/[0.02] border border-card-foreground/10">
+      <div className="flex items-center gap-1.5 mb-3">
+        <span className="text-sm text-card-foreground/90">Plate preference</span>
+        <AdaptiveTooltip content="Plates add structure and energy return, but some runners prefer a more natural feel" />
+      </div>
+
+      <ModeSelector mode={preference.mode} onChange={handleModeChange} />
+
+      {showCheckboxes && (
+        <div className="mt-3">
+          <p className="text-xs text-card-foreground/40 mb-2">Select all that apply</p>
+          <div className="flex flex-wrap gap-2">
+            {PLATE_OPTIONS.map((option) => {
+              const isSelected = selectedValues.includes(option.value);
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleOptionChange(option.value)}
+                  className={cn(
+                    "px-3 py-1.5 text-xs rounded-md border transition-all flex items-center gap-1.5",
+                    isSelected
+                      ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                      : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
+                  )}
+                >
+                  {isSelected && <Check className="w-3 h-3" />}
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Brand preference card
 const BrandPreferenceCard = ({
   preference,
@@ -522,6 +607,7 @@ interface QuickMatchState {
     stackHeight: SliderPreference;
     rocker: SliderPreference;
     heelDropPreference: HeelDropPreference;
+    platePreference: PlatePreference;
   };
   brandPreference: BrandPreference;
 }
@@ -539,6 +625,7 @@ const QuickMatch = () => {
       stackHeight: { mode: "cinda_decides" },
       rocker: { mode: "cinda_decides" },
       heelDropPreference: { mode: "cinda_decides" },
+      platePreference: { mode: "cinda_decides" },
     },
     brandPreference: { mode: "all", brands: [] },
   });
@@ -556,7 +643,7 @@ const QuickMatch = () => {
 
   const handleFeelPreferenceChange = (
     key: keyof QuickMatchState["feelPreferences"],
-    pref: SliderPreference | HeelDropPreference
+    pref: SliderPreference | HeelDropPreference | PlatePreference
   ) => {
     setState((prev) => ({
       ...prev,
@@ -579,6 +666,7 @@ const QuickMatch = () => {
       stackHeight: state.feelPreferences.stackHeight,
       rocker: state.feelPreferences.rocker,
       heelDropPreference: state.feelPreferences.heelDropPreference,
+      platePreference: state.feelPreferences.platePreference,
       brandPreference: state.brandPreference,
     };
 
@@ -672,6 +760,14 @@ const QuickMatch = () => {
                   <HeelDropPreferenceCard
                     preference={state.feelPreferences.heelDropPreference}
                     onChange={(pref) => handleFeelPreferenceChange("heelDropPreference", pref)}
+                  />
+                </div>
+
+                {/* Plate Preference */}
+                <div className="mb-4">
+                  <PlatePreferenceCard
+                    preference={state.feelPreferences.platePreference}
+                    onChange={(pref) => handleFeelPreferenceChange("platePreference", pref)}
                   />
                 </div>
 
