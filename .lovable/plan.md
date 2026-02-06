@@ -1,83 +1,59 @@
 
 
-# Cinda Logo Segment Animation
+# Cinda Logo Segment Animation Implementation
 
 ## Overview
 
-Replace the basic spinning logo animation on the landing page with an elegant "explode and reassemble" animation where each of the 12 segments moves outward from center then smoothly slots back into place in sequence.
+Replace the basic spinning logo animation on the landing page with an elegant "explode and reassemble" animation where each of the 12 SVG segments moves outward from center then smoothly slots back into place in sequence.
 
-## Animation Concept
+## What Will Change
 
-When the user clicks "FIND YOURS":
-1. Each segment moves **outward** from the center along its radial direction (like clock hands pointing outward)
-2. Segments animate **sequentially** in clock order (12 → 1 → 2 → ... → 11)
-3. After reaching max distance, each segment **returns** to its original position
-4. Creates a satisfying "assembly" visual as the logo reassembles
+When clicking "FIND YOURS", instead of a simple spin:
+1. Each segment bursts outward from center along its radial direction
+2. Segments animate sequentially (12 → 1 → 2 → ... → 11) creating a wave effect
+3. Each segment snaps back into place with a satisfying overshoot
+4. Total animation duration: ~1.4 seconds
 
-```text
-        ┌───────────────────────────────────────────┐
-        │                                           │
-        │     12     PHASE 1: Explode outward       │
-        │    ↗  ↖    (segments move away from       │
-        │  11    1    center in sequence)           │
-        │  ↖      ↗                                 │
-        │ 10  ●  2                                  │
-        │  ↙      ↘                                 │
-        │   9    3                                  │
-        │    ↘  ↙                                   │
-        │      ...                                  │
-        │                                           │
-        │     12     PHASE 2: Reassemble            │
-        │    ↘  ↗    (segments return to center     │
-        │  11    1    in sequence)                  │
-        │   →      ←                                ││ 10  ●  2                                  │
-        │   ←      →                                │
-        │   9    3                                  │
-        │    ↗  ↘                                   │
-        │      ...                                  │
-        │                                           │
-        └───────────────────────────────────────────┘
-```
+## Files to Create/Modify
 
-## Technical Implementation
+| File | Action | Description |
+|------|--------|-------------|
+| `src/assets/cinda-segments.svg` | Create | Save the uploaded 12-segment SVG |
+| `src/components/CindaLogoAnimated.tsx` | Create | New React component with inline SVG and segment animations |
+| `tailwind.config.ts` | Modify | Add `segment-explode` keyframe animation |
+| `src/pages/Landing.tsx` | Modify | Replace static `<img>` with `<CindaLogoAnimated>` component |
 
-### 1. Create Animated SVG Logo Component
+## Technical Details
 
-**New file: `src/components/CindaLogoAnimated.tsx`**
+### 1. SVG Component Structure
 
-A React component that:
-- Embeds the SVG inline (not as an image) so we can animate individual segments
-- Uses CSS transforms to move each segment
-- Applies staggered animation delays for sequential effect
-- Respects `prefers-reduced-motion`
+The component will embed the SVG inline (not as an image) so each segment can be targeted individually. Each of the 12 segments will receive:
+- A CSS custom property for its outward direction (`--tx`, `--ty`)
+- A staggered animation delay based on clock position
+- The shared `segment-explode` animation
 
-### 2. Animation Mechanics
+### 2. Direction Vectors
 
-For each segment, calculate its outward direction based on clock position:
+Each segment moves outward based on its clock position:
 
 ```typescript
-// Direction vectors for each clock position (12 = top, 3 = right, etc.)
-const SEGMENT_DIRECTIONS: Record<number, { x: number; y: number }> = {
-  12: { x: 0, y: -1 },    // Up
+const SEGMENT_DIRECTIONS = {
+  12: { x: 0, y: -1 },      // Up
   1:  { x: 0.5, y: -0.87 },
   2:  { x: 0.87, y: -0.5 },
-  3:  { x: 1, y: 0 },     // Right
+  3:  { x: 1, y: 0 },        // Right
   4:  { x: 0.87, y: 0.5 },
   5:  { x: 0.5, y: 0.87 },
-  6:  { x: 0, y: 1 },     // Down
+  6:  { x: 0, y: 1 },        // Down
   7:  { x: -0.5, y: 0.87 },
   8:  { x: -0.87, y: 0.5 },
-  9:  { x: -1, y: 0 },    // Left
+  9:  { x: -1, y: 0 },       // Left
   10: { x: -0.87, y: -0.5 },
   11: { x: -0.5, y: -0.87 },
 };
 ```
 
-### 3. CSS Keyframes Animation
-
-**File: `tailwind.config.ts`**
-
-Add new keyframe animation:
+### 3. Animation Keyframes (tailwind.config.ts)
 
 ```typescript
 'segment-explode': {
@@ -97,32 +73,22 @@ Add new keyframe animation:
 ```
 
 Animation properties:
-- Total duration: ~800ms
-- Stagger delay: ~50ms per segment (12 segments × 50ms = 600ms total stagger)
-- Ease: `cubic-bezier(0.34, 1.56, 0.64, 1)` (slight overshoot for snap-back feel)
+- Duration: 800ms per segment
+- Stagger delay: 50ms between segments
+- Easing: `cubic-bezier(0.34, 1.56, 0.64, 1)` for snap-back overshoot
 
-### 4. Component Props
+### 4. Landing Page Integration
 
-```typescript
-interface CindaLogoAnimatedProps {
-  isAnimating: boolean;    // Triggers the animation
-  className?: string;      // Size/position styling
-  onAnimationComplete?: () => void;  // Callback when done
-}
-```
-
-### 5. Landing Page Integration
-
-**File: `src/pages/Landing.tsx`**
-
-Replace the static logo image with the animated component:
+Replace lines 103-109 in Landing.tsx:
 
 ```tsx
 // Before
 <img 
   src={cindaLogo} 
   alt="Cinda" 
-  className={`h-[80px] ... ${isExiting ? "animate-spin-settle" : ""}`}
+  className={`h-[80px] absolute top-8 left-1/2 -translate-x-1/2 z-20 ${
+    isExiting ? "animate-spin-settle" : ""
+  }`}
 />
 
 // After
@@ -132,34 +98,32 @@ Replace the static logo image with the animated component:
 />
 ```
 
-## Files to Create/Modify
+### 5. Component Props
 
-| File | Action | Description |
-|------|--------|-------------|
-| `src/components/CindaLogoAnimated.tsx` | Create | New animated SVG logo component with 12 individually-animated segments |
-| `src/assets/cinda-segments.svg` | Create | Copy uploaded SVG to project assets |
-| `tailwind.config.ts` | Modify | Add `segment-explode` keyframe animation |
-| `src/pages/Landing.tsx` | Modify | Replace static logo with animated component |
+```typescript
+interface CindaLogoAnimatedProps {
+  isAnimating: boolean;    // Triggers the explode animation
+  className?: string;      // Size and positioning
+}
+```
+
+### 6. Accessibility
+
+The component will detect `prefers-reduced-motion` and:
+- Skip the explode animation entirely
+- Show a simple fade transition instead
 
 ## Animation Timeline
 
 ```text
-Time (ms)   0    50   100  150  200  250  300  350  400  450  500  550  600  700  800
-            |----|----|----|----|----|----|----|----|----|----|----|----|----|----|
+Time (ms)   0    50   100  150  200  250  300  350  400  ...  600  ...  800  ...  1400
+            |----|----|----|----|----|----|----|----|----     |----     |----     |
 Segment 12: [=======explode=======][=========return=========]
 Segment 1:    [=======explode=======][=========return=========]
 Segment 2:       [=======explode=======][=========return=========]
-Segment 3:          [=======explode=======][=========return=========]
 ...
-Segment 11:                                              [=======explode=======][==return==]
+Segment 11:                                              [=======explode=======][return]
 ```
-
-## Reduced Motion Support
-
-When `prefers-reduced-motion: reduce` is active:
-- Skip the explode animation entirely
-- Show a simple fade transition instead
-- Maintains accessibility compliance
 
 ## Visual Result
 
@@ -170,6 +134,4 @@ When clicking "FIND YOURS":
 4. Segments snap back into place with a slight overshoot
 5. Logo settles into position, fully assembled
 6. Transition to orientation page begins
-
-This creates a much more premium, engaging experience compared to the current basic spin.
 
