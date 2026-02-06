@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import cindaLogo from "@/assets/cinda-logo-grey.png";
 import OnboardingLayout from "@/components/OnboardingLayout";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
@@ -8,7 +9,6 @@ import AnimatedTagline from "@/components/AnimatedTagline";
 import { usePageNavigation } from "@/hooks/usePageNavigation";
 import { AddToHomeScreenModal } from "@/components/AddToHomeScreenModal";
 import { analytics } from "@/lib/analytics";
-import { CindaLogoAnimated } from "@/components/CindaLogoAnimated";
 
 type ViewState = "landing" | "orientation";
 
@@ -99,10 +99,13 @@ const Landing = () => {
       {(viewState === "orientation" || isExiting) && <FloatingJargon />}
 
       <OnboardingLayout centerContent transparent>
-        {/* Logo - visible on both landing and orientation, explodes on transition */}
-        <CindaLogoAnimated 
-          isAnimating={isExiting}
-          className="h-[80px] absolute top-8 left-1/2 -translate-x-1/2 z-20"
+        {/* Logo - visible on both landing and orientation, spins on transition */}
+        <img 
+          src={cindaLogo} 
+          alt="Cinda" 
+          className={`h-[80px] absolute top-8 left-1/2 -translate-x-1/2 z-20 ${
+            isExiting ? "animate-spin-settle" : ""
+          }`}
         />
 
         {viewState === "landing" && (
