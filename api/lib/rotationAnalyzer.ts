@@ -17,7 +17,9 @@ import {
   RUN_TYPE_MAPPING,
   shoeHasArchetype,
   getShoeArchetypes,
-  shoeIsSuitableFor
+  shoeIsSuitableFor,
+  resolveShoes,
+  getCoveredArchetypes,
 } from '../types.js';
 
 // ============================================================================
@@ -279,15 +281,7 @@ export function analyzeRotation(
   const uncoveredRunTypes = expectedRunTypes.filter(rt => !coveredRunTypesSet.has(rt));
 
   // 3. IDENTIFY COVERED ARCHETYPES
-  const coveredArchetypesSet = new Set<ShoeArchetype>();
-  for (const userShoe of currentShoes) {
-    const shoe = catalogue.find(s => s.shoe_id === userShoe.shoeId);
-    if (shoe) {
-      const archetypes = getShoeArchetypes(shoe);
-      archetypes.forEach(a => coveredArchetypesSet.add(a));
-    }
-  }
-  const coveredArchetypes = Array.from(coveredArchetypesSet);
+  const coveredArchetypes = getCoveredArchetypes(currentShoes, catalogue);
 
   // 4. IDENTIFY MISSING ARCHETYPES
   const expectedArchetypes = getExpectedArchetypes(profile);
@@ -389,7 +383,7 @@ export function getRotationHealthSummary(analysis: RotationAnalysis): {
   }
 
   if (analysis.missingArchetypes.length > 0) {
-    issues.push(`Missing shoe types: ${analysis.missingArchetypes.map(a => a.replace('_', ' ')).join(", ")}`);
+    issues.push(`Missing shoe types: ${analysis.missingArchetypes.map(a => a.replace(/_/g, ' ')).join(", ")}`);
   }
 
   if (analysis.hasDislikedShoes) {
@@ -422,25 +416,6 @@ export function getRotationHealthSummary(analysis: RotationAnalysis): {
 // ROTATION HEALTH SCORING
 // Internal scoring system for tier selection and AI summaries
 // ============================================================================
-
-/**
- * Get covered archetypes from current shoes
- * Helper to avoid duplicating logic from analyzeRotation
- */
-function getCoveredArchetypes(
-  currentShoes: CurrentShoe[],
-  catalogue: Shoe[]
-): ShoeArchetype[] {
-  const coveredArchetypesSet = new Set<ShoeArchetype>();
-  for (const userShoe of currentShoes) {
-    const shoe = catalogue.find(s => s.shoe_id === userShoe.shoeId);
-    if (shoe) {
-      const archetypes = getShoeArchetypes(shoe);
-      archetypes.forEach(a => coveredArchetypesSet.add(a));
-    }
-  }
-  return Array.from(coveredArchetypesSet);
-}
 
 /**
  * Calculate variety score based on range across feel dimensions
@@ -538,12 +513,7 @@ export function calculateRotationHealth(
   }
 
   // 2. Variety score (10% weight)
-  // Resolve current shoes to Shoe objects
-  const resolvedShoes: Shoe[] = [];
-  for (const userShoe of currentShoes) {
-    const shoe = catalogue.find(s => s.shoe_id === userShoe.shoeId);
-    if (shoe) resolvedShoes.push(shoe);
-  }
+  const resolvedShoes = resolveShoes(currentShoes, catalogue);
   const variety = calculateVariety(resolvedShoes);
 
   // 3. Load resilience score (20% weight)

@@ -82,7 +82,7 @@ export interface ScoredShoe {
 /**
  * Get related archetypes for fallback expansion
  */
-function getRelatedArchetypes(archetype: ShoeArchetype): ShoeArchetype[] {
+export function getRelatedArchetypes(archetype: ShoeArchetype): ShoeArchetype[] {
   const relatedMap: Record<ShoeArchetype, ShoeArchetype[]> = {
     'daily_trainer': ['recovery_shoe', 'workout_shoe'],
     'recovery_shoe': ['daily_trainer'],

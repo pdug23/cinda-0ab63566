@@ -893,3 +893,44 @@ export function shoeIsSuitableFor(shoe: Shoe, runType: RunType): boolean {
   const suitableArchetypes = RUN_TYPE_MAPPING[runType];
   return suitableArchetypes.some(archetype => shoeHasArchetype(shoe, archetype));
 }
+
+/**
+ * Resolve CurrentShoe[] to Shoe[] from catalogue
+ * Shared helper used by gap detection, rotation analysis, and tier classification
+ */
+export function resolveShoes(currentShoes: CurrentShoe[], catalogue: Shoe[]): Shoe[] {
+  const resolved: Shoe[] = [];
+  for (const userShoe of currentShoes) {
+    const shoe = catalogue.find(s => s.shoe_id === userShoe.shoeId);
+    if (shoe) resolved.push(shoe);
+  }
+  return resolved;
+}
+
+/**
+ * Get archetypes covered by current shoes
+ * Super trainers count as covering daily_trainer, workout_shoe, and recovery_shoe
+ */
+export function getCoveredArchetypes(
+  currentShoes: CurrentShoe[],
+  catalogue: Shoe[]
+): ShoeArchetype[] {
+  const covered = new Set<ShoeArchetype>();
+
+  for (const userShoe of currentShoes) {
+    const shoe = catalogue.find(s => s.shoe_id === userShoe.shoeId);
+    if (!shoe) continue;
+
+    const archetypes = getShoeArchetypes(shoe);
+    archetypes.forEach(a => covered.add(a));
+
+    // Super trainers cover daily_trainer, workout_shoe, and recovery_shoe
+    if (shoe.is_super_trainer) {
+      covered.add('daily_trainer');
+      covered.add('workout_shoe');
+      covered.add('recovery_shoe');
+    }
+  }
+
+  return Array.from(covered);
+}

@@ -171,7 +171,7 @@ Applied as scoring modifiers for personalized recommendations.
 
 ### Bullet Generation
 
-- **Model:** GPT-4o-mini (NOT GPT-5-mini — reasoning tokens killed performance)
+- **Model:** GPT-5-mini (with low reasoning effort for fast, quality microcopy)
 - **Execution:** Parallelized (all 3 shoes simultaneously)
 - **Structure:** 3 bullets per shoe:
   1. Personal match (references rotation or preferences)
@@ -347,7 +347,7 @@ http://localhost:8080
 3. **Don't make up shoe specs** - Use only what's in shoebase.json
 4. **Don't analyze rotation in chat.ts** - That's rotationAnalyzer.ts's job
 5. **Don't build complex state logic in frontend** - Keep it in backend
-6. **Don't use GPT-5-mini for bullets** - Reasoning tokens kill performance, use GPT-4o-mini
+6. **Use GPT-5-mini for bullets** - With low reasoning effort for fast, quality microcopy (NOT GPT-4o-mini)
 7. **Don't use string roles** - Use archetype boolean flags
 
 ## Future Considerations (Do Not Implement Unless Asked)

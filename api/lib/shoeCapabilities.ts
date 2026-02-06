@@ -122,19 +122,3 @@ export function detectMisuse(
   return { level: "good" };
 }
 
-/**
- * Check if a run type is suitable for the shoe's archetypes
- */
-export function isRunTypeSuitable(runType: RunType, archetypes: ShoeArchetype[]): boolean {
-  const suitabilityMap: Record<RunType, ShoeArchetype[]> = {
-    "all_runs": ["daily_trainer"],
-    "recovery": ["recovery_shoe", "daily_trainer"],
-    "long_runs": ["daily_trainer", "workout_shoe", "recovery_shoe"],
-    "workouts": ["workout_shoe", "race_shoe"],
-    "races": ["race_shoe", "workout_shoe"],
-    "trail": ["trail_shoe"]
-  };
-
-  const suitableArchetypes = suitabilityMap[runType] || [];
-  return suitableArchetypes.some(a => archetypes.includes(a));
-}

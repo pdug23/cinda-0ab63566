@@ -18,7 +18,8 @@ import type {
 import {
   RUN_TYPE_MAPPING,
   shoeHasArchetype,
-  shoeIsSuitableFor
+  shoeIsSuitableFor,
+  getCoveredArchetypes,
 } from '../types.js';
 
 // ============================================================================
@@ -105,36 +106,6 @@ function getRequiredArchetypes(profile: RunnerProfile): ShoeArchetype[] {
   return Array.from(required);
 }
 
-/**
- * Get archetypes covered by current shoes
- * Super trainers count as covering daily_trainer, workout_shoe, and recovery_shoe
- */
-function getCoveredArchetypes(
-  currentShoes: CurrentShoe[],
-  catalogue: Shoe[]
-): ShoeArchetype[] {
-  const covered = new Set<ShoeArchetype>();
-
-  for (const userShoe of currentShoes) {
-    const shoe = catalogue.find(s => s.shoe_id === userShoe.shoeId);
-    if (!shoe) continue;
-
-    if (shoeHasArchetype(shoe, 'daily_trainer')) covered.add('daily_trainer');
-    if (shoeHasArchetype(shoe, 'recovery_shoe')) covered.add('recovery_shoe');
-    if (shoeHasArchetype(shoe, 'workout_shoe')) covered.add('workout_shoe');
-    if (shoeHasArchetype(shoe, 'race_shoe')) covered.add('race_shoe');
-    if (shoeHasArchetype(shoe, 'trail_shoe')) covered.add('trail_shoe');
-
-    // Super trainers cover daily_trainer, workout_shoe, and recovery_shoe
-    if (shoe.is_super_trainer) {
-      covered.add('daily_trainer');
-      covered.add('workout_shoe');
-      covered.add('recovery_shoe');
-    }
-  }
-
-  return Array.from(covered);
-}
 
 /**
  * Detect gaps based on profile-demanded archetypes vs what current shoes cover
@@ -565,7 +536,7 @@ function checkRedundancyGap(
   return {
     type: "redundancy",
     severity: "low",
-    reasoning: `You have ${redundancy.shoeIds.length} similar shoes but nothing for ${missingArchetype.replace('_', ' ')}. Swapping one of the similar shoes would add versatility to your rotation.`,
+    reasoning: `You have ${redundancy.shoeIds.length} similar shoes but nothing for ${missingArchetype.replace(/_/g, ' ')}. Swapping one of the similar shoes would add versatility to your rotation.`,
     redundantShoes: redundancy.shoeIds,
     recommendedArchetype: missingArchetype,
   };
