@@ -1,137 +1,61 @@
 
 
-# Cinda Logo Segment Animation Implementation
+# Fix: Use Your Actual SVG Segments
 
-## Overview
+## The Problem
 
-Replace the basic spinning logo animation on the landing page with an elegant "explode and reassemble" animation where each of the 12 SVG segments moves outward from center then smoothly slots back into place in sequence.
+I completely butchered the logo by creating placeholder vector `<path>` elements instead of using your actual SVG segments. Your SVG contains 12 groups (`Segment-1` through `Segment-12`) with embedded PNG images that make up the real Cinda logo.
 
-## What Will Change
+## The Solution
 
-When clicking "FIND YOURS", instead of a simple spin:
-1. Each segment bursts outward from center along its radial direction
-2. Segments animate sequentially (12 → 1 → 2 → ... → 11) creating a wave effect
-3. Each segment snaps back into place with a satisfying overshoot
-4. Total animation duration: ~1.4 seconds
+### Option A: Embed the Full SVG (Recommended)
 
-## Files to Create/Modify
+1. **Copy your actual SVG** to `src/assets/cinda-segments.svg`
+2. **Rewrite `CindaLogoAnimated.tsx`** to:
+   - Inline the actual SVG structure with all 12 `<g id="Segment-X">` groups
+   - Apply the animation styles to each group using `style={getSegmentStyle(X)}`
+   - Keep the same animation logic (explode outward, return to center)
 
-| File | Action | Description |
-|------|--------|-------------|
-| `src/assets/cinda-segments.svg` | Create | Save the uploaded 12-segment SVG |
-| `src/components/CindaLogoAnimated.tsx` | Create | New React component with inline SVG and segment animations |
-| `tailwind.config.ts` | Modify | Add `segment-explode` keyframe animation |
-| `src/pages/Landing.tsx` | Modify | Replace static `<img>` with `<CindaLogoAnimated>` component |
+### Files to Modify
 
-## Technical Details
+| File | Action |
+|------|--------|
+| `src/assets/cinda-segments.svg` | Create - copy your uploaded SVG |
+| `src/components/CindaLogoAnimated.tsx` | Rewrite - use actual SVG groups with embedded PNGs |
 
-### 1. SVG Component Structure
+### Implementation Details
 
-The component will embed the SVG inline (not as an image) so each segment can be targeted individually. Each of the 12 segments will receive:
-- A CSS custom property for its outward direction (`--tx`, `--ty`)
-- A staggered animation delay based on clock position
-- The shared `segment-explode` animation
+The component will:
 
-### 2. Direction Vectors
-
-Each segment moves outward based on its clock position:
-
-```typescript
-const SEGMENT_DIRECTIONS = {
-  12: { x: 0, y: -1 },      // Up
-  1:  { x: 0.5, y: -0.87 },
-  2:  { x: 0.87, y: -0.5 },
-  3:  { x: 1, y: 0 },        // Right
-  4:  { x: 0.87, y: 0.5 },
-  5:  { x: 0.5, y: 0.87 },
-  6:  { x: 0, y: 1 },        // Down
-  7:  { x: -0.5, y: 0.87 },
-  8:  { x: -0.87, y: 0.5 },
-  9:  { x: -1, y: 0 },       // Left
-  10: { x: -0.87, y: -0.5 },
-  11: { x: -0.5, y: -0.87 },
-};
-```
-
-### 3. Animation Keyframes (tailwind.config.ts)
-
-```typescript
-'segment-explode': {
-  '0%': { 
-    transform: 'translate(0, 0)',
-    opacity: '1'
-  },
-  '40%': { 
-    transform: 'translate(var(--tx), var(--ty))',
-    opacity: '0.7'
-  },
-  '100%': { 
-    transform: 'translate(0, 0)',
-    opacity: '1'
-  }
-}
-```
-
-Animation properties:
-- Duration: 800ms per segment
-- Stagger delay: 50ms between segments
-- Easing: `cubic-bezier(0.34, 1.56, 0.64, 1)` for snap-back overshoot
-
-### 4. Landing Page Integration
-
-Replace lines 103-109 in Landing.tsx:
+1. **Use the real viewBox**: `viewBox="0 0 352.8 350.88"` (from your SVG)
+2. **Include all 12 segment groups** with their actual embedded PNG images
+3. **Apply animation to each group**: Wrap each `<g>` with the `getSegmentStyle(X)` function
+4. **Adjust explode distance**: May need to increase from 25 to ~50+ since the SVG is larger (352.8 x 350.88 vs my fake 100 x 100)
 
 ```tsx
-// Before
-<img 
-  src={cindaLogo} 
-  alt="Cinda" 
-  className={`h-[80px] absolute top-8 left-1/2 -translate-x-1/2 z-20 ${
-    isExiting ? "animate-spin-settle" : ""
-  }`}
-/>
-
-// After
-<CindaLogoAnimated 
-  isAnimating={isExiting}
-  className="h-[80px] absolute top-8 left-1/2 -translate-x-1/2 z-20"
-/>
+// Structure will look like:
+<svg viewBox="0 0 352.8 350.88" ...>
+  <style>{/* keyframes */}</style>
+  
+  <g id="Segment-12" style={getSegmentStyle(12)}>
+    <image ... />  {/* Your actual PNG data */}
+  </g>
+  
+  <g id="Segment-1" style={getSegmentStyle(1)}>
+    <image ... />
+  </g>
+  
+  {/* ... segments 2-11 */}
+</svg>
 ```
 
-### 5. Component Props
+### Animation Adjustments
 
-```typescript
-interface CindaLogoAnimatedProps {
-  isAnimating: boolean;    // Triggers the explode animation
-  className?: string;      // Size and positioning
-}
-```
+- **Explode distance**: Increase to ~40-60 SVG units (since your SVG is ~350px wide vs my 100px)
+- **Direction vectors**: Remain the same (radial outward from center)
+- **Timing**: Keep 800ms duration, 50ms stagger
 
-### 6. Accessibility
+## Result
 
-The component will detect `prefers-reduced-motion` and:
-- Skip the explode animation entirely
-- Show a simple fade transition instead
-
-## Animation Timeline
-
-```text
-Time (ms)   0    50   100  150  200  250  300  350  400  ...  600  ...  800  ...  1400
-            |----|----|----|----|----|----|----|----|----     |----     |----     |
-Segment 12: [=======explode=======][=========return=========]
-Segment 1:    [=======explode=======][=========return=========]
-Segment 2:       [=======explode=======][=========return=========]
-...
-Segment 11:                                              [=======explode=======][return]
-```
-
-## Visual Result
-
-When clicking "FIND YOURS":
-1. Segments burst outward from center like a blooming flower
-2. Each segment follows its radial direction (12 goes up, 3 goes right, etc.)
-3. Sequential timing creates a satisfying "wave" effect around the logo
-4. Segments snap back into place with a slight overshoot
-5. Logo settles into position, fully assembled
-6. Transition to orientation page begins
+The logo will look exactly like your reference image (the compass-star shape with center ring), and when animated, each of the 12 actual segments will explode outward along their radial direction and snap back into place.
 
