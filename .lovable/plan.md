@@ -1,234 +1,175 @@
 
 
-# Add Plate Preference to Quick Match and Full Analysis Forms
+# Cinda Logo Segment Animation
 
 ## Overview
 
-Add a new "Plate Preference" control to both the Quick Match and ProfileBuilderStep4b forms. This lets users specify whether they want plated shoes, non-plated shoes, or specific plate materials.
+Replace the basic spinning logo animation on the landing page with an elegant "explode and reassemble" animation where each of the 12 segments moves outward from center then smoothly slots back into place in sequence.
 
-## Design Pattern
+## Animation Concept
 
-Following the exact same pattern as the existing `HeelDropPreferenceCard`:
-- Two-button toggle for mode selection ("Let Cinda decide" / "I have a preference")
-- Multi-select buttons that appear when "I have a preference" is selected
-- Same visual style, spacing, and interaction patterns
+When the user clicks "FIND YOURS":
+1. Each segment moves **outward** from the center along its radial direction (like clock hands pointing outward)
+2. Segments animate **sequentially** in clock order (12 → 1 → 2 → ... → 11)
+3. After reaching max distance, each segment **returns** to its original position
+4. Creates a satisfying "assembly" visual as the logo reassembles
 
-## Placement
-
-| Form | Location |
-|------|----------|
-| **Quick Match** | After Heel Drop, before Brand Preference (around line 676) |
-| **ProfileBuilderStep4b** | After Heel Drop, before Brand Preference (around line 840) |
-
-## UI Components
-
-### Label & Help Text
-- **Label**: "Plate preference"
-- **Tooltip**: "Plates add structure and energy return, but some runners prefer a more natural feel"
-
-### Multi-Select Options
-When "I have a preference" is selected, show these buttons:
-
-| Option | Value | Behavior |
-|--------|-------|----------|
-| No plate | `"none"` | Mutually exclusive - deselects all others when clicked |
-| Any plate | `"any"` | Can combine with specific plate materials |
-| Nylon plate | `"nylon"` | Can combine with other plate types |
-| Pebax plate | `"pebax"` | Can combine with other plate types |
-| Carbon plate | `"carbon"` | Can combine with other plate types |
-
-### Mutual Exclusion Logic
-- Selecting "No plate" clears all other selections
-- Selecting any plate option clears "No plate" if it was selected
-
----
+```text
+        ┌───────────────────────────────────────────┐
+        │                                           │
+        │     12     PHASE 1: Explode outward       │
+        │    ↗  ↖    (segments move away from       │
+        │  11    1    center in sequence)           │
+        │  ↖      ↗                                 │
+        │ 10  ●  2                                  │
+        │  ↙      ↘                                 │
+        │   9    3                                  │
+        │    ↘  ↙                                   │
+        │      ...                                  │
+        │                                           │
+        │     12     PHASE 2: Reassemble            │
+        │    ↘  ↗    (segments return to center     │
+        │  11    1    in sequence)                  │
+        │   →      ←                                ││ 10  ●  2                                  │
+        │   ←      →                                │
+        │   9    3                                  │
+        │    ↗  ↘                                   │
+        │      ...                                  │
+        │                                           │
+        └───────────────────────────────────────────┘
+```
 
 ## Technical Implementation
 
-### 1. Type Definitions
+### 1. Create Animated SVG Logo Component
 
-**File: `src/contexts/ProfileContext.tsx`**
+**New file: `src/components/CindaLogoAnimated.tsx`**
 
-Add new types:
+A React component that:
+- Embeds the SVG inline (not as an image) so we can animate individual segments
+- Uses CSS transforms to move each segment
+- Applies staggered animation delays for sequential effect
+- Respects `prefers-reduced-motion`
 
-```typescript
-export type PlateOption = "none" | "any" | "nylon" | "pebax" | "carbon";
+### 2. Animation Mechanics
 
-export interface PlatePreference {
-  mode: PreferenceMode;
-  values?: PlateOption[];  // Only set when mode === "user_set"
-}
-```
-
-Update `FeelPreferences` interface to include plate preference:
+For each segment, calculate its outward direction based on clock position:
 
 ```typescript
-export interface FeelPreferences {
-  cushionAmount: SliderPreference;
-  stabilityAmount: SliderPreference;
-  energyReturn: SliderPreference;
-  stackHeight: SliderPreference;
-  rocker: SliderPreference;
-  heelDropPreference: HeelDropPreference;
-  platePreference: PlatePreference;       // NEW
-  brandPreference: BrandPreference;
-}
-```
-
-### 2. Quick Match Form
-
-**File: `src/pages/QuickMatch.tsx`**
-
-**Add plate options constant:**
-```typescript
-const PLATE_OPTIONS: { value: PlateOption; label: string }[] = [
-  { value: "none", label: "No plate" },
-  { value: "any", label: "Any plate" },
-  { value: "nylon", label: "Nylon plate" },
-  { value: "pebax", label: "Pebax plate" },
-  { value: "carbon", label: "Carbon plate" },
-];
-```
-
-**Add PlatePreferenceCard component** (follows HeelDropPreferenceCard pattern):
-- Mode selector toggle
-- Multi-select buttons with mutual exclusion logic for "none"
-- Same styling as heel drop card
-
-**Update state interface** to include `platePreference` in `feelPreferences`
-
-**Update form layout** to render PlatePreferenceCard between HeelDropPreferenceCard and BrandPreferenceCard
-
-### 3. ProfileBuilderStep4b Form
-
-**File: `src/pages/ProfileBuilderStep4b.tsx`**
-
-Same changes as QuickMatch:
-- Add PLATE_OPTIONS constant
-- Add PlatePreferenceCard component
-- Update form layout to include the new card after HeelDropPreferenceCard
-
-### 4. Default Values
-
-**File: `src/pages/ProfileBuilderStep4b.tsx`**
-
-Update `getDefaultPreferences()`:
-```typescript
-const getDefaultPreferences = (): FeelPreferences => ({
-  // ... existing preferences
-  heelDropPreference: { mode: "cinda_decides" },
-  platePreference: { mode: "cinda_decides" },     // NEW
-  brandPreference: { mode: "all", brands: [] },
-});
-```
-
-**File: `src/pages/QuickMatch.tsx`**
-
-Update initial state to include `platePreference: { mode: "cinda_decides" }`
-
----
-
-## Component Structure
-
-### PlatePreferenceCard
-
-```tsx
-const PlatePreferenceCard = ({
-  preference,
-  onChange,
-}: {
-  preference: PlatePreference;
-  onChange: (pref: PlatePreference) => void;
-}) => {
-  const showCheckboxes = preference.mode === "user_set";
-  const selectedValues = preference.values ?? [];
-
-  const handleModeChange = (mode: PreferenceMode) => {
-    if (mode === "user_set") {
-      onChange({ mode, values: preference.values ?? [] });
-    } else {
-      onChange({ mode });
-    }
-  };
-
-  const handleOptionChange = (option: PlateOption) => {
-    let newValues: PlateOption[];
-    
-    if (option === "none") {
-      // "No plate" is mutually exclusive
-      newValues = selectedValues.includes("none") ? [] : ["none"];
-    } else {
-      // Remove "none" if selecting any plate option
-      const filteredValues = selectedValues.filter((v) => v !== "none");
-      newValues = filteredValues.includes(option)
-        ? filteredValues.filter((v) => v !== option)
-        : [...filteredValues, option];
-    }
-    
-    onChange({ mode: "user_set", values: newValues });
-  };
-
-  return (
-    <div className="p-4 rounded-lg bg-card-foreground/[0.02] border border-card-foreground/10">
-      <div className="flex items-center gap-1.5 mb-3">
-        <span className="text-sm text-card-foreground/90">Plate preference</span>
-        <AdaptiveTooltip content="Plates add structure and energy return, but some runners prefer a more natural feel" />
-      </div>
-
-      <ModeSelector mode={preference.mode} onChange={handleModeChange} />
-
-      {showCheckboxes && (
-        <div className="mt-3">
-          <p className="text-xs text-card-foreground/40 mb-2">Select all that apply</p>
-          <div className="flex flex-wrap gap-2">
-            {PLATE_OPTIONS.map((option) => {
-              const isSelected = selectedValues.includes(option.value);
-              return (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => handleOptionChange(option.value)}
-                  className={cn(
-                    "px-3 py-1.5 text-xs rounded-md border transition-all flex items-center gap-1.5",
-                    isSelected
-                      ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
-                      : "bg-card-foreground/5 text-card-foreground/50 border-card-foreground/20 hover:text-card-foreground/70 hover:border-card-foreground/30"
-                  )}
-                >
-                  {isSelected && <Check className="w-3 h-3" />}
-                  {option.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+// Direction vectors for each clock position (12 = top, 3 = right, etc.)
+const SEGMENT_DIRECTIONS: Record<number, { x: number; y: number }> = {
+  12: { x: 0, y: -1 },    // Up
+  1:  { x: 0.5, y: -0.87 },
+  2:  { x: 0.87, y: -0.5 },
+  3:  { x: 1, y: 0 },     // Right
+  4:  { x: 0.87, y: 0.5 },
+  5:  { x: 0.5, y: 0.87 },
+  6:  { x: 0, y: 1 },     // Down
+  7:  { x: -0.5, y: 0.87 },
+  8:  { x: -0.87, y: 0.5 },
+  9:  { x: -1, y: 0 },    // Left
+  10: { x: -0.87, y: -0.5 },
+  11: { x: -0.5, y: -0.87 },
 };
 ```
 
----
+### 3. CSS Keyframes Animation
 
-## Files to Modify
+**File: `tailwind.config.ts`**
 
-| File | Changes |
-|------|---------|
-| `src/contexts/ProfileContext.tsx` | Add `PlateOption` type, `PlatePreference` interface, update `FeelPreferences` |
-| `src/pages/QuickMatch.tsx` | Add PLATE_OPTIONS, PlatePreferenceCard component, update state and form layout |
-| `src/pages/ProfileBuilderStep4b.tsx` | Add PLATE_OPTIONS, PlatePreferenceCard component, update getDefaultPreferences and form layout |
+Add new keyframe animation:
 
----
+```typescript
+'segment-explode': {
+  '0%': { 
+    transform: 'translate(0, 0)',
+    opacity: '1'
+  },
+  '40%': { 
+    transform: 'translate(var(--tx), var(--ty))',
+    opacity: '0.7'
+  },
+  '100%': { 
+    transform: 'translate(0, 0)',
+    opacity: '1'
+  }
+}
+```
 
-## Data Flow
+Animation properties:
+- Total duration: ~800ms
+- Stagger delay: ~50ms per segment (12 segments × 50ms = 600ms total stagger)
+- Ease: `cubic-bezier(0.34, 1.56, 0.64, 1)` (slight overshoot for snap-back feel)
 
-When the user completes the form:
+### 4. Component Props
 
-1. `platePreference` is included in the `feelPreferences` object within `ShoeRequest`
-2. Saved to localStorage via `saveShoeRequests()`
-3. Available to the API for filtering recommendations based on plate preferences
+```typescript
+interface CindaLogoAnimatedProps {
+  isAnimating: boolean;    // Triggers the animation
+  className?: string;      // Size/position styling
+  onAnimationComplete?: () => void;  // Callback when done
+}
+```
 
-The API can then filter shoes based on:
-- `has_plate: boolean` - for "No plate" or "Any plate" filtering
-- `plate_material: PlateMaterial` - for specific material filtering (carbon, pebax, nylon)
+### 5. Landing Page Integration
+
+**File: `src/pages/Landing.tsx`**
+
+Replace the static logo image with the animated component:
+
+```tsx
+// Before
+<img 
+  src={cindaLogo} 
+  alt="Cinda" 
+  className={`h-[80px] ... ${isExiting ? "animate-spin-settle" : ""}`}
+/>
+
+// After
+<CindaLogoAnimated 
+  isAnimating={isExiting}
+  className="h-[80px] absolute top-8 left-1/2 -translate-x-1/2 z-20"
+/>
+```
+
+## Files to Create/Modify
+
+| File | Action | Description |
+|------|--------|-------------|
+| `src/components/CindaLogoAnimated.tsx` | Create | New animated SVG logo component with 12 individually-animated segments |
+| `src/assets/cinda-segments.svg` | Create | Copy uploaded SVG to project assets |
+| `tailwind.config.ts` | Modify | Add `segment-explode` keyframe animation |
+| `src/pages/Landing.tsx` | Modify | Replace static logo with animated component |
+
+## Animation Timeline
+
+```text
+Time (ms)   0    50   100  150  200  250  300  350  400  450  500  550  600  700  800
+            |----|----|----|----|----|----|----|----|----|----|----|----|----|----|
+Segment 12: [=======explode=======][=========return=========]
+Segment 1:    [=======explode=======][=========return=========]
+Segment 2:       [=======explode=======][=========return=========]
+Segment 3:          [=======explode=======][=========return=========]
+...
+Segment 11:                                              [=======explode=======][==return==]
+```
+
+## Reduced Motion Support
+
+When `prefers-reduced-motion: reduce` is active:
+- Skip the explode animation entirely
+- Show a simple fade transition instead
+- Maintains accessibility compliance
+
+## Visual Result
+
+When clicking "FIND YOURS":
+1. Segments burst outward from center like a blooming flower
+2. Each segment follows its radial direction (12 goes up, 3 goes right, etc.)
+3. Sequential timing creates a satisfying "wave" effect around the logo
+4. Segments snap back into place with a slight overshoot
+5. Logo settles into position, fully assembled
+6. Transition to orientation page begins
+
+This creates a much more premium, engaging experience compared to the current basic spin.
 
