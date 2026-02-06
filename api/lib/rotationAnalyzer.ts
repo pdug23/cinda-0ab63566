@@ -285,7 +285,7 @@ export function analyzeRotation(
 
   // 4. IDENTIFY MISSING ARCHETYPES
   const expectedArchetypes = getExpectedArchetypes(profile);
-  const missingArchetypes = expectedArchetypes.filter(a => !coveredArchetypesSet.has(a));
+  const missingArchetypes = expectedArchetypes.filter(a => !coveredArchetypes.includes(a));
 
   // 5. DETECT REDUNDANCIES
   const redundancies = findRedundancies(currentShoes, catalogue);
