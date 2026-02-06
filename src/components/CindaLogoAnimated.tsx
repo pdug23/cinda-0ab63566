@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import cindaSegmentsSvg from "@/assets/cinda-segments.svg";
 
 interface CindaLogoAnimatedProps {
   isAnimating: boolean;
@@ -24,14 +25,15 @@ const SEGMENT_DIRECTIONS: Record<number, { x: number; y: number }> = {
 // Animation order: 12 → 1 → 2 → ... → 11
 const ANIMATION_ORDER = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
-// Distance to move outward (in SVG units)
-const EXPLODE_DISTANCE = 25;
+// Distance to move outward (in SVG units - increased for larger viewBox)
+const EXPLODE_DISTANCE = 50;
 
 // Animation timing
 const SEGMENT_DURATION = 800; // ms per segment
 const STAGGER_DELAY = 50; // ms between each segment start
 
 export function CindaLogoAnimated({ isAnimating, className = "" }: CindaLogoAnimatedProps) {
+  const [svgContent, setSvgContent] = useState<string | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
@@ -42,133 +44,83 @@ export function CindaLogoAnimated({ isAnimating, className = "" }: CindaLogoAnim
     }
   }, []);
 
-  const getSegmentStyle = (clockPosition: number): React.CSSProperties => {
-    if (!isAnimating || prefersReducedMotion) {
-      return {};
-    }
+  // Fetch and parse the SVG
+  useEffect(() => {
+    fetch(cindaSegmentsSvg)
+      .then(res => res.text())
+      .then(text => {
+        // Remove XML declaration if present
+        const cleanedSvg = text.replace(/<\?xml[^?]*\?>/g, '');
+        setSvgContent(cleanedSvg);
+      })
+      .catch(err => console.error("Failed to load SVG:", err));
+  }, []);
 
-    const direction = SEGMENT_DIRECTIONS[clockPosition];
-    const orderIndex = ANIMATION_ORDER.indexOf(clockPosition);
-    const delay = orderIndex * STAGGER_DELAY;
+  // Apply animation styles to segments
+  useEffect(() => {
+    if (!svgContent || !isAnimating || prefersReducedMotion) return;
 
-    return {
-      "--tx": `${direction.x * EXPLODE_DISTANCE}px`,
-      "--ty": `${direction.y * EXPLODE_DISTANCE}px`,
-      animation: `segment-explode ${SEGMENT_DURATION}ms cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms forwards`,
-    } as React.CSSProperties;
-  };
+    // Get all segment groups and apply animations
+    const container = document.getElementById('cinda-logo-container');
+    if (!container) return;
+
+    ANIMATION_ORDER.forEach((clockPosition, index) => {
+      // Map clock position to segment ID (1-12)
+      const segmentId = clockPosition === 12 ? 12 : clockPosition;
+      const segmentIdPadded = segmentId < 10 ? `0${segmentId}` : `${segmentId}`;
+      
+      // Try both naming conventions
+      let segment = container.querySelector(`#Segment-${segmentId}`) as HTMLElement;
+      if (!segment) {
+        segment = container.querySelector(`#Segment-${segmentIdPadded}`) as HTMLElement;
+      }
+      
+      if (segment) {
+        const direction = SEGMENT_DIRECTIONS[clockPosition];
+        const delay = index * STAGGER_DELAY;
+        
+        segment.style.setProperty('--tx', `${direction.x * EXPLODE_DISTANCE}px`);
+        segment.style.setProperty('--ty', `${direction.y * EXPLODE_DISTANCE}px`);
+        segment.style.animation = `segment-explode ${SEGMENT_DURATION}ms cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms forwards`;
+      }
+    });
+  }, [svgContent, isAnimating, prefersReducedMotion]);
+
+  if (!svgContent) {
+    // Fallback while loading
+    return (
+      <div className={className} aria-label="Cinda" role="img" />
+    );
+  }
 
   return (
-    <svg
-      viewBox="0 0 100 100"
+    <div 
+      id="cinda-logo-container"
       className={className}
-      aria-label="Cinda"
+      aria-label="Cinda" 
       role="img"
-    >
-      <style>{`
-        @keyframes segment-explode {
-          0% {
-            transform: translate(0, 0);
-            opacity: 1;
-          }
-          40% {
-            transform: translate(var(--tx), var(--ty));
-            opacity: 0.7;
-          }
-          100% {
-            transform: translate(0, 0);
-            opacity: 1;
-          }
-        }
-      `}</style>
-      
-      {/* 12 o'clock segment */}
-      <path
-        d="M50 10 L50 25 L55 25 L55 15 Q52.5 10 50 10"
-        fill="#9ca3af"
-        style={getSegmentStyle(12)}
-      />
-      
-      {/* 1 o'clock segment */}
-      <path
-        d="M55 15 L60 18 L65 28 L58 30 L55 25 L55 15"
-        fill="#9ca3af"
-        style={getSegmentStyle(1)}
-      />
-      
-      {/* 2 o'clock segment */}
-      <path
-        d="M65 28 L75 38 L70 45 L62 38 L58 30"
-        fill="#9ca3af"
-        style={getSegmentStyle(2)}
-      />
-      
-      {/* 3 o'clock segment */}
-      <path
-        d="M75 45 L90 50 L75 55 L70 55 L70 45"
-        fill="#9ca3af"
-        style={getSegmentStyle(3)}
-      />
-      
-      {/* 4 o'clock segment */}
-      <path
-        d="M75 55 L75 62 L65 72 L62 62 L70 55"
-        fill="#9ca3af"
-        style={getSegmentStyle(4)}
-      />
-      
-      {/* 5 o'clock segment */}
-      <path
-        d="M65 72 L60 82 L55 85 L55 75 L58 70 L62 62"
-        fill="#9ca3af"
-        style={getSegmentStyle(5)}
-      />
-      
-      {/* 6 o'clock segment */}
-      <path
-        d="M55 85 L50 90 L45 85 L45 75 L50 75 L55 75"
-        fill="#9ca3af"
-        style={getSegmentStyle(6)}
-      />
-      
-      {/* 7 o'clock segment */}
-      <path
-        d="M45 85 L40 82 L35 72 L38 62 L42 70 L45 75"
-        fill="#9ca3af"
-        style={getSegmentStyle(7)}
-      />
-      
-      {/* 8 o'clock segment */}
-      <path
-        d="M35 72 L25 62 L25 55 L30 55 L38 62"
-        fill="#9ca3af"
-        style={getSegmentStyle(8)}
-      />
-      
-      {/* 9 o'clock segment */}
-      <path
-        d="M25 55 L10 50 L25 45 L30 45 L30 55"
-        fill="#9ca3af"
-        style={getSegmentStyle(9)}
-      />
-      
-      {/* 10 o'clock segment */}
-      <path
-        d="M25 45 L25 38 L35 28 L38 38 L30 45"
-        fill="#9ca3af"
-        style={getSegmentStyle(10)}
-      />
-      
-      {/* 11 o'clock segment */}
-      <path
-        d="M35 28 L40 18 L45 15 L45 25 L42 30 L38 38"
-        fill="#9ca3af"
-        style={getSegmentStyle(11)}
-      />
-      
-      {/* Inner ring/center */}
-      <circle cx="50" cy="50" r="20" fill="none" stroke="#9ca3af" strokeWidth="3" />
-    </svg>
+      dangerouslySetInnerHTML={{
+        __html: `
+          <style>
+            @keyframes segment-explode {
+              0% {
+                transform: translate(0, 0);
+                opacity: 1;
+              }
+              40% {
+                transform: translate(var(--tx), var(--ty));
+                opacity: 0.7;
+              }
+              100% {
+                transform: translate(0, 0);
+                opacity: 1;
+              }
+            }
+          </style>
+          ${svgContent}
+        `
+      }}
+    />
   );
 }
 
